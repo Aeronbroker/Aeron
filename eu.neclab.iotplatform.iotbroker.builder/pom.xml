@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<parent>
+		<groupId>eu.neclab.iotplatform</groupId>
+		<artifactId>IoTbrokerParent</artifactId>
+		<version>3.2.3-SNAPSHOT</version>
+		<relativePath>../IoTbrokerParent</relativePath>
+	</parent>
+
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>iotbroker.builder</artifactId>
+	<packaging>pom</packaging>
+	<name>IoTbroker</name>
+
+
+
+	<!-- we can use full maven properties incl. inheritance ! -->
+	<properties>
+		<target-framework>equinox</target-framework>
+		<dependency.pax.web.version>0.5.2</dependency.pax.web.version>
+	</properties>
+
+	<dependencies>
+		<!-- normal dependencies required at compile time -->
+		<!-- <dependency> <groupId>org.ops4j.pax.exam</groupId> <artifactId>pax-exam</artifactId> 
+			<version>3.4.0</version> </dependency> <dependency> <groupId>org.ops4j.pax.exam</groupId> 
+			<artifactId>pax-exam-junit</artifactId> <version>1.2.4</version> </dependency> 
+			<dependency> <groupId>org.ops4j.pax.exam</groupId> <artifactId>pax-exam-container-default</artifactId> 
+			<version>1.2.4</version> </dependency> Here's the stuff we want to provision 
+			our osgi runtime with <dependency> <groupId>org.ops4j.pax.web</groupId> <artifactId>pax-web-service</artifactId> 
+			<version>${dependency.pax.web.version}</version> <scope>provided</scope> 
+			</dependency> -->
+
+
+	</dependencies>
+
+
+
+
+	<build>
+		<plugins>
+			<!-- <plugin> <artifactId>maven-assembly-plugin</artifactId> <version>2.3</version> 
+				<executions> <execution> <id>make-assembly</id> <phase>package</phase> <goals> 
+				<goal>single</goal> </goals> <configuration> <appendAssemblyId>false</appendAssemblyId> 
+				<finalName>IoTbroker-${project.version}</finalName> <attach>false</attach> 
+				<descriptors> <descriptor>assembly.xml</descriptor> </descriptors> <phase>package</phase> 
+				</configuration> </execution> </executions> </plugin> -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.3</version>
+				<executions>
+					<execution>
+						<id>create-target</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>assembly.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+
+	<repositories>
+		<repository>
+			<id>ops4j-runner-snapshot</id>
+			<name>ops4j.org pax runner snapshot repository</name>
+			<url>http://scm.ops4j.org/repos/ops4j/projects/pax/runner-repository</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+
+	<modules>
+		<module>../IoTbrokerParent</module>
+		<module>../tomcat-configuration-fragment</module>
+		<module>../eu.neclab.iotplatform.iotbroker.storage</module>
+		<module>../eu.neclab.iotplatform.iotbroker.client</module>
+		<module>../eu.neclab.iotplatform.iotbroker.core</module>
+		<module>../eu.neclab.iotplatform.iotbroker.restcontroller</module>
+		<module>../eu.neclab.iotplatform.ngsi.api</module>
+		<module>../eu.neclab.iotplatform.iotbroker.commons</module>
+		<module>../eu.neclab.iotplatform.iotbroker.ext.resultfilter</module>
+	</modules>
+
+
+</project>

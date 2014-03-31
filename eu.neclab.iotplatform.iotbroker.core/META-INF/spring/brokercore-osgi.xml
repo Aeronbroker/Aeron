@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans   
+       http://www.springframework.org/schema/beans/spring-beans.xsd                      
+       http://www.springframework.org/schema/osgi  
+       http://www.springframework.org/schema/osgi/spring-osgi.xsd">
+
+	<osgi:service id="iotConsumerNgsi10core" ref="brokercore"
+		interface="eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Interface" />
+
+	<osgi:service id="iotConsumerNgsi9core" ref="brokercore"
+		interface="eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface" />
+
+	<osgi:reference id="ResultFilterInterface"
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface" cardinality="0..1"></osgi:reference>
+
+	<osgi:reference id="Ngsi9Interface"
+		interface="eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface" ></osgi:reference>
+
+	<osgi:reference id="Ngsi10Requester"
+		interface="eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Requester"></osgi:reference>
+
+
+	<osgi:reference id="AvailabilitySubStorage"
+		interface="eu.neclab.iotplatform.iotbroker.storage.AvailabilitySubscriptionInterface"></osgi:reference>
+
+	<osgi:reference id="IncomingSubStorage"
+		interface="eu.neclab.iotplatform.iotbroker.storage.IncomingSubscriptionInterface"></osgi:reference>
+
+	<osgi:reference id="LinkSubscriptionStorage"
+		interface="eu.neclab.iotplatform.iotbroker.storage.LinkSubscriptionInterface"></osgi:reference>
+
+	<osgi:reference id="LinkSubscriptionAvStorage"
+		interface="eu.neclab.iotplatform.iotbroker.storage.LinkSubscriptionAvailabilityInterface"></osgi:reference>
+
+	<osgi:reference id="OutgoingSubStorage"
+		interface="eu.neclab.iotplatform.iotbroker.storage.OutgoingSubscriptionInterface"></osgi:reference>
+
+
+
+
+
+</beans>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<parent>
+		<groupId>eu.neclab.iotplatform</groupId>
+		<artifactId>IoTbrokerParent</artifactId>
+		<version>3.2.3-SNAPSHOT</version>
+		<relativePath>../IoTbrokerParent</relativePath>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>iotbroker.restcontroller</artifactId>
+	<packaging>bundle</packaging>
+	<name>eu.neclab.iotplatform.iotbroker.restcontroller</name>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<directory>.</directory>
+				<includes>
+					<include>META-INF/*</include>
+				</includes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<manifestLocation>META-INF</manifestLocation>
+					<instructions>
+						<Private-Package>eu.neclab.iotplatform.iotbroker.restcontroller.*</Private-Package>
+						<Import-Package>eu.neclab.iotplatform.iotbroker.commons,
+							eu.neclab.iotplatform.iotbroker.restcontroller,
+							eu.neclab.iotplatform.iotbroker.restcontroller.sanitycheck,
+							eu.neclab.iotplatform.ngsi.api.datamodel,
+							eu.neclab.iotplatform.ngsi.api.ngsi10,
+							eu.neclab.iotplatform.ngsi.api.ngsi9,
+							javax.servlet;version="2.5.0",
+							javax.servlet.http;version="2.5.0",
+							javax.xml.bind,
+							javax.xml.bind.annotation,
+							net.bull.javamelody;version="1.0.0",
+							org.apache.log4j;version="1.2",
+							org.osgi.framework;version="1.6",
+							org.springframework.beans.factory;version="${spring.version}",
+							org.springframework.beans.factory.annotation;version="${spring.version}",
+							org.springframework.http;version="${spring.version}",
+							org.springframework.http.client;version="${spring.version}",
+							org.springframework.http.converter;version="${spring.version}",
+							org.springframework.osgi.web.context.support;version="2.0.0.M1",
+							org.springframework.security.access;version="3.1.4.RELEASE",
+							org.springframework.security.provisioning;version="3.1.4.RELEASE",
+							org.springframework.security.web.authentication;version="3.1.4.RELEASE",
+							org.springframework.security.web.context;version="3.1.4.RELEASE",
+							org.springframework.security.web.access;version="3.1.4.RELEASE",
+							org.springframework.stereotype;version="${spring.version}",	
+							org.springframework.ui;version="${spring.version}",
+							org.springframework.util;version="${spring.version}",
+							org.springframework.web;version="${spring.version}",
+							org.springframework.web.bind;version="${spring.version}",
+							org.springframework.web.bind.annotation;version="${spring.version}",
+							org.springframework.web.bind.annotation.support;version="${spring.version}",
+							org.springframework.web.bind.support;version="${spring.version}",
+							org.springframework.web.context;version="${spring.version}",
+							org.springframework.web.filter;version="${spring.version}",
+							org.springframework.web.servlet;version="${spring.version}",
+							org.springframework.web.servlet.config;version="${spring.version}",
+							org.springframework.web.servlet.handler;version="${spring.version}",
+							org.springframework.web.servlet.mvc;version="${spring.version}",
+							org.springframework.web.servlet.mvc.annotation;version="${spring.version}",
+							org.springframework.web.servlet.mvc.condition;version="${spring.version}",
+							org.springframework.web.servlet.mvc.method;version="${spring.version}",
+							org.springframework.web.servlet.mvc.method.annotation;version="${spring.version}",
+							org.springframework.web.servlet.mvc.multiaction;version="${spring.version}",
+							org.springframework.web.servlet.mvc.support;version="${spring.version}",
+							org.springframework.web.servlet.resource;version="${spring.version}",
+							org.springframework.web.servlet.support;version="${spring.version}",
+							org.springframework.web.servlet.view;version="${spring.version}"
+						</Import-Package>
+						<Include-Resource>login.html,src/main/resources,src/main/webapp</Include-Resource>
+						<Web-ContextPath>/</Web-ContextPath>
+					</instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+	
+		<dependency>
+			<groupId>eu.neclab.iotplatform</groupId>
+			<artifactId>iotbroker.commons</artifactId>
+
+		</dependency>
+		<dependency>
+			<groupId>eu.neclab.iotplatform</groupId>
+			<artifactId>ngsi.api</artifactId>
+
+		</dependency>
+		<dependency>
+			<groupId>eu.neclab.iotplatform</groupId>
+			<artifactId>iotbroker.storage</artifactId>
+		</dependency>
+	</dependencies>
+
+
+
+
+</project>

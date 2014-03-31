@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+
+	<context:component-scan base-package="eu.neclab.iotplatform" />
+
+	<context:property-placeholder
+		location="file:///${dir.config}/fiwareRelease/iotBroker/config/config.xml" />
+
+	<bean id="brokercore" class="eu.neclab.iotplatform.iotbroker.core.IotBrokerCore">
+		<property name="availabilitySub" ref="AvailabilitySubStorage"></property>
+		<property name="incomingSub" ref="IncomingSubStorage"></property>
+		<property name="linkSub" ref="LinkSubscriptionStorage"></property>
+		<property name="linkAvSub" ref="LinkSubscriptionAvStorage"></property>
+		<property name="outgoingSub" ref="OutgoingSubStorage"></property>
+		<property name="ngsi9Impl" ref="Ngsi9Interface"></property>
+		<property name="ngsi10Requestor" ref="Ngsi10Requester"></property>
+		<property name="subscriptionController" ref="subController"></property>
+		<property name="northBoundWrapper" ref="northBoundWrap"></property>
+		<property name="confManWrapper" ref="confManWrap"></property>
+		<property name="agentWrapper" ref="agentWrapp"></property>
+	</bean>
+
+	<bean id="requestThread" class="eu.neclab.iotplatform.iotbroker.core.RequestThread">
+		<!-- <property name="ngsi10Requester" ref="Ngsi10Requester"></property> -->
+		<property name="resultFilter" ref="ResultFilterInterface"></property>
+	</bean>
+	
+	<bean id="updateThread" class="eu.neclab.iotplatform.iotbroker.core.UpdateThread">
+		<property name="ngsi10Requester" ref="Ngsi10Requester"></property>		
+	</bean>
+
+	<bean id="subController"
+		class="eu.neclab.iotplatform.iotbroker.core.subscription.SubscriptionController">
+		<property name="availabilitySub" ref="AvailabilitySubStorage"></property>
+		<property name="incomingSub" ref="IncomingSubStorage"></property>
+		<property name="linkSub" ref="LinkSubscriptionStorage"></property>
+		<property name="linkAvSub" ref="LinkSubscriptionAvStorage"></property>
+		<property name="outgoingSub" ref="OutgoingSubStorage"></property>
+		<property name="northBoundWrapper" ref="northBoundWrap"></property>
+		<property name="confManWrapper" ref="confManWrap"></property>
+		<property name="agentWrapper" ref="agentWrapp"></property>
+		<property name="resultFilter" ref="ResultFilterInterface"></property>
+	</bean>
+	<bean id="northBoundWrap"
+		class="eu.neclab.iotplatform.iotbroker.core.subscription.NorthBoundWrapper">
+		<constructor-arg ref="subController" />
+		<property name="ngsi10Requestor" ref="Ngsi10Requester"></property>
+	</bean>
+
+	<bean id="confManWrap"
+		class="eu.neclab.iotplatform.iotbroker.core.subscription.ConfManWrapper">
+		<constructor-arg ref="subController" />
+		<property name="ngsi9Impl" ref="Ngsi9Interface"></property>
+		<property name="availabilitySub" ref="AvailabilitySubStorage"></property>
+		<property name="incomingSub" ref="IncomingSubStorage"></property>
+		<property name="linkSub" ref="LinkSubscriptionStorage"></property>
+		<property name="linkAvSub" ref="LinkSubscriptionAvStorage"></property>
+		<property name="outgoingSub" ref="OutgoingSubStorage"></property>
+	</bean>
+
+	<bean id="agentWrapp"
+		class="eu.neclab.iotplatform.iotbroker.core.subscription.AgentWrapper">
+		<constructor-arg ref="subController" />
+		<property name="ngsi10Requestor" ref="Ngsi10Requester"></property>
+	</bean>
+
+
+</beans>
+

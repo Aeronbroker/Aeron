@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+ 		   elementFormDefault="qualified">      
+
+		   <xs:include  schemaLocation="Ngsi9_10_dataStructure_v07.xsd"/>   
+		   
+		   
+ <!-- _______________________________________ Complex types instantiation ___________________________________________ -->
+
+  <xs:element name="queryContextRequest"                           type="QueryContextRequest"/>
+  <xs:element name="queryContextResponse"                          type="QueryContextResponse"/>
+  <xs:element name="subscribeContextRequest"                       type="SubscribeContextRequest"/>
+  <xs:element name="subscribeContextResponse"                      type="SubscribeContextResponse"/>
+  <xs:element name="updateContextSubscriptionRequest"              type="UpdateContextSubscriptionRequest"/>
+  <xs:element name="updateContextSubscriptionResponse"             type="UpdateContextSubscriptionResponse"/>
+  <xs:element name="unsubscribeContextRequest"                     type="UnsubscribeContextRequest"/>  
+  <xs:element name="unsubscribeContextResponse"                    type="UnsubscribeContextResponse"/>
+  <xs:element name="notifyContextRequest"                          type="NotifyContextRequest"/> 
+  <xs:element name="notifyContextResponse"                         type="NotifyContextResponse"/>
+  <xs:element name="updateContextRequest" 						   type="UpdateContextRequest"/>
+  <xs:element name="updateContextResponse" 						   type="UpdateContextResponse"/>
+  
+  
+  <!-- ________________________Complex types instantiation for Convenience Operations ___________________________________________ -->
+  
+  <xs:element name="updateContextElementRequest"                   type="UpdateContextElementRequest"/>
+  <xs:element name="updateContextElementResponse"                  type="UpdateContextElementResponse"/>  
+  <xs:element name="appendContextElementRequest"                   type="AppendContextElementRequest"/>
+  <xs:element name="updateContextAttributeRequest" 				   type="UpdateContextAttributeRequest"/>
+  
+  <xs:element name="contextAttributeResponse"                      type="ContextAttributeResponse"/> 
+  
+<!-- ________________________________________ Methods messages ________________________________________________ -->
+
+  <xs:complexType name="QueryContextRequest">
+    <xs:sequence>
+      <xs:element name="entityIdList" type="EntityIdList" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="attributeList" type="AttributeList" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="restriction" type="Restriction" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+  
+  <xs:complexType name="QueryContextResponse">
+    <xs:sequence>
+      <xs:element name="contextResponseList" type="ContextElementResponseList" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="errorCode" type="StatusCode" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+ 
+
+    
+      
+  <xs:complexType name="SubscribeContextRequest">
+    <xs:sequence>
+      <xs:element name="entityIdList" type="EntityIdList" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="attributeList" type="AttributeList" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="reference" type="xs:anyType" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="duration" type="xs:duration" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="restriction" type="Restriction" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="notifyConditions" type="NotifyConditionList" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="throttling" type="xs:duration" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+  
+  <xs:complexType name="SubscribeContextResponse">
+    <xs:sequence>
+      <xs:element name="subscribeResponse" type="SubscribeResponse" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="subscribeError" type="SubscribeError" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:complexType name="UpdateContextSubscriptionRequest">
+    <xs:sequence>
+      <xs:element name="duration" type="xs:duration" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="restriction" type="Restriction" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="subscriptionId" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="notifyConditions" type="NotifyConditionList" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="throttling" type="xs:duration" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="UpdateContextSubscriptionResponse">
+    <xs:sequence>
+      <xs:element name="subscribeResponse" type="SubscribeResponse" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="subscribeError" type="SubscribeError" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:complexType name="UnsubscribeContextRequest">
+    <xs:sequence>
+      <xs:element name="subscriptionId" type="xs:string" minOccurs="1" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>  
+
+  <xs:complexType name="UnsubscribeContextResponse">
+    <xs:sequence>
+      <xs:element name="subscriptionId" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="statusCode" type="StatusCode" minOccurs="1" maxOccurs="1"/>      
+    </xs:sequence>
+  </xs:complexType>  
+  
+  <xs:complexType name="NotifyContextRequest">
+    <xs:sequence>
+      <xs:element name="subscriptionId" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="originator" type="xs:anyURI" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="contextResponseList" type="ContextElementResponseList" minOccurs="0" maxOccurs="1"/>            
+    </xs:sequence>
+  </xs:complexType>  
+
+  <xs:complexType name="NotifyContextResponse">
+    <xs:sequence>
+      <xs:element name="responseCode" type="StatusCode" minOccurs="1" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>  
+  
+  <xs:complexType name="UpdateContextRequest">
+    <xs:sequence>
+      <xs:element name="contextElementList" type="ContextElementList" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="updateAction" type="UpdateActionType" minOccurs="1" maxOccurs="1"/>                
+    </xs:sequence>
+  </xs:complexType> 
+  
+  
+  <xs:complexType name="UpdateContextResponse">
+    <xs:sequence>
+      <xs:element name="errorCode" type="StatusCode" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="contextResponseList" type="ContextElementResponseList"  minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+<!-- _____________________________________ Methods messages  for Convenience Operations______________________________________________ -->
+  
+  <xs:complexType name="UpdateContextElementRequest">
+    <xs:sequence>
+      <xs:element name="attributeDomainName" type="xs:string" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="contextAttributeList" type="ContextAttributeList"  minOccurs="0" maxOccurs="1"/>
+      <xs:element name="domainMetadata" type="ContextMetadataList" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:complexType name="UpdateContextElementResponse">
+    <xs:sequence>
+      <xs:element name="errorCode"  type="StatusCode" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="contextResponseList" type="ContextAttributeResponseList" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:complexType name="AppendContextElementRequest">
+    <xs:sequence>
+      <xs:element name="attributeDomainName" type="xs:string" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="contextAttributeList" type="ContextAttributeList"  minOccurs="0" maxOccurs="1"/>
+      <xs:element name="domainMetadata" type="ContextMetadataList" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:complexType name="UpdateContextAttributeRequest">
+    <xs:sequence>
+      <xs:element name="type" type="xs:string" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="contextValue" type="xs:anyType" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="metadata" type="ContextMetadataList"  minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <!-- _________________________________ Additional Complex types used by Convenience Functions _______________________________________________________________ -->
+  
+  <xs:complexType name="ContextAttributeResponse">
+    <xs:sequence>
+      <xs:element name="contextAttributeList" type="ContextAttributeList" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="statusCode" type="StatusCode" minOccurs="1" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:complexType name="ContextAttributeResponseList">
+      <xs:sequence>
+        <xs:element name="contextAttributeResponse" type="ContextAttributeResponse" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+  </xs:complexType>
+  
+</xs:schema>

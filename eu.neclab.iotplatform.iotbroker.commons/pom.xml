@@ -1,0 +1,65 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>IoTbrokerParent</artifactId>
+		<groupId>eu.neclab.iotplatform</groupId>
+		<version>3.2.3-SNAPSHOT</version>
+		<relativePath>../IoTbrokerParent</relativePath>
+	</parent>
+
+	<artifactId>iotbroker.commons</artifactId>
+	<packaging>bundle</packaging>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<directory>.</directory>
+				<includes>
+					<include>META-INF/**</include>
+				</includes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<manifestLocation>META-INF</manifestLocation>
+					<instructions>
+						<Private-Package>eu.neclab.iotplatform.iotbroker.commons.*</Private-Package>
+						<Import-Package>com.sun.xml.bind.marshaller,
+							eu.neclab.iotplatform.ngsi.api.datamodel;version="[3.2,4)",
+							javax.xml.bind,
+							javax.xml.bind.util,
+							javax.xml.namespace,
+							javax.xml.parsers,
+							javax.xml.transform,
+							javax.xml.validation,
+							javax.xml.xpath,
+							org.apache.log4j;version="[1.2,2)",
+							org.w3c.dom,
+							org.xml.sax</Import-Package>
+						<Export-Package>eu.neclab.iotplatform.iotbroker.commons,
+							eu.neclab.iotplatform.iotbroker.commons.interfaces"</Export-Package>
+					</instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+
+
+	<dependencies>
+
+		<dependency>
+			<groupId>eu.neclab.iotplatform</groupId>
+			<artifactId>ngsi.api</artifactId>
+		</dependency>
+	</dependencies>
+
+</project>

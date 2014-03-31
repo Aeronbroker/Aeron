@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<parent>
+		<groupId>eu.neclab.iotplatform</groupId>
+		<artifactId>IoTbrokerParent</artifactId>
+		<version>3.2.3-SNAPSHOT</version>
+		<relativePath>../IoTbrokerParent</relativePath>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>iotbroker.client</artifactId>
+	<name>eu.neclab.iotplatform.iotbroker.connector</name>
+	<packaging>bundle</packaging>
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<directory>.</directory>
+				<includes>
+					<include>META-INF/**</include>
+				</includes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<manifestLocation>META-INF</manifestLocation>
+					<instructions>
+						<Private-Package>eu.neclab.iotplatform.iotbroker.client.*</Private-Package>
+						<Import-Package>eu.neclab.iotplatform.iotbroker.client;version="${iotborker.version}",
+							eu.neclab.iotplatform.iotbroker.commons,
+							eu.neclab.iotplatform.ngsi.api.datamodel,
+							eu.neclab.iotplatform.ngsi.api.ngsi10,
+							eu.neclab.iotplatform.ngsi.api.ngsi9,
+							javax.xml.bind,
+							javax.xml.bind.util,
+							javax.xml.transform,
+							javax.xml.validation,
+							org.apache.commons.io;version="1.4.0",
+							org.apache.http.client,
+							org.apache.http.client.methods,
+							org.apache.http.conn,
+							org.apache.http.conn.scheme,
+							org.apache.http.impl.client,
+							org.apache.http.impl.conn,
+							org.apache.log4j;version="1.2.15",
+							org.springframework.beans;version="${spring.version}",
+							org.springframework.beans.annotation;version="${spring.version}",
+							org.springframework.beans.factory;version="${spring.version}",
+							org.springframework.beans.factory.annotation;version="${spring.version}",
+							org.springframework.stereotype;version="${spring.version}",
+							org.xml.sax</Import-Package>
+						<Export-Package>eu.neclab.iotplatform.iotbroker.client;version="${iotborker.version}",
+							eu.neclab.iotplatform.iotbroker.validator;version="${iotborker.version}"</Export-Package>
+					</instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>com.springsource.org.apache.commons.io</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>eu.neclab.iotplatform</groupId>
+			<artifactId>iotbroker.commons</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>eu.neclab.iotplatform</groupId>
+			<artifactId>ngsi.api</artifactId>
+		</dependency>
+	</dependencies>
+</project>

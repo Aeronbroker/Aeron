@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+Build-Jdk: 1.7.0_01
+Bundle-ManifestVersion: 2
+Bundle-Name: eu.neclab.iotplatform.ngsi.api
+Bundle-SymbolicName: eu.neclab.iotplatform.ngsi.api
+Bundle-Version: 3.2.3.SNAPSHOT
+Export-Package: eu.neclab.iotplatform.ngsi.api.datamodel;uses:="javax.xm
+ l.bind.annotation,javax.xml.bind,javax.xml.datatype";version="3.2.3.SNA
+ PSHOT",eu.neclab.iotplatform.ngsi.api.ngsi10;uses:="javax.annotation,eu
+ .neclab.iotplatform.ngsi.api.datamodel";version="3.2.3.SNAPSHOT",eu.nec
+ lab.iotplatform.ngsi.api.ngsi9;uses:="javax.annotation,eu.neclab.iotpla
+ tform.ngsi.api.datamodel";version="3.2.3.SNAPSHOT",eu.neclab.iotplatfor
+ m.ngsi.association.datamodel;uses:="javax.xml.bind.annotation,eu.neclab
+ .iotplatform.ngsi.api.datamodel";version="3.2.3.SNAPSHOT"
+Import-Package: javax.annotation,javax.xml.bind,javax.xml.bind.annotatio
+ n,javax.xml.datatype
+Include-Resource: META-INF/MANIFEST.MF=META-INF/MANIFEST.MF
+Originally-Created-By: Apache Maven Bundle Plugin
+Private-Package: eu.neclab.iotplatform.ngsi.api.datamodel;eu.neclab.iotp
+ latform.ngsi.api.ngsi10;eu.neclab.iotplatform.ngsi.api.ngsi9;eu.neclab.
+ iotplatform.ngsi.association.datamodel;-split-package:=merge-first
+Tool: Bnd-1.50.0
