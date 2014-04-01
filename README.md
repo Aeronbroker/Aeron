@@ -59,15 +59,25 @@ The main features of Aeron are:
 Directory Structure
 ------------------------
 .
+
 ├── IoTbrokerParent                      Maven parent
+
 ├── iotbroker.builder                    Maven builder
+
 ├── iotbroker.client                     HTTP client
+
 ├── iotbroker.commons                    Commons package
+
 ├── iotbroker.core                       Core package
+
 ├── iotbroker.resultfilter               Result filter package
+
 ├── iotbroker.storage                    Internal storage
+
 ├── ngsi.api                             NGSI 9/10 API
+
 ├── lib								                   Folder contains dependencies
+
 └── tomcat-configuration-fragment 		   Tomcat configuration
 
 
