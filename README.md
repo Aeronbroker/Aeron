@@ -4,7 +4,7 @@ Aeron
 Aeron is an Internet-of-Things middleware based on the OMA NGSI 9/10 standard.   
 
 What you get
-------------
+---
 
 Aeron is an implementation of the IoT Broker Generic Enabler from FI-WARE. It is specified as a lightweight and scalable 
 middleware component that separates IoT applications from the underlying device installations. This implementation 
@@ -32,7 +32,7 @@ Context Entities, while information about these objects is expressed in the form
 about the OMA NGSI 9/10 information model and the related interfaces, please refer to the Open API Specification.
 
 Why should you get it 
----------------------
+---
 
 The main features of Aeron are:
 
