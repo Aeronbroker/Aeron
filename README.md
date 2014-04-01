@@ -68,7 +68,7 @@ Directory Structure
 ├── iotbroker.storage                    Internal storage
 ├── ngsi.api                             NGSI 9/10 API
 ├── lib								                   Folder contains dependencies
-├── tomcat-configuration-fragment 		   Tomcat configuration
+└── tomcat-configuration-fragment 		   Tomcat configuration
 
 Building Aeron Source Code
 ---
