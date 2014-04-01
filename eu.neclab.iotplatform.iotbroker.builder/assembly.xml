@@ -10,19 +10,12 @@
 	<includeBaseDirectory>true</includeBaseDirectory>
     <baseDirectory></baseDirectory>
 
-	<dependencySets>
-	<dependencySet>
-			<outputDirectory>bundle</outputDirectory>
-		</dependencySet>
-	</dependencySets>
-
-
 	<moduleSets>
 		<moduleSet>
 			<useAllReactorProjects>false</useAllReactorProjects>
 			<includeSubModules>true</includeSubModules>
 			<binaries>
-				<includeDependencies>true</includeDependencies>
+				<includeDependencies>false</includeDependencies>
 				<outputDirectory>bundle</outputDirectory>
 				<unpack>false</unpack>
 			</binaries>
