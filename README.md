@@ -31,8 +31,8 @@ being it sensor/actuator devices or arbitrary objects (like tables, rooms, cars,
 Context Entities, while information about these objects is expressed in the form of attributes. For more information 
 about the OMA NGSI 9/10 information model and the related interfaces, please refer to the Open API Specification.
 
-Why to get it
--------------
+Why should you get it 
+---------------------
 
 The main features of Aeron are:
 
