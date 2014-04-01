@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>eu.neclab.iotplatform</groupId>
 		<artifactId>IoTbrokerParent</artifactId>
-		<version>3.2.3-SNAPSHOT</version>
+		<version>3.3.3</version>
 		<relativePath>../IoTbrokerParent</relativePath>
 	</parent>
 
@@ -16,37 +16,16 @@
 
 
 
-	<!-- we can use full maven properties incl. inheritance ! -->
 	<properties>
 		<target-framework>equinox</target-framework>
 		<dependency.pax.web.version>0.5.2</dependency.pax.web.version>
 	</properties>
-
-	<dependencies>
-		<!-- normal dependencies required at compile time -->
-		<!-- <dependency> <groupId>org.ops4j.pax.exam</groupId> <artifactId>pax-exam</artifactId> 
-			<version>3.4.0</version> </dependency> <dependency> <groupId>org.ops4j.pax.exam</groupId> 
-			<artifactId>pax-exam-junit</artifactId> <version>1.2.4</version> </dependency> 
-			<dependency> <groupId>org.ops4j.pax.exam</groupId> <artifactId>pax-exam-container-default</artifactId> 
-			<version>1.2.4</version> </dependency> Here's the stuff we want to provision 
-			our osgi runtime with <dependency> <groupId>org.ops4j.pax.web</groupId> <artifactId>pax-web-service</artifactId> 
-			<version>${dependency.pax.web.version}</version> <scope>provided</scope> 
-			</dependency> -->
-
-
-	</dependencies>
 
 
 
 
 	<build>
 		<plugins>
-			<!-- <plugin> <artifactId>maven-assembly-plugin</artifactId> <version>2.3</version> 
-				<executions> <execution> <id>make-assembly</id> <phase>package</phase> <goals> 
-				<goal>single</goal> </goals> <configuration> <appendAssemblyId>false</appendAssemblyId> 
-				<finalName>IoTbroker-${project.version}</finalName> <attach>false</attach> 
-				<descriptors> <descriptor>assembly.xml</descriptor> </descriptors> <phase>package</phase> 
-				</configuration> </execution> </executions> </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
