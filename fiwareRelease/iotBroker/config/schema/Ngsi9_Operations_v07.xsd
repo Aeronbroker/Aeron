@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+		   elementFormDefault="qualified">      
+
+		   <xs:include schemaLocation="Ngsi9_10_dataStructure_v07.xsd"/>   
+		   
+<!-- _______________________________________ Complex types instantiation ___________________________________________ -->
+
+
+
+  <xs:element name="registerContextRequest"                        type="RegisterContextRequest"/>
+  <xs:element name="registerContextResponse"                       type="RegisterContextResponse"/>
+  <xs:element name="discoverContextAvailabilityRequest"           type="DiscoveryContextAvailabilityRequest"/>
+  <xs:element name="discoverContextAvailabilityResponse"          type="DiscoveryContextAvailabilityResponse"/>
+  <xs:element name="subscribeContextAvailabilityRequest"            type="SubscribeContextAvailabilityRequest"/>
+  <xs:element name="subscribeContextAvailabilityResponse"           type="SubscribeContextAvailabilityResponse"/>
+  <xs:element name="updateContextAvailabilitySubscriptionRequest"              type="UpdateContextAvailabilitySubscriptionRequest"/>  
+  <xs:element name="updateContextAvailabilitySubscriptionResponse"             type="UpdateContextAvailabilitySubscriptionResponse"/>
+  <xs:element name="unsubscribeContextAvailabilityRequest"         type="UnsubscribeContextAvailabilityRequest"/>  
+  <xs:element name="unsubscribeContextAvailabilityResponse"        type="UnsubscribeContextAvailabilityResponse"/>
+  <xs:element name="notifyContextAvailabilityRequest"              type="NotifyContextAvailabilityRequest"/>  
+  <xs:element name="notifyContextAvailabilitytResponse"             type="NotifyContextAvailabilityResponse"/>
+ 
+
+<!-- ________________________________________ Methods messages ________________________________________________ -->
+
+  <xs:complexType name="RegisterContextRequest">
+    <xs:sequence>
+      <xs:element name="contextRegistrationList" type="ContextRegistrationList" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="duration" type="xs:duration" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="registrationId" type="xs:string" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+  
+  <xs:complexType name="RegisterContextResponse">
+    <xs:sequence>
+   		<xs:element name="duration" type="xs:duration" minOccurs="0" maxOccurs="1"/>
+    	<xs:element name="registrationId" type="xs:string" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="errorCode" type="StatusCode" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+ 
+  
+  <xs:complexType name="DiscoveryContextAvailabilityRequest">
+    <xs:sequence>
+      <xs:element name="entityIdList" type="EntityIdList" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="attributeList" type="AttributeList" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="restriction" type="Restriction" minOccurs="0" maxOccurs="1"/>
+     </xs:sequence>
+  </xs:complexType>
+  
+  
+  
+
+  <xs:complexType name="DiscoveryContextAvailabilityResponse">
+    <xs:sequence>
+      <xs:element name="contextRegistrationResponseList" type="ContextRegistrationResponseList" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="errorCode" type="StatusCode" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+  
+  <xs:complexType name="SubscribeContextAvailabilityRequest">
+    <xs:sequence>
+      <xs:element name="entityIdList" type="EntityIdList" minOccurs="1" maxOccurs="1"/>
+       <xs:element name="attributeList" type="AttributeList" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="reference" type="xs:anyURI" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="duration" type="xs:duration" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="subscriptionId" type="xs:string" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="SubscribeContextAvailabilityResponse">
+    <xs:sequence>
+      <xs:element name="subscriptionId" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="duration" type="xs:duration" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="errorCode" type="StatusCode" minOccurs="0" maxOccurs="1"/>
+   </xs:sequence>
+  </xs:complexType>
+  
+  <xs:complexType name="UpdateContextAvailabilitySubscriptionRequest">
+    <xs:sequence>
+      <xs:element name="entityIdList" type="EntityIdList" minOccurs="1" maxOccurs="1"/>
+       <xs:element name="attributeList" type="AttributeList" minOccurs="0" maxOccurs="1"/>
+       <xs:element name="duration" type="xs:duration" minOccurs="0" maxOccurs="1"/>
+       <xs:element name="restriction" type="Restriction" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="subscriptionId" type="xs:string" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>  
+
+  <xs:complexType name="UpdateContextAvailabilitySubscriptionResponse">
+    <xs:sequence>
+      <xs:element name="subscriptionId" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="duration" type="xs:duration" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="errorCode" type="StatusCode" minOccurs="0" maxOccurs="1"/>     
+    </xs:sequence>
+  </xs:complexType>  
+  
+  <xs:complexType name="UnsubscribeContextAvailabilityRequest">
+    <xs:sequence>
+      <xs:element name="subscriptionId" type="xs:string" minOccurs="1" maxOccurs="1"/>      
+    </xs:sequence>
+  </xs:complexType>  
+
+  <xs:complexType name="UnsubscribeContextAvailabilityResponse">
+    <xs:sequence>
+       <xs:element name="subscriptionId" type="xs:string" minOccurs="1" maxOccurs="1"/>  
+        <xs:element name="statusCode" type="StatusCode" minOccurs="1" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>  
+  
+  
+  <xs:complexType name="NotifyContextAvailabilityRequest">
+    <xs:sequence>
+      <xs:element name="subscriptionId" type="xs:string" minOccurs="1" maxOccurs="1"/>  
+      <xs:element name="contextRegistrationResponseList" type="ContextRegistrationResponseList" minOccurs="0" maxOccurs="1"/>
+	  <xs:element name="errorCode" type="StatusCode" minOccurs="0" maxOccurs="1"/>              
+    </xs:sequence>
+  </xs:complexType> 
+  
+ 
+  <xs:complexType  name="NotifyContextAvailabilityResponse">
+    <xs:sequence>
+        <xs:element name="responseCode" type="StatusCode" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+  </xs:complexType>
+ 
+</xs:schema>
