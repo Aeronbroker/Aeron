@@ -62,6 +62,8 @@ Directory Structure
 
 ├── IoTbrokerParent                      Maven parent
 
+├── SQL_database                         HSQLDB folder
+
 ├── iotbroker.builder                    Maven builder
 
 ├── iotbroker.client                     HTTP client
@@ -74,11 +76,13 @@ Directory Structure
 
 ├── iotbroker.storage                    Internal storage
 
+├── fiwareRelease                        Configuration folder
+
 ├── ngsi.api                             NGSI 9/10 API
 
-├── lib								                   Folder contains dependencies
+├── lib								     Folder contains dependencies
 
-└── tomcat-configuration-fragment 		   Tomcat configuration
+└── tomcat-configuration-fragment 		 Tomcat configuration
 
 
 Building Aeron Source Code
@@ -133,96 +137,128 @@ How to Use the Aeron Bundles
 
 The Aeron bundles are OSGI based and can be used with arbitrary OSGI frameworks like EQUINOX, FELIX, etc.
 The Aeron OSGI bundles have been tested with the EQUINOX and the FELIX framework.
-An example of an OSGI configuration using the EQUINOX framework is shown below:
+Aeron requires several VM arguments for the runtime that need to be specified (e.g. in Equinox modify the config.ini file):
+
+* dir.config=/user/home (User home directory depending of the OS)
+* bundles.configuration.location=.//fiwareRelease//configuration//configadmin (Needed for configure the paxlogging level)
+* ngsiclient.layer=connector (Needed for binding the right http bundle)
+* hsqldb.directory=.//SQL_database/database (Location of the HSQLDB database)
+* tomcat.init.port=8090 (Main port of the IoT Broker REST Interface)
+
+In addition to that the fiwareRelease folder need to be copied in the user/home directory.
+IMPORTANT: for Linux users if you run Aeron with administrator right remember to copy the fiwareRelease folder in the /root/ directory.
+
+An example of an OSGI configuration using the EQUINOX framework (e.g. config.ini) is shown below:
 
 ```
--- EQUINOX OSGI ENVIROMENT -- 
-org.eclipse.core.contenttype-3.4.100.v20100505-1235.jar
-org.eclipse.equinox.common-3.6.0.v20110506.jar
-org.eclipse.core.jobs-3.5.0.v20100515.jar
-org.eclipse.equinox.app-1.3.0.v20100512.jar
-org.eclipse.equinox.preferences-3.3.0.v20100503.jar
-org.eclipse.equinox.registry-3.5.0.v20100503.jar
-org.eclipse.osgi.services-3.2.100.v20100503.jar
-org.eclipse.equinox.cm_3.2.0.v20070116.jar@
+##############################
+# Equinox settings
+##############################
+eclipse.ignoreApp=true
+osgi.clean=true
+osgi.noShutdown=true
+osgi.bundles.defaultStartLevel=4
+osgi.java.profile=java6-server.profile
+osgi.java.profile.bootdelegation=override
+bundles.configuration.location=.//configuration//configadmin
+tomcat.init.port=8090
+hsqldb.directory=.//SQL_database/database
+dir.config=/home/admin
+ngsiclient.layer=connector 
 
--- PAX LOGGING -- 
-pax-confman-propsloader-0.2.2.jar
-pax-logging-api-1.7.0-20120710.130402-38.jar
-pax-logging-service-1.7.0-20120710.130445-38.jar
+##############################
+# Client bundles to install
+##############################
 
--- ADDITIONAL LIBRARIES -- 
-com.springsource.javax.activation-1.1.1.jar
-com.springsource.org.apache.commons.io-1.4.0.jar
-com.springsource.org.apache.commons.codec-1.6.0.jar
-com.springsource.javax.annotation-1.0.0.jar
-com.springsource.javax.ejb-3.0.0.jar
-com.springsource.javax.el-1.0.0.jar
-com.springsource.javax.mail-1.4.0.jar
-com.springsource.javax.persistence-1.0.0.jar
-com.springsource.javax.servlet.jsp.jstl-1.1.2.jar
-com.springsource.javax.servlet.jsp-2.1.0.jar
-com.springsource.javax.servlet-2.5.0.jar
-com.springsource.javax.xml.bind-2.0.0.jar
-com.springsource.javax.xml.stream-1.0.1.jar
-com.springsource.javax.xml.rpc-1.1.0.jar
-com.springsource.javax.xml.soap-1.3.0.jar
-com.springsource.javax.xml.ws-2.1.1.jar
-com.springsource.org.aopalliance-1.0.0.jar
-com.springsource.org.apache.catalina-6.0.18.jar
-com.springsource.org.apache.coyote-6.0.18.jar
-com.springsource.org.apache.el-6.0.18.jar
-com.springsource.org.apache.juli.extras-6.0.18.jar
-com.springsource.org.apache.taglibs.standard-1.1.2.jar
-jasper.osgi-5.5.23-SNAPSHOT.jar
-javax.persistence-2.0.0.jar
+##EQUINOX OSGI ENVIROMENT##
+osgi.bundles= plugins/equinox/org.eclipse.core.contenttype-3.4.100.v20100505-1235.jar@start, \
+plugins/equinox/org.eclipse.equinox.common-3.6.0.v20110506.jar@2:start, \
+plugins/equinox/org.eclipse.core.jobs-3.5.0.v20100515.jar@start, \
+plugins/equinox/org.eclipse.equinox.app-1.3.0.v20100512.jar@start, \
+plugins/equinox/org.eclipse.equinox.preferences-3.3.0.v20100503.jar@start, \
+plugins/equinox/org.eclipse.equinox.registry-3.5.0.v20100503.jar@start, \
+plugins/equinox/org.eclipse.osgi.services-3.2.100.v20100503.jar@start, \
+plugins/equinox/org.eclipse.equinox.cm_3.2.0.v20070116.jar@1:start, \
 
--- PROVIDED OSGI BUNDLE LIBRARIES (can be founded inside the lib folder on GitHub)-- 
-catalina.start.osgi-1.0.0.jar
-jaxb-impl-2.1.5_1.0.0.jar
-hsqldb_1.0.0.jar
-javamelodybundle_1.0.0.jar
-jrobin_1.5.9.1.jar
-httpclient-4.2.0-osgi.jar
-httpcore-4.2.0-osgi.jar
+##PAX LOGGING##
+plugins/pax/pax-confman-propsloader-0.2.2.jar@2:start, \
+plugins/pax/pax-logging-api-1.7.0-20120710.130402-38.jar@2:start, \
+plugins/pax/pax-logging-service-1.7.0-20120710.130445-38.jar@2:start, \
 
--- SPRING FRAMEWORK 3.2.3 -- 
-org.springframework.aop-3.2.3.RELEASE.jar
-org.springframework.aspects-3.2.3.RELEASE.jar
-org.springframework.beans-3.2.3.RELEASE.jar
-org.springframework.context.support-3.2.3.RELEASE.jar
-org.springframework.context-3.2.3.RELEASE.jar
-org.springframework.core-3.2.3.RELEASE.jar
-org.springframework.expression-3.2.3.RELEASE.jar
-org.springframework.jdbc-3.2.3.RELEASE.jar
-org.springframework.orm-3.2.3.RELEASE.jar
-org.springframework.oxm-3.2.3.RELEASE.jar
-org.springframework.transaction-3.2.3.RELEASE.jar
-org.springframework.web.servlet-3.2.3.RELEASE.jar
-org.springframework.web-3.2.3.RELEASE.jar
+##ADDITIONAL LIBRARIES##
+plugins/bundles/com.springsource.javax.activation-1.1.1.jar@start, \
+plugins/bundles/javax.persistence-2.0.0.jar@start, \
+plugins/bundles/com.springsource.org.apache.commons.io-1.4.0.jar, \
+plugins/bundles/com.springsource.org.apache.commons.codec-1.6.0.jar@start, \
+plugins/bundles/com.springsource.javax.annotation-1.0.0.jar@start, \
+plugins/bundles/com.springsource.javax.ejb-3.0.0.jar@start, \
+plugins/bundles/com.springsource.javax.el-1.0.0.jar@start, \
+plugins/bundles/com.springsource.javax.mail-1.4.0.jar@start, \
+plugins/bundles/com.springsource.javax.persistence-1.0.0.jar@start, \
+plugins/bundles/com.springsource.javax.servlet.jsp.jstl-1.1.2.jar@start, \
+plugins/bundles/com.springsource.javax.servlet.jsp-2.1.0.jar@start, \
+plugins/bundles/com.springsource.javax.servlet-2.5.0.jar@start, \
+plugins/bundles/com.springsource.javax.xml.bind-2.0.0.jar@start, \
+plugins/bundles/com.springsource.javax.xml.stream-1.0.1.jar@start, \
+plugins/bundles/com.springsource.javax.xml.rpc-1.1.0.jar@start, \
+plugins/bundles/com.springsource.javax.xml.soap-1.3.0.jar@start, \
+plugins/bundles/com.springsource.javax.xml.ws-2.1.1.jar@start, \
+plugins/bundles/com.springsource.org.aopalliance-1.0.0.jar@start, \
+plugins/bundles/com.springsource.org.apache.catalina-6.0.18.jar@start, \
+plugins/bundles/com.springsource.org.apache.coyote-6.0.18.jar, \
+plugins/bundles/com.springsource.org.apache.el-6.0.18.jar@start, \
+plugins/bundles/com.springsource.org.apache.juli.extras-6.0.18.jar@start, \
+plugins/bundles/com.springsource.org.apache.taglibs.standard-1.1.2.jar@start, \
 
--- SPRING SECURITY 3.1.4 -- 
-org.springframework.security.config-3.1.4.RELEASE.jar
-org.springframework.security.core-3.1.4.RELEASE.jar
-org.springframework.security.web-3.1.4.RELEASE.jar
+##PROVIDED OSGI BUNDLE LIBRARIES (can be founded inside the lib folder on GitHub)##
+plugins/bundles/httpclient-4.2.0-osgi.jar@start, \
+plugins/bundles/httpcore-4.2.0-osgi.jar@start, \
+plugins/bundles/catalina.start.osgi-1.0.0.jar@start, \
+plugins/bundles/jasper.osgi-5.5.23-SNAPSHOT.jar@start, \
+plugins/jaxb/jaxb-impl-2.1.5_1.0.0.jar@start, \
+plugins/db/hsqldb_1.0.0.jar@start, \
+plugins/monitor/javamelodybundle_1.0.0.jar@start, \
+plugins/monitor/jrobin_1.5.9.1.jar@start, \
 
--- SPRING DM 2.0.0.M1 -- 
-spring DM/spring-osgi-annotation-2.0.0.M1.jar
-spring DM/spring-osgi-core-2.0.0.M1.jar
-spring DM/spring-osgi-extender-2.0.0.M1.jar
-spring DM/spring-osgi-io-2.0.0.M1.jar
-spring DM/spring-osgi-web-2.0.0.M1.jar
-spring DM/spring-osgi-web-extender-2.0.0.M1.jar
+##SPRING FRAMEWORK 3.2.3##
+plugins/spring 3.2.3/org.springframework.aop-3.2.3.RELEASE.jar@start, \
+plugins/spring 3.2.3/org.springframework.aspects-3.2.3.RELEASE.jar@start, \
+plugins/spring 3.2.3/org.springframework.beans-3.2.3.RELEASE.jar@start, \
+plugins/spring 3.2.3/org.springframework.context.support-3.2.3.RELEASE.jar@start, \
+plugins/spring 3.2.3/org.springframework.context-3.2.3.RELEASE.jar@start, \
+plugins/spring 3.2.3/org.springframework.core-3.2.3.RELEASE.jar@start, \
+plugins/spring 3.2.3/org.springframework.expression-3.2.3.RELEASE.jar@start, \
+plugins/spring 3.2.3/org.springframework.jdbc-3.2.3.RELEASE.jar@start, \
+plugins/spring 3.2.3/org.springframework.orm-3.2.3.RELEASE.jar@start, \
+plugins/spring 3.2.3/org.springframework.oxm-3.2.3.RELEASE.jar@start, \
+plugins/spring 3.2.3/org.springframework.transaction-3.2.3.RELEASE.jar@start, \
+plugins/spring 3.2.3/org.springframework.web.servlet-3.2.3.RELEASE.jar@start, \
+plugins/spring 3.2.3/org.springframework.web-3.2.3.RELEASE.jar@start, \
 
--- AERON OSGI BUNDLES -- 
-iotbroker.client-3.3.3.jar
-iotbroker.commons-3.3.3.jar
-iotbroker.core-3.3.3.jar
-iotbroker.ext.resultfilter-3.3.3.jar
-iotbroker.restcontroller-3.3.3.jar
-iotbroker.storage-3.3.3.jar
-ngsi.api-3.3.3.jar
-tomcat-configuration-fragment-3.3.3.jar
+##SPRING SECURITY 3.1.4##
+plugins/spring 3.2.3/org.springframework.security.config-3.1.4.RELEASE.jar@start, \
+plugins/spring 3.2.3/org.springframework.security.core-3.1.4.RELEASE.jar@start, \
+plugins/spring 3.2.3/org.springframework.security.web-3.1.4.RELEASE.jar@start, \
+
+##SPRING DM 2.0.0.M1##
+plugins/spring DM/spring-osgi-annotation-2.0.0.M1.jar@start, \
+plugins/spring DM/spring-osgi-core-2.0.0.M1.jar@start, \
+plugins/spring DM/spring-osgi-extender-2.0.0.M1.jar@start, \
+plugins/spring DM/spring-osgi-io-2.0.0.M1.jar@start, \
+plugins/spring DM/spring-osgi-web-2.0.0.M1.jar@start, \
+plugins/spring DM/spring-osgi-web-extender-2.0.0.M1.jar@start, \
+
+
+##AERON OSGI BUNDLES##
+plugins/broker/iotbroker.commons-3.3.3.jar@start, \
+plugins/broker/iotbroker.storage-3.3.3.jar@start, \
+plugins/broker/iotbroker.client-3.3.3.jar@start, \
+plugins/broker/iotbroker.core-3.3.3.jar@start, \
+plugins/broker/iotbroker.restcontroller-3.3.3.jar@start, \
+plugins/broker/ngsi.api-3.3.3.jar@start, \
+plugins/broker/iotbroker.ext.resultfilter-3.3.3.jar@start, \
+plugins/broker/tomcat-configuration-fragment-3.3.3.jar
+
 ```
 
 Installing and Using Aeron
