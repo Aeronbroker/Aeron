@@ -1,4 +1,37 @@
-package eu.neclab.iotplatform.iotbroker.core.junittests.tests;
+
+/*******************************************************************************
+ *   Copyright (c) 2014, NEC Europe Ltd.
+ *   All rights reserved.
+ *
+ *   Authors:
+ *           * Salvatore Longo - salvatore.longo@neclab.eu
+ *           * Tobias Jacobs - tobias.jacobs@neclab.eu
+ *           * Raihan Ul-Islam - raihan.ul-islam@neclab.eu
+ *
+ *    Redistribution and use in source and binary forms, with or without
+ *    modification, are permitted provided that the following conditions are met:
+ *   1. Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   2. Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ *   3. All advertising materials mentioning features or use of this software
+ *     must display the following acknowledgement:
+ *     This product includes software developed by NEC Europe Ltd.
+ *   4. Neither the name of the NEC nor the
+ *     names of its contributors may be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *******************************************************************************/package eu.neclab.iotplatform.iotbroker.core.junittests.tests;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
@@ -21,7 +54,6 @@ import org.apache.log4j.Logger;
 
 import com.sun.xml.bind.marshaller.DataWriter;
 
-
 import eu.neclab.iotplatform.iotbroker.commons.JaxbCharacterEscapeHandler;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationResponse;
@@ -38,7 +70,7 @@ public class SupportingFunctions {
 	private static Logger logger = Logger.getLogger(SupportingFunctions.class);
 	public String readFromFile(String path){
 		FileInputStream fstream = null;
-		
+
 		try {
 			String url = getClass().getResource(path).getFile();
 			fstream = new FileInputStream(url);
@@ -48,22 +80,22 @@ public class SupportingFunctions {
 			String tmp="";
 			//Read File Line By Line
 			while ((tmp = br.readLine()) != null) {
-				
+
 				strLine=strLine+tmp;
-					
+
 			}
 			fstream.close();
 			return strLine;
 		} catch (FileNotFoundException e) {
 			logger.error(e.getMessage());
-			
+
 		} catch (IOException e) {
-			
+
 			logger.error(e.getMessage());
 		}
-		
+
 		return "";
-		
+
 	}
 	public Object convertStringToXml(String xml, Class type) {
 
@@ -96,16 +128,16 @@ public class SupportingFunctions {
 			carMarshaller.marshal(source, dataWriter);
 			result = stringWriter.toString();
 		} catch (JAXBException e) {
-			
+
 			logger.error("JAXBException:"+e.getMessage());
 		}
-		
+
 
 		return result;
 	}
 	public QueryContextRequest prepareQueryContextRequest(String path) {
 
-		QueryContextRequest queryContextRequest = (QueryContextRequest) 
+		QueryContextRequest queryContextRequest = (QueryContextRequest)
 				convertStringToXml(readFromFile(path),
 						QueryContextRequest.class);
 		return queryContextRequest;
@@ -113,7 +145,7 @@ public class SupportingFunctions {
 
 	public QueryContextResponse prepareQueryContextResponse(String path) {
 
-		QueryContextResponse queryContextResponse = (QueryContextResponse) 
+		QueryContextResponse queryContextResponse = (QueryContextResponse)
 				convertStringToXml(readFromFile(path),
 						QueryContextResponse.class);
 		return queryContextResponse;
@@ -122,9 +154,8 @@ public class SupportingFunctions {
 	public List<QueryContextResponse> prepareQueryContextResponseList(
 			String path) {
 
-		QueryContextResponse queryContextResponse = (QueryContextResponse) 
-				convertStringToXml(readFromFile(path),
-						QueryContextResponse.class);
+		convertStringToXml(readFromFile(path),
+				QueryContextResponse.class);
 		List<QueryContextResponse> lstQueryContextResponse = new LinkedList<QueryContextResponse>();
 		return lstQueryContextResponse;
 	}
@@ -168,8 +199,8 @@ public class SupportingFunctions {
 		}else{
 			return o1;
 		}
-			
-	} 
+
+	}
 	private LinkedList<String> getAssociationDataFromRegistrationMetaData(
 			String response) {
 		LinkedList<String> lstValue = null;
