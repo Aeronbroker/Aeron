@@ -160,11 +160,20 @@ osgi.noShutdown=true
 osgi.bundles.defaultStartLevel=4
 osgi.java.profile=java6-server.profile
 osgi.java.profile.bootdelegation=override
+# PaxLogging configuration folder
 bundles.configuration.location=.//configuration//configadmin
+# IoT Broker Server port
 tomcat.init.port=8090
-hsqldb.directory=.//SQL_database/database
-dir.config=/home/admin
+# Internal Database folder
+hsqldb.directory=.//SQL_database//database//linkDB
+# Internal Database port
+hsqldb.port=9001 
+# Enable the Database Logs
+hsqldb.silent=false
+# Absolute path to the IoT broker Folder
+dir.config=/home/admin/IoTBroker_FIWARE_3.4.2/
 ngsiclient.layer=connector 
+
 
 ##############################
 # Client bundles to install
@@ -250,15 +259,15 @@ plugins/spring DM/spring-osgi-web-extender-2.0.0.M1.jar@start, \
 
 
 ##AERON OSGI BUNDLES##
-plugins/broker/iotbroker.commons-3.3.3.jar@start, \
-plugins/broker/iotbroker.storage-3.3.3.jar@start, \
-plugins/broker/iotbroker.client-3.3.3.jar@start, \
-plugins/broker/iotbroker.core-3.3.3.jar@start, \
-plugins/broker/iotbroker.restcontroller-3.3.3.jar@start, \
-plugins/broker/ngsi.api-3.3.3.jar@start, \
-plugins/broker/iotbroker.ext.resultfilter-3.3.3.jar@start, \
-plugins/broker/tomcat-configuration-fragment-3.3.3.jar
-
+plugins/broker/catalina-config-3.4.2.jar, \
+plugins/broker/iotbroker.commons-3.4.2.jar@start, \
+plugins/broker/iotbroker.storage-3.4.2.jar@start, \
+plugins/broker/iotbroker.client-3.4.2.jar@start, \
+plugins/broker/iotbroker.core-3.4.2.jar@start, \
+plugins/broker/iotbroker.restcontroller-3.4.2.jar@start, \
+plugins/broker/ngsi.api-3.4.2.jar@start, \
+plugins/broker/iotbroker.ext.resultfilter-3.4.2.jar@start, \
+plugins/broker/tomcat-configuration-fragment-3.4.2.jar
 ```
 
 Installing and Using Aeron
