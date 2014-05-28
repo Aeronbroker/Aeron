@@ -1,12 +1,12 @@
 /*******************************************************************************
  *   Copyright (c) 2014, NEC Europe Ltd.
  *   All rights reserved.
- *   
+ *
  *   Authors:
  *           * Salvatore Longo - salvatore.longo@neclab.eu
  *           * Tobias Jacobs - tobias.jacobs@neclab.eu
  *           * Raihan Ul-Islam - raihan.ul-islam@neclab.eu
- *  
+ *
  *    Redistribution and use in source and binary forms, with or without
  *    modification, are permitted provided that the following conditions are met:
  *   1. Redistributions of source code must retain the above copyright
@@ -23,10 +23,10 @@
  *
  * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE 
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+ * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
  * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -56,6 +56,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 import eu.neclab.iotplatform.iotbroker.commons.XmlFactory;
+import eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface;
 import eu.neclab.iotplatform.iotbroker.core.data.Pair;
 import eu.neclab.iotplatform.iotbroker.core.subscription.AgentWrapper;
 import eu.neclab.iotplatform.iotbroker.core.subscription.AssociationsUtil;
@@ -163,6 +164,27 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 	/** The subscription controller. */
 	private SubscriptionController subscriptionController;
+
+
+	private ResultFilterInterface resultFilter;
+
+	/**
+	 * @return A pointer to the result filter this RequestThread instance
+	 * uses. Note that the result filter is retrieved via the OSGi framework.
+	 */
+	public ResultFilterInterface getResultFilter() {
+		return resultFilter;
+	}
+
+	/**
+	 * Instructs the object to get load the result filter from the
+	 * given result filter interface.
+	 *
+	 * @param resultFilter The result filter interface.
+	 */
+	public void setResultFilter(ResultFilterInterface resultFilter) {
+		this.resultFilter = resultFilter;
+	}
 
 	/**
 	 * Returns the north bound wrapper.
@@ -503,7 +525,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 								.get(i).getContextRegistration()
 								.getProvidingApplication());
 
-				tasks.add(Executors.callable(new RequestThread(ngsi10Requester,
+				tasks.add(Executors.callable(new RequestThread(resultFilter,ngsi10Requester,
 						queryList.get(i).getLeft(),
 						queryList.get(i).getRight(), merger, count,
 						transitiveList)));
@@ -969,8 +991,20 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	@Override
 	public NotifyContextResponse notifyContext(NotifyContextRequest request) {
 
+		/*
+		 * We pass the notification to the IoT Agent wrapper. The response
+		 * received from the wrapper is then returned.
+		 *
+		 * If the received response is null, or if it has a status code
+		 * other than 200 "OK", we return a notify context response
+		 * with status code 500 "internal error".
+		 *
+		 */
+
 		NotifyContextResponse notifyContextResponse = agentWrapper
 				.receiveFrmAgents(request);
+
+
 		if (notifyContextResponse == null
 				|| notifyContextResponse.getResponseCode() != null && notifyContextResponse
 						.getResponseCode().getCode() != Code.OK_200.getCode()) {

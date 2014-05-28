@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- FI-WARE NGSI 9/10 RESTful binding version 1.0 -->
+
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 		   elementFormDefault="qualified">      
 
-		   <xs:include schemaLocation="Ngsi9_10_dataStructure_v07.xsd"/>   
+		   <xs:include schemaLocation="Ngsi9_10_dataStructures.xsd"/>   
 		   
-<!-- _______________________________________ Complex types instantiation ___________________________________________ -->
+<!-- _______________________________________ complex type instantiations ___________________________________________ -->
 
 
 
@@ -19,10 +22,10 @@
   <xs:element name="unsubscribeContextAvailabilityRequest"         type="UnsubscribeContextAvailabilityRequest"/>  
   <xs:element name="unsubscribeContextAvailabilityResponse"        type="UnsubscribeContextAvailabilityResponse"/>
   <xs:element name="notifyContextAvailabilityRequest"              type="NotifyContextAvailabilityRequest"/>  
-  <xs:element name="notifyContextAvailabilitytResponse"             type="NotifyContextAvailabilityResponse"/>
+  <xs:element name="notifyContextAvailabilityResponse"             type="NotifyContextAvailabilityResponse"/>
  
 
-<!-- ________________________________________ Methods messages ________________________________________________ -->
+<!-- ________________________________________ operation message bodies ________________________________________________ -->
 
   <xs:complexType name="RegisterContextRequest">
     <xs:sequence>
@@ -68,6 +71,7 @@
        <xs:element name="attributeList" type="AttributeList" minOccurs="0" maxOccurs="1"/>
       <xs:element name="reference" type="xs:anyURI" minOccurs="1" maxOccurs="1"/>
       <xs:element name="duration" type="xs:duration" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="restriction" type="Restriction" minOccurs="0" maxOccurs="1"/>
       <xs:element name="subscriptionId" type="xs:string" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
   </xs:complexType>

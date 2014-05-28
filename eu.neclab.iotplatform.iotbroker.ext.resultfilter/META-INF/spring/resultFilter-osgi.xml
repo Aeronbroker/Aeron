@@ -8,5 +8,7 @@
 
 	<osgi:service id="ResultFilterInterface" ref="ResultFilter"
 		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface" />
+		
+		
 
 </beans>

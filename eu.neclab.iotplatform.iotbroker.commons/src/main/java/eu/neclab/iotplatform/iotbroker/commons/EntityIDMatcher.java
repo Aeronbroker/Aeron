@@ -75,34 +75,24 @@ public class EntityIDMatcher {
 
 	private static boolean typeMatcher(EntityId e1, EntityId e2) {
 
-		boolean status = false;
 
-		if ((e1.getType() == null) || (e2.getType() == null)
-				|| (e1.getType().toString().equals(e2.getType().toString()))) {
-			status = true;
-		}
-
-		return status;
+		return 
+				(e1.getType() == null) || 
+				(e2.getType() == null) ||
+				e1.getType().toString().equals(e2.getType().toString()) ;
 
 	}
 
 	private static boolean idsMatcher(EntityId e1, EntityId e2) {
 
-		boolean status = false;
-
-		if ((e1.getIsPattern()) && (!e2.getIsPattern())
-				&& (e1.getId().matches(e2.getId()))) {
-			status = true;
-		} else if ((!e1.getIsPattern()) && (e2.getIsPattern())
-				&& (e2.getId().matches(e1.getId()))) {
-			status = true;
-		} else if ((e1.getIsPattern()) && (e2.getIsPattern())
-				&& (e2.getId().equals(e1.getId()))) {
-			status = true;
-		} else if ((!e1.getIsPattern()) && (!e2.getIsPattern())
-				&& (e2.getId().equals(e1.getId()))) {
-			status = true;
-		}
-		return status;
+		return 	
+				((e1.getIsPattern()) && (!e2.getIsPattern())
+				&& (e1.getId().matches(e2.getId())))
+				||
+				((!e1.getIsPattern()) && (e2.getIsPattern())
+				&& (e2.getId().matches(e1.getId()))) 
+				||
+				((e2.getId().equals(e1.getId()))) 
+				;				
 	}
 }

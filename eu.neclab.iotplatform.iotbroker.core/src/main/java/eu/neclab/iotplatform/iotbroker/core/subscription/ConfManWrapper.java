@@ -65,7 +65,16 @@ import eu.neclab.iotplatform.ngsi.association.datamodel.AssociationDS;
 
 /**
  * Class used by the subscription handler to communicate with the 
- * NGSI 9 server ("Configuration Management").
+ * NGSI 9 server ("Configuration Management"). Currently this class is only used for
+ * the communication in case of subscriptions. Therefore, methods of this class are
+ * called for
+ * <p>
+ * - communicating with configuration management in case new subscriptions from applications arrive, 
+ * or such subscriptions are updated
+ * <p>
+ * - handing availability notifications arriving from configuration management
+ * 
+ * Important to note, this class never writes to the storage but only reads from it.
  *
  */
 public class ConfManWrapper {
@@ -216,8 +225,17 @@ public class ConfManWrapper {
 	}
 
 	/**
-	 * Executes the NGSI 10 SubscribeContextAvailability operation on the 
-	 * NGSI 9 Configuration Management component.
+	 * This function initiates the communication with configuration management in reaction
+	 * to a new subscription. In particular, this function
+	 * <p>
+	 * (1) makes a discovery to retrieve the relevant set of data sources and associations for
+	 * this subscription
+	 * <p>
+	 * (2) makes a context availability subscription in order to be informed about future 
+	 * data source availability
+	 * 
+	 * Note that although the function is called with a subscribeContextAvailabilityRequest as the
+	 * parameter, it still makes a discovery in addition.
 	 * 
 	 * @param scaReq
 	 * The NGSI 9 {@link SubscribeContextAvailabilityRequest}.
@@ -227,6 +245,15 @@ public class ConfManWrapper {
 	 */
 	public SubscribeContextAvailabilityResponse receiveReqFrmSubscriptionController(
 			final SubscribeContextAvailabilityRequest scaReq) {
+		
+		/*
+		 * 
+		 * Create the operation scope for the discovery. As this is the reaction to a subscription, 
+		 * the scope is 'IncludeAssociations' with value 'SOURCES'.
+		 * The operation scope is then added to the existing scopes from the original subscribe
+		 * availability request.
+		 * 
+		 * */
 		OperationScope oScope = new OperationScope("IncludeAssociations",
 				"SOURCES");
 		List<OperationScope> lOperationScope = new ArrayList<OperationScope>();
@@ -241,6 +268,10 @@ public class ConfManWrapper {
 			Restriction restriction = new Restriction("", lOperationScope);
 			scaReq.setRestriction(restriction);
 		}
+		
+		/*
+		 * Create and make the discovery. This includes asking for SOURCES.
+		 */
 
 		DiscoverContextAvailabilityRequest discoveryRequest = new DiscoverContextAvailabilityRequest(
 				scaReq.getEntityIdList(), scaReq.getAttributeList(),
@@ -250,6 +281,13 @@ public class ConfManWrapper {
 		final DiscoverContextAvailabilityResponse discoveryResponse = ngsi9Impl
 				.discoverContextAvailability(discoveryRequest);
 
+		/*
+		 * If the discovery is unsuccessful, the function is aborted and 
+		 * returns an error.
+		 * 
+		 * Else the function is continued.
+		 */
+		
 		if (discoveryResponse.getErrorCode() != null
 				&& discoveryResponse.getErrorCode().getCode() != 200) {
 			return new SubscribeContextAvailabilityResponse(null, null,
@@ -257,21 +295,63 @@ public class ConfManWrapper {
 							ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
 							null));
 		} else {
+			
+			/*
+			 * We now also make an availability subscription to config management. Also
+			 * this includes asking for SOURCES.
+			 */			
 			final SubscribeContextAvailabilityResponse scaRes = ngsi9Impl
 					.subscribeContextAvailability(scaReq);
+			/*
+			 * Again, if this is unsuccessful, then the function is aborted and an error
+			 * is returned.
+			 * (this behavior could be changed in a future release)
+			 * 
+			 * Otherwise, the function continues.
+			 * 
+			 */		
+			
 			if (scaRes.getErrorcode() != null) {
 				return new SubscribeContextAvailabilityResponse(null, null,
 						new StatusCode(500,
 								ReasonPhrase.RECEIVERINTERNALERROR_500
 								.toString(), null));
 			} else {
-				// analysis the associations and get the transistive relations
+				
+				/*
+				 * After also the availability subscription being successful, the function
+				 * returns a success message in the SubscribeContextAvailabilityResponse. 
+				 * 
+				 * What is done in addition is to further process the result from the discovery,
+				 * but this is done in a different Thread.
+				 * 
+				 */
+				
 				new Thread() {
 					@Override
 					public void run() {
+						
+						/*
+						 * Here we are in the new Thread that is created for further 
+						 * processing the discovery response.
+						 *  
+						 */						
+						
+						/*
+						 *  We extract here the relevant associations from the discovery
+						 *  response. This proceeds in three steps 
+						 */
+						
 						List<AssociationDS> assocList = associationsUtil
 								.retrieveAssociation(discoveryResponse);
-						logger.debug("Association List:" + assocList);
+						logger.debug("Association List from discovery response:" + assocList);
+						
+						/*
+						 * Step 1:  
+						 * Extracts from the discovered associations the ones
+						 * whose target match with the entities in 
+						 * the given availability subscription.
+						 */
 						
 						QueryContextRequest qcReq = new QueryContextRequest(
 								scaReq.getEntityIdList(),
@@ -281,17 +361,40 @@ public class ConfManWrapper {
 										assocList);
 						logger.debug("(Step 1) Initial List Of matchedAssociation:"
 								+ additionalRequestList);
+						
+						/*
+						 * Step 2: apply transitivity to further enrich 
+						 * the set of associations; see documentation 
+						 * of the transitiveAssociationAnalysisFrQuery function
+						 * for details.
+						 */						
+						
 						List<AssociationDS> transitiveList = associationsUtil
 								.transitiveAssociationAnalysisFrQuery(
 										assocList, additionalRequestList);
 						logger.debug("(Step 2 ) Transitive List Of matchedAssociation:"
 								+ transitiveList);
+						
+						/*
+						 * Step 3: Create a new discovery response, this time 
+						 * containing all data sources from the original discovery
+						 * response for which one of the found associations
+						 * is applicable.
+						 */	
+						
 						DiscoverContextAvailabilityResponse dcaRes = associationsUtil
 								.validDiscoverContextAvailabiltyResponse(
 										discoveryResponse, transitiveList);
 						logger.debug("(Step 3 ) Final valid DiscoverContextAvailabilityResponse List Of matchedAssociation:"
 								+ dcaRes);
 
+						/*
+						 * Now create from the discovery response an availability notification
+						 * containing the same information. This notification is then passed to
+						 * the subscription handler together with the final list of associations 
+						 * to be handled like a normal availability notification.  
+						 */
+						
 						NotifyContextAvailabilityRequest ncaReq = new NotifyContextAvailabilityRequest(
 								scaRes.getSubscribeId(),
 								dcaRes.getContextRegistrationResponse(),
@@ -310,7 +413,12 @@ public class ConfManWrapper {
 	}
 
 	/**
-	 * Processes the NGSI 9 NotifyContextAvailability operation.
+	 * Processes the NGSI 9 NotifyContextAvailability operation. This operation is called
+	 * when an availability notification arrives from the configuration manager.
+	 * 
+	 * What the operation does is to extract the final set of associations (applying 
+	 * transitiveness and filtering) and then pass the notification and associations 
+	 * on to the subscription controller.
 	 * 
 	 * @param notifyContextAvailabilityRequest
 	 * The NGSI 9 {@link NotifyContextAvailabilityRequest}.
@@ -320,6 +428,16 @@ public class ConfManWrapper {
 	public NotifyContextAvailabilityResponse receiveReqFrmConfigManager(
 			final NotifyContextAvailabilityRequest notifyContextAvailabilityRequest) {
 
+		/*
+		 * First, we retrieve from the storage the identifier of the incoming NGSI 10 
+		 * subscription for which the availability subscription was made. Note that this is
+		 * a 2-step process, as first the subscription id needs to be retrieved and then
+		 * the NGSI10 subscription itself is retrieved from that id.
+		 * 
+		 * If this is not found or more than one are found (which is not expected), then the
+		 * function is aborted and an error is returned.
+		 */
+		
 		List<String> lsubAvailID = linkAvSub
 				.getInIDs(notifyContextAvailabilityRequest.getSubscribeId());
 		if (lsubAvailID.size() != 1) {
@@ -328,56 +446,81 @@ public class ConfManWrapper {
 					ReasonPhrase.SUBSCRIPTIONIDNOTFOUND_470.toString(), null));
 		}
 		
-		//retrieve subscription request where the notification relates to
 		final SubscribeContextRequest scReq = incomingSub
 				.getIncomingSubscription(lsubAvailID.get(0));
+		
+		/*
+		 * If the above information could be retrieved successfully from the storage, we 
+		 * consider the notification to be successful and return a positive notification
+		 * response. The further processing is done in a new Thread. 
+		 */
+		
 		new Thread() {
 			@Override
 			public void run() {
 				
+				/*
+				 * Here we are in the new Thread the processes the availability notification, after
+				 * already having successfully retrieved the original NGSI 10 subscription  
+				 * for which the availability subscription had been done.
+				 */
 				
-				//represent notification as discovery response
+				/*
+				 * We represent the availability notification as a discovery response, because the
+				 * association utility is made for the latter data structure.
+				 * 
+				 * Then the set of relevant associations is computed by the same three
+				 * step that were also applied at the time the discovery was made.
+				 * 
+				 */
+				
 				DiscoverContextAvailabilityResponse discoveryResponse = new DiscoverContextAvailabilityResponse();		
 				discoveryResponse
 				.setContextRegistrationResponse(notifyContextAvailabilityRequest
 						.getContextRegistrationResponseList());
 				
 				
-				//extract the associations from the discovery response
+				/*extract the associations from the discovery response*/
 				List<AssociationDS> assocList = associationsUtil
 						.retrieveAssociation(discoveryResponse);
 				logger.debug("Association List:" + assocList);
 				
-				//create a query context request for what is requested in the 
-				//subscription this notification relates to.
+				/*represent the NGSI 10 subscription as a query*/
 				QueryContextRequest qcReq = new QueryContextRequest(
 						scReq.getEntityIdList(), scReq.getAttributeList(), null);
 				
-				//determine the list of associations that have items from the query 
-				//request in their target.				
+				
+				/*Step 1 of association application (find targets)*/
 				List<AssociationDS>  additionalRequestList = associationsUtil
 						.initialLstOfmatchedAssociation(qcReq, assocList);
 				logger.debug("(Step 1) Initial List Of matchedAssociation:"
 						+ additionalRequestList);
 				
 				
-				//now use the transitivity of associations in order to determine 
-				//any additional association usable to satisfy the context query
+				/*
+				 * Step 2 (transitivity)
+				 */
 				List<AssociationDS> transitiveList = associationsUtil
 						.transitiveAssociationAnalysisFrQuery(assocList,
 								additionalRequestList);								
 				logger.debug("(Step 2 ) Transitive List Of matchedAssociation:"
 						+ transitiveList);
 				
-				//find the sources relevant for any of the associations.
+				/* 
+				 * Step 3 (find sources)
+				 */
 				DiscoverContextAvailabilityResponse dcaRes = associationsUtil
 						.validDiscoverContextAvailabiltyResponse(
 								discoveryResponse, transitiveList);
 				logger.debug("(Step 3 ) Final valid DiscoverContextAvailabilityResponse List Of matchedAssociation:"
 						+ dcaRes);
 
-				//create a notification which now contains all sources to query (including
-				//the results of processing the associations)
+				/*
+				 * 
+				 * Now the resulting discovery response (represented as notification) 
+				 * and the associations are passed to the subscription handler.
+				 * 
+				 */				
 				NotifyContextAvailabilityRequest ncaReq = new NotifyContextAvailabilityRequest(
 						notifyContextAvailabilityRequest.getSubscribeId(),
 						dcaRes.getContextRegistrationResponse(),

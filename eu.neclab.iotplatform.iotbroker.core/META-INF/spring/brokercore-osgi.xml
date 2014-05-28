@@ -11,7 +11,7 @@
 
 	<osgi:service id="iotConsumerNgsi9core" ref="brokercore"
 		interface="eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface" />
-
+		
 	<osgi:reference id="ResultFilterInterface"
 		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface" cardinality="0..1"></osgi:reference>
 

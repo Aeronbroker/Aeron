@@ -1,12 +1,12 @@
 /*******************************************************************************
  *   Copyright (c) 2014, NEC Europe Ltd.
  *   All rights reserved.
- *   
+ *
  *   Authors:
  *           * Salvatore Longo - salvatore.longo@neclab.eu
  *           * Tobias Jacobs - tobias.jacobs@neclab.eu
  *           * Raihan Ul-Islam - raihan.ul-islam@neclab.eu
- *  
+ *
  *    Redistribution and use in source and binary forms, with or without
  *    modification, are permitted provided that the following conditions are met:
  *   1. Redistributions of source code must retain the above copyright
@@ -23,10 +23,10 @@
  *
  * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE 
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+ * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
  * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -48,9 +48,6 @@ import java.util.PriorityQueue;
 import java.util.Timer;
 
 import org.apache.log4j.Logger;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.ServiceReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -334,7 +331,8 @@ public class SubscriptionController {
 	}
 
 	/**
-	 * Issues a new subscription.
+	 * The function is by the northbound wrapper 
+	 *  when a new NGSI 10 subscription arrives.
 	 *
 	 * @param scReq
 	 *  The NGSI 10 SubscribeContextRequest.
@@ -347,27 +345,70 @@ public class SubscriptionController {
 		SubscribeContextResponse scRes = null;
 		logger.debug("DEFAULT_THROTTLING: " + defaultThrottling);
 		logger.debug("DEFAULT_DURATION: " + defaultDuration);
+		
+		/*
+		 * We retrieve the address where notifications can be sent to the 
+		 * IoT Broker and also generate a subscription id to return in the
+		 * subscribe response.
+		 */
+		
 		String ref = getRefURl();
 
+		
 		idSubRequest = genUniqueID.getNextUniqueId();
 		logger.debug("SUBSCRIPTION ID  = " + idSubRequest);
+		
+		
+		/*
+		 * Here the incoming subscription is already stored in the 
+		 * persistent storage.
+		 * 
+		 * TODO this is probably wrong, as it should only be stored
+		 * if the subscription is successful.
+		 */
 		incomingSub.saveIncomingSubscription(scReq, idSubRequest,
 				System.currentTimeMillis());
+
+		/*
+		 * After that, we create a request for retrieving the relevant 
+		 * data sources and associations for the subscription.
+		 */
+		
 		SubscribeContextAvailabilityRequest scaReq = new SubscribeContextAvailabilityRequest(
 				scReq.getAllEntity(), scReq.getAttributeList(), ref, scReq
-				.getDuration().toString(), "", scReq.getRestriction());
+				.getDuration().toString(), null, scReq.getRestriction());
 		logger.debug("Sending SubscribeContextAvailabilityRequest to ConfManWrapper:"
 				+ scaReq.toString());
 
+		/*
+		 * We also create a task that will automatically unsubscribe again as soon
+		 * as the subscription has expired. 
+		 */
+		
 		UnsubscribeTask task = new UnsubscribeTask(idSubRequest, this);
 		logger.debug("Subscription time: "
 				+ scReq.getDuration().getTimeInMillis(new GregorianCalendar()));
 		logger.debug("Subscription time: " + scReq.getDuration().getSeconds());
 		logger.debug("Subscription time: " + scReq.getDuration().getMinutes());
 		logger.debug("Subscription time: " + scReq.getDuration().toString());
+		
+		/*
+		 * Now we create a container where the relevant information about this subscription
+		 * is packed together. This relevant data consists of
+		 * - when the subscription is initiated
+		 * - a link to the unsubscribe task 
+		 */
+		
 		SubscriptionData subData = new SubscriptionData();
 		subData.setStartTime(associationUtil.currentTime());
 		subData.setUnsubscribeTask(task);
+		
+		
+		/*
+		 * The unsubscribe task is now submitted to the timer. 
+		 * In case no duration is given, a default
+		 * duration is used.
+		 */
 		if (scReq.getDuration() != null) {
 			timer.schedule(task,scReq.getDuration().getTimeInMillis(new GregorianCalendar()));
 		} else {
@@ -375,8 +416,23 @@ public class SubscriptionController {
 			scaReq.setDuration(associationUtil.convertToDuration(Long.toString(defaultDuration)).toString());
 		}
 
+		/*
+		 * The subscription data is now put into the persistent storage, where the 
+		 * id of the subscription (generated before) is used as the key.
+		 */
 		subscriptionStore.put(idSubRequest, subData);
+		
+		/*
+		 * Now it is time to instruct the config management wrapper to communicate
+		 * with the config manager using the request for retrieving the relevant 
+		 * data sources and associations that has been created above.
+		 */
 		subscribeContextAvailability = confManWrapper.receiveReqFrmSubscriptionController(scaReq);
+		
+		/*
+		 * The response from the wrapper is analyzed, and if it is not positive the 
+		 * function is aborted and an error is returned.
+		 */
 		if (subscribeContextAvailability.getErrorcode() != null
 				&& subscribeContextAvailability.getErrorcode().getCode() != 200) {
 			scRes = new SubscribeContextResponse(null, new SubscribeError(null,
@@ -385,17 +441,37 @@ public class SubscriptionController {
 							null)));
 			return scRes;
 		} else {
-
+			
+			/*
+			 * If the answer from the wrapper is positive, then
+			 * the subscribe response is also positive. It receives the
+			 * subscription id generated before. 
+			 */
+			
 			scRes = new SubscribeContextResponse(new SubscribeResponse(
 					idSubRequest, scReq.getDuration(), scReq.getThrottling()),
 					new SubscribeError(null, new StatusCode(Code.OK_200
 							.getCode(), ReasonPhrase.OK_200.toString(), null)));
 			logger.debug("Sending SubscribeContextResponse to NorthBoundWrapper:"
 					+ scRes.toString());
+			
+			 /* 
+			 * Before the subscribe response is actually returned, the subscription
+			 * is also represented in the storage:
+			 * - the availability subscription is saved under its id
+			 * - a link between the availability subscription and the incoming subscription
+			 * is stored
+			 */
+			
 			availabilitySub.saveAvalabilitySubscription(subscribeContextAvailability,
 					subscribeContextAvailability.getSubscribeId());
+			
 			linkAvSub.insert(idSubRequest, subscribeContextAvailability.getSubscribeId());
 
+			/*
+			 * No finally the successful subscription response is returned.
+			 */
+			
 			return scRes;
 		}
 
@@ -489,13 +565,13 @@ public class SubscriptionController {
 
 
 	/**
-	 * Cancels the (incoming) subscription having the given identifier. 
-	 * 
+	 * Cancels the (incoming) subscription having the given identifier.
+	 *
 	 * @param subscriptionID The identifier of the subscription to cancel.
 	 */
 	public void unsubscribeOperation(String subscriptionID) {
-		
-		
+
+
 		List<String> lSubscriptionIDOriginal = linkAvSub.getAvailIDs(subscriptionID);
 
 		logger.debug(lSubscriptionIDOriginal);
@@ -598,58 +674,156 @@ public class SubscriptionController {
 	}
 
 
+	/**
+	 * Return a List of ContextElementResponse items that is the result of applying
+	 * the given list of associations to the give list of ContextElementResponse items. 
+	 * 
+	 */
 	private List<ContextElementResponse> modifyEntityAttributeBasedAssociation(
-			List<AssociationDS> laDS, List<ContextElementResponse> lCres) {
+			List<AssociationDS> assocList, List<ContextElementResponse> lCres) {
 
+		
+		/*
+		 * If the list of associations is empty, the originally given response list is
+		 * immediately returned.
+		 * 
+		 */
 
-		if (!laDS.isEmpty()) {
-			List<ContextElementResponse> cEResTmp = new ArrayList<ContextElementResponse>();
-			for (ContextElementResponse cEres : lCres) {
-				for (AssociationDS aDS : laDS) {
-					if (EntityIDMatcher.matcher(cEres.getContextElement()
+		if (!assocList.isEmpty()) {
+			
+			/*
+			 * Otherwise we initialize the list of context element responses
+			 * to return and then go through all pairs of 
+			 * association and context element response 
+			 */
+			
+			List<ContextElementResponse> resultingContextElRespList = new ArrayList<ContextElementResponse>();
+			for (ContextElementResponse ceResp : lCres) {
+				for (AssociationDS aDS : assocList) {
+					
+					logger.debug("SubscriptionController: Matching association " + 
+					aDS.toString()+
+					"against context element response " +
+					ceResp.toString());
+					
+					/*
+					 * For each such pair we first look whether the source entity of the
+					 * association matches the entity id of the context element response.
+					 * 
+					 * If not, then nothing is done
+					 * 
+					 */
+					
+					if (EntityIDMatcher.matcher(ceResp.getContextElement()
 							.getEntityId(), aDS.getSourceEA().getEntity())) {
-						boolean ifAttributeDomainNameExists=false;
-						if(cEres.getContextElement().getAttributeDomainName()!= null){
-							if(!"".equals(cEres.getContextElement().getAttributeDomainName())){
-								ifAttributeDomainNameExists=true;
+						
+						
+						/*
+						 * If the entities match, then we check whether the 
+						 * given context element response specifies a non-empty
+						 * attribute domain name.
+						 * 
+						 */
+						
+						boolean attributeDomainNameExists=false;
+						if(ceResp.getContextElement().getAttributeDomainName()!= null){
+							if(!"".equals(ceResp.getContextElement().getAttributeDomainName())){
+								attributeDomainNameExists=true;
+								
+								/*
+								 * If the attribute domain name is specified, then we also check
+								 * if association is an attribute association. 
+								 */
+								
 								if (!"".equals(aDS.getSourceEA().getEntityAttribute())) {
+									
+									/*
+									 * And if it is an attribute association, then we check if the
+									 * attribute domain name of the context element matches with the
+									 * source attribute of the association.
+									 * 
+									 * If it does not match, nothing happens.
+									 * 
+									 * If it matches, then the association is applicable and we translate
+									 * the given context element response into one where the entity id
+									 * is replaced with the target entity id of the association. This context 
+									 * element response is then added to the list of responses to return. 
+									 * 
+									 */
 
-									if(aDS.getSourceEA().getEntityAttribute().equals(cEres.getContextElement().getAttributeDomainName())){
-										ContextElement cETmp = new ContextElement(aDS.getTargetEA().getEntity(),aDS.getTargetEA().getEntityAttribute(),	cEres.getContextElement().getContextAttributeList(), cEres.getContextElement().getDomainMetadata());
-										ContextElementResponse cEresTmp = new ContextElementResponse(cETmp, cEres.getStatusCode());
-										cEResTmp.add(cEresTmp);
+									if(aDS.getSourceEA().getEntityAttribute().equals(ceResp.getContextElement().getAttributeDomainName())){
+										ContextElement cETmp = new ContextElement(aDS.getTargetEA().getEntity(),aDS.getTargetEA().getEntityAttribute(),	ceResp.getContextElement().getContextAttributeList(), ceResp.getContextElement().getDomainMetadata());
+										ContextElementResponse cEresTmp = new ContextElementResponse(cETmp, ceResp.getStatusCode());
+										resultingContextElRespList.add(cEresTmp);
+										logger.debug("SubscriptionController: Successfully applied association, created the context element " + cETmp.toString() );
 									}
 								}else{
-									ContextElement cETmp = new ContextElement(aDS.getTargetEA().getEntity(),cEres.getContextElement().getAttributeDomainName(),	cEres.getContextElement().getContextAttributeList(), cEres.getContextElement().getDomainMetadata());
-									ContextElementResponse cEresTmp = new ContextElementResponse(cETmp, cEres.getStatusCode());
-									cEResTmp.add(cEresTmp);
+									
+									/*
+									 * If the association is an entity association, then it is anyway
+									 * applicable to the context element. The same procedure as above is applied. 
+									 * 
+									 */
+									
+									ContextElement cETmp = new ContextElement(aDS.getTargetEA().getEntity(),ceResp.getContextElement().getAttributeDomainName(),	ceResp.getContextElement().getContextAttributeList(), ceResp.getContextElement().getDomainMetadata());
+									ContextElementResponse cEresTmp = new ContextElementResponse(cETmp, ceResp.getStatusCode());
+									
+									logger.debug("SubscriptionController: Successfully applied association, created the context element " + cETmp.toString() );
+									resultingContextElRespList.add(cEresTmp);
 								}
 							}
 						}
-						if(ifAttributeDomainNameExists==false){
+						
+						/*
+						 * In case there is no attribute domain name specified in the context element responsem
+						 * we again check whether the association is an attribute association. 
+						 * 
+						 */						
+						if(attributeDomainNameExists==false){
 							if (!"".equals(aDS.getSourceEA().getEntityAttribute())) {
-								for (ContextAttribute ca : cEres.getContextElement().getContextAttributeList()) {
+								
+								/*
+								 * If it is an attribute association, we need to find the attribute values
+								 * that can be translated using this association.
+								 * 
+								 * For this, we run through all attributes specified in the 
+								 * context element response, and when we found one that matches with
+								 * the source attribute of the association we apply the
+								 * association and create a context element response with the target
+								 * entity and the target attribute specified in the association.
+								 */
+								
+								for (ContextAttribute ca : ceResp.getContextElement().getContextAttributeList()) {
 									if (ca.getName().equals(aDS.getSourceEA().getEntityAttribute())) {
 										List<ContextAttribute> lCaTmp = new ArrayList<ContextAttribute>();
 										ca.setName(aDS.getTargetEA().getEntityAttribute());
 										lCaTmp.add(ca);
-										ContextElement cETmp = new ContextElement(aDS.getTargetEA().getEntity(),cEres.getContextElement().getAttributeDomainName(),	lCaTmp, cEres.getContextElement().getDomainMetadata());
-										ContextElementResponse cEresTmp = new ContextElementResponse(cETmp, cEres.getStatusCode());
-										cEResTmp.add(cEresTmp);
+										ContextElement cETmp = new ContextElement(aDS.getTargetEA().getEntity(),ceResp.getContextElement().getAttributeDomainName(),	lCaTmp, ceResp.getContextElement().getDomainMetadata());
+										ContextElementResponse cEresTmp = new ContextElementResponse(cETmp, ceResp.getStatusCode());
+										resultingContextElRespList.add(cEresTmp);
+										logger.debug("SubscriptionController: Successfully applied association, created the context element " + cETmp.toString() );
 									}
 								}
 							} else {
+								
+								/*
+								 * The final case is where there is not attribute domain name
+								 * specified and the association is an entity association. In 
+								 * This case the association is applicable and we can translate 
+								 * the entity id and keep all attribute names.
+								 */
 
 								ContextElement cETmp = new ContextElement(aDS
-										.getTargetEA().getEntity(), cEres
+										.getTargetEA().getEntity(), ceResp
 										.getContextElement()
-										.getAttributeDomainName(), cEres
+										.getAttributeDomainName(), ceResp
 										.getContextElement()
-										.getContextAttributeList(), cEres
+										.getContextAttributeList(), ceResp
 										.getContextElement().getDomainMetadata());
 								ContextElementResponse cEresTmp = new ContextElementResponse(
-										cETmp, cEres.getStatusCode());
-								cEResTmp.add(cEresTmp);
+										cETmp, ceResp.getStatusCode());
+								resultingContextElRespList.add(cEresTmp);
+								logger.debug("SubscriptionController: Successfully applied association, created the context element " + cETmp.toString() );
 							}
 						}
 
@@ -657,13 +831,13 @@ public class SubscriptionController {
 					}
 				}
 			}
-			return cEResTmp;
+			return resultingContextElRespList;
 		}
 		return lCres;
 	}
 
 	/**
-	 * Processes a notification.
+	 * Processes an NGSI 10 notification.
 	 *
 	 * @param ncReq
 	 *  The NGSI 10 NotifyContextRequest.
@@ -672,116 +846,262 @@ public class SubscriptionController {
 	 */
 	public NotifyContextResponse receiveReqFrmAgentWrapper(
 			NotifyContextRequest ncReq) {
+		
+		logger.debug("SubscriptionController: Received the following notify context request:" 
+		+ ncReq.toString()+"/n"+
+		"SubscriptionID is: "+ ncReq.getSubscriptionId()
+				);		
 
+		/*
+		 *  Initialize the resulting notification request that will be passed to the
+		 *  northbound wrapper
+		 */
 
 		NotifyContextRequest ncReqtoNorthBoundWrapper = new NotifyContextRequest();
-		List<String> loutSubscriptionIDs = linkSub.getInIDs(ncReq.getSubscriptionId());
-		if (loutSubscriptionIDs == null || loutSubscriptionIDs.size() != 1) {
+		
+		/*
+		 * Retrieves the list of incoming subscription ids that are relevant for 
+		 * the received notification (note that the notification is the result of 
+		 * an outgoing subscription).
+		 * 
+		 */
+		
+		List<String> inIDs = linkSub.getInIDs(ncReq.getSubscriptionId());
+		
+		
+		/*
+		 * It is expected that exactly one incoming subscription id will be found.
+		 * If this is not the case, then the function is aborted and an error is
+		 * returned.
+		 * 
+		 * Otherwise, the function continues.
+		 * 
+		 */
+		if (inIDs == null || inIDs.size() != 1) {
+			logger.debug("SubscriptionController: Aborting, because did not find exactly one incoming" +
+					"subscription, but found "+inIDs.toString());
 			return new NotifyContextResponse(new StatusCode(470,
 					ReasonPhrase.SUBSCRIPTIONIDNOTFOUND_470.toString(), null));
 		} else {
+			logger.debug("SubscriptionController: found incoming subscription ID: "+ inIDs.get(0));
+			
 
-			logger.debug("ID of subscription from SubscriptionController:"+ loutSubscriptionIDs.get(0));
-			List<String> outid = linkAvSub.getAvailIDs(loutSubscriptionIDs.get(0));
-			logger.debug("ID of subscription request send to agent:"+ ncReq.getSubscriptionId());
-			SubscribeContextRequest subReq=outgoingSub.getOutgoingSubscription(ncReq.getSubscriptionId());
-			logger.debug("subscriptin request: "+subReq.toString());
-
-			BundleContext bc = FrameworkUtil.getBundle(ResultFilterInterface.class).getBundleContext();
-			ServiceReference ref = bc.getServiceReference(ResultFilterInterface.class.getName());
-
-			if(ref!=null){
-				logger.debug("-----------++++++++++++++++++++++Begin Filter for subscription");
-				List<QueryContextRequest>lqcReq =new ArrayList<QueryContextRequest>();
-				QueryContextRequest request = new QueryContextRequest(subReq.getEntityIdList(),subReq.getAttributeList(),subReq.getRestriction());
-				lqcReq.add(request);
-				List<ContextElementResponse>lceRes =new ArrayList<ContextElementResponse>();
-				lceRes=ncReq.getContextElementResponseList();
-				logger.debug("-----------++++++++++++++++++++++ QueryContextRequest:"+lqcReq.toString()+" ContextElementResponse:"+lceRes.toString());
-				//
-				logger.debug("##########################");
-				logger.debug(lqcReq.size());
-				logger.debug(lceRes.size());
-				logger.debug("##########################");
-
-
-				List<QueryContextResponse>lqcRes =resultFilter.filterResult(lceRes, lqcReq);
-
-				logger.debug("-----------++++++++++++++++++++++ After Filter ListContextElementResponse:"+lqcRes.toString()+" ContextElementResponse:"+lqcRes.toString());
-
-				if(lqcRes.size()==1) {
-					ncReq.setContextResponseList(lqcRes.get(0).getListContextElementResponse());
-					logger.debug("NotifyContext request after filtering: "+ncReq);
-				}
-				logger.debug("-----------++++++++++++++++++++++End Filter");
+			/* 
+			 * We also retrieve the original incoming subscription message from the storage.
+			 * 
+			 */
+			SubscribeContextRequest inSubReq=incomingSub.getIncomingSubscription(inIDs.get(0));
+			
+			if(inSubReq == null)
+			{
+				logger.error("Incoming subscription id found, but no incoming subscription found. Aborting " +
+						"the notification process.");
+				return null;
 			}
+					
+			logger.debug("SubscriptionController: Identified the original incoming " +
+					"subscription request: "+inSubReq.toString());
 
+
+			
+			
+			/*
+			 * Initialize the list of associations to apply later, and initialize
+			 * the list of ContextElementResponses to return then.
+			 * 
+			 */
 			List<String> listAssoc = null;
 			List<ContextElementResponse> lCERes = null;
+			
+			/*
+			 * Now we retrieve the availability subscription id. This is the availability 
+			 * subscription that was made on behalf of the identified incoming subscription.
+			 */
+			
+			List<String> availId = linkAvSub.getAvailIDs(inIDs.get(0));
 
-			if (outid.size() == 1) {
-				logger.debug("ID of subscription from subscriptionContextAvailability request:"+ outid.get(0));
-				listAssoc = availabilitySub.getListOfAssociations(outid.get(0));
+			/*
+			 * It is again assumed that exactly one availability subscription id is has been found.
+			 * If not, then the function aborts and returns nothing. 
+			 * 
+			 * Otherwise the list of associations that have been stored with this availability subscription
+			 * is retrieved. These are the associations that are potentially applicable
+			 * for this notification.
+			 */
+			
+			if (availId.size() == 1) {
+				logger.debug("SubscriptionController: found the following availability subscr ID:" 
+						+ availId.get(0));				
+				listAssoc = availabilitySub.getListOfAssociations(availId.get(0));
+				logger.debug("SusbcriptionController: The associations are:" + listAssoc.toString());
 			} else {
-				logger.error("More then one row");
+				logger.error("SubscriptionController: found wrong number of availability subscriptions, aborting.");
 				return null;
 			}
 
+			
+			/*
+			 *  Now the associations are applied if there are any. 
+			 *  Applying the associations is done by the modifyEntityAttributeBasedAssociation 
+			 *  function.
+			 *  If there are no associations, the contextelementresponse from the notification
+			 *  are taken as they are.
+			 *  
+			 */
+			
+			if (listAssoc != null && !listAssoc.isEmpty()) {
+				logger.debug("SubscriptionController: Applying associations");
+				
+				lCERes =modifyEntityAttributeBasedAssociation(associationUtil.convertToAssociationDS(listAssoc.get(0)),ncReq.getContextElementResponseList());
+				
+				/*
+				 * We merge the results from the associations with the original 
+				 * context element reponse list 
+				 */
+				
+				lCERes.addAll(ncReq.getContextElementResponseList());
+				
+				logger.debug("SubscriptionController: Context Element Responses after applying assoc: " + lCERes.toString());
 
-			if (listAssoc.size() == 1) {
-				logger.debug(listAssoc.get(0));
-				lCERes = modifyEntityAttributeBasedAssociation(associationUtil.convertToAssociationDS(listAssoc.get(0)),ncReq.getContextElementResponseList());
-
-			} else {
-				logger.error("More then one row");
-				return null;
+			}else{
+				lCERes = ncReq.getContextElementResponseList();
+				logger.debug("SusbcriptionController: Found no associations");
 			}
 
+			
+			
+			if (lCERes != null ) {
+				//this can actually never be null!
+				
+				
+				
+				/*
+				 * Now, after having applied the associations, it is time to apply 
+				 * the result filter in order to remove everything from the notification that has
+				 * not been queried.
+				 */
+				
+				/*
+				 * If a result filter is available, we apply it to the 
+				 * notification.
+				 * 
+				 */
+				
+//				BundleContext bc = FrameworkUtil.getBundle(ResultFilterInterface.class).getBundleContext();
+//				ServiceReference ref = bc.getServiceReference(ResultFilterInterface.class.getName());
 
-			if (lCERes != null && (!lCERes.isEmpty()) ) {
-				QueryContextResponse qCRes = new QueryContextResponse();
-				qCRes.setContextResponseList(lCERes);
+				if(resultFilter != null){
+					
+					logger.debug("SubscriptionController: found resultFilter implementation.");
+					
+					/*
+					 * As the resultfilter is defined for queries, we have to 
+					 * convert the subscription request to a query request
+					 */				
+					
+					List<QueryContextRequest>lqcReq_forfilter =new ArrayList<QueryContextRequest>();
+					QueryContextRequest tmp_request = new QueryContextRequest(inSubReq.getEntityIdList(),inSubReq.getAttributeList(),inSubReq.getRestriction());
+					lqcReq_forfilter.add(tmp_request);
+					
+					
+					logger.debug("SubscriptionController: calling the resultfilter");				
+
+					List<QueryContextResponse> lqcRes_fromfilter =resultFilter.filterResult(lCERes, lqcReq_forfilter);
+					
+					/*
+					 * We receive back a query context response from which we 
+					 * take out the context element responses
+					 */
+					lCERes = lqcRes_fromfilter.get(0).getListContextElementResponse();										
+					logger.debug("SubscriptionController: filtered result: " + lCERes.toString());
+
+
+				}
+				else{
+					logger.debug("SubscriptionController: found no result filter; using the unfiltered result.");
+				}
+
+				
+				/*
+				 * Now we create a queryContextResponse with our
+				 * list of context element responses. We use the QueryResponseMerger
+				 * to format the response in a nicer way (eliminating duplicate entities 
+				 * with the same attributedomain).
+				 * 
+				 */
+				
+				QueryContextResponse qCRes_forMerger = new QueryContextResponse();
+				qCRes_forMerger.setContextResponseList(lCERes);				
 				QueryResponseMerger qRM = new QueryResponseMerger(null);
-				qRM.put(qCRes);
-				qCRes = qRM.get();
+				qRM.put(qCRes_forMerger);
+				qCRes_forMerger = qRM.get();
+				
+				logger.debug("SubscriptionController: Response list after applying merger:" + qCRes_forMerger.getListContextElementResponse().toString());
 
-				logger.debug(ncReqtoNorthBoundWrapper);
+				
+				/*
+				 * We retrieve the subscriptionData for the incoming subscription
+				 * of this notification.
+				 */
 
 				SubscriptionData subscriptionData = subscriptionStore
-						.get(loutSubscriptionIDs.get(0));
-				List<ContextElementResponse> contextRespList = null;
+						.get(inIDs.get(0));
+								
+				List<ContextElementResponse> notificationQueue;
+				
+				/*
+				 * This subscription data contains a queue of unsent notifications (or 
+				 * otherwise we create it here) 
+				 * 
+				 */
+				
 				if (subscriptionData.getContextResponseQueue() != null) {
-					contextRespList = subscriptionData
+					notificationQueue = subscriptionData
 							.getContextResponseQueue();
 				} else {
-					contextRespList = new ArrayList<ContextElementResponse>();
+					notificationQueue = new ArrayList<ContextElementResponse>();
 				}
 
-				for (int i = 0; i < qCRes.getListContextElementResponse()
+				/*
+				 * The context element responses that we have extracted from the 
+				 * notification are added now to the notification queue, so that
+				 * they will later be sent to the application that has originally
+				 * issued the subscription.
+				 */
+				
+				for (int i = 0; i < qCRes_forMerger.getListContextElementResponse()
 						.size(); i++) {
 					logger.info("###########################################");
-					logger.info(qCRes.getListContextElementResponse().get(i));
+					logger.info(qCRes_forMerger.getListContextElementResponse().get(i));
 
-					contextRespList.add(qCRes.getListContextElementResponse()
+					notificationQueue.add(qCRes_forMerger.getListContextElementResponse()
 							.get(i));
 				}
-				subscriptionData.setContextResponseQueue(contextRespList);
-				subscriptionStore.put(loutSubscriptionIDs.get(0),subscriptionData);
-				logger.debug("Adding to subdata subid:"	+ loutSubscriptionIDs.get(0) + " : " + subscriptionData);
+				
+				/*
+				 * After that, the notification queue is put back into the
+				 * subscription data, which is then put back into the storage.
+				 */
+				subscriptionData.setContextResponseQueue(notificationQueue);
+				subscriptionStore.put(inIDs.get(0),subscriptionData);
+				logger.debug("Adding to subdata subid:"	+ inIDs.get(0) + " : " + subscriptionData);
 			}
 
 		}
 
+		/*
+		 * finally the function can return with a positive status code.
+		 */		
 		return new NotifyContextResponse(new StatusCode(200,ReasonPhrase.OK_200.toString(), null));
 
 	}
 
 	/**
-	 * Instructs the SubscriptionController to process an Availability Notification and 
+	 * Instructs the SubscriptionController to process an Availability Notification and
 	 * additionally passes it a list of associations which determine how the data from the
 	 * agents is to be interpreted.
 	 *
-	 * @param ncaReq
+	 * @param notifyContextAvailabilityRequest
 	 *  The NGSI 9 NotifyContextAvailabilityRequest.
 	 * @param transitiveList
 	 *  List of associations explaining how to interpret the results.
@@ -789,32 +1109,87 @@ public class SubscriptionController {
 	 *  The NGSI 9 NotifyContextAvailabilityResponse.
 	 */
 	public NotifyContextAvailabilityResponse receiveReqFrmConfManWrapper(
-			NotifyContextAvailabilityRequest ncaReq,
+			NotifyContextAvailabilityRequest notifyContextAvailabilityRequest,
 			List<AssociationDS> transitiveList) {
 
-
-		logger.debug("Received NotifyContextAvailabilityRequest:" + ncaReq);
-		String idSubscription = "";
-
-		String s = "";
-
 		
-		s = associationUtil.convertAssociationToString(transitiveList);
+
+		logger.debug("Received NotifyContextAvailabilityRequest:" + notifyContextAvailabilityRequest);
+		String subscriptionId = "";
 		
-		logger.debug("s:" + s);
-		availabilitySub.updateAvalabilitySubscription(ncaReq, s,
-				ncaReq.getSubscribeId());
-		List<String> tmpID = linkAvSub.getInIDs(ncaReq.getSubscribeId());
-		if (tmpID.size() == 1) {
-			idSubscription = tmpID.get(0);
+		/*
+		 *  First, the storage is updated with the new availability notification and the new association list. 
+		 */
+		String association = associationUtil.convertAssociationToString(transitiveList);
+
+		logger.debug("association:" + association);
+				
+		
+		availabilitySub.updateAvalabilitySubscription(notifyContextAvailabilityRequest, association,
+				notifyContextAvailabilityRequest.getSubscribeId());
+		
+		/*
+		 *  Now the id of the incoming subscription corresponding to this availability 
+		 *  notification is retrieved from storage.
+		 */		
+		List<String> inIDs = linkAvSub.getInIDs(notifyContextAvailabilityRequest.getSubscribeId());
+		if (inIDs.size() == 1) {
+			subscriptionId = inIDs.get(0);
 		}
 
-		PriorityQueue<Pair<URI, SubscribeContextRequest>> existingSubscribedAgentQ = convertToPair(idSubscription);
-		PriorityQueue<Pair<URI, ContextRegistrationResponse>> newProposedSubscribedAgentQ = convertToPair(ncaReq
+		/*
+		 * We retrieve a sorted list (by agent URI) of all outgoing subscriptions made on behalf
+		 * of this incoming subscription. Furthermore, we retrieve a sorted (again by URI) list that 
+		 * contains all subscriptions that are recommended by this availability notification. 
+		 * 
+		 */
+		
+		PriorityQueue<Pair<URI, SubscribeContextRequest>> existingSubscribedAgentQ = getExistingOutgoingSubs(subscriptionId);
+		PriorityQueue<Pair<URI, ContextRegistrationResponse>> newProposedSubscribedAgentQ = convertToPrioQueue(notifyContextAvailabilityRequest
 				.getContextRegistrationResponseList());
+		
+		/*
+		 * Here I write what !should! be done; the below code seems not to do that properly.
+		 * 
+		 * What we want to achieve is that
+		 * - existing subscriptions that are not needed anymore are cancelled
+		 * - new subscriptions that are needed are made
+		 * 
+		 * How this can be achieved with the prio queues is:
+		 * (assuming they always have the lexicogr. largest element on top)
+		 * 
+		 * - While the existing subscr queue is not empty
+		 * -- if the recomm.queue is empty, break
+		 * -- if the top element of the recom queue is lexicog. larger than the top 
+		 *    element of the exist. queue:
+		 * ---- make subscription to top element of recom queue
+		 * ---- remove first element of recom queue
+		 * ---- continue
+		 * -- if both top elements are equal
+		 * ---- if necessary, update the subscription to this agent
+		 * ---- remove top element of both queues and continue
+		 * -- if the top element of the recom queue is lexicog. smaller than the top 
+		 *    element of the exist. queue: 
+		 * ---- cancel subscription corresp. to top element of exist. queue
+		 * ---- remove top element of exist. queue
+		 * ---- continue
+		 * 
+		 * After the loop, one of the queues is empty and the remaining subscriptions
+		 * from the resp. other queue are issued or cancelled.
+		 * 
+		 * To see that this is correct, observe that
+		 * 1) an action performed for each subscription in any of the queues exactly once, because
+		 * whenever an action is performed for a queue element, the element is removed afterwards. 
+		 * 2) Conversely, when elements are removed an action is always performed.
+		 * 3) As always the larger element is removed, for all pairs of equal URIs we perform the
+		 * appropriate subscription update action.
+		 * 
+		 * 
+		 */
+		
 		Pair<URI, SubscribeContextRequest> exSATmp = null;
 		Pair<URI, ContextRegistrationResponse> npSATmp = null;
-		if (existingSubscribedAgentQ.isEmpty()) {
+		if (existingSubscribedAgentQ.isEmpty()) {			
 
 			while (existingSubscribedAgentQ.isEmpty()
 					&& newProposedSubscribedAgentQ.isEmpty()) {
@@ -834,26 +1209,26 @@ public class SubscriptionController {
 					logger.debug("POLL new" + npSATmp.getLeft().toString());
 					sendSubscribeContextRequest(
 							createSubscribeContextRequestFromCRRes(
-									npSATmp.getRight(), idSubscription),
-									npSATmp.getLeft(), idSubscription);
+									npSATmp.getRight(), subscriptionId),
+									npSATmp.getLeft(), subscriptionId);
 					exSATmp = existingSubscribedAgentQ.poll();
 					logger.debug("POLL exist" + exSATmp.getLeft().toString());
 					sendUnsubscribeContextRequest(exSATmp.getRight(),
-							exSATmp.getLeft(), idSubscription);
+							exSATmp.getLeft(), subscriptionId);
 				} else if (compareResult > 0) {
 					npSATmp = newProposedSubscribedAgentQ.poll();
 					logger.debug("POLL new" + npSATmp.getLeft().toString());
 
 					sendSubscribeContextRequest(
 							createSubscribeContextRequestFromCRRes(
-									npSATmp.getRight(), idSubscription),
-									npSATmp.getLeft(), idSubscription);
+									npSATmp.getRight(), subscriptionId),
+									npSATmp.getLeft(), subscriptionId);
 				} else if (compareResult < 0) {
 					exSATmp = existingSubscribedAgentQ.poll();
 					logger.debug("POLL exist" + exSATmp.getLeft().toString());
 
 					sendUnsubscribeContextRequest(exSATmp.getRight(),
-							exSATmp.getLeft(), idSubscription);
+							exSATmp.getLeft(), subscriptionId);
 				}
 			}
 			while (!existingSubscribedAgentQ.isEmpty()) {
@@ -861,7 +1236,7 @@ public class SubscriptionController {
 				logger.debug("POLL exist" + exSATmp.getLeft().toString()
 						+ " :q " + existingSubscribedAgentQ.size());
 				sendUnsubscribeContextRequest(exSATmp.getRight(),
-						exSATmp.getLeft(), idSubscription);
+						exSATmp.getLeft(), subscriptionId);
 			}
 			while (!newProposedSubscribedAgentQ.isEmpty()) {
 				npSATmp = newProposedSubscribedAgentQ.poll();
@@ -869,8 +1244,8 @@ public class SubscriptionController {
 						+ newProposedSubscribedAgentQ.size());
 				sendSubscribeContextRequest(
 						createSubscribeContextRequestFromCRRes(
-								npSATmp.getRight(), idSubscription),
-								npSATmp.getLeft(), idSubscription);
+								npSATmp.getRight(), subscriptionId),
+								npSATmp.getLeft(), subscriptionId);
 			}
 		} else {
 			while (newProposedSubscribedAgentQ.isEmpty()) {
@@ -879,11 +1254,12 @@ public class SubscriptionController {
 						+ newProposedSubscribedAgentQ.size());
 				sendSubscribeContextRequest(
 						createSubscribeContextRequestFromCRRes(
-								npSATmp.getRight(), idSubscription),
-								npSATmp.getLeft(), idSubscription);
+								npSATmp.getRight(), subscriptionId),
+								npSATmp.getLeft(), subscriptionId);
 			}
 		}
 
+		//TODO check why there is no proper return statement.
 		return null;
 	}
 
@@ -979,10 +1355,17 @@ public class SubscriptionController {
 		}.start();
 	}
 
-	private PriorityQueue<Pair<URI, SubscribeContextRequest>> convertToPair(
+	/**
+	 * Given an id of an incoming subscription, this function retrieves all existing out-
+	 * going subscriptions that were made on behalf of this incoming subscription.
+	 * 
+	 * The returned outgoing subscriptions are represented in a priority queue that is 
+	 * sorted by the URI of the agent.
+	 */
+	private PriorityQueue<Pair<URI, SubscribeContextRequest>> getExistingOutgoingSubs(
 			String originalID) {
 
-		PriorityQueue<Pair<URI, SubscribeContextRequest>> existingSubscribedAgent = new PriorityQueue<Pair<URI, SubscribeContextRequest>>(
+		PriorityQueue<Pair<URI, SubscribeContextRequest>> existingSubscribedAgents = new PriorityQueue<Pair<URI, SubscribeContextRequest>>(
 				2, new Comparator<Pair<URI, SubscribeContextRequest>>() {
 					@Override
 					public int compare(
@@ -991,19 +1374,25 @@ public class SubscriptionController {
 						return pair1.getLeft().compareTo(pair2.getLeft());
 					}
 				});
+		
 		List<String> tmpOutGoingID = linkSub.getOutIDs(originalID);
 		for (String s : tmpOutGoingID) {
 
-			existingSubscribedAgent.add(new Pair<URI, SubscribeContextRequest>(
+			existingSubscribedAgents.add(new Pair<URI, SubscribeContextRequest>(
 					outgoingSub.getAgentUri(s), outgoingSub
 					.getOutgoingSubscription(s)));
 		}
 
-		return existingSubscribedAgent;
+		return existingSubscribedAgents;
 
 	}
 
-	private PriorityQueue<Pair<URI, ContextRegistrationResponse>> convertToPair(
+	/**
+	 * Given an list of context registration responses, this list is represented as a
+	 * priority queue sorted by the reference URI in the responses.
+	 * 
+	 */
+	private PriorityQueue<Pair<URI, ContextRegistrationResponse>> convertToPrioQueue(
 			List<ContextRegistrationResponse> lCRRes) {
 
 		PriorityQueue<Pair<URI, ContextRegistrationResponse>> newSubscribedAgent = new PriorityQueue<Pair<URI, ContextRegistrationResponse>>(

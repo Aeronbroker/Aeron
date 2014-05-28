@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- FI-WARE NGSI 9/10 RESTful binding version 1.0 -->
+
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	elementFormDefault="unqualified">
 
-	<!-- _______________________________________ Complex type instantiations 
-		___________________________________________ -->
+	<!-- _______________________________________ complex type instantiations _______________________________ -->
 
 	<xs:element name="contextElement" type="ContextElement" />
 	<xs:element name="contextAttribute" type="ContextAttribute" />
@@ -16,14 +18,14 @@
 	<xs:element name="contextRegistration" type="ContextRegistration" />
 	<xs:element name="operationScope" type="OperationScope" />
 	<xs:element name="entityId" type="EntityId" />
-	<xs:element name="registrationMetaData" type="RegistrationMetaData" />
+	<xs:element name="registrationMetadata" type="RegistrationMetadata" />
 	<xs:element name="contextElementResponse" type="ContextElementResponse" />
 	<xs:element name="notifyCondition" type="NotifyCondition" />
 	<xs:element name="contextMetadata" type="ContextMetadata" />
 	<xs:element name="contextRegistrationResponse" type="ContextRegistrationResponse" />
 
 
-	<!-- _________________________________ Complex type definitions ___________________________________________________ -->
+	<!-- _________________________________ complex type definitions __________________________________ -->
 
 
 	<xs:complexType name="ContextMetadata">
@@ -201,7 +203,7 @@
 	<xs:complexType name="Restriction">
 		<xs:sequence>
 			<xs:element name="attributeExpression" type="xs:string"
-				minOccurs="1" maxOccurs="1" />
+				minOccurs="0" maxOccurs="1" />
 			<xs:element name="scope" type="OperationScopeList"
 				minOccurs="0" maxOccurs="1" />
 		</xs:sequence>
@@ -226,13 +228,10 @@
 				maxOccurs="1" />
 			<xs:element name="isDomain" type="xs:boolean" minOccurs="1"
 				maxOccurs="1" />
-			<xs:element name="metaData" type="ContextMetadataList"
+			<xs:element name="metadata" type="ContextMetadataList"
 				minOccurs="0" maxOccurs="1" />
 		</xs:sequence>
 	</xs:complexType>
-
-
-
 
 	<xs:complexType name="ContextRegistrationAttributeList">
 		<xs:sequence>
@@ -247,7 +246,7 @@
 				minOccurs="0" maxOccurs="1" />
 			<xs:element name="contextRegistrationAttributeList" type="ContextRegistrationAttributeList"
 				minOccurs="0" maxOccurs="1" />
-			<xs:element name="registrationMetaData" type="RegistrationMetaData"
+			<xs:element name="registrationMetadata" type="RegistrationMetadata"
 				minOccurs="0" maxOccurs="1" />
 			<xs:element name="providingApplication" type="xs:anyURI"
 				minOccurs="1" maxOccurs="1" />
@@ -255,7 +254,7 @@
 	</xs:complexType>
 
 
-	<xs:complexType name="RegistrationMetaData">
+	<xs:complexType name="RegistrationMetadata">
 		<xs:sequence>
 			<xs:element name="contextMetadata" type="ContextMetadata"
 				minOccurs="0" maxOccurs="unbounded" />

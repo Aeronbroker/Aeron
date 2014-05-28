@@ -12,8 +12,9 @@
 			<value>
 				server.database.0=file:${hsqldb.directory}
 				server.dbname.0=linkDB
+				server.port=${hsqldb.port}
 				server.remote_open=true
-				hsqldb.reconfig_logging=false			
+				server.silent=${hsqldb.silent}
 			</value>
 		</constructor-arg>
 	</bean> 
@@ -25,10 +26,5 @@
 	<bean id="linkSubStorage" class="eu.neclab.iotplatform.iotbroker.storage.impl.LinkSubStorage"></bean>
 	<bean id="linkSubAvStorage" class="eu.neclab.iotplatform.iotbroker.storage.impl.LinkSubAvailabilityStorage"></bean>
 		
-
-
-
-	
-	
 	
 </beans>

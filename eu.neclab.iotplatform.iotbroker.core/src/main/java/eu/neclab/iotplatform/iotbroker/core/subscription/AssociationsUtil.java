@@ -1,12 +1,12 @@
 /*******************************************************************************
  *   Copyright (c) 2014, NEC Europe Ltd.
  *   All rights reserved.
- *   
+ *
  *   Authors:
  *           * Salvatore Longo - salvatore.longo@neclab.eu
  *           * Tobias Jacobs - tobias.jacobs@neclab.eu
  *           * Raihan Ul-Islam - raihan.ul-islam@neclab.eu
- *  
+ *
  *    Redistribution and use in source and binary forms, with or without
  *    modification, are permitted provided that the following conditions are met:
  *   1. Redistributions of source code must retain the above copyright
@@ -23,10 +23,10 @@
  *
  * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE 
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+ * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
  * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -243,31 +243,36 @@ public class AssociationsUtil {
 	}
 
 	/**
-	 * This method retrieves list of additionalRequestList from
-	 * QueryContextRequest and List of associations from
-	 * DiscoverContextAvailabilityResponse.
-	 *
-	 *
+	 * This method enriches the targetAssocs set with additional associations
+	 * retrieved from concatenating elements of moreAssociations with elements
+	 * already in targetAssocs.
+	 * <p>
+	 * Concatenating association A --> B with association B-->C means to create
+	 * association A --> C.
+	 * <p>
+	 * This is applied as long as there is nothing left to add. This means that e.g.
+	 * when targetAssocs contains C-->D and moreAssociations contains both A-->B and B-->C, then
+	 * the returned association set contains C-->D, B-->D, and A-->D.
 	 *
 	 */
 	public List<AssociationDS> transitiveAssociationAnalysisFrQuery(
-			List<AssociationDS> assocList, List<AssociationDS> additionalReqList) {
+			List<AssociationDS> moreAssociations, List<AssociationDS> targetAssocs) {
 		logger.debug("Association List frm DiscoverContextAvailabilityResponse:"
-				+ assocList);
+				+ moreAssociations);
 		logger.debug("Association List frm additionalReqList:"
-				+ additionalReqList);
+				+ targetAssocs);
 		List<AssociationDS> transitiveAssociationDS = new LinkedList<AssociationDS>();
 		// this is gonna be the output
 
 		Queue<AssociationDS> queueAssociationDS = new LinkedList<AssociationDS>();
 
-		transitiveAssociationDS.addAll(additionalReqList);
-		queueAssociationDS.addAll(additionalReqList);
+		transitiveAssociationDS.addAll(targetAssocs);
+		queueAssociationDS.addAll(targetAssocs);
 		AssociationDS newAssoDs = null;
 		while (!queueAssociationDS.isEmpty()) {
 			AssociationDS currentAssoc = queueAssociationDS.poll();
 			logger.debug("Dqueue:" + currentAssoc);
-			for (AssociationDS aDS : assocList) {
+			for (AssociationDS aDS : moreAssociations) {
 				if (EntityIDMatcher.matcher(aDS.getTargetEA().getEntity(),
 						currentAssoc.getSourceEA().getEntity())) {
 					newAssoDs = createNewAssociations(
@@ -295,13 +300,10 @@ public class AssociationsUtil {
 	}
 
 	/**
-	 * This method retrieves list of additionalRequestList from
-	 * QueryContextRequest and List of associations from
-	 * DiscoverContextAvailabilityResponse.
-	 * 
+	 *
 	 * This method extracts from the associations list all associations
-	 * that whose target match with the given query context request.
-	 * 
+	 * whose target match with the given query context request.
+	 *
 	 * @param qcReq
 	 * The query context request to match with
 	 * @param assocList
@@ -309,23 +311,55 @@ public class AssociationsUtil {
 	 */
 	public List<AssociationDS> initialLstOfmatchedAssociation(
 			QueryContextRequest qcReq, List<AssociationDS> assocList) {
+		
+		
+		/*
+		 * Initialize the list of associations that will be returned
+		 */
 		List<AssociationDS> additionalReqList = new LinkedList<AssociationDS>();
-		List<EntityId> entityList = qcReq.getEntityIdList();
 
+		/*
+		 * For each entity in the query context request, run through all
+		 * associations. For each pair of entity and association, the steps
+		 * described below are performed:
+		 */
+		
+		List<EntityId> entityList = qcReq.getEntityIdList();		
 		for (EntityId eID : entityList) {
 			for (AssociationDS aDS : assocList) {
-				// entity Match found
+				
+				/*
+				 * First check whether the target entity of the association matches
+				 * with the entity id. If this is not the case, then nothing is done
+				 * for this pair
+				 */
+				
 				if (EntityIDMatcher.matcher(aDS.getTargetEA().getEntity(), eID)) {
-					// if the Source Entity from
-					// DiscoverContextAvailabilityResponse has no attribute then
+					
+					/*
+					 * Now check whether the association is an attribute association. 
+					 */
 
 					if ("".equals(aDS.getSourceEA().getEntityAttribute())) {
-						// That means association is entity associations
-						// checks if entity in QueryContextRequest{request} has
-						// attribute
+						
+						/*
+						 * If the association is no attribute association, then check
+						 * whether in the query context request there is an attribute
+						 * specified.  
+						 */
+
 						if (qcReq.getAttributeList().size() > 0) {
-							// if it has attribute copy them to
-							// additionalRequest
+
+
+							/*
+							 * If attributes are specified in the query request, then the 
+							 * entity association is converted to a set of attribute associations.
+							 * 
+							 * For each of the attributes in the query, an attribute association
+							 * is created where this attribute is both in source and target. These
+							 * associations are put into the list of associations to return.
+							 */
+							
 							for (int i = 0; i < qcReq.getAttributeList().size(); i++) {
 								if (aDS.getTargetEA().getEntityAttribute()
 										.equals("")) {
@@ -346,22 +380,33 @@ public class AssociationsUtil {
 								}
 							}
 						} else {
-							// if entity in QueryContextRequest{request} has no
-							// attribute then keep attribute empty
+							
+							/*
+							 * Otherwise, if the association is an entity association and 
+							 * there is no attribute specified in the query, then the association
+							 * is put into the set of associations to return just like it is,
+							 */
 							additionalReqList.add(new AssociationDS(aDS
 									.getSourceEA(), new EntityAttribute(aDS
 									.getTargetEA().getEntity(), "")));
 						}
-						// if the Source Entity from
-						// DiscoverContextAvailabilityResponse has attribute
-						// then
+
 					} else if (!"".equals(aDS.getSourceEA().getEntityAttribute()
 							)) { // note: "just 'else' is sufficient
 						if (qcReq.getAttributeList().size() > 0) {
-							for (int i = 0; i < qcReq.getAttributeList().size(); i++) {
-								// if the attribute of Source Entity from
-								// DiscoverContextAvailabilityResponse matches
-								// with the attribute of entity in QueryContextRequest
+							
+							/* 
+							 * We are now at the case that the association is an 
+							 * attribute association and the query specifies 
+							 * attributes. What we do here is to search for an
+							 * attribute in the query that matches with the 
+							 * target attribute of the association. 
+							 * When found, we add the association to the list
+							 * of associations to return.
+							 */
+							
+							for (int i = 0; i < qcReq.getAttributeList().size(); i++) {								
+								
 								if (aDS.getTargetEA()
 										.getEntityAttribute()
 										.equals(qcReq.getAttributeList().get(i))) {
@@ -374,8 +419,12 @@ public class AssociationsUtil {
 								}
 							}
 						} else {
-							// if entity in QueryContextRequest{request} has no
-							// attribute then keep attribute empty
+							/* 
+							 * The final case is here: The association is an attribute
+							 * association and the query specifies no attribute. In this
+							 * case we simply add the association to the list of associations
+							 * to return.
+							 */
 							additionalReqList.add(new AssociationDS(aDS
 									.getSourceEA(), aDS.getTargetEA()));
 						}
@@ -389,8 +438,8 @@ public class AssociationsUtil {
 
 	/**
 	 * Constructs a {@link DiscoverContextAvailabilityResponse} that contains all sources that
-	 * have to be queried in order to apply the given associations. 
-	 * 
+	 * have to be queried in order to apply the given associations.
+	 *
 	 * @param dcaRes
 	 * 	The given {@link DiscoverContextAvailabilityResponse} from which the sources are taken.
 	 * @param lassociDS
@@ -402,11 +451,14 @@ public class AssociationsUtil {
 			DiscoverContextAvailabilityResponse dcaRes,
 			List<AssociationDS> lassociDS) {
 
+		
 		List<ContextRegistrationResponse> lcrr = dcaRes
 				.getContextRegistrationResponse();
+		
+		
 		List<ContextRegistrationResponse> validlcrr = new LinkedList<ContextRegistrationResponse>();
 		DiscoverContextAvailabilityResponse vDCARes = new DiscoverContextAvailabilityResponse();
-		if (lassociDS.isEmpty()) {
+		if (!lassociDS.isEmpty()) {
 			for (AssociationDS aDS : lassociDS) {
 				for (ContextRegistrationResponse crr : lcrr) {
 					URI uri = crr.getContextRegistration()

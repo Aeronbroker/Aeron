@@ -40,7 +40,18 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextAvailabilityResp
 
 /**
  *
- * Interface to a storage maintaining availability subscriptions.
+ * Interface to a storage maintaining availability subscriptions. The storage works
+ * like a database, where the subscription id is the key, and the three values are the
+ * <p> 
+ * (1) the availability subscription response containing the subscription id 
+ * <p>
+ * (2) the 
+ * availability notification stating which are the current relevant data sources 
+ * <p>
+ * (3) the
+ * current list of associations relevant for the subscription. The associations are assumed
+ * to be already pre-processed, so that e.g. instead of A-->B and B-->C the association A-->C 
+ * appears when only a data source for A is available.
  *
  *
  */

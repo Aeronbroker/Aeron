@@ -103,7 +103,7 @@ public class AgentWrapper {
 	}
 
 	/**
-	 * Processes notifications,
+	 * Processes NGSI 10 notifications.
 	 * 
 	 * @param ncReq
 	 * The NGSI 10 NotifyContextRequest.
@@ -111,6 +111,14 @@ public class AgentWrapper {
 	 * The NGSI 10 NotifyContextResponse.
 	 */
 	public NotifyContextResponse receiveFrmAgents(NotifyContextRequest ncReq) {
+		
+		/*
+		 * We pass the notification directly to the subscription controller.
+		 * The response received from it is then returned. In case the response
+		 * is null or it has a status code other than 200 "OK", a response
+		 * with status code 500 "internal error" is returned. 
+		 */
+		
 		NotifyContextResponse ncRes = subscriptionController
 				.receiveReqFrmAgentWrapper(ncReq);
 		if ((ncRes == null)

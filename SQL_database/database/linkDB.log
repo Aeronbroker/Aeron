@@ -1,2 +1,292 @@
-/*C4*/SET SCHEMA PUBLIC
+/*C104*/SET SCHEMA PUBLIC
+INSERT INTO SUBSCRIPTION VALUES('8078608042275030639Cb53D4d9586e22bb9bc0bdf14','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextRequest>\u000a    <entityIdList>\u000a        <entityId type="House" isPattern="false">\u000a            <id>house3_30</id>\u000a        </entityId>\u000a    </entityIdList>\u000a    <attributeList>\u000a        <attribute>indoorTemperature</attribute>\u000a    </attributeList>\u000a    <reference>http://localhost:8070/ngsi10/notify</reference>\u000a    <duration>PT15M</duration>\u000a    <restriction>\u000a        <attributeExpression></attributeExpression>\u000a        <scope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a        </scope>\u000a    </restriction>\u000a    <throttling>PT1S</throttling>\u000a</subscribeContextRequest>\u000a','1401281850707')
+COMMIT
+DISCONNECT
+/*C105*/SET SCHEMA PUBLIC
+INSERT INTO SUBSCRIPTIONAV VALUES('20140528145730','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextAvailabilityResponse>\u000a    <subscriptionId>20140528145730</subscriptionId>\u000a    <duration>PT1M</duration>\u000a</subscribeContextAvailabilityResponse>\u000a','','')
+COMMIT
+DISCONNECT
+/*C106*/SET SCHEMA PUBLIC
+DELETE FROM SUBSCRIPTIONAV WHERE SUBAVID='20140528145730'
+INSERT INTO SUBSCRIPTIONAV VALUES('20140528145730','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextAvailabilityResponse>\u000a    <subscriptionId>20140528145730</subscriptionId>\u000a    <duration>PT1M</duration>\u000a</subscribeContextAvailabilityResponse>\u000a','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<notifyContextAvailabilityRequest>\u000a    <subscriptionId>20140528145730</subscriptionId>\u000a    <contextRegistrationResponseList>\u000a        <contextRegistrationResponse>\u000a            <contextRegistration>\u000a                <entityIdList>\u000a                    <entityId type="TemperatureSensor" isPattern="false">\u000a                        <id>Sensor5_30</id>\u000a                    </entityId>\u000a                </entityIdList>\u000a                <contextRegistrationAttributeList>\u000a                    <contextRegistrationAttribute>\u000a                        <name>measurement</name>\u000a                        <isDomain>false</isDomain>\u000a                    </contextRegistrationAttribute>\u000a                </contextRegistrationAttributeList>\u000a                <registrationMetaData/>\u000a                <providingApplication>http://localhost:8070/application/ngsi10</providingApplication>\u000a            </contextRegistration>\u000a        </contextRegistrationResponse>\u000a    </contextRegistrationResponseList>\u000a    <errorCode>\u000a        <code>200</code>\u000a        <reasonPhrase>Ok</reasonPhrase>\u000a    </errorCode>\u000a</notifyContextAvailabilityRequest>\u000a','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<AssociationDS>\u000a<SourceEA>\u000a<entityIdString>Sensor5_30</entityIdString>\u000a<entityAttribute>measurement</entityAttribute>\u000a<entityId type="TemperatureSensor" isPattern="false">\u000a<id>Sensor5_30</id>\u000a</entityId>\u000a</SourceEA>\u000a<TargetEA>\u000a<entityIdString>house3_30</entityIdString>\u000a<entityAttribute>indoorTemperature</entityAttribute>\u000a<entityId type="House" isPattern="false">\u000a<id>house3_30</id>\u000a</entityId>\u000a</TargetEA>\u000a</AssociationDS>\u000a<div>')
+COMMIT
+DISCONNECT
+/*C107*/SET SCHEMA PUBLIC
+INSERT INTO PAIRSAV VALUES('8078608042275030639Cb53D4d9586e22bb9bc0bdf14                                                                                                                                                            ','20140528145730                                                                                                                                                                                          ')
+COMMIT
+DISCONNECT
+/*C108*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C109*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C110*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C111*/SET SCHEMA PUBLIC
+INSERT INTO OUTSUBSCRIPTION VALUES('2014052814570369A','http://localhost:8070/application/ngsi10','1401281851380','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextRequest>\u000a    <entityIdList>\u000a        <entityId type="TemperatureSensor" isPattern="false">\u000a            <id>Sensor5_30</id>\u000a        </entityId>\u000a    </entityIdList>\u000a    <attributeList>\u000a        <attribute>measurement</attribute>\u000a    </attributeList>\u000a    <reference>http://10.1.2.192:8090/ngsi10/notify</reference>\u000a    <duration>P0Y0M0DT0H14M59.481S</duration>\u000a    <restriction>\u000a        <attributeExpression></attributeExpression>\u000a        <scope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a        </scope>\u000a    </restriction>\u000a    <throttling>PT1S</throttling>\u000a</subscribeContextRequest>\u000a')
+COMMIT
+DISCONNECT
+/*C112*/SET SCHEMA PUBLIC
+INSERT INTO PAIRS VALUES('8078608042275030639Cb53D4d9586e22bb9bc0bdf14                                                                                                                                                            ','2014052814570369A                                                                                                                                                                                       ')
+COMMIT
+DISCONNECT
+/*C113*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C114*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C115*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C116*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C117*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C118*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C119*/SET SCHEMA PUBLIC
+INSERT INTO SUBSCRIPTION VALUES('f048f00032f7b010a31Ca51D4bbfafe7e92f9331c079','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextRequest>\u000a    <entityIdList>\u000a        <entityId type="House_32" isPattern="true">\u000a            <id>[a-zA-Z0-9_-]{9,15}</id>\u000a        </entityId>\u000a    </entityIdList>\u000a    <attributeList>\u000a        <attribute>indoorTemperature</attribute>\u000a    </attributeList>\u000a    <reference>http://localhost:8070/ngsi10/notify</reference>\u000a    <duration>PT15M</duration>\u000a    <restriction>\u000a        <attributeExpression></attributeExpression>\u000a        <scope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a        </scope>\u000a    </restriction>\u000a    <throttling>PT1S</throttling>\u000a</subscribeContextRequest>\u000a','1401281854009')
+COMMIT
+DISCONNECT
+/*C120*/SET SCHEMA PUBLIC
+INSERT INTO SUBSCRIPTIONAV VALUES('20140528145734','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextAvailabilityResponse>\u000a    <subscriptionId>20140528145734</subscriptionId>\u000a    <duration>PT1M</duration>\u000a</subscribeContextAvailabilityResponse>\u000a','','')
+COMMIT
+DISCONNECT
+/*C121*/SET SCHEMA PUBLIC
+DELETE FROM SUBSCRIPTIONAV WHERE SUBAVID='20140528145734'
+INSERT INTO SUBSCRIPTIONAV VALUES('20140528145734','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextAvailabilityResponse>\u000a    <subscriptionId>20140528145734</subscriptionId>\u000a    <duration>PT1M</duration>\u000a</subscribeContextAvailabilityResponse>\u000a','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<notifyContextAvailabilityRequest>\u000a    <subscriptionId>20140528145734</subscriptionId>\u000a    <contextRegistrationResponseList>\u000a        <contextRegistrationResponse>\u000a            <contextRegistration>\u000a                <entityIdList>\u000a                    <entityId type="TemperatureSensor" isPattern="false">\u000a                        <id>Sensor5_32</id>\u000a                    </entityId>\u000a                </entityIdList>\u000a                <contextRegistrationAttributeList>\u000a                    <contextRegistrationAttribute>\u000a                        <name>measurement</name>\u000a                        <isDomain>false</isDomain>\u000a                    </contextRegistrationAttribute>\u000a                </contextRegistrationAttributeList>\u000a                <registrationMetaData/>\u000a                <providingApplication>http://localhost:8070/application/ngsi10</providingApplication>\u000a            </contextRegistration>\u000a        </contextRegistrationResponse>\u000a    </contextRegistrationResponseList>\u000a    <errorCode>\u000a        <code>200</code>\u000a        <reasonPhrase>Ok</reasonPhrase>\u000a    </errorCode>\u000a</notifyContextAvailabilityRequest>\u000a','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<AssociationDS>\u000a<SourceEA>\u000a<entityIdString>Sensor5_32</entityIdString>\u000a<entityAttribute>measurement</entityAttribute>\u000a<entityId type="TemperatureSensor" isPattern="false">\u000a<id>Sensor5_32</id>\u000a</entityId>\u000a</SourceEA>\u000a<TargetEA>\u000a<entityIdString>house3_32</entityIdString>\u000a<entityAttribute>indoorTemperature</entityAttribute>\u000a<entityId type="House_32" isPattern="false">\u000a<id>house3_32</id>\u000a</entityId>\u000a</TargetEA>\u000a</AssociationDS>\u000a<div>')
+COMMIT
+DISCONNECT
+/*C122*/SET SCHEMA PUBLIC
+INSERT INTO PAIRSAV VALUES('f048f00032f7b010a31Ca51D4bbfafe7e92f9331c079                                                                                                                                                            ','20140528145734                                                                                                                                                                                          ')
+COMMIT
+DISCONNECT
+/*C123*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C124*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C125*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C126*/SET SCHEMA PUBLIC
+INSERT INTO OUTSUBSCRIPTION VALUES('2014052814570656A','http://localhost:8070/application/ngsi10','1401281854667','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextRequest>\u000a    <entityIdList>\u000a        <entityId type="TemperatureSensor" isPattern="false">\u000a            <id>Sensor5_32</id>\u000a        </entityId>\u000a    </entityIdList>\u000a    <attributeList>\u000a        <attribute>measurement</attribute>\u000a    </attributeList>\u000a    <reference>http://10.1.2.192:8090/ngsi10/notify</reference>\u000a    <duration>P0Y0M0DT0H14M59.480S</duration>\u000a    <restriction>\u000a        <attributeExpression></attributeExpression>\u000a        <scope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a        </scope>\u000a    </restriction>\u000a    <throttling>PT1S</throttling>\u000a</subscribeContextRequest>\u000a')
+COMMIT
+DISCONNECT
+/*C127*/SET SCHEMA PUBLIC
+INSERT INTO PAIRS VALUES('f048f00032f7b010a31Ca51D4bbfafe7e92f9331c079                                                                                                                                                            ','2014052814570656A                                                                                                                                                                                       ')
+COMMIT
+DISCONNECT
+/*C128*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C129*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C130*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C131*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C132*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C133*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C134*/SET SCHEMA PUBLIC
+INSERT INTO SUBSCRIPTION VALUES('9038f0b02287e0e0a31Cf55D4554b1cc938ab3346e7c','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextRequest>\u000a    <entityIdList>\u000a        <entityId type="House_34" isPattern="true">\u000a            <id>.*</id>\u000a        </entityId>\u000a    </entityIdList>\u000a    <attributeList>\u000a        <attribute>indoorTemperature</attribute>\u000a    </attributeList>\u000a    <reference>http://localhost:8070/ngsi10/notify</reference>\u000a    <duration>PT15M</duration>\u000a    <restriction>\u000a        <attributeExpression></attributeExpression>\u000a        <scope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a        </scope>\u000a    </restriction>\u000a    <throttling>PT1S</throttling>\u000a</subscribeContextRequest>\u000a','1401281857297')
+COMMIT
+DISCONNECT
+/*C135*/SET SCHEMA PUBLIC
+INSERT INTO SUBSCRIPTIONAV VALUES('20140528145737','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextAvailabilityResponse>\u000a    <subscriptionId>20140528145737</subscriptionId>\u000a    <duration>PT1M</duration>\u000a</subscribeContextAvailabilityResponse>\u000a','','')
+COMMIT
+DISCONNECT
+/*C136*/SET SCHEMA PUBLIC
+DELETE FROM SUBSCRIPTIONAV WHERE SUBAVID='20140528145737'
+INSERT INTO SUBSCRIPTIONAV VALUES('20140528145737','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextAvailabilityResponse>\u000a    <subscriptionId>20140528145737</subscriptionId>\u000a    <duration>PT1M</duration>\u000a</subscribeContextAvailabilityResponse>\u000a','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<notifyContextAvailabilityRequest>\u000a    <subscriptionId>20140528145737</subscriptionId>\u000a    <contextRegistrationResponseList>\u000a        <contextRegistrationResponse>\u000a            <contextRegistration>\u000a                <entityIdList>\u000a                    <entityId type="TemperatureSensor" isPattern="false">\u000a                        <id>Sensor5_34</id>\u000a                    </entityId>\u000a                </entityIdList>\u000a                <contextRegistrationAttributeList>\u000a                    <contextRegistrationAttribute>\u000a                        <name>measurement</name>\u000a                        <isDomain>false</isDomain>\u000a                    </contextRegistrationAttribute>\u000a                </contextRegistrationAttributeList>\u000a                <registrationMetaData/>\u000a                <providingApplication>http://localhost:8070/application/ngsi10</providingApplication>\u000a            </contextRegistration>\u000a        </contextRegistrationResponse>\u000a    </contextRegistrationResponseList>\u000a    <errorCode>\u000a        <code>200</code>\u000a        <reasonPhrase>Ok</reasonPhrase>\u000a    </errorCode>\u000a</notifyContextAvailabilityRequest>\u000a','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<AssociationDS>\u000a<SourceEA>\u000a<entityIdString>Sensor5_34</entityIdString>\u000a<entityAttribute>measurement</entityAttribute>\u000a<entityId type="TemperatureSensor" isPattern="false">\u000a<id>Sensor5_34</id>\u000a</entityId>\u000a</SourceEA>\u000a<TargetEA>\u000a<entityIdString>house3_34</entityIdString>\u000a<entityAttribute>indoorTemperature</entityAttribute>\u000a<entityId type="House_34" isPattern="false">\u000a<id>house3_34</id>\u000a</entityId>\u000a</TargetEA>\u000a</AssociationDS>\u000a<div>')
+COMMIT
+DISCONNECT
+/*C137*/SET SCHEMA PUBLIC
+INSERT INTO PAIRSAV VALUES('9038f0b02287e0e0a31Cf55D4554b1cc938ab3346e7c                                                                                                                                                            ','20140528145737                                                                                                                                                                                          ')
+COMMIT
+DISCONNECT
+/*C138*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C139*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C140*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C141*/SET SCHEMA PUBLIC
+INSERT INTO OUTSUBSCRIPTION VALUES('2014052814570030A','http://localhost:8070/application/ngsi10','1401281858041','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextRequest>\u000a    <entityIdList>\u000a        <entityId type="TemperatureSensor" isPattern="false">\u000a            <id>Sensor5_34</id>\u000a        </entityId>\u000a    </entityIdList>\u000a    <attributeList>\u000a        <attribute>measurement</attribute>\u000a    </attributeList>\u000a    <reference>http://10.1.2.192:8090/ngsi10/notify</reference>\u000a    <duration>P0Y0M0DT0H14M59.392S</duration>\u000a    <restriction>\u000a        <attributeExpression></attributeExpression>\u000a        <scope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a        </scope>\u000a    </restriction>\u000a    <throttling>PT1S</throttling>\u000a</subscribeContextRequest>\u000a')
+COMMIT
+DISCONNECT
+/*C142*/SET SCHEMA PUBLIC
+INSERT INTO PAIRS VALUES('9038f0b02287e0e0a31Cf55D4554b1cc938ab3346e7c                                                                                                                                                            ','2014052814570030A                                                                                                                                                                                       ')
+COMMIT
+DISCONNECT
+/*C143*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C144*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C145*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C146*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C147*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C148*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C149*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C150*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C151*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C152*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C153*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C154*/SET SCHEMA PUBLIC
+DELETE FROM SUBSCRIPTIONAV WHERE SUBAVID='20140528145737'
+COMMIT
+DISCONNECT
+/*C155*/SET SCHEMA PUBLIC
+DELETE FROM PAIRSAV WHERE INID='9038f0b02287e0e0a31Cf55D4554b1cc938ab3346e7c                                                                                                                                                            ' AND AVID='20140528145737                                                                                                                                                                                          '
+COMMIT
+DISCONNECT
+/*C156*/SET SCHEMA PUBLIC
+DELETE FROM SUBSCRIPTION WHERE SUBID='9038f0b02287e0e0a31Cf55D4554b1cc938ab3346e7c'
+COMMIT
+DISCONNECT
+/*C157*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C158*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C159*/SET SCHEMA PUBLIC
+DELETE FROM PAIRS WHERE INID='9038f0b02287e0e0a31Cf55D4554b1cc938ab3346e7c                                                                                                                                                            ' AND OUTID='2014052814570030A                                                                                                                                                                                       '
+COMMIT
+DISCONNECT
+/*C160*/SET SCHEMA PUBLIC
+DELETE FROM OUTSUBSCRIPTION WHERE OUTSUBID='2014052814570030A' AND AGENTURI='http://localhost:8070/application/ngsi10' AND TIMESTAMP='1401281858041' AND OUTSUBREQ='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextRequest>\u000a    <entityIdList>\u000a        <entityId type="TemperatureSensor" isPattern="false">\u000a            <id>Sensor5_34</id>\u000a        </entityId>\u000a    </entityIdList>\u000a    <attributeList>\u000a        <attribute>measurement</attribute>\u000a    </attributeList>\u000a    <reference>http://10.1.2.192:8090/ngsi10/notify</reference>\u000a    <duration>P0Y0M0DT0H14M59.392S</duration>\u000a    <restriction>\u000a        <attributeExpression></attributeExpression>\u000a        <scope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a        </scope>\u000a    </restriction>\u000a    <throttling>PT1S</throttling>\u000a</subscribeContextRequest>\u000a'
+COMMIT
+DISCONNECT
+/*C161*/SET SCHEMA PUBLIC
+INSERT INTO SUBSCRIPTION VALUES('80c8b0c062374050335C953D4a7591ab9cdabb57059a','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextRequest>\u000a    <entityIdList>\u000a        <entityId type="House" isPattern="false">\u000a            <id>house3_39</id>\u000a        </entityId>\u000a    </entityIdList>\u000a    <attributeList>\u000a        <attribute>indoorTemperature</attribute>\u000a    </attributeList>\u000a    <reference>http://localhost:8070/ngsi10/notify</reference>\u000a    <duration>PT15M</duration>\u000a    <restriction>\u000a        <attributeExpression>//id[../../contextAttributeList/contextAttribute/metadata/contextMetadata[name=''ID'' and type=''string'']/value]</attributeExpression>\u000a        <scope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a        </scope>\u000a    </restriction>\u000a    <throttling>PT1S</throttling>\u000a</subscribeContextRequest>\u000a','1401281862380')
+COMMIT
+DISCONNECT
+/*C162*/SET SCHEMA PUBLIC
+INSERT INTO SUBSCRIPTIONAV VALUES('20140528145742','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextAvailabilityResponse>\u000a    <subscriptionId>20140528145742</subscriptionId>\u000a    <duration>PT1M</duration>\u000a</subscribeContextAvailabilityResponse>\u000a','','')
+COMMIT
+DISCONNECT
+/*C163*/SET SCHEMA PUBLIC
+DELETE FROM SUBSCRIPTIONAV WHERE SUBAVID='20140528145742'
+INSERT INTO SUBSCRIPTIONAV VALUES('20140528145742','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextAvailabilityResponse>\u000a    <subscriptionId>20140528145742</subscriptionId>\u000a    <duration>PT1M</duration>\u000a</subscribeContextAvailabilityResponse>\u000a','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<notifyContextAvailabilityRequest>\u000a    <subscriptionId>20140528145742</subscriptionId>\u000a    <contextRegistrationResponseList>\u000a        <contextRegistrationResponse>\u000a            <contextRegistration>\u000a                <entityIdList>\u000a                    <entityId type="TemperatureSensor" isPattern="false">\u000a                        <id>Sensor5_39</id>\u000a                    </entityId>\u000a                </entityIdList>\u000a                <contextRegistrationAttributeList>\u000a                    <contextRegistrationAttribute>\u000a                        <name>measurement</name>\u000a                        <isDomain>false</isDomain>\u000a                    </contextRegistrationAttribute>\u000a                </contextRegistrationAttributeList>\u000a                <registrationMetaData/>\u000a                <providingApplication>http://localhost:8070/application/ngsi10</providingApplication>\u000a            </contextRegistration>\u000a        </contextRegistrationResponse>\u000a    </contextRegistrationResponseList>\u000a    <errorCode>\u000a        <code>200</code>\u000a        <reasonPhrase>Ok</reasonPhrase>\u000a    </errorCode>\u000a</notifyContextAvailabilityRequest>\u000a','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<AssociationDS>\u000a<SourceEA>\u000a<entityIdString>Sensor5_39</entityIdString>\u000a<entityAttribute>measurement</entityAttribute>\u000a<entityId type="TemperatureSensor" isPattern="false">\u000a<id>Sensor5_39</id>\u000a</entityId>\u000a</SourceEA>\u000a<TargetEA>\u000a<entityIdString>house3_39</entityIdString>\u000a<entityAttribute>indoorTemperature</entityAttribute>\u000a<entityId type="House" isPattern="false">\u000a<id>house3_39</id>\u000a</entityId>\u000a</TargetEA>\u000a</AssociationDS>\u000a<div>')
+COMMIT
+DISCONNECT
+/*C164*/SET SCHEMA PUBLIC
+INSERT INTO PAIRSAV VALUES('80c8b0c062374050335C953D4a7591ab9cdabb57059a                                                                                                                                                            ','20140528145742                                                                                                                                                                                          ')
+COMMIT
+DISCONNECT
+/*C165*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C166*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C167*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C168*/SET SCHEMA PUBLIC
+INSERT INTO OUTSUBSCRIPTION VALUES('2014052814570067A','http://localhost:8070/application/ngsi10','1401281863078','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextRequest>\u000a    <entityIdList>\u000a        <entityId type="TemperatureSensor" isPattern="false">\u000a            <id>Sensor5_39</id>\u000a        </entityId>\u000a    </entityIdList>\u000a    <attributeList>\u000a        <attribute>measurement</attribute>\u000a    </attributeList>\u000a    <reference>http://10.1.2.192:8090/ngsi10/notify</reference>\u000a    <duration>P0Y0M0DT0H14M59.439S</duration>\u000a    <restriction>\u000a        <attributeExpression>//id[../../contextAttributeList/contextAttribute/metadata/contextMetadata[name=''ID'' and type=''string'']/value]</attributeExpression>\u000a        <scope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a        </scope>\u000a    </restriction>\u000a    <throttling>PT1S</throttling>\u000a</subscribeContextRequest>\u000a')
+COMMIT
+DISCONNECT
+/*C169*/SET SCHEMA PUBLIC
+INSERT INTO PAIRS VALUES('80c8b0c062374050335C953D4a7591ab9cdabb57059a                                                                                                                                                            ','2014052814570067A                                                                                                                                                                                       ')
+COMMIT
+DISCONNECT
+/*C170*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C171*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C172*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C173*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C174*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C175*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C176*/SET SCHEMA PUBLIC
+INSERT INTO SUBSCRIPTION VALUES('20c8a0c04287a0c0234C258D415ea43e1d1b5ec9e60b','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextRequest>\u000a    <entityIdList>\u000a        <entityId type="House" isPattern="false">\u000a            <id>house3_46</id>\u000a        </entityId>\u000a    </entityIdList>\u000a    <attributeList>\u000a        <attribute>indoorTemperature</attribute>\u000a    </attributeList>\u000a    <reference>http://localhost:8070/ngsi10/notify</reference>\u000a    <duration>PT15M</duration>\u000a    <restriction>\u000a        <attributeExpression></attributeExpression>\u000a        <scope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a        </scope>\u000a    </restriction>\u000a    <throttling>PT1S</throttling>\u000a</subscribeContextRequest>\u000a','1401281867410')
+COMMIT
+DISCONNECT
+/*C177*/SET SCHEMA PUBLIC
+INSERT INTO SUBSCRIPTIONAV VALUES('20140528145747','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextAvailabilityResponse>\u000a    <subscriptionId>20140528145747</subscriptionId>\u000a    <duration>PT1M</duration>\u000a</subscribeContextAvailabilityResponse>\u000a','','')
+COMMIT
+DISCONNECT
+/*C178*/SET SCHEMA PUBLIC
+DELETE FROM SUBSCRIPTIONAV WHERE SUBAVID='20140528145747'
+INSERT INTO SUBSCRIPTIONAV VALUES('20140528145747','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextAvailabilityResponse>\u000a    <subscriptionId>20140528145747</subscriptionId>\u000a    <duration>PT1M</duration>\u000a</subscribeContextAvailabilityResponse>\u000a','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<notifyContextAvailabilityRequest>\u000a    <subscriptionId>20140528145747</subscriptionId>\u000a    <contextRegistrationResponseList>\u000a        <contextRegistrationResponse>\u000a            <contextRegistration>\u000a                <entityIdList>\u000a                    <entityId type="TemperatureSensor" isPattern="false">\u000a                        <id>Sensor5_46</id>\u000a                    </entityId>\u000a                </entityIdList>\u000a                <contextRegistrationAttributeList>\u000a                    <contextRegistrationAttribute>\u000a                        <name>roomStatus</name>\u000a                        <isDomain>true</isDomain>\u000a                    </contextRegistrationAttribute>\u000a                </contextRegistrationAttributeList>\u000a                <registrationMetaData/>\u000a                <providingApplication>http://localhost:8070/application/ngsi10</providingApplication>\u000a            </contextRegistration>\u000a        </contextRegistrationResponse>\u000a    </contextRegistrationResponseList>\u000a    <errorCode>\u000a        <code>200</code>\u000a        <reasonPhrase>Ok</reasonPhrase>\u000a    </errorCode>\u000a</notifyContextAvailabilityRequest>\u000a','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<AssociationDS>\u000a<SourceEA>\u000a<entityIdString>Sensor5_46</entityIdString>\u000a<entityAttribute>roomStatus</entityAttribute>\u000a<entityId type="TemperatureSensor" isPattern="false">\u000a<id>Sensor5_46</id>\u000a</entityId>\u000a</SourceEA>\u000a<TargetEA>\u000a<entityIdString>house3_46</entityIdString>\u000a<entityAttribute>indoorTemperature</entityAttribute>\u000a<entityId type="House" isPattern="false">\u000a<id>house3_46</id>\u000a</entityId>\u000a</TargetEA>\u000a</AssociationDS>\u000a<div>')
+COMMIT
+DISCONNECT
+/*C179*/SET SCHEMA PUBLIC
+INSERT INTO PAIRSAV VALUES('20c8a0c04287a0c0234C258D415ea43e1d1b5ec9e60b                                                                                                                                                            ','20140528145747                                                                                                                                                                                          ')
+COMMIT
+DISCONNECT
+/*C180*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C181*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C182*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C183*/SET SCHEMA PUBLIC
+INSERT INTO OUTSUBSCRIPTION VALUES('2014052814570061A','http://localhost:8070/application/ngsi10','1401281868071','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextRequest>\u000a    <entityIdList>\u000a        <entityId type="TemperatureSensor" isPattern="false">\u000a            <id>Sensor5_46</id>\u000a        </entityId>\u000a    </entityIdList>\u000a    <attributeList>\u000a        <attribute>roomStatus</attribute>\u000a    </attributeList>\u000a    <reference>http://10.1.2.192:8090/ngsi10/notify</reference>\u000a    <duration>P0Y0M0DT0H14M59.474S</duration>\u000a    <restriction>\u000a        <attributeExpression></attributeExpression>\u000a        <scope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a        </scope>\u000a    </restriction>\u000a    <throttling>PT1S</throttling>\u000a</subscribeContextRequest>\u000a')
+COMMIT
+DISCONNECT
+/*C184*/SET SCHEMA PUBLIC
+INSERT INTO PAIRS VALUES('20c8a0c04287a0c0234C258D415ea43e1d1b5ec9e60b                                                                                                                                                            ','2014052814570061A                                                                                                                                                                                       ')
+COMMIT
+DISCONNECT
+/*C185*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C186*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C187*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C188*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C189*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C190*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C191*/SET SCHEMA PUBLIC
+INSERT INTO SUBSCRIPTION VALUES('c0f87030f2d7c0a013fC859D44ddb01baf0f6f331538','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextRequest>\u000a    <entityIdList>\u000a        <entityId type="House" isPattern="false">\u000a            <id>house3_51</id>\u000a        </entityId>\u000a    </entityIdList>\u000a    <attributeList>\u000a        <attribute>indoorTemperature</attribute>\u000a    </attributeList>\u000a    <reference>http://localhost:8070/ngsi10/notify</reference>\u000a    <duration>PT15M</duration>\u000a    <restriction>\u000a        <attributeExpression>//id[../../contextAttributeList/contextAttribute/metadata/contextMetadata[name=''ID'' and type=''string'']/value]</attributeExpression>\u000a        <scope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a        </scope>\u000a    </restriction>\u000a    <throttling>PT1S</throttling>\u000a</subscribeContextRequest>\u000a','1401281871899')
+COMMIT
+DISCONNECT
+/*C192*/SET SCHEMA PUBLIC
+INSERT INTO SUBSCRIPTIONAV VALUES('20140528145752','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextAvailabilityResponse>\u000a    <subscriptionId>20140528145752</subscriptionId>\u000a    <duration>PT1M</duration>\u000a</subscribeContextAvailabilityResponse>\u000a','','')
+COMMIT
+DISCONNECT
+/*C193*/SET SCHEMA PUBLIC
+DELETE FROM SUBSCRIPTIONAV WHERE SUBAVID='20140528145752'
+INSERT INTO SUBSCRIPTIONAV VALUES('20140528145752','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextAvailabilityResponse>\u000a    <subscriptionId>20140528145752</subscriptionId>\u000a    <duration>PT1M</duration>\u000a</subscribeContextAvailabilityResponse>\u000a','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<notifyContextAvailabilityRequest>\u000a    <subscriptionId>20140528145752</subscriptionId>\u000a    <contextRegistrationResponseList>\u000a        <contextRegistrationResponse>\u000a            <contextRegistration>\u000a                <entityIdList>\u000a                    <entityId type="TemperatureSensor" isPattern="false">\u000a                        <id>Sensor5_51</id>\u000a                    </entityId>\u000a                </entityIdList>\u000a                <contextRegistrationAttributeList>\u000a                    <contextRegistrationAttribute>\u000a                        <name>measurement</name>\u000a                        <isDomain>false</isDomain>\u000a                    </contextRegistrationAttribute>\u000a                </contextRegistrationAttributeList>\u000a                <registrationMetaData/>\u000a                <providingApplication>http://localhost:8070/application/ngsi10</providingApplication>\u000a            </contextRegistration>\u000a        </contextRegistrationResponse>\u000a    </contextRegistrationResponseList>\u000a    <errorCode>\u000a        <code>200</code>\u000a        <reasonPhrase>Ok</reasonPhrase>\u000a    </errorCode>\u000a</notifyContextAvailabilityRequest>\u000a','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<AssociationDS>\u000a<SourceEA>\u000a<entityIdString>Sensor5_51</entityIdString>\u000a<entityAttribute>measurement</entityAttribute>\u000a<entityId type="TemperatureSensor" isPattern="false">\u000a<id>Sensor5_51</id>\u000a</entityId>\u000a</SourceEA>\u000a<TargetEA>\u000a<entityIdString>house3_51</entityIdString>\u000a<entityAttribute>indoorTemperature</entityAttribute>\u000a<entityId type="House" isPattern="false">\u000a<id>house3_51</id>\u000a</entityId>\u000a</TargetEA>\u000a</AssociationDS>\u000a<div>')
+COMMIT
+DISCONNECT
+/*C194*/SET SCHEMA PUBLIC
+INSERT INTO PAIRSAV VALUES('c0f87030f2d7c0a013fC859D44ddb01baf0f6f331538                                                                                                                                                            ','20140528145752                                                                                                                                                                                          ')
+COMMIT
+DISCONNECT
+/*C195*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C196*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C197*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C198*/SET SCHEMA PUBLIC
+INSERT INTO OUTSUBSCRIPTION VALUES('2014052814570561A','http://localhost:8070/application/ngsi10','1401281872570','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\u000a<subscribeContextRequest>\u000a    <entityIdList>\u000a        <entityId type="TemperatureSensor" isPattern="false">\u000a            <id>Sensor5_51</id>\u000a        </entityId>\u000a    </entityIdList>\u000a    <attributeList>\u000a        <attribute>measurement</attribute>\u000a    </attributeList>\u000a    <reference>http://10.1.2.192:8090/ngsi10/notify</reference>\u000a    <duration>P0Y0M0DT0H14M59.462S</duration>\u000a    <restriction>\u000a        <attributeExpression>//id[../../contextAttributeList/contextAttribute/metadata/contextMetadata[name=''ID'' and type=''string'']/value]</attributeExpression>\u000a        <scope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a            <operationScope>\u000a                <scopeType></scopeType>\u000a                <scopeValue/>\u000a            </operationScope>\u000a        </scope>\u000a    </restriction>\u000a    <throttling>PT1S</throttling>\u000a</subscribeContextRequest>\u000a')
+COMMIT
+DISCONNECT
+/*C199*/SET SCHEMA PUBLIC
+INSERT INTO PAIRS VALUES('c0f87030f2d7c0a013fC859D44ddb01baf0f6f331538                                                                                                                                                            ','2014052814570561A                                                                                                                                                                                       ')
+COMMIT
+DISCONNECT
+/*C200*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C201*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C202*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C203*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C204*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C205*/SET SCHEMA PUBLIC
 DISCONNECT

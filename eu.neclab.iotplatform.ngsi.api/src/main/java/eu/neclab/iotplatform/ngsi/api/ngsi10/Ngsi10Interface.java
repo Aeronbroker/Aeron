@@ -1,12 +1,12 @@
 /*******************************************************************************
  *   Copyright (c) 2014, NEC Europe Ltd.
  *   All rights reserved.
- *   
+ *
  *   Authors:
  *           * Salvatore Longo - salvatore.longo@neclab.eu
  *           * Tobias Jacobs - tobias.jacobs@neclab.eu
  *           * Raihan Ul-Islam - raihan.ul-islam@neclab.eu
- *  
+ *
  *    Redistribution and use in source and binary forms, with or without
  *    modification, are permitted provided that the following conditions are met:
  *   1. Redistributions of source code must retain the above copyright
@@ -23,10 +23,10 @@
  *
  * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE 
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+ * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
  * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -49,15 +49,15 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextSubscriptionRequest
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextSubscriptionResponse;
 
 /**
- * Represents the OMA NGSI 10 interface, as defined in the 
- * OMA NGSI standard version 1.0.  
+ * Represents the OMA NGSI 10 interface, as defined in the
+ * OMA NGSI standard version 1.0.
  */
 @Resource
 public interface Ngsi10Interface {
 
 	/**
 	 * Operation for querying context information.
-	 * 
+	 *
 	 * @param request The NGSI 10 QueryContextRequest.
 	 * @return
 	 * The NGSI 10 QueryContextResponse.
@@ -66,7 +66,7 @@ public interface Ngsi10Interface {
 
 	/**
 	 * Operation for subscribing to context information.
-	 * 
+	 *
 	 * @param request The NGSI 10 SubscribeContextRequest.
 	 * @return
 	 * The NGSI 10 SubscribeContextResponse.
@@ -75,7 +75,7 @@ public interface Ngsi10Interface {
 
 	/**
 	 * Operation for updating context subscriptions.
-	 * 
+	 *
 	 * @param request The NGSI 10 UpdateContextSusbcriptionRequest.
 	 * @return
 	 * The NGSI 10 UpdateContextSusbcriptionResponse.
@@ -84,8 +84,8 @@ public interface Ngsi10Interface {
 			UpdateContextSubscriptionRequest request);
 
 	/**
-	 * Operation for canceling context subscriptions. 
-	 * 
+	 * Operation for canceling context subscriptions.
+	 *
 	 * @param request The NGSI 10 UnsubscribeContextRequest.
 	 * @return The NGSI 10 UnsubscribeContextResponse.
 	 */
@@ -93,7 +93,7 @@ public interface Ngsi10Interface {
 			UnsubscribeContextRequest request);
 
 	/**
-	 * 
+	 *
 	 * @param request The NGSI 10 UpdateContextRequest.
 	 * @return The NGSI 10 UpdateContextResponse.
 	 */
@@ -102,7 +102,7 @@ public interface Ngsi10Interface {
 	/**
 	 * Operation for processing notifications that are sent in reaction
 	 * to subscriptions.
-	 * 
+	 *
 	 * @param request The NGSI 10 NotifyContextRequest.
 	 * @return The NGSI 10 NotifyContextResponse.
 	 */

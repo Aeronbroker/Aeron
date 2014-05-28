@@ -1,12 +1,12 @@
 /*******************************************************************************
  *   Copyright (c) 2014, NEC Europe Ltd.
  *   All rights reserved.
- *   
+ *
  *   Authors:
  *           * Salvatore Longo - salvatore.longo@neclab.eu
  *           * Tobias Jacobs - tobias.jacobs@neclab.eu
  *           * Raihan Ul-Islam - raihan.ul-islam@neclab.eu
- *  
+ *
  *    Redistribution and use in source and binary forms, with or without
  *    modification, are permitted provided that the following conditions are met:
  *   1. Redistributions of source code must retain the above copyright
@@ -23,10 +23,10 @@
  *
  * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE 
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+ * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
  * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -40,15 +40,13 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 
+import eu.neclab.iotplatform.iotbroker.commons.GenerateMetadata;
 import eu.neclab.iotplatform.iotbroker.commons.XmlFactory;
 import eu.neclab.iotplatform.iotbroker.commons.XmlValidator;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
@@ -92,7 +90,7 @@ import eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface;
  * that it can initiate communication with an NGSI-9 server. However, unlike for
  * NGSI-10 communication, the address of the NGSI-9 server is fixed by a
  * configuration parameter.
- * 
+ *
  */
 public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
@@ -121,9 +119,9 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	@Value("${pathPreFix_ngsi9}")
 	private String ngsi9rootPath;
 
-	/** The ngsi10root path. */
+/*	*//** The ngsi10root path. *//*
 	@Value("${pathPreFix_ngsi10}")
-	private String ngsi10rootPath;
+	private String ngsi10rootPath;*/
 
 	/** Port of tomcat server from command-line parameter */
 	private final String tomcatPort = System.getProperty("tomcat.init.port");
@@ -132,61 +130,14 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	private static final String CONTENT_TYPE = "application/xml";
 
 	/**
-	 * Creates the domain timestamp metadata.
-	 * 
-	 * @return the context metadata
-	 * @throws URISyntaxException
-	 *             the uRI syntax exception
-	 */
-	private static ContextMetadata createDomainTimestampMetadata()
-			throws URISyntaxException {
-
-		// Define Timestamp Metadata
-		ContextMetadata timestampMetadata = new ContextMetadata();
-		Date date = new Date();
-		DateFormat mISO8601Local = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-		String formattedDate = mISO8601Local.format(date);
-
-		timestampMetadata.setName("TimeStamp");
-		timestampMetadata.setType(new URI("ISO8601"));
-		timestampMetadata.setValue(formattedDate);
-
-		return timestampMetadata;
-
-	}
-
-	/**
-	 * Creates the source ip metadata.
-	 * 
-	 * @param url
-	 *            the url
-	 * @return the context metadata
-	 * @throws URISyntaxException
-	 *             the uRI syntax exception
-	 */
-	private static ContextMetadata createSourceIPMetadata(URI url)
-			throws URISyntaxException {
-		// Define SourceIP Metadata
-		ContextMetadata sourceIP = new ContextMetadata();
-
-		sourceIP.setName("SourceIP");
-
-		sourceIP.setType(new URI(
-				"http://www.w3.org/TR/webarch/#URI-registration"));
-
-		sourceIP.setValue(url.toString());
-		return sourceIP;
-	}
-
-	/**
 	 * Calls the QueryContext method on an NGSI-10 server.
-	 * 
+	 *
 	 * @param request
 	 *            The request message.
 	 * @param uri
 	 *            The address of the NGSI-10 server.
 	 * @return The response message.
-	 * 
+	 *
 	 */
 	@Override
 	public QueryContextResponse queryContext(QueryContextRequest request,
@@ -209,8 +160,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 			logger.debug("Starting Http Thread");
 
-			String respObj = connection.initializeConnection(url, "/"
-					+ ngsi10rootPath + "/queryContext", "POST", request,
+			String respObj = connection.initializeConnection(url, "/queryContext", "POST", request,
 					CONTENT_TYPE);
 
 			if ("500".matches(respObj.substring(0, 3))) {
@@ -250,11 +200,11 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 					output.getListContextElementResponse().get(i)
 							.getContextElement().getDomainMetadata()
-							.add(createSourceIPMetadata(uri));
+							.add(GenerateMetadata.createSourceIPMetadata(uri));
 
 					output.getListContextElementResponse().get(i)
 							.getContextElement().getDomainMetadata()
-							.add(createDomainTimestampMetadata());
+							.add(GenerateMetadata.createDomainTimestampMetadata());
 
 				}
 
@@ -291,13 +241,13 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/**
 	 * Calls the SubscribeContext method on an NGSI-10 server.
-	 * 
+	 *
 	 * @param request
 	 *            The request message.
 	 * @param uri
 	 *            The address of the NGSI-10 server.
 	 * @return The response message.
-	 * 
+	 *
 	 */
 	@Override
 	public SubscribeContextResponse subscribeContext(
@@ -317,10 +267,10 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			HttpConnectionClient connection = new HttpConnectionClient();
 
 			request.setReference("http://" + thisIp.getHostAddress() + ":"
-					+ tomcatPort + "/" + ngsi10rootPath + "/notify");
+					+ tomcatPort + "/ngsi10/notify");
 
-			String respObj = connection.initializeConnection(url, "/"
-					+ ngsi10rootPath + "/subscribeContext", "POST", request,
+			String respObj = connection.initializeConnection(url,
+					"/subscribeContext", "POST", request,
 					CONTENT_TYPE);
 
 			if ("500".matches(respObj.substring(0, 3))) {
@@ -383,13 +333,13 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/**
 	 * Calls the UpdateContextSubscription method on an NGSI-10 server.
-	 * 
+	 *
 	 * @param request
 	 *            The request message.
 	 * @param uri
 	 *            The address of the NGSI-10 server.
 	 * @return The response message.
-	 * 
+	 *
 	 */
 	@Override
 	public UpdateContextSubscriptionResponse updateContextSubscription(
@@ -404,8 +354,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			HttpConnectionClient connection = new HttpConnectionClient();
 			logger.debug("Starting Http Thread ");
 
-			String respObj = connection.initializeConnection(url, "/"
-					+ ngsi10rootPath + "/updateContextSubscription", "POST",
+			String respObj = connection.initializeConnection(url, "/updateContextSubscription", "POST",
 					request, CONTENT_TYPE);
 
 			if ("500".matches(respObj.substring(0, 3))) {
@@ -457,13 +406,13 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/**
 	 * Calls the UnsubscribeContext method on an NGSI-10 server.
-	 * 
+	 *
 	 * @param request
 	 *            The request message.
 	 * @param uri
 	 *            The address of the NGSI-10 server.
 	 * @return The response message.
-	 * 
+	 *
 	 */
 	@Override
 	public UnsubscribeContextResponse unsubscribeContext(
@@ -479,8 +428,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			logger.debug("Thread Http Start");
 
 			// connect and get response
-			String respObj = connection.initializeConnection(url, "/"
-					+ ngsi10rootPath + "/unsubscribeContext", "POST", request,
+			String respObj = connection.initializeConnection(url, "/unsubscribeContext", "POST", request,
 					CONTENT_TYPE);
 
 			if ("500".matches(respObj.substring(0, 3))) {
@@ -533,19 +481,19 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/**
 	 * Calls the UpdateContext method on an NGSI-10 server.
-	 * 
+	 *
 	 * @param request
 	 *            The request message.
 	 * @param uri
 	 *            The address of the NGSI-10 server
 	 * @return The response message.
-	 * 
+	 *
 	 */
 	@Override
 	public UpdateContextResponse updateContext(UpdateContextRequest request,
 			URI uri) {
 
-		boolean status = true;
+		boolean isInvalid = true;
 		UpdateContextResponse output = new UpdateContextResponse();
 
 		try {
@@ -554,8 +502,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			HttpConnectionClient connection = new HttpConnectionClient();
 			logger.debug("Starting Http Thread ");
 
-			String respObj = connection.initializeConnection(url, "/"
-					+ ngsi10rootPath + "/updateContext", "POST", request,
+			String respObj = connection.initializeConnection(url, "/updateContext", "POST", request,
 					CONTENT_TYPE);
 
 			if ("500".matches(respObj.substring(0, 3))) {
@@ -568,7 +515,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 			} else {
 
-				// start the connection and retrieve the response
+				// convert the response
 				output = (UpdateContextResponse) xmlFactory.convertStringToXml(
 						respObj, UpdateContextResponse.class);
 
@@ -576,11 +523,11 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 			if (output != null) {
 
-				status = validator.xmlValidation(output, ngsi10schema);
+				isInvalid = validator.xmlValidation(output, ngsi10schema);
 
 			}
 
-			if (!status) {
+			if (!isInvalid) {
 
 				// Add Metadata only when the contextElementResponse is not null
 				if (output.getContextElementResponse() != null) {
@@ -590,11 +537,11 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 						try {
 							output.getContextElementResponse().get(i)
 									.getContextElement().getDomainMetadata()
-									.add(createSourceIPMetadata(uri));
+									.add(GenerateMetadata.createSourceIPMetadata(uri));
 
 							output.getContextElementResponse().get(i)
 									.getContextElement().getDomainMetadata()
-									.add(createDomainTimestampMetadata());
+									.add(GenerateMetadata.createDomainTimestampMetadata());
 						} catch (URISyntaxException e) {
 							logger.debug("Malformed URI", e);
 							break;
@@ -606,10 +553,10 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			} else {
 
 				output = new UpdateContextResponse();
-				output.setContextElementResponse(null);
+				//output.setContextElementResponse(null);
 				output.setErrorCode(new StatusCode(Code.INTERNALERROR_500
 						.getCode(), ReasonPhrase.RECEIVERINTERNALERROR_500
-						.toString(), null));
+						.toString(), "Response from Pub/Sub not Valid!"));
 				return output;
 
 			}
@@ -619,7 +566,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 			output = new UpdateContextResponse(new StatusCode(
 					Code.INTERNALERROR_500.getCode(),
-					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(), null),
+					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(), "Malformed URI"),
 					null);
 		}
 
@@ -629,7 +576,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/**
 	 * Calls the DiscoverContextAvailability method on the NGSI-9 server.
-	 * 
+	 *
 	 * @param request
 	 *            The request message.
 	 * @return The response message.
@@ -708,7 +655,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	 * Calls the RegisterContext method on the NGSI-9 server. <br>
 	 * Note: Unlike specified below, this method is currently not implemented
 	 * and returns null.
-	 * 
+	 *
 	 * @param request
 	 *            The request message.
 	 * @return The response message.
@@ -723,7 +670,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/**
 	 * Calls the SubscribeContextAvailability method on the NGSI-9 server.
-	 * 
+	 *
 	 * @param request
 	 *            The request message.
 	 * @return The response message.
@@ -745,6 +692,9 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			String response = newTread.initializeConnection(ngsi9, "/"
 					+ ngsi9rootPath + "/subscribeContextAvailability", "POST",
 					request, CONTENT_TYPE);
+
+
+
 
 			if ("500".equals(response.substring(0, 3))) {
 
@@ -800,7 +750,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/**
 	 * Calls the UnsubscribeContextAvailability method on the NGSI-9 server.
-	 * 
+	 *
 	 * @param request
 	 *            The request message.
 	 * @return The response message.
@@ -875,7 +825,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	 * server. <br>
 	 * Note: Unlike specified below, this method is currently not implemented
 	 * and returns null.
-	 * 
+	 *
 	 * @param request
 	 *            The request message.
 	 * @return The response message.
@@ -889,13 +839,13 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/**
 	 * Calls the NotifyContext method on an NGSI-10 server.
-	 * 
+	 *
 	 * @param request
 	 *            The request message.
 	 * @param uri
 	 *            The address of the NGSI-10 server.
 	 * @return The response message.
-	 * 
+	 *
 	 */
 	@Override
 	public NotifyContextResponse notifyContext(NotifyContextRequest request,
@@ -913,11 +863,11 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 				request.getContextElementResponseList().get(i)
 						.getContextElement().getDomainMetadata()
-						.add(createSourceIPMetadata(uri));
+						.add(GenerateMetadata.createSourceIPMetadata(uri));
 
 				request.getContextElementResponseList().get(i)
 						.getContextElement().getDomainMetadata()
-						.add(createDomainTimestampMetadata());
+						.add(GenerateMetadata.createDomainTimestampMetadata());
 
 			}
 
@@ -980,7 +930,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/**
 	 * Calls the NotifyContextAvailability method on the NGSI-9 server.
-	 * 
+	 *
 	 * @param request
 	 *            The request message.
 	 * @return The response message.

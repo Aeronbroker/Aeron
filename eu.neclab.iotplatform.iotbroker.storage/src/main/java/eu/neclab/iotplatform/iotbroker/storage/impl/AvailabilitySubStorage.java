@@ -1,12 +1,12 @@
 /*******************************************************************************
  *   Copyright (c) 2014, NEC Europe Ltd.
  *   All rights reserved.
- *   
+ *
  *   Authors:
  *           * Salvatore Longo - salvatore.longo@neclab.eu
  *           * Tobias Jacobs - tobias.jacobs@neclab.eu
  *           * Raihan Ul-Islam - raihan.ul-islam@neclab.eu
- *  
+ *
  *    Redistribution and use in source and binary forms, with or without
  *    modification, are permitted provided that the following conditions are met:
  *   1. Redistributions of source code must retain the above copyright
@@ -23,10 +23,10 @@
  *
  * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE 
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+ * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
  * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -82,7 +82,7 @@ public class AvailabilitySubStorage implements
 			c = DriverManager.getConnection(URICONNECTION + NAME_DB, username,
 					password);
 
-			stmt = c.prepareStatement("INSERT INTO SUBSCRIPTIONAV VALUES ( ? , ? , ?,?  )");
+			stmt = c.prepareStatement("INSERT INTO SUBSCRIPTIONAV VALUES ( ? , ? , ?, ?  )");
 
 			stmt.setString(1, id);
 			stmt.setString(2, request.toString());
@@ -222,7 +222,7 @@ public class AvailabilitySubStorage implements
 		try {
 
 
-				Class.forName("org.hsqldb.jdbc.JDBCDriver");
+			Class.forName("org.hsqldb.jdbc.JDBCDriver");
 
 
 			c = DriverManager.getConnection(URICONNECTION + NAME_DB, username,
@@ -235,6 +235,12 @@ public class AvailabilitySubStorage implements
 
 			while (result.next()) {
 				listAssoc.add(result.getString(1));
+
+			}
+
+			if(listAssoc.get(0).equals("")){
+
+				listAssoc.clear();
 
 			}
 

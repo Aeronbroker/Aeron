@@ -48,7 +48,8 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextRequest;
 
 /**
- *  Represents the recurring task for sending notifications. 
+ *  Represents the recurring task for sending notifications in 
+ *  reaction to subscriptions.
  */
 public class ThrottlingTask extends TimerTask {
 	private static Logger logger = Logger.getLogger(ThrottlingTask.class);
@@ -75,71 +76,102 @@ public class ThrottlingTask extends TimerTask {
 	}
 
 	/**
-	 * Sends notifications when necessary.
+	 * Flushes the notification queue for a subscription.
 	 */
 	@Override
 	public void run() {
+		
+		/*
+		 * Retrieve the subscription data from the subscription store 
+		 */
 
 		SubscriptionData subscriptionData = subContoller.getSubscriptionStore()
-				.get(subId);
+				.get(subId);		
+		
 		if (subscriptionData.getContextResponseQueue().isEmpty()) {
+			logger.info("Terminating notification task as there are no notifications to send.");
 			return;
 		}
+		
+		
 
 		try {
+			
+			/*
+			 *  Lock this subscription data so that no one can add
+			 *  notifications to it while sending the notifications.
+			 */
+			
 			subscriptionData.getLock().lock();
-			logger.info("#############################" + subId);
+			logger.debug("subscription ID to notify: " + subId);
 
-			// Get the subId of the Agent Subscription
+			/* 
+			 * Get the availability subscription
+			 */
 			List<String> subIdAgent = subContoller.getLinkAvSub().getAvailIDs(
 					subId);
-			logger.info("--------------> SIZE QUERY" + subIdAgent.size());
-			logger.info("#############################" + subIdAgent.get(0));
+			logger.debug("Number of availability subscriptions corresponding to the incoming:" + subIdAgent.size());
+			logger.debug("First availability subscription:" + subIdAgent.get(0));
 
+			/*
+			 * Get the incoming subscription
+			 */
 			SubscribeContextRequest request = subContoller.getIncomingSub()
 					.getIncomingSubscription(subId);
-			// send notification
+			
+			logger.debug("Processing Notication for this subscription:" + request.toString());
+			
+
 			NotifyContextRequest notifyReq = null;
-			try {
-				if (request.getRestriction() != null) {
-					QueryContextResponse qcr = new QueryContextResponse();
-					qcr.setContextResponseList(subscriptionData
-							.getContextResponseQueue());
-					Restriction.applyRestriction(request.getRestriction()
-							.getAttributeExpression(), qcr);
-					notifyReq = new NotifyContextRequest(subId, "http://"
-							+ InetAddress.getLocalHost().getHostAddress() + ":"
-							+ System.getProperty("tomcat.init.port")
-							+ "/ngsi10/notify",
-							qcr.getListContextElementResponse());
-				}
-
-				notifyReq = new NotifyContextRequest(subId, "http://"
-						+ InetAddress.getLocalHost().getHostAddress() + ":"
-						+ System.getProperty("tomcat.init.port")
-						+ "/ngsi10/notify",
-						subscriptionData.getContextResponseQueue());
-
-			} catch (UnknownHostException e) {
-				logger.info("Unknown host", e);
+				
+			logger.debug("Notification queue: " 
+			+ subscriptionData.getContextResponseQueue().toString());
+			
+			/*
+			 * Create a query context response from the
+			 * context element responses in the notification queue
+			 */
+			QueryContextResponse qcr = new QueryContextResponse();
+			qcr.setContextResponseList(subscriptionData
+					.getContextResponseQueue());
+			
+			/*
+			 * Apply the restriction if there is any
+			 */
+			if(request.getRestriction() != null){
+				Restriction.applyRestriction(request.getRestriction()
+					.getAttributeExpression(), qcr);
 			}
+			
+			logger.info("Notification queue after applying restriction: "
+			+ qcr.getListContextElementResponse());
+			
+			/*
+			 * Create the notification request
+			 */				
+			notifyReq = new NotifyContextRequest(subId, "http://"
+					+ InetAddress.getLocalHost().getHostAddress() + ":"
+					+ System.getProperty("tomcat.init.port")
+					+ "/ngsi10/notify",
+					qcr.getListContextElementResponse());
 
-			logger.info("-------------------------------------------------------Request from DATABASE:"
-					+ request.toString());
-			logger.info("-------------------------------------------------------URL of popsubbroker:"
-					+ request.getReference().toString());
-			logger.info("-------------------------------------------------------notify send to popsubbroker:"
+
+			logger.info("Now sending this notification:"
 					+ notifyReq);
+			
 			subContoller.getNorthBoundWrapper().forwardNotification(notifyReq,
 					new URI(request.getReference()));
+			
 
-		} catch (URISyntaxException e) {
-			logger.info("Error Uri Sintax", e);
+		} 
+		catch (UnknownHostException e) {
+			logger.info("Unknown host, aborting notification", e);
 		}
-
+		catch (URISyntaxException e) {
+			logger.info("Error in URI Syntax", e);
+		}
 		finally {
-
-			// Clear the List of ContextResponse
+			// Clear the notification list and unlock
 			subscriptionData.getContextResponseQueue().clear();
 			subscriptionData.getLock().unlock();
 

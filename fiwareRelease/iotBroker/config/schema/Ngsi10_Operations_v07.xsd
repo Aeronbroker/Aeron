@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- FI-WARE NGSI 9/10 RESTful binding version 1.0 -->
+
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
  		   elementFormDefault="qualified">      
 
-		   <xs:include  schemaLocation="Ngsi9_10_dataStructure_v07.xsd"/>   
+		   <xs:include schemaLocation="Ngsi9_10_dataStructures.xsd"/>   
 		   
 		   
- <!-- _______________________________________ Complex types instantiation ___________________________________________ -->
+ <!-- _______________________________________ complex type instantiations ___________________________________________ -->
 
   <xs:element name="queryContextRequest"                           type="QueryContextRequest"/>
   <xs:element name="queryContextResponse"                          type="QueryContextResponse"/>
@@ -21,16 +24,16 @@
   <xs:element name="updateContextResponse" 						   type="UpdateContextResponse"/>
   
   
-  <!-- ________________________Complex types instantiation for Convenience Operations ___________________________________________ -->
+  <!-- ________________________complex type instantiation for convenience operations ___________________________________________ -->
   
   <xs:element name="updateContextElementRequest"                   type="UpdateContextElementRequest"/>
   <xs:element name="updateContextElementResponse"                  type="UpdateContextElementResponse"/>  
   <xs:element name="appendContextElementRequest"                   type="AppendContextElementRequest"/>
+  <xs:element name="appendContextElementResponse"                   type="AppendContextElementResponse"/>
   <xs:element name="updateContextAttributeRequest" 				   type="UpdateContextAttributeRequest"/>
-  
   <xs:element name="contextAttributeResponse"                      type="ContextAttributeResponse"/> 
   
-<!-- ________________________________________ Methods messages ________________________________________________ -->
+<!-- ________________________________________ operation message bodies ________________________________________________ -->
 
   <xs:complexType name="QueryContextRequest">
     <xs:sequence>
@@ -131,7 +134,7 @@
     </xs:sequence>
   </xs:complexType>
   
-<!-- _____________________________________ Methods messages  for Convenience Operations______________________________________________ -->
+<!-- _____________________________________ operation message bodies for convenience operations______________________________________________ -->
   
   <xs:complexType name="UpdateContextElementRequest">
     <xs:sequence>
@@ -156,6 +159,13 @@
     </xs:sequence>
   </xs:complexType>
   
+    <xs:complexType name="AppendContextElementResponse">
+    <xs:sequence>
+      <xs:element name="errorCode"  type="StatusCode" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="contextResponseList" type="ContextAttributeResponseList" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  
   <xs:complexType name="UpdateContextAttributeRequest">
     <xs:sequence>
       <xs:element name="type" type="xs:string" minOccurs="0" maxOccurs="1"/>
@@ -164,7 +174,7 @@
     </xs:sequence>
   </xs:complexType>
   
-  <!-- _________________________________ Additional Complex types used by Convenience Functions _______________________________________________________________ -->
+  <!-- _________________________________ additional complex types used by convenience operations _______________________________________________________________ -->
   
   <xs:complexType name="ContextAttributeResponse">
     <xs:sequence>

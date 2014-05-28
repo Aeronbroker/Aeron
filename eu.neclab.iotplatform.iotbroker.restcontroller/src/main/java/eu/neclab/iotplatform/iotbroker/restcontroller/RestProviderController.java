@@ -1,12 +1,12 @@
 /*******************************************************************************
  *   Copyright (c) 2014, NEC Europe Ltd.
  *   All rights reserved.
- *   
+ *
  *   Authors:
  *           * Salvatore Longo - salvatore.longo@neclab.eu
  *           * Tobias Jacobs - tobias.jacobs@neclab.eu
  *           * Raihan Ul-Islam - raihan.ul-islam@neclab.eu
- *  
+ *
  *    Redistribution and use in source and binary forms, with or without
  *    modification, are permitted provided that the following conditions are met:
  *   1. Redistributions of source code must retain the above copyright
@@ -23,10 +23,10 @@
  *
  * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE 
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+ * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
  * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -34,6 +34,7 @@
 package eu.neclab.iotplatform.iotbroker.restcontroller;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,6 +55,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import eu.neclab.iotplatform.iotbroker.commons.GenerateMetadata;
 import eu.neclab.iotplatform.iotbroker.commons.XmlValidator;
 import eu.neclab.iotplatform.iotbroker.restcontroller.sanitycheck.SanityCheck;
 import eu.neclab.iotplatform.ngsi.api.datamodel.AppendContextElementRequest;
@@ -89,14 +91,13 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextSubscriptionRespons
 import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Interface;
 import eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface;
 
-
 /**
- *  This class implements the RESTful binding of NGSI 10 defined by the
- *  FI-WARE project. It maps operations on the RESTful interface to operations
- *  on an NGSI java interface.
- *  <p>
- *  In addition, also the NGSI 9 method for receiving notifications is
- *  implemented by this class.
+ * This class implements the RESTful binding of NGSI 10 defined by the FI-WARE
+ * project. It maps operations on the RESTful interface to operations on an NGSI
+ * java interface.
+ * <p>
+ * In addition, also the NGSI 9 method for receiving notifications is
+ * implemented by this class.
  *
  */
 @Controller
@@ -120,8 +121,8 @@ public class RestProviderController {
 	private Ngsi10Interface ngsiCore;
 
 	/**
-	 * Returns a pointer to the component which receives
-	 * NGSI 10 requests arriving at the controller.
+	 * Returns a pointer to the component which receives NGSI 10 requests
+	 * arriving at the controller.
 	 *
 	 * @return the ngsi core
 	 */
@@ -130,8 +131,8 @@ public class RestProviderController {
 	}
 
 	/**
-	 * Assigns a pointer to the component which will receive
-	 * NGSI 10 requests arriving at the controller.
+	 * Assigns a pointer to the component which will receive NGSI 10 requests
+	 * arriving at the controller.
 	 *
 	 * @param ngsiCore
 	 *            the new ngsi core
@@ -141,8 +142,8 @@ public class RestProviderController {
 	}
 
 	/**
-	 * Returns a pointer to the component which receives
-	 * NGSI 9 requests arriving at the controller.
+	 * Returns a pointer to the component which receives NGSI 9 requests
+	 * arriving at the controller.
 	 *
 	 * @return the ngsi9 core
 	 */
@@ -151,8 +152,8 @@ public class RestProviderController {
 	}
 
 	/**
-	 * Assigns a pointer to the component which will receive
-	 * NGSI 9 requests arriving at the controller.
+	 * Assigns a pointer to the component which will receive NGSI 9 requests
+	 * arriving at the controller.
 	 *
 	 * @param ngsi9Core
 	 *            the new ngsi9 core
@@ -180,9 +181,8 @@ public class RestProviderController {
 	}
 
 	/**
-	 * The IoT Broker uses a fixed mapping for assigning
-	 * NGSI status codes to HTTP status codes. This mapping
-	 * is implemented by this private method.
+	 * The IoT Broker uses a fixed mapping for assigning NGSI status codes to
+	 * HTTP status codes. This mapping is implemented by this private method.
 	 *
 	 * @param statusCode
 	 *            the statusCode
@@ -287,9 +287,9 @@ public class RestProviderController {
 	 * Executes the standard NGSI 10 QueryContext method.
 	 *
 	 * @param requester
-	 *            Represents the request message body and header. 
+	 *            Represents the request message body and header.
 	 * @param request
-	 *           The request body.
+	 *            The request body.
 	 * @return The response body.
 	 *
 	 */
@@ -305,7 +305,6 @@ public class RestProviderController {
 		boolean status = validator.xmlValidation(request, sNgsi10schema);
 
 		logger.debug("STATUS XML VALIDATOR" + status);
-
 
 		if (!status) {
 
@@ -475,6 +474,28 @@ public class RestProviderController {
 
 		if (!status) {
 
+			for (int i = 0; i < request.getContextElement().size(); i++) {
+
+				try {
+					request.getContextElement()
+							.get(i)
+							.getDomainMetadata()
+							.add(GenerateMetadata
+									.createSourceIPMetadata(new URI(requester
+											.getRequestURL().toString())));
+
+					request.getContextElement()
+							.get(i)
+							.getDomainMetadata()
+							.add(GenerateMetadata
+									.createDomainTimestampMetadata());
+				} catch (URISyntaxException e) {
+					// TODO Auto-generated catch block
+					logger.debug(" URI Syntax Exception ",e);
+				}
+
+			}
+
 			UpdateContextResponse response = ngsiCore.updateContext(request);
 
 			return new ResponseEntity<UpdateContextResponse>(response,
@@ -493,17 +514,13 @@ public class RestProviderController {
 
 	}
 
-
-
-
-
 	/**
-	 * Executes the convenience method for querying an individual
-	 * context entity.
+	 * Executes the convenience method for querying an individual context
+	 * entity.
 	 *
 	 *
 	 * @param id
-	 *          The id of the context entity to query.
+	 *            The id of the context entity to query.
 	 * @return The response body.
 	 */
 
@@ -560,8 +577,8 @@ public class RestProviderController {
 	}
 
 	/**
-	 * Executes the convenience method for updating an individual
-	 * context entity.
+	 * Executes the convenience method for updating an individual context
+	 * entity.
 	 *
 	 * @param EntityID
 	 *            The id of the Context Entity to update.
@@ -595,6 +612,8 @@ public class RestProviderController {
 
 			UpdateContextResponse response = ngsiCore.updateContext(reqUpdate);
 
+			if(response != null){
+
 			ContextAttributeResponse contextAttributeResp = new ContextAttributeResponse(
 					response.getContextElementResponse().get(0)
 							.getContextElement().getContextAttributeList(),
@@ -605,7 +624,9 @@ public class RestProviderController {
 			return new ResponseEntity<UpdateContextElementResponse>(respUpdate,
 					makeHttpStatus(respUpdate.getErrorCode()));
 
-		} else {
+			}
+
+		}
 
 			UpdateContextElementResponse response = new UpdateContextElementResponse(
 					new StatusCode(Code.BADREQUEST_400.getCode(),
@@ -614,19 +635,19 @@ public class RestProviderController {
 
 			return new ResponseEntity<UpdateContextElementResponse>(response,
 					makeHttpStatus(response.getErrorCode()));
-		}
+
 
 	}
 
 	/**
 	 *
-	 * Executes the convenience method for appending attribute values
-	 * to an individual context entity.
+	 * Executes the convenience method for appending attribute values to an
+	 * individual context entity.
 	 *
 	 *
 	 * @param EntityID
-	 *            The id of the Context Entity where attribute values shall
-	 *            be appended.
+	 *            The id of the Context Entity where attribute values shall be
+	 *            appended.
 	 * @param request
 	 *            The request body.
 	 * @return The response body.
@@ -682,8 +703,8 @@ public class RestProviderController {
 
 	/**
 	 *
-	 * Executes the convenience method for removing all information
-	 * about a context entity.
+	 * Executes the convenience method for removing all information about a
+	 * context entity.
 	 *
 	 *
 	 * @param EntityID
@@ -730,11 +751,11 @@ public class RestProviderController {
 	}
 
 	/**
-	 * Executes the convenience method for querying an individual
-	 * context entity.
+	 * Executes the convenience method for querying an individual context
+	 * entity.
 	 *
 	 * @param id
-	 *          The id of the target context entity.
+	 *            The id of the target context entity.
 	 * @return The response body.
 	 */
 	@RequestMapping(value = "/ngsi10/contextEntities/{entityID}/attributes", method = RequestMethod.GET, consumes = { "*/*" }, produces = {
@@ -749,8 +770,8 @@ public class RestProviderController {
 	}
 
 	/**
-	 * Executes the convenience method for updating an individual
-	 * context entity.
+	 * Executes the convenience method for updating an individual context
+	 * entity.
 	 *
 	 * @param EntityID
 	 *            The id of the Context Entity to update.
@@ -771,17 +792,15 @@ public class RestProviderController {
 
 	}
 
-
-
 	/**
 	 *
-	 * Executes the convenience method for appending attribute values
-	 * to an individual context entity.
+	 * Executes the convenience method for appending attribute values to an
+	 * individual context entity.
 	 *
 	 *
 	 * @param EntityID
-	 *            The id of the Context Entity where attribute values shall
-	 *            be appended.
+	 *            The id of the Context Entity where attribute values shall be
+	 *            appended.
 	 * @param request
 	 *            The request body.
 	 * @return The response body.
@@ -800,8 +819,8 @@ public class RestProviderController {
 	}
 
 	/**
-	 * Executes the convenience method for removing all information
-	 * about a context entity.
+	 * Executes the convenience method for removing all information about a
+	 * context entity.
 	 *
 	 * @param EntityID
 	 *            The id of the target context entity of the operation.
@@ -820,8 +839,8 @@ public class RestProviderController {
 	}
 
 	/**
-	 * Executes the convenience method for querying an individual
-	 * attribute of a context entity.
+	 * Executes the convenience method for querying an individual attribute of a
+	 * context entity.
 	 *
 	 * @param id
 	 *            The id of the target context entity.
@@ -870,8 +889,7 @@ public class RestProviderController {
 	 */
 
 	/**
-	 * Executes the convenience method for appending a value to
-	 * an individual
+	 * Executes the convenience method for appending a value to an individual
 	 * attribute of a context entity.
 	 *
 	 * @param EntityID
@@ -879,7 +897,7 @@ public class RestProviderController {
 	 * @param attributeName
 	 *            The name of the target attribute.
 	 * @param request
-	 * 				The request body.
+	 *            The request body.
 	 * @return The response body.
 	 */
 	@RequestMapping(value = "/ngsi10/contextEntities/{entityID}/attributes/{attributeName}", method = RequestMethod.POST, consumes = {
@@ -947,8 +965,7 @@ public class RestProviderController {
 	 */
 
 	/**
-	 * Executes the convenience method for deleting all values of
-	 * an individual
+	 * Executes the convenience method for deleting all values of an individual
 	 * attribute of a context entity.
 	 *
 	 * @param EntityID
@@ -987,17 +1004,16 @@ public class RestProviderController {
 				makeHttpStatus(statusCode));
 	}
 
-
 	/**
-	 * Executes the convenience method for retrieving a specific
-	 * value instance of an attribute of a context entity.
+	 * Executes the convenience method for retrieving a specific value instance
+	 * of an attribute of a context entity.
 	 *
 	 * @param id
 	 *            The id of the target context entity.
 	 * @param attr
 	 *            The name of the target attribute.
 	 * @param valueID
-	 * 				The target value id.
+	 *            The target value id.
 	 * @return The response body.
 	 */
 	@RequestMapping(value = "/ngsi10/contextEntities/{entityID}/attributes/{attributeName}/{valueID}", method = RequestMethod.GET, consumes = { "*/*" }, produces = {
@@ -1022,18 +1038,18 @@ public class RestProviderController {
 
 	}
 
-
 	/**
-	 * Executes the convenience method for updating a specific
-	 * value instance of an attribute of a context entity.
+	 * Executes the convenience method for updating a specific value instance of
+	 * an attribute of a context entity.
 	 *
 	 * @param EntityID
 	 *            The id of the target context entity.
 	 * @param attributeName
 	 *            The name of the target attribute.
 	 * @param valueID
-	 * 				The target value id.
-	 * @param request The request body.
+	 *            The target value id.
+	 * @param request
+	 *            The request body.
 	 * @return The response body.
 	 */
 	@RequestMapping(value = "/ngsi10/contextEntities/{entityID}/attributes/{attributeName}/{valueID}", method = RequestMethod.PUT, consumes = {
@@ -1054,17 +1070,16 @@ public class RestProviderController {
 
 	}
 
-
 	/**
-	 * Executes the convenience method for deleting a specific
-	 * value instance of an attribute of a context entity.
+	 * Executes the convenience method for deleting a specific value instance of
+	 * an attribute of a context entity.
 	 *
 	 * @param EntityID
 	 *            The id of the target context entity.
 	 * @param attributeName
 	 *            The name of the target attribute.
 	 * @param valueID
-	 * 				The target value id.
+	 *            The target value id.
 	 * @return The response body.
 	 */
 	@RequestMapping(value = "/ngsi10/contextEntities/{entityID}/attributes/{attributeName}/{valueID}", method = RequestMethod.DELETE, consumes = {
@@ -1085,17 +1100,17 @@ public class RestProviderController {
 	}
 
 	/**
-	 * Executes the convenience method for querying a specific attribute
-	 * domain of a context entity.
+	 * Executes the convenience method for querying a specific attribute domain
+	 * of a context entity.
 	 *
 	 * @param id
 	 *            The id of the target context entity.
 	 * @param attrDomainName
 	 *            The name of the target attribute.
 	 * @param scopeType
-	 * 				The type of the query scope, if present.
+	 *            The type of the query scope, if present.
 	 * @param scopeValue
-	 * 				The value of the query scope, if present.
+	 *            The value of the query scope, if present.
 	 * @return The response body.
 	 */
 	@RequestMapping(value = "/ngsi10/contextEntities/{entityID}/attributeDomains/{attributeDomainName}", method = RequestMethod.GET, consumes = { "*/*" }, produces = {
@@ -1123,8 +1138,8 @@ public class RestProviderController {
 	}
 
 	/**
-	 * Executes the convenience method for querying all context
-	 * entities having a specified type.
+	 * Executes the convenience method for querying all context entities having
+	 * a specified type.
 	 *
 	 * @param typeName
 	 *            The target entity type of the query.
@@ -1151,10 +1166,9 @@ public class RestProviderController {
 				makeHttpStatus(response.getErrorCode()));
 	}
 
-
 	/**
-	 * Executes the convenience method for querying all context
-	 * entities having a specified type.
+	 * Executes the convenience method for querying all context entities having
+	 * a specified type.
 	 *
 	 * @param typeName
 	 *            The target entity type of the query.
@@ -1177,7 +1191,7 @@ public class RestProviderController {
 	 * @param typeName
 	 *            The target entity type of the query.
 	 * @param attributeName
-	 * 			  The target attribute of the query.
+	 *            The target attribute of the query.
 	 * @return The response body.
 	 */
 	@RequestMapping(value = "/ngsi10/contextEntityTypes/{typeName}/attributes/{attributeName}", method = RequestMethod.GET, consumes = { "*/*" }, produces = {
@@ -1241,13 +1255,13 @@ public class RestProviderController {
 	 */
 
 	/**
-	 * Executes the convenience method for querying an attribute domain from
-	 * all context entities having a specified type.
+	 * Executes the convenience method for querying an attribute domain from all
+	 * context entities having a specified type.
 	 *
 	 * @param typeName
 	 *            The target entity type of the query.
 	 * @param attrDomain
-	 * 			  The target attribute domain of the query.
+	 *            The target attribute domain of the query.
 	 * @return The response body.
 	 */
 	@RequestMapping(value = "/ngsi10/contextEntityTypes/{typeName}/attributeDomains/{attributeDomainName}", method = RequestMethod.GET, consumes = { "*/*", }, produces = {
@@ -1286,7 +1300,7 @@ public class RestProviderController {
 	 * Executes the convenience method for subscribing.
 	 *
 	 * @param request
-	 * 		The request body of the subscription.
+	 *            The request body of the subscription.
 	 * @return The response body.
 	 */
 	@RequestMapping(value = "/ngsi10/contextSubscriptions/{subscriptionId}", method = RequestMethod.POST, consumes = {
@@ -1322,13 +1336,12 @@ public class RestProviderController {
 	}
 
 	/**
-	 * Executes the convenience method for updating a
-	 * subscription.
+	 * Executes the convenience method for updating a subscription.
 	 *
 	 * @param request
-	 * 		The request body of the subscription update.
+	 *            The request body of the subscription update.
 	 * @param subscriptionId
-	 * 		The identifier of the subscription to update.
+	 *            The identifier of the subscription to update.
 	 * @return The response body.
 	 */
 	@RequestMapping(value = "/ngsi10/contextSubscriptions/{subscriptionId}", method = RequestMethod.PUT, consumes = {
@@ -1342,11 +1355,10 @@ public class RestProviderController {
 	}
 
 	/**
-	 * Executes the convenience method for removing a
-	 * subscription.
+	 * Executes the convenience method for removing a subscription.
 	 *
 	 * @param subscriptionId
-	 * 		The identifier of the subscription to remove.
+	 *            The identifier of the subscription to remove.
 	 * @return The response body.
 	 */
 	@RequestMapping(value = "/ngsi10/contextSubscriptions/{subscriptionId}", method = RequestMethod.DELETE, consumes = {
@@ -1380,9 +1392,9 @@ public class RestProviderController {
 	 * Executes the convenience method for processing a notification.
 	 *
 	 * @param requester
-	 * 		Represents the HTTP request message. 
+	 *            Represents the HTTP request message.
 	 * @param request
-	 * 		The notification request body.
+	 *            The notification request body.
 	 * @return The response body.
 	 */
 	@RequestMapping(value = "/ngsi10/notify", method = RequestMethod.POST, consumes = {
@@ -1394,9 +1406,13 @@ public class RestProviderController {
 
 		logger.info(" <--- NGSI-10 has received a context notification  ---> \n");
 
+		logger.info(request);
+
 		boolean status = false;
 
 		status = validator.xmlValidation(request, sNgsi10schema);
+
+		System.out.println("Status"+ status);
 
 		if (!status) {
 
@@ -1422,7 +1438,7 @@ public class RestProviderController {
 	 * Executes the convenience method for processing an NGSI9 notification.
 	 *
 	 * @param request
-	 * 			The notification request body.
+	 *            The notification request body.
 	 *
 	 * @return The response body.
 	 */

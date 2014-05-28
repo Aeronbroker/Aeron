@@ -6,11 +6,11 @@
 	<artifactId>IoTbrokerParent</artifactId>
 	<packaging>pom</packaging>
 
-	<version>3.3.3</version>
+	<version>3.4.2</version>
 	
 
 	<properties>
-		<iotborker.version>3.3.3</iotborker.version>
+		<iotborker.version>3.4.2</iotborker.version>
 		<spring.version>3.2.3.RELEASE</spring.version>
 		<spring.osgi.version>2.0.0.M1</spring.osgi.version>
 		<equinox.version>3.7.0.v20110221</equinox.version>
