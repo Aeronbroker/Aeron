@@ -2,7 +2,7 @@ Aeron
 =====
 
 Aeron is an Internet-of-Things middleware based on the OMA NGSI 9/10 standard. It has been implemented by NEC Laboratories Europe as part of their 
-contribution to the European Project FI-WARE.
+contribution to the European Future Internet Platform FIWARE.
 
 Aeron Documentation
 ---
