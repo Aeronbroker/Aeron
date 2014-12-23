@@ -37,6 +37,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.datatype.Duration;
 
 /**
  * Implements RegisterContextResponse
@@ -47,37 +48,37 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RegisterContextResponse extends NgsiStructure {
 
 	@XmlElement(name = "duration", required = true)
-	private String duration = null;
+	private Duration duration = null;
 	@XmlElement(name = "registrationId", required = false)
-	private String resgistrationId = null;
+	private String registrationId = null;
 	@XmlElement(name = "errorCode", required = true)
 	private StatusCode errorCode = null;
 
 	public RegisterContextResponse() {
 	}
 
-	public RegisterContextResponse(String duration, String resgistrationId,
+	public RegisterContextResponse(Duration duration, String registrationId,
 			StatusCode errorCode) {
 
 		this.duration = duration;
-		this.resgistrationId = resgistrationId;
+		this.registrationId = registrationId;
 		this.errorCode = errorCode;
 	}
 
-	public String getDuration() {
+	public Duration getDuration() {
 		return duration;
 	}
 
-	public void setDuration(String duration) {
+	public void setDuration(Duration duration) {
 		this.duration = duration;
 	}
 
-	public String getResgistrationId() {
-		return resgistrationId;
+	public String getRegistrationId() {
+		return registrationId;
 	}
 
-	public void setResgistrationId(String resgistrationId) {
-		this.resgistrationId = resgistrationId;
+	public void setRegistrationId(String registrationId) {
+		this.registrationId = registrationId;
 	}
 
 	public StatusCode getErrorCode() {

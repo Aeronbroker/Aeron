@@ -25,6 +25,7 @@
 		<property name="confManWrapper" ref="confManWrap"></property>
 		<property name="agentWrapper" ref="agentWrapp"></property>
 		<property name="resultFilter" ref="ResultFilterInterface"></property>
+		<property name="bigDataRepository" ref="BigDataRepositoryInterface"></property>
 	</bean>
 
 	<!-- <bean id="requestThread" class="eu.neclab.iotplatform.iotbroker.core.RequestThread">

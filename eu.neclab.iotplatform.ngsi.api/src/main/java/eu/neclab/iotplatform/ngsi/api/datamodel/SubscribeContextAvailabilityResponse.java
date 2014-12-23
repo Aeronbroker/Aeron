@@ -37,6 +37,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.datatype.Duration;
 
 /**
  * Implements SubscribeContextAvailabilityResponse
@@ -50,9 +51,9 @@ public class SubscribeContextAvailabilityResponse extends NgsiStructure {
 	private String subscriptionId = null;
 
 	@XmlElement(name = "duration", required = false)
-	private String duration = null;
+	private Duration duration = null;
 
-	@XmlElement(name = "errorcode", required = false)
+	@XmlElement(name = "errorCode", required = false)
 	private StatusCode errorCode = null;
 
 	public SubscribeContextAvailabilityResponse() {
@@ -60,11 +61,11 @@ public class SubscribeContextAvailabilityResponse extends NgsiStructure {
 	}
 
 	public SubscribeContextAvailabilityResponse(String subscribeId,
-			String duration, StatusCode errorcode) {
+			Duration duration, StatusCode errorCode) {
 
 		subscriptionId = subscribeId;
 		this.duration = duration;
-		errorCode = errorcode;
+		this.errorCode = errorCode;
 	}
 
 	public String getSubscribeId() {
@@ -75,20 +76,20 @@ public class SubscribeContextAvailabilityResponse extends NgsiStructure {
 		subscriptionId = subscribeId;
 	}
 
-	public String getDuration() {
+	public Duration getDuration() {
 		return duration;
 	}
 
-	public void setDuration(String duration) {
+	public void setDuration(Duration duration) {
 		this.duration = duration;
 	}
 
-	public StatusCode getErrorcode() {
+	public StatusCode getErrorCode() {
 		return errorCode;
 	}
 
-	public void setErrorcode(StatusCode errorcode) {
-		errorCode = errorcode;
+	public void setErrorCode(StatusCode errorCode) {
+		this.errorCode = errorCode;
 	}
 
 }

@@ -37,6 +37,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -119,10 +121,35 @@ public class XmlFactory {
 			response = unmarshaller.unmarshal(reader);
 
 		} catch (JAXBException e) {
-			logger.info("JAXBException",e);
+			logger.info("JAXBException, caused by XML:"+xml,e);
 		}
 		return response;
 
+	}
+	
+	/**
+	 * Converts an XML String from a specified file into an
+	 * Object using JAXB (Unmarshaller).
+	 *
+	 * @param path The path to the xml file
+	 * @param type The type of the object to return.
+	 *
+	 * @return The result of the conversion.
+	 *
+	 */
+	public Object convertFileToXML(String path, Class<?> type){
+		
+		//read String from File
+		byte[] encoded;
+		try {
+			encoded = Files.readAllBytes(Paths.get(path));
+		} catch (IOException e) {			
+			throw new RuntimeException("Error Reading from File");
+		}
+		  String s = new String(encoded);
+		  
+		  return convertStringToXml(s, type);
+		
 	}
 
 	/**

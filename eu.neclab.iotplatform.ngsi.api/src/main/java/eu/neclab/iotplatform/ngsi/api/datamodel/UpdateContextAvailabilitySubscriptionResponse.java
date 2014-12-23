@@ -37,6 +37,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.datatype.Duration;
 
 /**
  * Implements UpdateContextAvailabilitySubscriptionResponse
@@ -48,19 +49,19 @@ public class UpdateContextAvailabilitySubscriptionResponse extends
 		NgsiStructure {
 
 	@XmlElement(name = "duration", required = true)
-	private String duration = null;
+	private Duration duration = null;
 
 	@XmlElement(name = "subscriptionId", required = false)
 	private String subscriptionId = null;
 
-	@XmlElement(name = "restriction", required = false)
+	@XmlElement(name = "errorCode", required = false)
 	private StatusCode errorCode = null;
 
 	public UpdateContextAvailabilitySubscriptionResponse() {
 
 	}
 
-	public UpdateContextAvailabilitySubscriptionResponse(String duration,
+	public UpdateContextAvailabilitySubscriptionResponse(Duration duration,
 			String subscriptionId, StatusCode errorCode) {
 		super();
 		this.duration = duration;
@@ -68,11 +69,11 @@ public class UpdateContextAvailabilitySubscriptionResponse extends
 		this.errorCode = errorCode;
 	}
 
-	public String getDuration() {
+	public Duration getDuration() {
 		return duration;
 	}
 
-	public void setDuration(String duration) {
+	public void setDuration(Duration duration) {
 		this.duration = duration;
 	}
 

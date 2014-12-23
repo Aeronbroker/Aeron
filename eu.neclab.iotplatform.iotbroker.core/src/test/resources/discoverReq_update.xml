@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<discoverContextAvailabilityRequest>
+    <entityIdList>
+       <entityId type='sensor' isPattern='false'>
+				<id>Sensor5</id>
+			</entityId>
+    </entityIdList>
+    <attributeList>
+        <attribute>measurement</attribute>
+    </attributeList>
+    <restriction>
+    <attributeExpression></attributeExpression>
+        <scope> 
+            <operationScope>
+                <scopeType>IncludeAssociations</scopeType>
+                <scopeValue xsi:type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">TARGETS</scopeValue>
+            </operationScope>
+        </scope>
+    </restriction>
+</discoverContextAvailabilityRequest>
+

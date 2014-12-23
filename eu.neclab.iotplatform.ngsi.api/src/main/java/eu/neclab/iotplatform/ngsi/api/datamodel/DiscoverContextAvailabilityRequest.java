@@ -42,6 +42,9 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
  * Implements DiscoverContextAvailabilityRequest
  * as defined in OMA NGSI 9/10 approved version 1.0.
@@ -52,9 +55,11 @@ public class DiscoverContextAvailabilityRequest extends NgsiStructure {
 
 	@XmlElementWrapper(name = "entityIdList")
 	@XmlElement(name = "entityId", required = true)
+	@JsonProperty("entities")
 	private List<EntityId> entityId = null;
 	@XmlElementWrapper(name = "attributeList")
 	@XmlElement(name = "attribute", nillable = true)
+	@JsonProperty("attributes")
 	private List<String> attribute;
 	@XmlElement(name = "restriction")
 	private Restriction restriction = null;
@@ -69,22 +74,22 @@ public class DiscoverContextAvailabilityRequest extends NgsiStructure {
 		attribute = attributeNameList;
 		this.restriction = restriction;
 	}
-
+	@JsonIgnore
 	public List<EntityId> getEntityIdList() {
 		if (entityId == null) {
 			entityId = new ArrayList<EntityId>();
 		}
 		return entityId;
 	}
-
+	@JsonIgnore
 	public void setEntityIdList(List<EntityId> entityId) {
 		this.entityId = entityId;
 	}
-
+	@JsonIgnore
 	public List<String> getAttributeList() {
 		return attribute;
 	}
-
+	@JsonIgnore
 	public void setAttributeList(List<String> attribute) {
 		if (attribute == null) {
 			attribute = new ArrayList<String>();

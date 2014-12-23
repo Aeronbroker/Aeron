@@ -70,8 +70,6 @@ public class RequestThread implements Runnable {
 
 	private List<AssociationDS> additionalRequestList;
 
-	private ResultFilterInterface resultFilter = null;
-
 	/**
 	 *
 	 * @return The request of this instance.
@@ -109,7 +107,6 @@ public class RequestThread implements Runnable {
 			QueryResponseMerger merger, CountDownLatch count,
 			List<AssociationDS> additionalRequestList) {
 
-		this.resultFilter=resultFilter;
 		this.requestor = requestor;
 		this.request = request;
 		this.uri = uri;
@@ -128,37 +125,6 @@ public class RequestThread implements Runnable {
 
 		QueryContextResponse response = requestor.queryContext(request, uri);
 
-		if (resultFilter != null) {
-			logger.info("-----------++++++++++++++++++++++Begin Filter");
-			List<QueryContextRequest> lqcReq = new ArrayList<QueryContextRequest>();
-			lqcReq.add(request);
-			List<ContextElementResponse> lceRes = response
-					.getListContextElementResponse();
-			logger.info("-----------++++++++++++++++++++++ QueryContextRequest:"
-					+ lqcReq.toString()
-					+ " ContextElementResponse:"
-					+ lceRes.toString());
-
-			logger.info(lqcReq.size());
-			logger.info(lceRes.size());
-
-			List<QueryContextResponse> lqcRes = resultFilter.filterResult(
-					lceRes, lqcReq);
-
-			if (lqcRes.size() == 1) {
-				response = lqcRes.get(0);
-			}
-			logger.info("-----------++++++++++++++++++++++ After Filter ListContextElementResponse:"
-					+ lqcRes.toString()
-					+ " ContextElementResponse:"
-					+ lqcRes.toString());
-			logger.info("-----------++++++++++++++++++++++End Filter");
-		} else {
-
-			logger.info("Result filter not found!!");
-
-		}
-
 		/*
 		 * Updating EntityID and Attribute based on the transitiveList of
 		 * associations begin
@@ -175,10 +141,16 @@ public class RequestThread implements Runnable {
 
 				for (AssociationDS aDS : additionalRequestList) {
 
+
+					logger.debug("Association Source EntityId: " + aDS.getSourceEA().getEntity());
+					logger.debug("Checked against Response EntityId: " + contEle.getContextElement().getEntityId());
+
 					// Checking if EntityID of QueryContextResponse matches with
 					// any source entity id of transitiveList of associations
 					if (EntityIDMatcher.matcher(aDS.getSourceEA().getEntity(),
 							contEle.getContextElement().getEntityId())) {
+
+						logger.debug("EntityIds Matching!");
 
 						// Checking if Attribute of source EntityID of
 						// transitiveList of associations is not empty or null
@@ -193,12 +165,12 @@ public class RequestThread implements Runnable {
 							if (contEle.getContextElement()
 									.getAttributeDomainName() != null
 									&& !contEle.getContextElement()
-											.getAttributeDomainName()
-											.equals("")) {
+									.getAttributeDomainName()
+									.equals("")) {
 								contEle.getContextElement()
-										.setAttributeDomainName(
-												aDS.getTargetEA()
-														.getEntityAttribute());
+								.setAttributeDomainName(
+										aDS.getTargetEA()
+										.getEntityAttribute());
 								ifAttributeDomainNameExists = true;
 							}
 
@@ -214,7 +186,7 @@ public class RequestThread implements Runnable {
 										.getContextAttributeList()) {
 									if (ca.getName().equals(
 											aDS.getSourceEA()
-													.getEntityAttribute())) {
+											.getEntityAttribute())) {
 										ca.setName(aDS.getTargetEA()
 												.getEntityAttribute());
 										lca.add(ca);
@@ -222,9 +194,9 @@ public class RequestThread implements Runnable {
 									}
 								}
 								contEle.getContextElement()
-										.setContextAttributeList(null);
+								.setContextAttributeList(null);
 								contEle.getContextElement()
-										.setContextAttributeList(lca);
+								.setContextAttributeList(lca);
 							}
 
 						} else if ("".equals(aDS.getSourceEA()
@@ -243,9 +215,9 @@ public class RequestThread implements Runnable {
 									lca.add(ca);
 								}
 								contEle.getContextElement()
-										.setContextAttributeList(null);
+								.setContextAttributeList(null);
 								contEle.getContextElement()
-										.setContextAttributeList(lca);
+								.setContextAttributeList(lca);
 							}
 						}
 						// Adding the ContextElement to new
@@ -261,6 +233,8 @@ public class RequestThread implements Runnable {
 		}
 
 		synchronized (merger) {
+			logger.debug("Start Merger!");
+			logger.debug("Response to put into merger: " + response);
 			merger.put(response);
 			count.countDown();
 		}

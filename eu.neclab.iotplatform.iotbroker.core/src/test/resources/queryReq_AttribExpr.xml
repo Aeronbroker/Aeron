@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queryContextRequest>
+	<entityIdList>
+		<entityId type="Room" isPattern="false">
+			<id>ConferenceRoom</id>
+		</entityId>
+	</entityIdList>
+	<attributeList>
+		<attribute>temperature</attribute>
+	</attributeList>
+	<restriction>
+		<attributeExpression>//id[../../contextAttributeList/contextAttribute/metadata/contextMetadata[name='test' and type='string']/value]</attributeExpression>
+	</restriction>
+</queryContextRequest>

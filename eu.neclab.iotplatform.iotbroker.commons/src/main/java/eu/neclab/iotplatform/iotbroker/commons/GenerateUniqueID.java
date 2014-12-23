@@ -33,29 +33,62 @@
  *******************************************************************************/
 package eu.neclab.iotplatform.iotbroker.commons;
 
+import java.util.Random;
 import java.util.UUID;
+
+import org.apache.log4j.Logger;
 
 /**
  * A class for generating Strings that can be used as unique identifiers.
  */
 public class GenerateUniqueID {
 
+	// Logger
+	private static Logger logger = Logger.getLogger(GenerateUniqueID.class);
+
 	private String uniqueId;
+
+	private String macAddress;
+
+	public GenerateUniqueID() {
+		String macAddress = MacAddress.getMACADDRESS();
+		if (macAddress == null || macAddress.equals("")) {
+			this.macAddress = genRandomMac();
+			logger.warn("Not possible to retrieve localhost MAC Adress, "
+					+ "a random MAC address has been generated: "
+					+ this.macAddress);
+		} else {
+			this.macAddress = macAddress.replace(":", "-");
+		}
+	}
+
+	private String genRandomMac() {
+		StringBuffer b = new StringBuffer();
+		Random rand = new Random();
+		for (int i = 0; i < 6; i++) {
+			int k = rand.nextInt(100);
+			if (k < 10) {
+				b.append("0" + k);
+			} else {
+				b.append(k);
+			}
+			if (i < 5) {
+				b.append("-");
+			}
+		}
+		return b.toString();
+	}
 
 	/**
 	 * Generates and returns the next unique ID.
 	 */
 	public String getNextUniqueId() {
 
-		String address = MacAddress.getMACADDRESS().toString()
-				.replaceAll("-", "");
 		String tempResult = UUID.randomUUID().toString().replaceAll("-", "");
-		uniqueId = mix(tempResult, address);
+		uniqueId = mix(tempResult, macAddress);
 
 		return uniqueId;
 	}
-
-
 
 	private static String mix(String a, String b) {
 		final int aLength = a.length();

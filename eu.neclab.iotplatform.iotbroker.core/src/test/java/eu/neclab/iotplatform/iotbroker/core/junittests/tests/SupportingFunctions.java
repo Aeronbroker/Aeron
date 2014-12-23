@@ -31,7 +31,8 @@
  * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/package eu.neclab.iotplatform.iotbroker.core.junittests.tests;
+ *******************************************************************************/
+package eu.neclab.iotplatform.iotbroker.core.junittests.tests;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
@@ -64,6 +65,9 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextResponse;
 
+/**
+ *  Note: class is experimental and currently not used in any unit tests.
+ */
 public class SupportingFunctions {
 	private BufferedReader br;
 	/** The logger. */

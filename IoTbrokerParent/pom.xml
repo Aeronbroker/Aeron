@@ -6,19 +6,30 @@
 	<artifactId>IoTbrokerParent</artifactId>
 	<packaging>pom</packaging>
 
-	<version>3.4.2</version>
-	
+
 
 	<properties>
-		<iotborker.version>3.4.2</iotborker.version>
+		<iotbroker.version>4.1.3</iotbroker.version>
 		<spring.version>3.2.3.RELEASE</spring.version>
 		<spring.osgi.version>2.0.0.M1</spring.osgi.version>
 		<equinox.version>3.7.0.v20110221</equinox.version>
 	</properties>
 
-	
+
 	<dependencies>
 
+		<!-- GUAVA -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>17.0</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.2.2</version>
+		</dependency>
 
 		<!-- TOMCAT -->
 		<dependency>
@@ -226,7 +237,7 @@
 			<version>2.5.0</version>
 		</dependency>
 
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore</artifactId>
 			<version>4.2.0-osgi</version>
@@ -237,7 +248,7 @@
 			<artifactId>httpclient</artifactId>
 			<version>4.2.0-osgi</version>
 		</dependency>
-
+ -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>com.springsource.org.apache.commons.codec</artifactId>
@@ -249,21 +260,21 @@
 			<artifactId>com.springsource.javax.el</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-		
-		
+
+
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>com.springsource.org.apache.commons.el</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
 			<artifactId>jaxb-impl</artifactId>
 			<version>2.0.1</version>
 		</dependency>
-		
-		
+
+
 
 		<!-- javamelody-core for DASHBOARD -->
 		<dependency>
@@ -309,7 +320,7 @@
 		</dependency>
 
 		<!-- TEST ENVIROMENT -->
-<dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.11</version>
@@ -411,23 +422,24 @@
 			<dependency>
 				<groupId>eu.neclab.iotplatform</groupId>
 				<artifactId>iotbroker.commons</artifactId>
-				<version>${iotborker.version}</version>
+				<version>${iotbroker.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>eu.neclab.iotplatform</groupId>
 				<artifactId>ngsi.api</artifactId>
-				<version>${iotborker.version}</version>
+				<version>${iotbroker.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>eu.neclab.iotplatform</groupId>
 				<artifactId>iotbroker.storage</artifactId>
-				<version>${iotborker.version}</version>
+				<version>${iotbroker.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>eu.neclab.iotplatform</groupId>
 				<artifactId>iotbroker.client</artifactId>
-				<version>${iotborker.version}</version>
+				<version>${iotbroker.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+	<version>4.1.3</version>
 </project>

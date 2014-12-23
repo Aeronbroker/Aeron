@@ -15,11 +15,15 @@
 	<osgi:reference id="ResultFilterInterface"
 		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface" cardinality="0..1"></osgi:reference>
 
+	<osgi:reference id="BigDataRepositoryInterface"
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.BigDataRepository" cardinality="0..1"></osgi:reference>
+
+
 	<osgi:reference id="Ngsi9Interface"
-		interface="eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface" ></osgi:reference>
+		interface="eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface" bean-name="connector"></osgi:reference>
 
 	<osgi:reference id="Ngsi10Requester"
-		interface="eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Requester"></osgi:reference>
+		interface="eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Requester" bean-name="connector"></osgi:reference>
 
 
 	<osgi:reference id="AvailabilitySubStorage"

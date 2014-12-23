@@ -41,6 +41,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
  * Implements UpdateContextResponse
  * as defined in OMA NGSI 9/10 approved version 1.0.
@@ -54,6 +56,7 @@ public class UpdateContextResponse extends NgsiStructure {
 
 	@XmlElementWrapper(name = "contextResponseList")
 	@XmlElement(name = "contextElementResponse")
+	@JsonProperty("contextResponses")
 	private List<ContextElementResponse> contextElementResponse;
 
 	public UpdateContextResponse() {
@@ -77,9 +80,6 @@ public class UpdateContextResponse extends NgsiStructure {
 	}
 
 	public List<ContextElementResponse> getContextElementResponse() {
-//		if (contextElementResponse == null) {
-//			contextElementResponse = new ArrayList<ContextElementResponse>();
-//		}
 		return contextElementResponse;
 	}
 

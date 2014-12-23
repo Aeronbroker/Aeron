@@ -1,0 +1,58 @@
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/security
+	http://www.springframework.org/schema/security/spring-security-3.1.xsd">
+
+	<http auto-config="true" use-expressions="true">
+
+		<session-management session-fixation-protection="newSession">
+			<concurrency-control max-sessions="1" />
+		</session-management>
+		
+		<intercept-url pattern="/admin*" access="hasRole('ROLE_ADMIN')" requires-channel="https"/>
+	
+			<intercept-url pattern="/monitoring/**" access="hasRole('ROLE_ADMIN')" />
+	
+
+		<form-login login-page="/login.html" authentication-failure-url="/loginfailed.html"
+                         default-target-url="/login/success"/>
+                         
+         <access-denied-handler error-page="/denied"/>
+         
+         <logout  delete-cookies="true"
+         			 invalidate-session="true"         				
+                     logout-success-url="/"
+                     logout-url="/logout"/>
+
+ 		 <port-mappings>
+			<port-mapping http="8090" https="9443" />
+		</port-mappings> 
+		
+		<access-denied-handler ref="accessDeniedHandler"/>
+
+	</http>
+
+
+
+	<authentication-manager>
+		<authentication-provider>
+			<user-service id="userDetailsService"
+				properties="file:///${dir.config}/fiwareRelease/iotBroker/config/users.properties" />
+		
+		</authentication-provider>
+	</authentication-manager>
+
+	<!-- Stateless - No session -->
+	<beans:bean id="securityContextPersistenceFilter"
+		class="org.springframework.security.web.context.SecurityContextPersistenceFilter">
+		<beans:property name='securityContextRepository'>
+			<beans:bean
+				class='org.springframework.security.web.context.HttpSessionSecurityContextRepository'>
+				<beans:property name='allowSessionCreation' value='false' />
+			</beans:bean>
+		</beans:property>
+	</beans:bean>
+
+</beans:beans>

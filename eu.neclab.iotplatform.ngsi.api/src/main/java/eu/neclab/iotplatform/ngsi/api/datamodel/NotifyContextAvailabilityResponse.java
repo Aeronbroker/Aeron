@@ -38,6 +38,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
  * Implements NotifyContextAvailabilityResponse
  * as defined in OMA NGSI 9/10 approved version 1.0.
@@ -47,6 +49,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class NotifyContextAvailabilityResponse extends NgsiStructure {
 
 	@XmlElement(name = "errorCode", required = true)
+	@JsonProperty("errorCode")
 	private StatusCode responseCode;
 
 	public NotifyContextAvailabilityResponse() {

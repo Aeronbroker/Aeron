@@ -55,9 +55,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
+import com.google.common.base.Splitter;
+
+import eu.neclab.iotplatform.iotbroker.commons.Pair;
 import eu.neclab.iotplatform.iotbroker.commons.XmlFactory;
+import eu.neclab.iotplatform.iotbroker.commons.interfaces.BigDataRepository;
+import eu.neclab.iotplatform.iotbroker.commons.interfaces.NgsiHierarchyInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface;
-import eu.neclab.iotplatform.iotbroker.core.data.Pair;
 import eu.neclab.iotplatform.iotbroker.core.subscription.AgentWrapper;
 import eu.neclab.iotplatform.iotbroker.core.subscription.AssociationsUtil;
 import eu.neclab.iotplatform.iotbroker.core.subscription.ConfManWrapper;
@@ -122,6 +126,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	@Value("${pub_sub_addr}")
 	private String pubSubUrl;
 
+	private final String CONFMAN_REG_URL = System.getProperty("confman.ip");
+
 	/** Executor for asynchronous tasks */
 	private final ExecutorService taskExecutor = Executors
 			.newCachedThreadPool();
@@ -165,22 +171,52 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	/** The subscription controller. */
 	private SubscriptionController subscriptionController;
 
-
 	private ResultFilterInterface resultFilter;
 
 	/**
-	 * @return A pointer to the result filter this RequestThread instance
-	 * uses. Note that the result filter is retrieved via the OSGi framework.
+	 * A pointer to a Big Data repository. (This functionality is
+	 * currently disabled.)
+	 */
+	private BigDataRepository bigDataRepository;
+
+	/**
+	 * Interface for hierarchies of IoT Broker instances; extra
+	 * bundle not included in this release needed.
+	 */
+	private NgsiHierarchyInterface ngsiHierarchyExtension;
+
+	public NgsiHierarchyInterface getNgsiHierarchyExtension() {
+		return ngsiHierarchyExtension;
+	}
+
+	public void setNgsiHierarchyExtension(
+			NgsiHierarchyInterface ngsiHierarchyExtension) {
+		this.ngsiHierarchyExtension = ngsiHierarchyExtension;
+	}
+
+
+	public BigDataRepository getBigDataRepository() {
+		return bigDataRepository;
+	}
+
+	public void setBigDataRepository(BigDataRepository bigDataRepository) {
+		this.bigDataRepository = bigDataRepository;
+	}
+
+	/**
+	 * @return A pointer to the result filter this RequestThread instance uses.
+	 *         Note that the result filter is retrieved via the OSGi framework.
 	 */
 	public ResultFilterInterface getResultFilter() {
 		return resultFilter;
 	}
 
 	/**
-	 * Instructs the object to get load the result filter from the
-	 * given result filter interface.
-	 *
-	 * @param resultFilter The result filter interface.
+	 * Instructs the object to get load the result filter from the given result
+	 * filter interface.
+	 * 
+	 * @param resultFilter
+	 *            The result filter interface.
 	 */
 	public void setResultFilter(ResultFilterInterface resultFilter) {
 		this.resultFilter = resultFilter;
@@ -188,7 +224,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 	/**
 	 * Returns the north bound wrapper.
-	 *
+	 * 
 	 * @return the north bound wrapper
 	 */
 	public NorthBoundWrapper getNorthBoundWrapper() {
@@ -197,7 +233,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 	/**
 	 * Sets the north bound wrapper.
-	 *
+	 * 
 	 * @param northBoundWrapper
 	 *            the new north bound wrapper
 	 */
@@ -207,7 +243,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 	/**
 	 * Returns the conf man wrapper.
-	 *
+	 * 
 	 * @return the conf man wrapper
 	 */
 	public ConfManWrapper getConfManWrapper() {
@@ -216,7 +252,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 	/**
 	 * Sets the conf man wrapper.
-	 *
+	 * 
 	 * @param confManWrapper
 	 *            the new conf man wrapper
 	 */
@@ -226,7 +262,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 	/**
 	 * Returns the agent wrapper.
-	 *
+	 * 
 	 * @return the agent wrapper
 	 */
 	public AgentWrapper getAgentWrapper() {
@@ -235,7 +271,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 	/**
 	 * Sets the agent wrapper.
-	 *
+	 * 
 	 * @param agentWrapper
 	 *            the new agent wrapper
 	 */
@@ -245,7 +281,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 	/**
 	 * Returns the subscription controller.
-	 *
+	 * 
 	 * @return the subscription controller
 	 */
 	public SubscriptionController getSubscriptionController() {
@@ -254,7 +290,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 	/**
 	 * Sets the subscription controller.
-	 *
+	 * 
 	 * @param subscriptionController
 	 *            the new subscription controller
 	 */
@@ -266,7 +302,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	/**
 	 * Returns the availability subscription interface, which is used for making
 	 * context availability subscriptions.
-	 *
+	 * 
 	 * @return the availability subscription interface
 	 */
 	public AvailabilitySubscriptionInterface getAvailabilitySub() {
@@ -276,7 +312,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	/**
 	 * Sets the availability subscription interface, which is used for making
 	 * context availability subscriptions.
-	 *
+	 * 
 	 * @param availabilitySub
 	 *            the new availability sub
 	 */
@@ -288,7 +324,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	/**
 	 * Returns the incoming subscription interface, which is used for receiving
 	 * and processing NGSI10 subscriptions.
-	 *
+	 * 
 	 * @return the incoming sub
 	 */
 	public IncomingSubscriptionInterface getIncomingSub() {
@@ -298,7 +334,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	/**
 	 * Sets the incoming subscription interface, which is used for receiving and
 	 * processing NGSI10 subscriptions.
-	 *
+	 * 
 	 * @param incomingSub
 	 *            the new incoming sub
 	 */
@@ -309,7 +345,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	/**
 	 * Returns the outgoing subscription interface, which is used for making
 	 * NGSI10 subscriptions.
-	 *
+	 * 
 	 * @return the outgoing sub
 	 */
 	public OutgoingSubscriptionInterface getOutgoingSub() {
@@ -319,7 +355,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	/**
 	 * Sets the outgoing subscription interface, which is used for making NGSI10
 	 * subscriptions.
-	 *
+	 * 
 	 * @param outgoingSub
 	 *            the new outgoing sub
 	 */
@@ -330,7 +366,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	/**
 	 * Returns the interface for maintaining links between incoming
 	 * subscriptions and outgoing availability subscriptions.
-	 *
+	 * 
 	 * @return the link availability subscription interface
 	 */
 	public LinkSubscriptionAvailabilityInterface getLinkAvSub() {
@@ -340,7 +376,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	/**
 	 * Sets the interface for maintaining links between incoming subscriptions
 	 * and outgoing availability subscriptions.
-	 *
+	 * 
 	 * @param linkAvSub
 	 *            The link availability subscription interface.
 	 */
@@ -351,7 +387,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	/**
 	 * Returns the link subscription interface, which is used for maintaining
 	 * links between ingoing and outgoing subscriptions.
-	 *
+	 * 
 	 * @return the link subscription interface
 	 */
 	public LinkSubscriptionInterface getLinkSub() {
@@ -361,7 +397,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	/**
 	 * Sets the link subscription interface, which is used for maintaining links
 	 * between ingoing and outgoing subscriptions.
-	 *
+	 * 
 	 * @param linkSub
 	 *            The link subscription interface.
 	 */
@@ -378,7 +414,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	/**
 	 * Returns the implementation of the NGSI 9 interface. This interface is
 	 * used by the core for making NGSI-9 discovery operations.
-	 *
+	 * 
 	 * @return The NGSI 9 interface.
 	 */
 	public Ngsi9Interface getNgsi9Impl() {
@@ -388,7 +424,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	/**
 	 * Sets the implementation of the NGSI 9 interface. This interface is used
 	 * by the core for making NGSI-9 discovery operations.
-	 *
+	 * 
 	 * @param ngsi9
 	 *            The NGSI 9 interface.
 	 */
@@ -399,7 +435,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	/**
 	 * Returns the ngsi10 requester. This object is used for making NGSI-10
 	 * requests to arbitrary URLs.
-	 *
+	 * 
 	 * @return the ngsi10 requester.
 	 */
 	public Ngsi10Requester getNgsi10Requester() {
@@ -410,7 +446,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	/**
 	 * Sets the ngsi10 requester. This object is used for making NGSI-10
 	 * requests to arbitrary URLs.
-	 *
+	 * 
 	 * @param ngsi10Requester
 	 *            The new ngsi10 requester.
 	 */
@@ -425,15 +461,40 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	public IotBrokerCore() {
 
 		System.setProperty("java.awt.headless", "true");
+
 	}
 
 	/**
-	 *
+	 *  This method is intended for working with several
+	 *  pub-sub brokers; but as the feature is not yet enabled the 
+	 *  method is currently unused.
+	 */
+	public List<String> getListOfUpdateAdress() {
+
+		List<String> listUrl = new ArrayList<String>();
+
+		Iterable<String> iterable = Splitter.on(",").omitEmptyStrings()
+				.trimResults().split(pubSubUrl);
+
+		Iterator<String> iter = iterable.iterator();
+
+		while (iter.hasNext()) {
+
+			listUrl.add(iter.next());
+
+		}
+
+		return listUrl;
+
+	}
+
+	/**
+	 * 
 	 * This operation realizes synchronous retrieval of Context Information via
-	 * the QueryContext method defiend by NGSI 10. When this method is called,
+	 * the QueryContext method defined by NGSI 10. When this method is called,
 	 * the IoT Broker Core tries to retrieve the requested information and
 	 * returns whatever could be retrieved.
-	 *
+	 * 
 	 * @param request
 	 *            The QueryContextRequest.
 	 * @return The QueryContextResponse.
@@ -441,33 +502,53 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	@Override
 	public QueryContextResponse queryContext(QueryContextRequest request) {
 
+		
+		/*
+		 * create associations operation scope for discovery
+		 */
 		OperationScope operationScope = new OperationScope(
 				"IncludeAssociations", "SOURCES");
-		ArrayList<OperationScope> lstOperationScopes = null;
+		
+		
+		/*
+		 * Create a new restriction with the same attribute expression
+		 * and operation scope as in the request.
+		 */
 		Restriction restriction = new Restriction();
-		if(request.getRestriction()!=null){
-			if(request.getRestriction().getAttributeExpression()!=null){
-				restriction.setAttributeExpression(request.getRestriction().getAttributeExpression());
+
+		if (request.getRestriction() != null) {
+			if (request.getRestriction().getAttributeExpression() != null) {
+				restriction.setAttributeExpression(request.getRestriction()
+						.getAttributeExpression());
 			}
-			if(request.getRestriction().getOperationScope()!=null){
-				restriction.setOperationScope(request.getRestriction().getOperationScope());
+			if (request.getRestriction().getOperationScope() != null) {
+				restriction.setOperationScope(new ArrayList<OperationScope>(request.getRestriction()
+						.getOperationScope()));
 			}
+
+		} else {
+
+			restriction.setAttributeExpression("");
 
 		}
-
+		
+		/*
+		 * Add the associations operation scope 
+		 * to the the restriction.
+		 */
+		
+		ArrayList<OperationScope> lstOperationScopes = null;
 
 		if (restriction.getOperationScope() == null) {
 			lstOperationScopes = new ArrayList<OperationScope>();
+			lstOperationScopes.add(operationScope);
+			restriction.setOperationScope(lstOperationScopes);
 		} else {
-			lstOperationScopes = new ArrayList<OperationScope>(restriction.getOperationScope());
-		}
-		lstOperationScopes.add(operationScope);
-		restriction.setOperationScope(lstOperationScopes);
-		if (request.getRestriction() != null) {
-			restriction.setAttributeExpression(request.getRestriction()
-					.getAttributeExpression());
+			restriction.getOperationScope().add(operationScope);
 		}
 
+		
+		
 		DiscoverContextAvailabilityRequest discoveryRequest = new DiscoverContextAvailabilityRequest(
 				request.getEntityIdList(), request.getAttributeList(),
 				restriction);
@@ -478,6 +559,17 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		DiscoverContextAvailabilityResponse discoveryResponse = ngsi9Impl
 				.discoverContextAvailability(discoveryRequest);
 
+		/*
+		 * The following code lines are used to filter out certain metadata in case
+		 * the NGSI hierarchy extension is used.
+		 */
+		if (ngsiHierarchyExtension != null) {
+			ngsiHierarchyExtension
+					.filterOutSelfSubordination(discoveryResponse);
+		}
+		/* till here */
+
+		
 		if ((discoveryResponse.getErrorCode() == null || discoveryResponse
 				.getErrorCode().getCode() == 200)
 				&& discoveryResponse.getContextRegistrationResponse() != null) {
@@ -486,6 +578,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 					+ discoveryResponse);
 			List<AssociationDS> assocList = associationUtil
 					.retrieveAssociation(discoveryResponse);
+
+			logger.debug("Association List Size: " + assocList.size());
 
 			List<AssociationDS> additionalRequestList = associationUtil
 					.initialLstOfmatchedAssociation(request, assocList);
@@ -506,6 +600,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			List<Pair<QueryContextRequest, URI>> queryList = createQueryRequestList(
 					discoveryResponse, request);
 
+			logger.debug("Query List Size: " + queryList.size());
+
 			QueryResponseMerger merger = new QueryResponseMerger(request);
 
 			// List of Task
@@ -525,9 +621,9 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 								.get(i).getContextRegistration()
 								.getProvidingApplication());
 
-				tasks.add(Executors.callable(new RequestThread(resultFilter,ngsi10Requester,
-						queryList.get(i).getLeft(),
-						queryList.get(i).getRight(), merger, count,
+				tasks.add(Executors.callable(new RequestThread(resultFilter,
+						ngsi10Requester, queryList.get(i).getLeft(), queryList
+								.get(i).getRight(), merger, count,
 						transitiveList)));
 
 			}
@@ -544,7 +640,44 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			}
 
 			// Call the Merge Method
-			final QueryContextResponse threadResponse = merger.get();
+			QueryContextResponse threadResponse = merger.get();
+
+			logger.debug("Response after merging: " + threadResponse);
+
+			if (resultFilter != null) {
+				logger.info("-----------++++++++++++++++++++++Begin Filter");
+				List<QueryContextRequest> lqcReq = new ArrayList<QueryContextRequest>();
+				lqcReq.add(request);
+				List<ContextElementResponse> lceRes = threadResponse
+						.getListContextElementResponse();
+				logger.info("-----------++++++++++++++++++++++ QueryContextRequest:"
+						+ lqcReq.toString()
+						+ " ContextElementResponse:"
+						+ lceRes.toString());
+
+				logger.info(lqcReq.size());
+				logger.info(lceRes.size());
+
+				List<QueryContextResponse> lqcRes = resultFilter.filterResult(
+						lceRes, lqcReq);
+
+				if (lqcRes.size() == 1) {
+					threadResponse = lqcRes.get(0);
+				}
+
+				logger.info("-----------++++++++++++++++++++++ After Filter ListContextElementResponse:"
+						+ lqcRes.toString()
+						+ " ContextElementResponse:"
+						+ lqcRes.toString());
+				logger.info("-----------++++++++++++++++++++++End Filter");
+			} else {
+
+				logger.info("Result filter not found!!");
+
+			}
+
+			final QueryContextResponse queryContextRespLIstAfterMerge = threadResponse;
+
 			logger.debug("QueryContextResponse after merger:" + threadResponse);
 			// the below thread is for storage only
 			new Thread() {
@@ -553,7 +686,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 					List<ContextElement> contextElementList = new ArrayList<ContextElement>();
 
-					Iterator<ContextElementResponse> iter = threadResponse
+					Iterator<ContextElementResponse> iter = queryContextRespLIstAfterMerge
 							.getListContextElementResponse().iterator();
 
 					while (iter.hasNext()) {
@@ -601,7 +734,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 	/**
 	 * This method is destructive: it changes the input contextElementResponse.
-	 *
+	 * 
 	 * @param attributeExpr
 	 *            the attribute expr
 	 * @param response
@@ -650,13 +783,17 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	}
 
 	/**
-	 * Creates the query request list.
-	 *
+	 * This function creates a list of which query context request should be sent
+	 * to which address, based on a discovery response (containing the available
+	 * data sources) and a query context request (defining which data should be
+	 * retrieved).
+	 * 
 	 * @param discoveryResponse
-	 *            the discovery response
+	 *            The discovery response specifying the available data sources
 	 * @param request
-	 *            the request
-	 * @return the list
+	 *            The query context request defining which data is to be obtained.
+	 * @return A list of (QueryContextRequest,URL) pairs specifying where to make
+	 * which query.
 	 */
 	private List<Pair<QueryContextRequest, URI>> createQueryRequestList(
 			DiscoverContextAvailabilityResponse discoveryResponse,
@@ -670,7 +807,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 					.getContextRegistrationResponse().get(i)
 					.getContextRegistration().getListContextMetadata();
 			if (lstcmd.size() > 0
-					&& "Association".equals(lstcmd.get(0).getType().toString())) {
+					&& "Association".equals(lstcmd.get(0).getName().toString())) {
 				continue;
 			}
 
@@ -754,13 +891,13 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	}
 
 	/**
-	 *
+	 * 
 	 * This operation triggers asynchronous retrieval of Context Information by
 	 * the SubscribeContext method defined by NGSI 10. When this method is
 	 * called, the IoT Broker Core will send notifications about the requested
 	 * context data in regular intervals, where the exact conditions of sending
 	 * notifications have to be specified in the request.
-	 *
+	 * 
 	 * @param request
 	 *            The subscription request.
 	 * @return The response returned by the IoT Broker in reaction to the
@@ -782,7 +919,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	/**
 	 * This operation can be used for canceling existing subscriptions. The
 	 * method is defined by NGSI 10.
-	 *
+	 * 
 	 * @param request
 	 *            The NGSI 10 SubscribeContextRequest.
 	 * @return The NGSI 10 SubscribeContextResponse.
@@ -803,7 +940,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	 * Upon retrieval of an UpdateContextRequest, the IoT Broker will forward
 	 * the update to a fixed NGSI-10 data consumer, possibly including results
 	 * of applying associations to the updated data.
-	 *
+	 * 
 	 * @param request
 	 *            The NGSI 10 UpdateContextRequest.
 	 * @return The NGSI 10 UpdateContextResponse.
@@ -814,8 +951,9 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		UpdateContextResponse response = null;
 		List<AssociationDS> listAssociationDS = new LinkedList<AssociationDS>();
-		List<ContextElement> lContextElements = request.getContextElement();
-		List<ContextElement> lContextElementsRes = new LinkedList<ContextElement>();
+		final List<ContextElement> lContextElements = request
+				.getContextElement();
+		final List<ContextElement> listContextElement = new LinkedList<ContextElement>();
 		UpdateContextRequest updateContextRequest = null;
 		// Going through individual ContextElement
 		Iterator<ContextElement> it = lContextElements.iterator();
@@ -844,8 +982,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 					"TARGETS");
 			List<OperationScope> loperOperationScopes = new LinkedList<OperationScope>();
 			loperOperationScopes.add(os);
-			Restriction restriction = new Restriction(null,
-					loperOperationScopes);
+			Restriction restriction = new Restriction("", loperOperationScopes);
 
 			// Create the NGSI 9 DiscoverContextAvailabilityRequest
 			DiscoverContextAvailabilityRequest discoveryRequest = new DiscoverContextAvailabilityRequest(
@@ -933,7 +1070,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 										ea1.getEntity(),
 										ce.getAttributeDomainName(), lcaRes,
 										ce.getDomainMetadata());
-								lContextElementsRes.add(ceRes);
+								listContextElement.add(ceRes);
 								currentEntityID = ea1.getEntity();
 							}
 						} else {
@@ -941,14 +1078,14 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 									ea1.getEntity(),
 									ce.getAttributeDomainName(), lcaRes,
 									ce.getDomainMetadata());
-							lContextElementsRes.add(ceRes);
+							listContextElement.add(ceRes);
 							currentEntityID = ea1.getEntity();
 						}
 						ContextAttribute ca1 = new ContextAttribute(
 								"".equals(ea1.getEntityAttribute()) ? ca.getName()
 										: ea1.getEntityAttribute(),
 								ca.getType(), ca.getcontextValue().toString(),
-								ca.getMetaData());
+								ca.getMetadata());
 						lcaRes.add(ca1);
 
 					}
@@ -956,17 +1093,37 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 			} else {
 
-				lContextElementsRes.add(ce);
+				listContextElement.add(ce);
 
 			}
 
 		}
 
-		updateContextRequest = new UpdateContextRequest(lContextElementsRes,
+		updateContextRequest = new UpdateContextRequest(listContextElement,
 				request.getUpdateAction());
 
 		logger.info("Started Contact pub/sub broker..");
 		try {
+
+			/*
+			 * The code snippet below is for dumping the data in a Big Data
+			 * repository in addition. This feature is currently disabled.
+			 * 
+			 * 
+			 *
+			 *	 new Thread() {
+			 *	 	@Override
+			 *	  	public void run() {
+			 *	
+			 *	 	bigDataRepository.storeData(lContextElements);
+			 *	
+			 *	 	}
+			 *	 }.start(); 
+			 */
+			
+			
+
+
 			response = ngsi10Requester.updateContext(updateContextRequest,
 					new URI(pubSubUrl));
 		} catch (URISyntaxException e) {
@@ -982,32 +1139,61 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	 * reception of a notifyContext operation the IoT Broker will find out the
 	 * relevant original subscriptions from applications and triggers
 	 * notification of these applications are notified accordingly.
-	 *
-	 *
+	 * 
+	 * 
 	 * @param request
 	 *            the NotifyContextRequest
 	 * @return the NotifyContextResponse.
 	 */
 	@Override
-	public NotifyContextResponse notifyContext(NotifyContextRequest request) {
+	public NotifyContextResponse notifyContext(
+			final NotifyContextRequest request) {
 
 		/*
 		 * We pass the notification to the IoT Agent wrapper. The response
 		 * received from the wrapper is then returned.
+		 * 
+		 * If the received response is null, or if it has a status code other
+		 * than 200 "OK", we return a notify context response with status code
+		 * 500 "internal error".
+		 */
+
+		
+		/*
+		 * The code snippet below is for dumping the data in a Big Data
+		 * repository in addition. This feature is currently disabled.
 		 *
-		 * If the received response is null, or if it has a status code
-		 * other than 200 "OK", we return a notify context response
-		 * with status code 500 "internal error".
+		 *		new Thread() {
+		 *			@Override
+		 *			public void run() {
 		 *
+		 *			List<ContextElement> contextElementList = new ArrayList<ContextElement>();
+		 *
+		 *				Iterator<ContextElementResponse> iter = request
+		 *						.getContextElementResponseList().iterator();
+		 *				while (iter.hasNext()) {
+		 *
+		 *					ContextElementResponse contextElementresp = iter.next();
+		 *					contextElementList.add(contextElementresp
+		 *							.getContextElement());
+		 *
+		 *				}
+		 *
+		 *				bigDataRepository.storeData(contextElementList);
+		 *
+		 *			}
+		 *	}.start();
 		 */
 
 		NotifyContextResponse notifyContextResponse = agentWrapper
 				.receiveFrmAgents(request);
-
+		
+		logger.info("NotifyContextResponse : "+ notifyContextResponse);
 
 		if (notifyContextResponse == null
-				|| notifyContextResponse.getResponseCode() != null && notifyContextResponse
-						.getResponseCode().getCode() != Code.OK_200.getCode()) {
+				|| notifyContextResponse.getResponseCode() != null
+				&& notifyContextResponse.getResponseCode().getCode() != Code.OK_200
+						.getCode()) {
 			return new NotifyContextResponse(new StatusCode(
 					Code.INTERNALERROR_500.getCode(),
 					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(), null));
@@ -1022,8 +1208,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	 * 9. Upon reception of an availability operations, the IoT Broker will
 	 * interact with the new NGSI data sources that have become available in
 	 * order to satisfy the application subscriptions it maintains.
-	 *
-	 *
+	 * 
+	 * 
 	 * @param request
 	 *            the NotifyContextAvailabilityRequest
 	 * @return the NotifyContextAvailabilityResponse.
@@ -1031,18 +1217,31 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	@Override
 	public NotifyContextAvailabilityResponse notifyContextAvailability(
 			final NotifyContextAvailabilityRequest request) {
+		
+		logger.info("NotifyContextRequest : "+ request);
+		
 		NotifyContextAvailabilityResponse nCAResponse = null;
-		nCAResponse = confManWrapper.receiveReqFrmConfigManager(request);
 
-		if (nCAResponse == null
-				|| nCAResponse.getResponseCode() != null && nCAResponse
-						.getResponseCode().getCode() != Code.OK_200.getCode()) {
-			return new NotifyContextAvailabilityResponse(new StatusCode(
-					Code.INTERNALERROR_500.getCode(),
-					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(), null));
-		} else {
-			return nCAResponse;
+		if (request.getContextRegistrationResponseList() != null
+				&& !request.getContextRegistrationResponseList().isEmpty()) {
+			nCAResponse = confManWrapper.receiveReqFrmConfigManager(request);
+			
+			logger.info("NotifyContextResponse : "+ nCAResponse);
+
+			if (nCAResponse == null
+					|| nCAResponse.getResponseCode() != null
+					&& nCAResponse.getResponseCode().getCode() != Code.OK_200
+							.getCode()) {
+				return new NotifyContextAvailabilityResponse(
+						new StatusCode(Code.INTERNALERROR_500.getCode(),
+								ReasonPhrase.RECEIVERINTERNALERROR_500
+										.toString(), null));
+			} else {
+				return nCAResponse;
+			}
 		}
+		return new NotifyContextAvailabilityResponse(new StatusCode(
+				Code.OK_200.getCode(), ReasonPhrase.OK_200.toString(), null));
 
 	}
 
@@ -1094,7 +1293,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	/**
 	 * Implements the UpdateContextSubscription method defined by NGSI 10. This
 	 * method is used for changing existing subscriptions.
-	 *
+	 * 
 	 * @param request
 	 *            The NGSI 10 UpdateContextSubscriptionRequest.
 	 * @return The NGSI 10 UpdateContextSubscriptionResponse.

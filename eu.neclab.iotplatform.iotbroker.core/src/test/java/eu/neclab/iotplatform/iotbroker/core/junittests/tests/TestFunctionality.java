@@ -36,7 +36,9 @@ package eu.neclab.iotplatform.iotbroker.core.junittests.tests;
 import static org.junit.Assert.assertEquals;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
+import org.apache.log4j.Logger;
 import org.easymock.EasyMock;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -48,7 +50,12 @@ import org.springframework.test.util.ReflectionTestUtils;
 import eu.neclab.iotplatform.iotbroker.commons.XmlFactory;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface;
 import eu.neclab.iotplatform.iotbroker.core.IotBrokerCore;
+import eu.neclab.iotplatform.iotbroker.core.subscription.AgentWrapper;
+import eu.neclab.iotplatform.iotbroker.core.subscription.ConfManWrapper;
+import eu.neclab.iotplatform.iotbroker.core.subscription.NorthBoundWrapper;
+import eu.neclab.iotplatform.iotbroker.core.subscription.SubscriptionController;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
+import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextRequest;
@@ -56,163 +63,285 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextResponse;
 import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Requester;
 import eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface;
 
+/**
+ * Unit tests. Here a core setup (consisting of IoT Broker Core and Subscription Handler 
+ * including the subscription wrapper classes) is tested. 
+ */
 public class TestFunctionality {
 
-	SupportingFunctions util = new SupportingFunctions();
-	XmlFactory xmlFactory = new XmlFactory();
-	IotBrokerCore iotBrokerCore;
-	Ngsi9Interface ngsi9Interface;
-	Ngsi10Requester ngsi10Requestor;
-	ResultFilterInterface resultFilterInterface;
+	
+	//The components that are tested:
+	IotBrokerCore core;
+	SubscriptionController subscriptionController;
+	AgentWrapper agentWrapper;
+	ConfManWrapper confManWrapper;
+	NorthBoundWrapper northBoundWrapper;
+	
+	//the mocks used for testing
+	Ngsi9Interface ngsi9InterfaceMock;
+	Ngsi10Requester ngsi10RequesterMock;
+	//ResultFilterInterface resultFilterMock;	
+	
+	//initialize logger
+	private static Logger logger = Logger.getLogger("Unit Tests");
+	
+	
+	//read input and output messages from files
+	DiscoverContextAvailabilityRequest discoverReq_attribExpr = (DiscoverContextAvailabilityRequest) 
+			(new XmlFactory()).convertFileToXML("src/test/resources/discoverReq_attribExpr.xml", DiscoverContextAvailabilityRequest.class);
+	
+	DiscoverContextAvailabilityRequest discoverReq_type = (DiscoverContextAvailabilityRequest) 
+			(new XmlFactory()).convertFileToXML("src/test/resources/discoverReq_type.xml", DiscoverContextAvailabilityRequest.class);
+	
+	DiscoverContextAvailabilityRequest discoverReq_pattern = (DiscoverContextAvailabilityRequest) 
+			(new XmlFactory()).convertFileToXML("src/test/resources/discoverReq_pattern.xml", DiscoverContextAvailabilityRequest.class);
+	
+	DiscoverContextAvailabilityRequest discoverReq_update = (DiscoverContextAvailabilityRequest) 
+			(new XmlFactory()).convertFileToXML("src/test/resources/discoverReq_update.xml", DiscoverContextAvailabilityRequest.class);
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
-
+	DiscoverContextAvailabilityRequest discoverReq_attribDom = (DiscoverContextAvailabilityRequest) 
+			(new XmlFactory()).convertFileToXML("src/test/resources/discoverReq_attribDom.xml", DiscoverContextAvailabilityRequest.class);
+	
+	
+	DiscoverContextAvailabilityResponse discoverResp = (DiscoverContextAvailabilityResponse)
+			(new XmlFactory()).convertFileToXML("src/test/resources/discoverResp.xml", DiscoverContextAvailabilityResponse.class);
+	
+	DiscoverContextAvailabilityResponse discoverResp_notFound = (DiscoverContextAvailabilityResponse)
+			(new XmlFactory()).convertFileToXML("src/test/resources/discoverResp_notFound.xml", DiscoverContextAvailabilityResponse.class);
+	
+	DiscoverContextAvailabilityResponse discoverResp_attribDom = (DiscoverContextAvailabilityResponse)
+			(new XmlFactory()).convertFileToXML("src/test/resources/discoverResp_attribDom.xml", DiscoverContextAvailabilityResponse.class);
+	
+	QueryContextRequest queryReq = (QueryContextRequest) 
+			(new XmlFactory()).convertFileToXML("src/test/resources/queryReq.xml", QueryContextRequest.class);
+	
+	QueryContextRequest queryReq_attribExpr = (QueryContextRequest) 
+			(new XmlFactory()).convertFileToXML("src/test/resources/queryReq_attribExpr.xml", QueryContextRequest.class);
+	
+	QueryContextRequest queryReq_type = (QueryContextRequest) 
+			(new XmlFactory()).convertFileToXML("src/test/resources/queryReq_type.xml", QueryContextRequest.class);
+	
+	QueryContextRequest queryReq_pattern = (QueryContextRequest) 
+			(new XmlFactory()).convertFileToXML("src/test/resources/queryReq_pattern.xml", QueryContextRequest.class);
+	
+	QueryContextRequest queryReq_attribDom = (QueryContextRequest) 
+			(new XmlFactory()).convertFileToXML("src/test/resources/queryReq_attribDom.xml", QueryContextRequest.class);
+	
+	QueryContextResponse queryResp = (QueryContextResponse)
+			(new XmlFactory()).convertFileToXML("src/test/resources/queryResp.xml", QueryContextResponse.class);
+	
+	QueryContextResponse queryResp_notFound =  (QueryContextResponse)
+			(new XmlFactory()).convertFileToXML("src/test/resources/queryResp_notFound.xml", QueryContextResponse.class);
+	
+	QueryContextResponse queryResp_attribDom =  (QueryContextResponse)
+			(new XmlFactory()).convertFileToXML("src/test/resources/queryResp_attribDom.xml", QueryContextResponse.class);
+	
+	UpdateContextRequest updateReq =  (UpdateContextRequest)
+			(new XmlFactory()).convertFileToXML("src/test/resources/updateReq.xml", UpdateContextRequest.class);
+	
+	UpdateContextResponse updateResp =  (UpdateContextResponse)
+			(new XmlFactory()).convertFileToXML("src/test/resources/updateResp.xml", UpdateContextResponse.class);
+	
 	@Before
-	public void setUp() throws Exception {
-		ngsi9Interface = EasyMock.createStrictMock(Ngsi9Interface.class);
-		ngsi10Requestor = EasyMock.createStrictMock(Ngsi10Requester.class);
-		resultFilterInterface= EasyMock.createMock(ResultFilterInterface.class);
-		iotBrokerCore = new IotBrokerCore();
-		iotBrokerCore.setNgsi9Impl(ngsi9Interface);
-		iotBrokerCore.setNgsi10Requestor(ngsi10Requestor);
-		ReflectionTestUtils.setField(iotBrokerCore, "pubSubUrl", "http://127.0.0.1");
-
+	public void before(){
+		
+		//Set up a complete IoT Broker Core System, including Subscription Controller
+		//with all wrappers.
+		core = new IotBrokerCore();
+		subscriptionController = new SubscriptionController();
+		agentWrapper = new AgentWrapper(subscriptionController);
+		confManWrapper = new ConfManWrapper(subscriptionController);
+		northBoundWrapper = new NorthBoundWrapper(subscriptionController);		
+		
+		//connect the components
+		core.setSubscriptionController(subscriptionController);
+		core.setAgentWrapper(agentWrapper);
+		core.setConfManWrapper(confManWrapper);
+		core.setNorthBoundWrapper(northBoundWrapper);
+		
+		subscriptionController.setAgentWrapper(agentWrapper);
+		subscriptionController.setConfManWrapper(confManWrapper);
+		subscriptionController.setNorthBoundWrapper(northBoundWrapper);
+		
+		//initialize the mocks
+		ngsi9InterfaceMock = EasyMock.createMock(Ngsi9Interface.class);
+		ngsi10RequesterMock = EasyMock.createMock(Ngsi10Requester.class);
+		//resultFilterMock= EasyMock.createMock(ResultFilterInterface.class);
+		
+		//connect the components to the mocks
+		core.setNgsi9Impl(ngsi9InterfaceMock);
+		core.setNgsi10Requestor(ngsi10RequesterMock);
+		//iotBrokerCore.setResultFilter(resultFilterMock);
+		
+		
+		
+		//further configuration of core
+		ReflectionTestUtils.setField(core, "pubSubUrl", "http://192.168.100.1:70/application");
 	}
-
-	@After
-	public void tearDown() throws Exception {
-	}
-
-
-	/*
-	 * Basic query context request junit test
-	 */
+	
+	
+	
+	
+	
 	@Test
-	public void testQueryContext() {
+	public void restrictionTest(){
 
-		QueryContextRequest queryContextRequest = util.prepareQueryContextRequest("/queryContextRequest.xml");
-		QueryContextResponse queryContextResponse = util.prepareQueryContextResponse("/queryContextResponse.xml");
-
-
-
-		DiscoverContextAvailabilityRequest dca= util.prepareDiscoverContextAvailabilityRequest("/discoverContextAvailabilityRequest.xml");
-		EasyMock.expect(
-						ngsi9Interface
-								.discoverContextAvailability(dca))
-						.andReturn(
-								util.prepareDiscoverContextAvailabilityResponse("/discoverContextAvailabilityResponse.xml"));
-		EasyMock.replay(ngsi9Interface);
-		EasyMock.expect(
-				ngsi10Requestor.queryContext(
-						Matchers.QueryContextRequestMatcher(util.prepareQueryContextRequest("/queryContextRequest.xml")) ,
-						(URI) EasyMock.anyObject())).andReturn(
-								util.prepareQueryContextResponse("/queryContextResponse.xml"));
-		EasyMock.replay(ngsi10Requestor);
-
-
-		QueryContextResponse qcRes = iotBrokerCore
-				.queryContext(queryContextRequest);
-
-		EasyMock.verify(ngsi9Interface);
-		EasyMock.verify(ngsi10Requestor);
-
-		assertEquals(qcRes.toString(), queryContextResponse.toString());
-
+		//configure mocks
+		EasyMock.expect(ngsi9InterfaceMock.discoverContextAvailability(discoverReq_attribExpr))
+			.andReturn(discoverResp);
+		
+		try {
+			EasyMock.expect(ngsi10RequesterMock.queryContext(queryReq_attribExpr,new URI("http://192.168.100.1:70/application")))
+			.andReturn(queryResp);
+		} catch (URISyntaxException e) {			
+			e.printStackTrace();
+		}
+		
+		//arm the mocks
+		EasyMock.replay(ngsi9InterfaceMock);
+		EasyMock.replay(ngsi10RequesterMock);
+		
+		//execute the test
+		QueryContextResponse brokerResp = core.queryContext(queryReq_attribExpr);
+		
+		
+		//verify the communication of core
+		EasyMock.verify(ngsi9InterfaceMock);
+		EasyMock.verify(ngsi10RequesterMock);
+		
+		assertEquals(brokerResp,queryResp_notFound);
+		
+		logger.info("Successfully tested FIWARE.Feature.IoT.BackendIoTBroker.Query.Restriction");
 	}
+	
 	@Test
-	public void testQueryContextChkRestriction() {
-		QueryContextRequest queryContextRequest = util.prepareQueryContextRequest("/queryContextRequestWithOutRestriction.xml");
-		QueryContextResponse queryContextResponse = util.prepareQueryContextResponse("/queryContextResponseWithOutRestriction.xml");
-
-		EasyMock.expect(
-				ngsi9Interface
-						.discoverContextAvailability((DiscoverContextAvailabilityRequest) EasyMock
-								.anyObject()))
-				.andReturn(
-						util.prepareDiscoverContextAvailabilityResponse("/discoverContextAvailabilityResponse.xml"));
-
-		EasyMock.replay(ngsi9Interface);
-		EasyMock.expect(
-				ngsi10Requestor.queryContext(
-						(QueryContextRequest) EasyMock.anyObject(),
-						(URI) EasyMock.anyObject())).andReturn(
-								util.prepareQueryContextResponse("/queryContextResponse.xml"));
-		EasyMock.replay(ngsi10Requestor);
-
-
-		QueryContextResponse qcRes = iotBrokerCore
-				.queryContext(queryContextRequest);
-
-		EasyMock.verify(ngsi9Interface);
-		EasyMock.verify(ngsi10Requestor);
-
-		assertEquals(qcRes.toString(), queryContextResponse.toString());
+	public void typeTest(){
+		
+		//configure mocks
+		EasyMock.expect(ngsi9InterfaceMock.discoverContextAvailability(discoverReq_type))
+			.andReturn(discoverResp);
+		
+		try {
+			EasyMock.expect(ngsi10RequesterMock.queryContext(queryReq,new URI("http://192.168.100.1:70/application")))
+			.andReturn(queryResp);
+		} catch (URISyntaxException e) {			
+			e.printStackTrace();
+		}
+		
+		//arm the mocks
+		EasyMock.replay(ngsi9InterfaceMock);
+		EasyMock.replay(ngsi10RequesterMock);
+		
+		//execute the test
+		QueryContextResponse brokerResp = core.queryContext(queryReq_type);
+		
+		
+		//verify the communication of core
+		EasyMock.verify(ngsi9InterfaceMock);
+		EasyMock.verify(ngsi10RequesterMock);
+		
+		assertEquals(brokerResp,queryResp);
+		
+		logger.info("Successfully tested FIWARE.Feature.IoT.BackendThingsManagement.Query.typeBased");
 	}
-
+	
+	
 	@Test
-	public void testQueryContextChkOperationScope() {
-		QueryContextRequest queryContextRequest = util.prepareQueryContextRequest("/queryContextRequestOpetaionScope.xml");
-		QueryContextResponse queryContextResponse = util.prepareQueryContextResponse("/queryContextResponseWithOutRestriction.xml");
-
-		DiscoverContextAvailabilityRequest dca= util.prepareDiscoverContextAvailabilityRequest("/discoverContextAvailabilityRequestOperationScope.xml");
-		EasyMock.expect(
-						ngsi9Interface
-								.discoverContextAvailability(Matchers.DiscoverContextAvailabilityMatching(dca)))
-						.andReturn(
-								util.prepareDiscoverContextAvailabilityResponse("/discoverContextAvailabilityResponse.xml"));
-		EasyMock.replay(ngsi9Interface);
-
-		EasyMock.expect(
-				ngsi10Requestor.queryContext(
-						Matchers.QueryContextRequestMatcher(util.prepareQueryContextRequest("/queryContextRequestOpetaionScope.xml")) ,
-						(URI) EasyMock.anyObject())).andReturn(
-								util.prepareQueryContextResponse("/queryContextResponseWithOutRestriction.xml"));
-		EasyMock.replay(ngsi10Requestor);
-
-
-		QueryContextResponse qcRes = iotBrokerCore
-				.queryContext(queryContextRequest);
-
-		EasyMock.verify(ngsi9Interface);
-		EasyMock.verify(ngsi10Requestor);
-
-		assertEquals(qcRes.toString(), queryContextResponse.toString());
+	public void patternTest(){
+		
+		//configure mocks
+		EasyMock.expect(ngsi9InterfaceMock.discoverContextAvailability(discoverReq_pattern))
+			.andReturn(discoverResp);
+		
+		try {
+			EasyMock.expect(ngsi10RequesterMock.queryContext(queryReq,new URI("http://192.168.100.1:70/application")))
+			.andReturn(queryResp);
+		} catch (URISyntaxException e) {			
+			e.printStackTrace();
+		}
+		
+		//arm the mocks
+		EasyMock.replay(ngsi9InterfaceMock);
+		EasyMock.replay(ngsi10RequesterMock);
+		
+		//execute the test
+		QueryContextResponse brokerResp = core.queryContext(queryReq_pattern);
+		
+		
+		//verify the communication of core
+		EasyMock.verify(ngsi9InterfaceMock);
+		EasyMock.verify(ngsi10RequesterMock);
+		
+		assertEquals(brokerResp,queryResp);
+		
+		logger.info("Successfully tested FIWARE.Feature.IoT.BackendIoTBroker.Query.Patterns");
 	}
+	
+	
 	@Test
-	public void testUpdateContext() {
-
-
-		UpdateContextRequest updateContextRequest= util.prepareUpdateContextRequest("/updateContextRequest.xml");
-		UpdateContextResponse updateContextResponseExpected= util.prepareUpdateContextResponse("/updateContextResponse.xml");
-
-		DiscoverContextAvailabilityRequest dca= util.prepareDiscoverContextAvailabilityRequest("/discoverContextAvailabilityRequestUpdate.xml");
-		EasyMock.expect(
-						ngsi9Interface
-								.discoverContextAvailability(Matchers.DiscoverContextAvailabilityMatching(dca)))
-						.andReturn(
-								util.prepareDiscoverContextAvailabilityResponse("/discoverContextAvailabilityResponseUpdate.xml"));
-		EasyMock.replay(ngsi9Interface);
-
-
-		EasyMock.expect(
-				ngsi10Requestor.updateContext(
-						Matchers.UpdateContextRequestMatcher(util.prepareUpdateContextRequest("/updateContextRequest.xml")) ,
-						(URI) EasyMock.anyObject())).andReturn(
-								util.prepareUpdateContextResponse("/updateContextResponse.xml"));
-		EasyMock.replay(ngsi10Requestor);
-
-		UpdateContextResponse updateContextResponseActual = iotBrokerCore.updateContext(updateContextRequest);
-		System.out.println(updateContextResponseActual.toString());
-		EasyMock.verify(ngsi9Interface);
-		EasyMock.verify(ngsi10Requestor);
-
-		assertEquals( updateContextResponseExpected.toString(),updateContextResponseActual.toString());
+	public void updateTest(){
+		
+		//configure mocks
+		EasyMock.expect(ngsi9InterfaceMock.discoverContextAvailability(discoverReq_update))
+			.andReturn(discoverResp_notFound);
+		
+		try {
+			EasyMock.expect(ngsi10RequesterMock.updateContext(updateReq,new URI("http://192.168.100.1:70/application")))
+			.andReturn(updateResp);
+		} catch (URISyntaxException e) {			
+			e.printStackTrace();
+		}
+		
+		//arm the mocks
+		EasyMock.replay(ngsi9InterfaceMock);
+		EasyMock.replay(ngsi10RequesterMock);
+		
+		
+		//execute the test
+		UpdateContextResponse brokerResp = core.updateContext(updateReq);
+		
+		
+		//verify the communication of core
+		EasyMock.verify(ngsi9InterfaceMock);
+		EasyMock.verify(ngsi10RequesterMock);
+		
+		assertEquals(brokerResp,updateResp);
+		
+		logger.info("Successfully tested FIWARE.Feature.IoT.BackendIoTBroker.Update.IdBased");
+	}	
+	
+	
+	@Test
+	public void attributeDomainTest(){
+		
+		//configure mocks
+		EasyMock.expect(ngsi9InterfaceMock.discoverContextAvailability(discoverReq_attribDom))
+			.andReturn(discoverResp_attribDom);
+		
+		try {
+			EasyMock.expect(ngsi10RequesterMock.queryContext(queryReq_attribDom,new URI("http://192.168.100.1:70/application")))
+			.andReturn(queryResp_attribDom);
+		} catch (URISyntaxException e) {			
+			e.printStackTrace();
+		}
+		
+		//arm the mocks
+		EasyMock.replay(ngsi9InterfaceMock);
+		EasyMock.replay(ngsi10RequesterMock);
+		
+		//execute the test
+		QueryContextResponse brokerResp = core.queryContext(queryReq_attribDom);
+		
+		
+		//verify the communication of core
+		EasyMock.verify(ngsi9InterfaceMock);
+		EasyMock.verify(ngsi10RequesterMock);
+		
+		assertEquals(brokerResp,queryResp_attribDom);
+		
+		logger.info("Successfully tested FIWARE.Feature.IoT.BackendThingsManagement.Query.attributeDomain");
 	}
-
+	
+	
+	
 }

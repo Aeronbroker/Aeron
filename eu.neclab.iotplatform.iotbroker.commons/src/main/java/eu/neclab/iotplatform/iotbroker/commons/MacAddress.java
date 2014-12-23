@@ -33,15 +33,15 @@
  *******************************************************************************/
 package eu.neclab.iotplatform.iotbroker.commons;
 
-import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.Enumeration;
 
 import org.apache.log4j.Logger;
 
 /**
- *  A class giving access to the system MAC address.
+ * A class giving access to the system MAC address.
  */
 public class MacAddress {
 
@@ -49,8 +49,8 @@ public class MacAddress {
 	private static String MACADDRESS;
 
 	/**
-	 * Creates a new instance of the class. Objects of this class are
-	 * stateless, which means that a singleton instance will be sufficient. 
+	 * Creates a new instance of the class. Objects of this class are stateless,
+	 * which means that a singleton instance will be sufficient.
 	 */
 	public MacAddress() {
 		super();
@@ -58,18 +58,18 @@ public class MacAddress {
 	}
 
 	/**
-	 *  Returns the MAC address of the system.
+	 * Returns the MAC address of the system.
 	 */
 	public static String getMACADDRESS() {
 
 		StringBuilder b = new StringBuilder();
 		try {
 
-			InetAddress address = InetAddress.getLocalHost();
+			Enumeration<NetworkInterface> nets = NetworkInterface
+					.getNetworkInterfaces();
 
-			NetworkInterface ni = NetworkInterface.getByInetAddress(address);
-			if (ni != null) {
-				byte[] mac = ni.getHardwareAddress();
+			for (NetworkInterface netIf : Collections.list(nets)) {
+				byte[] mac = netIf.getHardwareAddress();
 				if (mac != null) {
 
 					for (int i = 0; i < mac.length; i++) {
@@ -77,18 +77,15 @@ public class MacAddress {
 								i < mac.length - 1 ? "-" : "").toString());
 					}
 					MACADDRESS = b.toString();
-				} else {
-					logger.info("Address doesn't exist or is not "
-							+ "accessible.");
+					logger.debug("MAC address found : " + MACADDRESS);
+					break;
 				}
-			} else {
-				logger.info("Network Interface for the specified "
-						+ "address is not found.");
 			}
-		} catch (UnknownHostException e) {
-			logger.debug("UnknownHostException",e);
+			if (MACADDRESS == null || MACADDRESS.equals("")) {
+				logger.info("Address doesn't exist or is not " + "accessible.");
+			}
 		} catch (SocketException e) {
-			logger.debug("SocketException",e);
+			logger.debug("SocketException", e);
 		}
 
 		return MACADDRESS;

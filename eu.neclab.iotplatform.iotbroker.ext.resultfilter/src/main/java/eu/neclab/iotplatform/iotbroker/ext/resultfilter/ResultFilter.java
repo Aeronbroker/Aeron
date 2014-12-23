@@ -59,10 +59,6 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
 public class ResultFilter implements ResultFilterInterface {
 
 	private static Logger logger = Logger.getLogger(ResultFilter.class);
-	//private List<ContextElementResponse> contextElementResponseList;
-	//private List<QueryContextRequest> queryContextRequestList;
-	//private List<QueryContextResponse> queryContextResponseList = new ArrayList<QueryContextResponse>();;
-	//private long numberofRequests = 0;
 
 	/**
 	 * This the main function for filtering a list of
@@ -95,18 +91,13 @@ public class ResultFilter implements ResultFilterInterface {
 		ArrayList<QueryContextResponse> filteredResultList = new ArrayList<QueryContextResponse>();
 
 
-		logger.info("Resultfilter: start");
-		logger.info("Resultfilter: response list to filter:"
+		logger.debug("Resultfilter: start");
+		logger.debug("Resultfilter: response list to filter:"
 				+ contextElementResponseList.toString());
-		logger.info("Resultfilter: request list based on which the filtering is done:"
+		logger.debug("Resultfilter: request list based on which the filtering is done:"
 				+ requestList.toString());
 
 
-
-		//numberofRequests = requestList.size();
-		//TODO remove commented code from this class after testing.
-		//this.contextElementResponseList = contextElementResponseList;
-		//this.queryContextRequestList = requestList;
 
 		/*
 		 * Now we populate this list with empty query context responses. The number of
@@ -136,34 +127,10 @@ public class ResultFilter implements ResultFilterInterface {
 
 		}
 
-		/*
-		 * Then we run over the list of query context responses just populated. This
-		 * time we remove from each response all context element responses
-		 * for which no single attribute value is given.
-		 *
-		 * This is now already done by the individual filtering method and therefore
-		 * can be removed.
-		 *
-		 */
 
-//		Iterator<QueryContextResponse> it = filteredResultList.iterator();
-//		while (it.hasNext()) {
-//			QueryContextResponse qcr = it.next();
-//			Iterator<ContextElementResponse> itCeRes = qcr
-//					.getListContextElementResponse().iterator();
-//			while (itCeRes.hasNext()) {
-//				ContextElementResponse ceRes = itCeRes.next();
-//				if (ceRes.getContextElement().getContextAttributeList().size() == 0) {
-//					itCeRes.remove();
-//				}
-//
-//			}
-//
-//		}
-
-		logger.info("QueryContextResponseList after filter"
+		logger.debug("QueryContextResponseList after filter"
 				+ filteredResultList + "end");
-		logger.info("ending resultFiltering");
+		logger.debug("ending resultFiltering");
 		return filteredResultList;
 	}
 
@@ -189,9 +156,9 @@ public class ResultFilter implements ResultFilterInterface {
 		 * First some checks to avoid null pointer exceptions.
 		 */
 		if(
-			qcReq == null || qcReq.getEntityIdList()==null ||
-			conElResp==null || conElResp.getContextElement() == null ||
-			qcResp == null
+				qcReq == null || qcReq.getEntityIdList()==null ||
+				conElResp==null || conElResp.getContextElement() == null ||
+				qcResp == null
 				) {
 			return;
 		}
@@ -237,11 +204,15 @@ public class ResultFilter implements ResultFilterInterface {
 			 */
 			if (EntityIDMatcher.matcher(conElResp.getContextElement().getEntityId(),
 					entityID)) {
+
+				logger.debug("Response EntityId: "+ conElResp.getContextElement().getEntityId());
+				logger.debug("Request EntityId : "+ entityID);
+
 				entityMatchFound=true;
 				break;
-				}
-
 			}
+
+		}
 
 		/*
 		 * If no matching entity has been found in the query, the function returns without
@@ -372,199 +343,6 @@ public class ResultFilter implements ResultFilterInterface {
 		logger.debug("Filtered context element response: " + filteredCER.toString());
 
 		return;
-
-		/*
-		 * Everything below is an old implementation of the method
-		 * and can be removed.
-		 *
-		 */
-
-//
-//		if (conElResp.getContextElement().getAttributeDomainName() != null) {
-//
-//			/*
-//			 * If the response specifies an attribute domain name, then we
-//			 * look if the query context request specifies an attribute having
-//			 * exactly that name.
-//			 *
-//			 * If we do not find it, we do nothing.
-//			 *
-//			 * bug?it seems that it is assumed that the attribute list is present in the
-//			 * query. If it is not present, probably a null pointer exception will occur.
-//			 * Proposed solution: isAttributeDomainNameFound should also return true if
-//			 * the attribute list is null.
-//			 */
-//
-//			if (isAttributeDomainNameFound(conElResp.getContextElement()
-//					.getAttributeDomainName().toString(),
-//					qcReq.getAttributeList())) {
-//
-//				/*
-//				 * If the attribute domain name is found in the attributes of the query,
-//				 * it means that all the attribute values of the context element response match
-//				 * with the request.
-//				 *
-//				 */
-//
-//				/*
-//				 * We create a new context element response as a copy of the given
-//				 * context element response.
-//				 *
-//				 * The created response is added to the query context response given
-//				 * as function parameter.
-//				 *
-//				 */
-//
-//				// Creating new Context Element Response and assigning context
-//				// element and statuscode
-//				ContextElementResponse tmpContextElementResponse = new ContextElementResponse();
-//				tmpContextElementResponse.setContextElement(conElResp
-//						.getContextElement());
-//				tmpContextElementResponse.setStatusCode(conElResp.getStatusCode());
-//
-//
-//				List<ContextElementResponse> tmpContextElementResponseList = qcResp
-//						.getListContextElementResponse();
-//				tmpContextElementResponseList.add(tmpContextElementResponse);
-//				//qcResp.setContextResponseList(tmpContextElementResponseList);
-//				//this is unnecessary
-//
-//			}
-//		} else {
-//
-//			/*
-//			 * In case no domain name is specified in the context element response,
-//			 * we need to decide attribute value by attribute value whether they match with
-//			 * the given query.
-//			 */
-//
-//			String findName = "";
-//
-//			/*
-//			 * We initialize a context element ce for the response.
-//			 *
-//			 */
-//
-//			ContextElement ce = new ContextElement(conElResp.getContextElement()
-//					.getEntityId(), null, null, conElResp.getContextElement()
-//					.getDomainMetadata());
-//
-//			List<ContextAttribute> lcaFrQueryRequestWithoutAttribute = new ArrayList<ContextAttribute>();
-//
-//			/*
-//			 * Then we run over all attributes in the original context element
-//			 * response.
-//			 *
-//			 * bug? verify that we do not get a null pointer exception here.
-//			 */
-//
-//			Iterator<ContextAttribute> it1 = conElResp.getContextElement()
-//					.getContextAttributeList().iterator();
-//			while (it1.hasNext()) {
-//				ContextAttribute ca = (ContextAttribute) it1.next();
-//				findName = ca.getName();
-//
-//				/*
-//				 * For each such attribute in the original context element response, we
-//				 * iterate through
-//				 * all attributes in the attribute list of the query.
-//				 *
-//				 * bug? here again we still need to cover the case that attribute list is not
-//				 * present in the query.
-//				 */
-//
-//				Iterator<String> it2 = qcReq.getAttributeList().iterator();
-//				while (it2.hasNext()) {
-//					String qcrAttribute = (String) it2.next();
-//
-//					if (qcrAttribute.equals(findName)) {
-//
-//						/*
-//						 * If an attribute in the query matches the attribute in
-//						 * the response, this attribute value is added to the new
-//						 * context element response.
-//						 *
-//						 */
-//
-//						/*
-//						 * bug? rather initialize the attribute list of ce at the
-//						 * beginning and then just add to it.
-//						 */
-//						List<ContextAttribute> lca = new ArrayList<ContextAttribute>();
-//						if (ce.getContextAttributeList() != null) {
-//							lca = ce.getContextAttributeList();
-//						}
-//						lca.add(ca);
-//						ce.setContextAttributeList(lca);
-//
-//					}
-//				}
-//
-//				/*
-//				 * If the attribute list in the query context
-//				 * request is empty, then the above loop
-//				 * did not do anything.
-//				 *
-//				 * Also then we add the current attribute value in the
-//				 * original context element response, because the
-//				 * query did not specify any attribute.
-//				 *
-//				 * bug? what if the attribute list in the query is null!!
-//				 */
-//
-//				if (qcReq.getAttributeList().size() == 0) {
-//
-//					lcaFrQueryRequestWithoutAttribute.add(ca);
-//					ce.setContextAttributeList(lcaFrQueryRequestWithoutAttribute);
-//				}
-//
-//			}
-//
-//			/*
-//			 *
-//			 * After having populated the new context element with the relevant attributes,
-//			 * we create a context element response wrapper around it.
-//			 * This context element response is then added to the query response given in the
-//			 * function parameter.
-//			 *
-//			 */
-//
-//
-//			ContextElementResponse tmpContextElementResponse = new ContextElementResponse();
-//			tmpContextElementResponse.setContextElement(ce);
-//			tmpContextElementResponse.setStatusCode(conElResp.getStatusCode());
-//
-//			List<ContextElementResponse> tmpContextElementResponseList = qcResp
-//					.getListContextElementResponse();
-//			tmpContextElementResponseList.add(tmpContextElementResponse);
-//			//qcResp.setContextResponseList(tmpContextElementResponseList);
-//			//unnecessary
-//
-//		}
-
 	}
 
-	/*
-	 * Obsolete function
-	 *
-	 * Checks if list of attribute contains a given attributeDomainName
-	 *
-	 * @param toBeMatched
-	 * @param attributeList
-	 * @return Returns true if the any of the Attribute is AttributeDomainName
-	 *         otherwise sends false
-	 */
-//	private Boolean isAttributeDomainNameFound(String toBeMatched,
-//			List<String> attributeList) {
-//		Iterator<String> it = attributeList.iterator();
-//		while (it.hasNext()) {
-//			String Attribute = (String) it.next();
-//			if (toBeMatched.equals(Attribute)) {
-//				return true;
-//			}
-//		}
-//
-//		return false;
-//	}
-//
 }

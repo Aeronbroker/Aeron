@@ -1,31 +1,30 @@
 Aeron
 =====
 
-Aeron is an Internet-of-Things middleware based on the OMA NGSI 9/10 standard. It has been implemented by NEC Laboratories Europe as part of their 
-contribution to the European Future Internet Platform FIWARE.
+Aeron is an Internet-of-Things middleware based on the OMA NGSI 9/10 standard. It has been implemented by NEC Laboratories Europe as part of their contribution to the European Future Internet Platform FIWARE.
 
 Aeron Documentation
 ---
 
 | Document                    | Reference                                                                                                        |
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| FI-WARE wiki                | https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/Main_Page                                      |
+| FIWARE wiki                 | https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/Main_Page                                      |
 | IoT Broker GE specification | https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/FIWARE.OpenSpecification.IoT.Backend.IoTBroker |
 | NGSI 9/10 API specification | https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/FI-WARE_NGSI_Open_RESTful_API_Specification    |
-| Aeron in FI-WARE catalogue  | http://catalogue.fi-ware.org/enablers/nec-iot-broker                                                             |
+| Aeron in FIWARE catalogue   | http://catalogue.fi-ware.org/enablers/nec-iot-broker                                                             |
 
 
 What you get
 ---
 
-Aeron is an implementation of the IoT Broker Generic Enabler from FI-WARE (http://catalogue.fi-ware.org/enablers/nec-iot-broker). 
+Aeron is an implementation of the IoT Broker Generic Enabler from FIWARE (http://catalogue.fi-ware.org/enablers/nec-iot-broker). 
 It is specified as a lightweight and scalable middleware component that separates IoT applications from the underlying device installations. 
-This implementation satisfies all properties described in the specification of the FI-WARE Generic Enabler (https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/FIWARE.OpenSpecification.IoT.Backend.IoTBroker).
+This implementation satisfies all properties described in the specification of the FIWARE Generic Enabler (https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/FIWARE.OpenSpecification.IoT.Backend.IoTBroker).
 
 Aeron has unique properties that you will not find in other IoT Platforms:
 
-* While the Aeron decouples applications from underlying IoT device installations, it achieves this going far beyond the 
-common publish/subscribe paradigm. Instead, Aeron actively communicates simultaneously with large quantities IoT gateways 
+* While Aeron decouples applications from underlying IoT device installations, it achieves this going far beyond the 
+common publish/subscribe paradigm. Instead, Aeron actively communicates simultaneously with multiple IoT gateways 
 and devices in order to obtain exactly the information that is required by the running IoT applications. 
 As a result, information only is generated and exchanged when needed. This is in contrast to the state-of-the-art 
 middleware components where any piece of information - whether needed or not - is just ''dumped'' inside a central 
@@ -33,12 +32,12 @@ repository.
 * Aeron has the ability to automatically translate information to the right abstraction level and therefore closes the 
 gap between information-centric applications and device-centric IoT installations. 
 For example, a simple device can typically only deliver values without being aware of the meaning of these values 
-in the application's context. On the other hand, IoT applications have to written without consideration of the device 
+in the application's context. On the other hand, IoT applications have to be written without consideration of the device 
 installations in order to be applicable in more than one specific environment. This gap is closed by Aeron by the use 
 of so-called associations between device-level and thing-level information.
 * Aeron is based on the simple and powerful information model standardized in OMA Next Generation Service Interface 
-Context Enabler (NGSI 9 / NGSI 10). This API has emerged in FI-WARE as an important open standard of information 
-exchange, implemented by a considerable number of FI-WARE GEs. In NGSI 9/10, all objects of the real world, 
+Context Enabler (NGSI 9 / NGSI 10). This API has emerged in FIWARE as an important open standard of information 
+exchange, implemented by a considerable number of FIWARE GEs. In NGSI 9/10, all objects of the real world, 
 being it sensor/actuator devices or arbitrary objects (like tables, rooms, cars, ...) are represented as so-called 
 Context Entities, while information about these objects is expressed in the form of attributes. For more information 
 about the OMA NGSI 9/10 information model and the related interfaces, please refer to the Open API Specification (https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/FI-WARE_NGSI_Open_RESTful_API_Specification).
@@ -60,27 +59,29 @@ Directory Structure
 ------------------------
 .
 
-├── IoTbrokerParent                      Maven parent
-
-├── SQL_database                         HSQLDB folder
-
 ├── iotbroker.builder                    Maven builder
 
 ├── iotbroker.client                     HTTP client
 
 ├── iotbroker.commons                    Commons package
 
-├── iotbroker.core                       Core package
+├── iotbroker.core                       Functional core
 
-├── iotbroker.resultfilter               Result filter package
+├── iotbroker.resultfilter               Result filter (optional)
 
-├── iotbroker.storage                    Internal storage
+├── iotbroker.restcontroller             HTTP REST interface
 
-├── fiwareRelease                        Configuration folder
+├── iotbroker.storage                    Internal database
 
 ├── ngsi.api                             NGSI 9/10 API
 
+├── fiwareRelease                        Configuration folder
+
+├── IoTbrokerParent                      Maven parent
+
 ├── lib								     Folder contains dependencies
+
+├── SQL_database                         HSQLDB folder
 
 └── tomcat-configuration-fragment 		 Tomcat configuration
 
@@ -139,16 +140,16 @@ The Aeron bundles are OSGI based and can be used with arbitrary OSGI frameworks 
 The Aeron OSGI bundles have been tested with the EQUINOX and the FELIX framework.
 Aeron requires several VM arguments for the runtime that need to be specified (e.g. in Equinox modify the config.ini file):
 
-* dir.config=/user/home (User home directory depending of the OS)
-* bundles.configuration.location=.//fiwareRelease//configuration//configadmin (Needed for configure the paxlogging level)
+* dir.config=/user/home (parent directory of the fiwareRelease folder)
+* bundles.configuration.location=.//fiwareRelease//configuration//configadmin (Location of the
+logger configuration file)
 * ngsiclient.layer=connector (Needed for binding the right http bundle)
 * hsqldb.directory=.//SQL_database/database (Location of the HSQLDB database)
-* tomcat.init.port=8090 (Main port of the IoT Broker REST Interface)
+* tomcat.init.port=8090 (the port the IoT Broker REST Interface will be listening to)
 
-In addition to that the fiwareRelease folder need to be copied in the user/home directory.
-IMPORTANT: for Linux users if you run Aeron with administrator right remember to copy the fiwareRelease folder in the /root/ directory.
+In addition to that, the fiwareRelease folder needs to be copied in the user/home directory (or to the folder specified by dir.config).
 
-An example of an OSGI configuration using the EQUINOX framework (e.g. config.ini) is shown below:
+An example of an OSGI configuration using the EQUINOX framework (e.g. config.ini) is shown below. For a working example configuration please also see the latest binary release to be found in http://catalogue.fi-ware.org/enablers/nec-iot-broker.
 
 ```
 ##############################
@@ -219,7 +220,7 @@ plugins/bundles/com.springsource.org.apache.el-6.0.18.jar@start, \
 plugins/bundles/com.springsource.org.apache.juli.extras-6.0.18.jar@start, \
 plugins/bundles/com.springsource.org.apache.taglibs.standard-1.1.2.jar@start, \
 
-##PROVIDED OSGI BUNDLE LIBRARIES (can be founded inside the lib folder on GitHub)##
+##PROVIDED OSGI BUNDLE LIBRARIES (can be found inside the lib folder on GitHub)##
 plugins/bundles/httpclient-4.2.0-osgi.jar@start, \
 plugins/bundles/httpcore-4.2.0-osgi.jar@start, \
 plugins/bundles/catalina.start.osgi-1.0.0.jar@start, \
@@ -259,15 +260,14 @@ plugins/spring DM/spring-osgi-web-extender-2.0.0.M1.jar@start, \
 
 
 ##AERON OSGI BUNDLES##
-plugins/broker/catalina-config-3.4.2.jar, \
-plugins/broker/iotbroker.commons-3.4.2.jar@start, \
-plugins/broker/iotbroker.storage-3.4.2.jar@start, \
-plugins/broker/iotbroker.client-3.4.2.jar@start, \
-plugins/broker/iotbroker.core-3.4.2.jar@start, \
-plugins/broker/iotbroker.restcontroller-3.4.2.jar@start, \
-plugins/broker/ngsi.api-3.4.2.jar@start, \
-plugins/broker/iotbroker.ext.resultfilter-3.4.2.jar@start, \
-plugins/broker/tomcat-configuration-fragment-3.4.2.jar
+plugins/broker/iotbroker.commons-4.1.3.jar@start, \
+plugins/broker/iotbroker.storage-4.1.3.jar@start, \
+plugins/broker/iotbroker.client-4.1.3.jar@start, \
+plugins/broker/iotbroker.core-4.1.3.jar@start, \
+plugins/broker/iotbroker.restcontroller-4.1.3.jar@start, \
+plugins/broker/ngsi.api-4.1.3.jar@start, \
+plugins/broker/iotbroker.ext.resultfilter-4.1.3.jar@start, \
+plugins/broker/tomcat-configuration-fragment-4.1.3.jar
 ```
 
 Installing and Using Aeron
@@ -280,13 +280,17 @@ Minimum System Requirements:
 * JAVA : Java 7
 * Operating System: 32 or 64-bit version Windows or Linux
 
-The administration and programming manuals for Areon can be found on the FI-WARE Catalogue page,
+The administration and programming manuals for Areon can be found on the FIWARE Catalogue page,
 under the "Documentation" tab.
 
 User and Programmers Guide: https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/IoT_Broker_-_User_and_Programmers_Guide
 
 Installation and Administration Guide: https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/IoT_Broker_-_Installation_and_Administration_Guide
 
+Pre-compiled and configured binaries: 
+http://catalogue.fi-ware.org/enablers/nec-iot-broker
+
+
 Bugs & Questions
 ---
-Please contact salvatore.longo@neclab.eu or tobias.jacobs@neclab.eu
+Please contact salvatore.longo@neclab.eu or tobias.jacobs@neclab.eu.

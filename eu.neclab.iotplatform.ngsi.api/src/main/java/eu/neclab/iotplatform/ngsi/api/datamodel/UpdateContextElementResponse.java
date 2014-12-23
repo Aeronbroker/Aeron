@@ -38,6 +38,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
  * Implements UpdateContextElementResponse
  * as defined in the FI-WARE binding of NGSI 9/10.
@@ -50,6 +52,7 @@ public class UpdateContextElementResponse extends NgsiStructure {
 	private StatusCode errorCode = null;
 
 	@XmlElement(name = "contextAttributeResponse")
+	@JsonProperty("contextResponses")
 	private ContextAttributeResponse contextAttributeResponse;
 
 	public UpdateContextElementResponse() {

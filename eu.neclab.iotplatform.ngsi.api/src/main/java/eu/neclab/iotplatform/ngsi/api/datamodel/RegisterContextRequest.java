@@ -1,12 +1,12 @@
 /*******************************************************************************
  *   Copyright (c) 2014, NEC Europe Ltd.
  *   All rights reserved.
- *   
+ *
  *   Authors:
  *           * Salvatore Longo - salvatore.longo@neclab.eu
  *           * Tobias Jacobs - tobias.jacobs@neclab.eu
  *           * Raihan Ul-Islam - raihan.ul-islam@neclab.eu
- *  
+ *
  *    Redistribution and use in source and binary forms, with or without
  *    modification, are permitted provided that the following conditions are met:
  *   1. Redistributions of source code must retain the above copyright
@@ -23,10 +23,10 @@
  *
  * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE 
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+ * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
  * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -41,20 +41,24 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.datatype.Duration;
+
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * Implements RegisterContextRequest
  * as defined in OMA NGSI 9/10 approved version 1.0.
  */
-@XmlRootElement(name = "contextRegistrationRequest")
+@XmlRootElement(name = "registerContextRequest")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class RegisterContextRequest extends NgsiStructure {
 
 	@XmlElementWrapper(name = "contextRegistrationList")
 	@XmlElement(name = "contextRegistration", required = true)
+	@JsonProperty("contextRegistrations")
 	private List<ContextRegistration> contextRegistration = null;
 	@XmlElement(name = "duration", required = false)
-	private String duration = null;
+	private Duration duration = null;
 	@XmlElement(name = "registrationId", required = false)
 	private String registrationId = null;
 
@@ -63,10 +67,10 @@ public class RegisterContextRequest extends NgsiStructure {
 	}
 
 	public RegisterContextRequest(
-			List<ContextRegistration> contextRegistrationList, String duration,
+			List<ContextRegistration> contextRegistrationList, Duration duration,
 			String registrationId) {
 
-		this.contextRegistration = contextRegistrationList;
+		contextRegistration = contextRegistrationList;
 		this.duration = duration;
 		this.registrationId = registrationId;
 	}
@@ -80,14 +84,14 @@ public class RegisterContextRequest extends NgsiStructure {
 
 	public void setContextRegistrationList(
 			List<ContextRegistration> contextRegistrationList) {
-		this.contextRegistration = contextRegistrationList;
+		contextRegistration = contextRegistrationList;
 	}
 
-	public String getDuration() {
+	public Duration getDuration() {
 		return duration;
 	}
 
-	public void setDuration(String duration) {
+	public void setDuration(Duration duration) {
 		this.duration = duration;
 	}
 

@@ -48,6 +48,14 @@ import javax.xml.bind.Marshaller;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
+import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
+
+import eu.neclab.iotplatform.iotbroker.commons.XmlFactory;
+import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextRequest;
 
 /**
  * Represents a generic client for NGSI via HTTP.
@@ -59,6 +67,7 @@ public class HttpConnectionClient {
 
 	/* The Constant connectionTimeout. */
 	private final static int CONNECTION_TIMEOUT = 3000;
+
 
 	/*
 	 * Creates an Http Connection from a url, a resource pathname and an HTTP
@@ -78,7 +87,7 @@ public class HttpConnectionClient {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	private static HttpURLConnection createConnection(URL url, String resource,
-			String method, String contentType) throws IOException {
+			String method, String contentType, String xAuthToken) throws IOException {
 
 		// initialize the URL of the connection as the concatenation of
 		// parameters url and resource.
@@ -86,11 +95,11 @@ public class HttpConnectionClient {
 
 		logger.debug("Connecting to: " + connectionURL.toString());
 
-		// initialize and conficgure the connection
+		// initialize and configure the connection
 		HttpURLConnection connection = (HttpURLConnection) connectionURL
 				.openConnection();
 
-		// configure connection for both input and output
+		// enable both input and output for this connection
 		connection.setDoInput(true);
 		connection.setDoOutput(true);
 
@@ -98,12 +107,14 @@ public class HttpConnectionClient {
 		connection.setInstanceFollowRedirects(false);
 		connection.setRequestProperty("Content-Type", contentType);
 		connection.setRequestProperty("Accept",contentType);
+		connection.setRequestProperty("X-Auth-Token", xAuthToken);
+		connection.setRequestProperty("X-Auth-Token", xAuthToken);
 
 
 		// set connection timeout
 		connection.setConnectTimeout(CONNECTION_TIMEOUT);
 
-		// set the request method
+		// set the request method to be used by the connection
 		connection.setRequestMethod(method);
 
 		// finally return the nicely configured connection
@@ -111,8 +122,9 @@ public class HttpConnectionClient {
 
 	}
 
+
 	/**
-	 * Initializes an HTTP connection to a server.
+	 * Makes an HTTP connection to a server.
 	 *
 	 * @param url
 	 *            The URL of the server to connect to.
@@ -125,15 +137,18 @@ public class HttpConnectionClient {
 	 *            The message body of the request to send. The object is expected
 	 *            to be an instance of an NGSI 9 or 10 message body.
 	 * @param contentType
-	 *            The content type that is announced in the request header. Note that
-	 *            the request object in the message body will be sent in XML format
-	 *            regardless of what the value of this parameter.
+	 *            The content type that is announced in the request header. The request object
+	 *            in the message body will be sent in XML format for contentType  
+	 *            "application/xml" and JSON format otherwise.                
+	 * @param xAuthToken
+	 * 			  The security token used by this connection in order to connect to
+	 * 			  a component secured by the FIWARE security mechanisms.
 	 *
-	 * @return Either returns the response body returned by the server or an
+	 * @return Either returns the response body returned by the server (as a String) or an
 	 * error message.
 	 */
 	public String initializeConnection(URL url, String resource, String method,
-			Object request, String contentType) {
+			Object request, String contentType,  String xAuthToken) {
 
 		// initialize variables
 		HttpURLConnection connection = null;
@@ -145,28 +160,57 @@ public class HttpConnectionClient {
 
 			// use the above setConnection method to get a connection from url,
 			// resource and the method.
-			connection = createConnection(url, resource, method, contentType);
+			connection = createConnection(url, resource, method, contentType, xAuthToken);
 
-			logger.info("URL" + url + resource);
+			if(contentType.equals("application/xml")){				
+				//connect using XML message body
 
-			logger.info("Starting connection with: " + url);
+				logger.info("URL" + url + resource);
 
-			logger.info("Send the QUERY!");
+				logger.info("Starting connection with: " + url);
 
-			// create a context from the request class
-			JAXBContext requestContext = JAXBContext.newInstance(request
-					.getClass());
+				logger.info("Send the QUERY!");
 
-			// Create a Marshaller from the context
-			Marshaller m = requestContext.createMarshaller();
+				// create a context from the request class
+				JAXBContext requestContext = JAXBContext.newInstance(request
+						.getClass());
 
-			// get the OutputStram form the connection
-			os = connection.getOutputStream();
+				// Create a Marshaller from the context
+				Marshaller m = requestContext.createMarshaller();
 
-			// Ask the marshaller to marshall the request for you
-			logger.info("Request Class: " + request.getClass().toString());
-			m.marshal(request, os);
+				// get the OutputStram form the connection
+				os = connection.getOutputStream();
 
+				// Ask the marshaller to marshall the request for you
+				logger.info("Request Class: " + request.getClass().toString());
+				m.marshal(request, os);
+				
+			}else{
+				//connect using JSON message body
+				
+				// get the OutputStram form the connection
+				os = connection.getOutputStream();
+
+				ObjectMapper mapper = new ObjectMapper();
+				SerializationConfig config = mapper.getSerializationConfig();
+				config.setSerializationInclusion(Inclusion.NON_NULL);
+				//			m.setProperty(Marshaller.JAXB_ENCODING, "Unicode");
+
+				try {
+					mapper.writeValue(os,request);
+					logger.info("----------------->"+mapper.writeValueAsString(request));
+				} catch (JsonGenerationException e) {
+
+					logger.debug("JsonGenerationException", e);
+				} catch (JsonMappingException e) {
+
+					logger.debug("JsonMappingException", e);
+				} catch (IOException e) {
+
+					logger.debug("IOException", e);
+				}
+
+			}
 			logger.info("Output Stream: " + os.toString());
 
 			// send Message
@@ -174,8 +218,9 @@ public class HttpConnectionClient {
 			// close connection again
 			os.close();
 
-			// now it is time to receive the response
 
+			
+			// now it is time to receive the response
 			// get input stream from the connection
 			is = connection.getInputStream();
 
@@ -185,27 +230,26 @@ public class HttpConnectionClient {
 
 			is.close();
 
-			logger.info(resp);
-
-			logger.debug("------------->Response = " + resp);
+			logger.info("------------->Response = "+resp);
 
 			return resp;
 
 		} catch (ConnectException e) {
 
-			logger.debug("Connection Error!",e);
+			logger.info("Connection Error: Impossible to contact: "+ url);
+			logger.debug("ConnectException",e);
 
-			return "500 - Connection Error!";
+			return "500 - Connection Error - the URL: "+ url+" cannot be reached!";
 
 		} catch (JAXBException e) {
-			logger.debug("XML Parse Error!",e);
-
-
+			logger.info("XML Parse Error!",e);
+			logger.debug("JAXBException",e);
 			return "500 - XML Parse Error! Response from: " + url
 					+ " is not correct!";
 		} catch (IOException e) {
 
-			logger.debug("Error I/O!",e);
+			logger.info("500 - Error I/O with: " + url);
+			logger.debug("IOException",e);
 
 			return "500 - Error I/O with: " + url;
 

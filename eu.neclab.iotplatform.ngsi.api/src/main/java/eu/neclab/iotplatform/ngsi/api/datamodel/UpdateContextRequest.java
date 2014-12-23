@@ -42,6 +42,11 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
+
+
+
 /**
  * Implements UpdateContextRequest
  * as defined in OMA NGSI 9/10 approved version 1.0.
@@ -52,6 +57,7 @@ public class UpdateContextRequest extends NgsiStructure {
 
 	@XmlElementWrapper(name = "contextElementList")
 	@XmlElement(name = "contextElement", required = true)
+	@JsonProperty("contextElements")
 	private List<ContextElement> contextElement;
 
 	@XmlElement(name = "updateAction", required = true)
@@ -87,5 +93,26 @@ public class UpdateContextRequest extends NgsiStructure {
 	public void setUpdateAction(UpdateActionType updateAction) {
 		this.updateAction = updateAction;
 	}
+	
+	@Override
+	public boolean equals(Object obj){
+		
+		if(obj == null || obj.getClass() != this.getClass())
+			return false;
+		
+		UpdateContextRequest other = (UpdateContextRequest) obj;
+		
+		if(contextElement == null || contextElement.isEmpty()){
+			if(other.contextElement != null && !other.contextElement.isEmpty() )
+				return false;
+		}
+		else if(!contextElement.equals(other.contextElement))
+			return false;
+		
+		return 
+				this.updateAction == other.updateAction;
+		
+	}
+		
 
 }

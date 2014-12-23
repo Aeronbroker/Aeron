@@ -42,6 +42,12 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
+
+import eu.neclab.iotplatform.ngsi.api.serialization.json.QueryContextRequestDeserializer;
+
 @XmlRootElement(name = "queryContextRequest")
 @XmlAccessorType(XmlAccessType.FIELD)
 
@@ -49,14 +55,17 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Implements QueryContextRequest
  * as defined in OMA NGSI 9/10 approved version 1.0.
  */
+
 public class QueryContextRequest extends NgsiStructure {
 
 	@XmlElementWrapper(name = "entityIdList", required = true)
 	@XmlElement(name = "entityId", required = true)
+	@JsonProperty("entities")
 	protected List<EntityId> entityId;
 
 	@XmlElementWrapper(name = "attributeList")
 	@XmlElement(name = "attribute", required = false)
+	@JsonProperty("attributes")
 	protected List<String> attribute;
 
 	@XmlElement(name = "restriction")
@@ -73,26 +82,26 @@ public class QueryContextRequest extends NgsiStructure {
 		restriction = rest;
 
 	}
-
+	@JsonIgnore
 	public List<EntityId> getEntityIdList() {
 		if (entityId == null) {
 			entityId = new ArrayList<EntityId>();
 		}
 		return entityId;
 	}
-
+	@JsonIgnore
 	public void setEntityIdList(List<EntityId> entityId) {
 		this.entityId = entityId;
 
 	}
-
+	@JsonIgnore
 	public List<String> getAttributeList() {
 		if (attribute == null) {
 			attribute = new ArrayList<String>();
 		}
 		return attribute;
 	}
-
+	@JsonIgnore
 	public void setAttributeList(List<String> attributeList) {
 		attribute = attributeList;
 	}

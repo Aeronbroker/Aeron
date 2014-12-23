@@ -39,6 +39,9 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityReque
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextRequest;
 
+/**
+ *  Note: class is experimental and currently not used in any unit tests.
+ */
 public class Matchers {
 	public static DiscoverContextAvailabilityRequest DiscoverContextAvailabilityMatching(DiscoverContextAvailabilityRequest expected){
 		EasyMock.reportMatcher(new ContextRequestMatcher(expected));

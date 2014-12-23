@@ -83,8 +83,6 @@ public class Restriction {
 
 			NodeList nodes = (NodeList) result;
 
-			// List<ContextElementResponse> contElrespList = new
-			// ArrayList<ContextElementResponse>();
 
 			Iterator<ContextElementResponse> i = response
 					.getListContextElementResponse().iterator();

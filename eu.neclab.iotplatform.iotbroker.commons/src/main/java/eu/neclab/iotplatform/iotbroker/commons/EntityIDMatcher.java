@@ -1,12 +1,12 @@
 /*******************************************************************************
  *   Copyright (c) 2014, NEC Europe Ltd.
  *   All rights reserved.
- *   
+ *
  *   Authors:
  *           * Salvatore Longo - salvatore.longo@neclab.eu
  *           * Tobias Jacobs - tobias.jacobs@neclab.eu
  *           * Raihan Ul-Islam - raihan.ul-islam@neclab.eu
- *  
+ *
  *    Redistribution and use in source and binary forms, with or without
  *    modification, are permitted provided that the following conditions are met:
  *   1. Redistributions of source code must retain the above copyright
@@ -23,10 +23,10 @@
  *
  * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE 
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+ * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
  * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,7 +38,7 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 /**
  * A class for matching entity ids against other entity ids. The actual matching
  * is implemented by a static method.
- * 
+ *
  */
 public class EntityIDMatcher {
 
@@ -60,7 +60,7 @@ public class EntityIDMatcher {
 	 * instance matches the pattern. When both instances are patterns they are
 	 * only matching if the patterns are exactly equal, so matching patterns
 	 * against other patterns is in general not supported.
-	 * 
+	 *
 	 * @param e1
 	 *            The first EntityId instance.
 	 * @param e2
@@ -69,30 +69,30 @@ public class EntityIDMatcher {
 	 */
 	public static boolean matcher(EntityId e1, EntityId e2) {
 
-		return typeMatcher(e1, e2) || idsMatcher(e1, e2);
+		return typeMatcher(e1, e2) && idsMatcher(e1, e2);
 
 	}
 
 	private static boolean typeMatcher(EntityId e1, EntityId e2) {
 
 
-		return 
-				(e1.getType() == null) || 
-				(e2.getType() == null) ||
+		return
+				e1.getType() == null ||
+				e2.getType() == null ||
 				e1.getType().toString().equals(e2.getType().toString()) ;
 
 	}
 
 	private static boolean idsMatcher(EntityId e1, EntityId e2) {
 
-		return 	
-				((e1.getIsPattern()) && (!e2.getIsPattern())
-				&& (e1.getId().matches(e2.getId())))
+		return
+				e1.getIsPattern()
+				&& e2.getId().matches(e1.getId())
 				||
-				((!e1.getIsPattern()) && (e2.getIsPattern())
-				&& (e2.getId().matches(e1.getId()))) 
+				e2.getIsPattern()
+				&& e1.getId().matches(e2.getId())
 				||
-				((e2.getId().equals(e1.getId()))) 
-				;				
+				e2.getId().equals(e1.getId())
+				;
 	}
 }

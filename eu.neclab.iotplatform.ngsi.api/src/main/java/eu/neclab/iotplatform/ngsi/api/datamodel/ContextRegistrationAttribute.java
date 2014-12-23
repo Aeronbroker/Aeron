@@ -67,6 +67,14 @@ public class ContextRegistrationAttribute extends NgsiStructure {
 	public ContextRegistrationAttribute() {
 
 	}
+	
+	public ContextRegistrationAttribute(ContextRegistrationAttribute contextRegistrationAttribute) {
+		this.name = contextRegistrationAttribute.name;
+		this.type = contextRegistrationAttribute.type;
+		this.isDomain = contextRegistrationAttribute.isDomain;
+		this.contextMetadata = contextRegistrationAttribute.contextMetadata;
+
+	}
 
 	public ContextRegistrationAttribute(String name, URI type,
 			boolean isDomain, List<ContextMetadata> metaData) {

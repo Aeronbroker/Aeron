@@ -43,6 +43,8 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 @XmlRootElement(name = "notifyContextRequest")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class NotifyContextRequest extends NgsiStructure {
@@ -56,6 +58,7 @@ public class NotifyContextRequest extends NgsiStructure {
 
 	@XmlElementWrapper(name = "contextResponseList")
 	@XmlElement(name = "contextElementResponse")
+	@JsonProperty("contextResponses")
 	private List<ContextElementResponse> contextElementResponse;
 
 	public NotifyContextRequest() {

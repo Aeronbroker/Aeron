@@ -37,13 +37,11 @@ import java.net.URI;
 import java.util.ArrayList;
 
 /**
- * Implements converters to be used by implementations of the RESTful 
- * binding of NGSI 9/10 by FI-WARE.
- *
+ * Implements converters to be used by implementations of the RESTful binding of
+ * NGSI 9/10 by FI-WARE.
+ * 
  */
 public class Converter {
-
-
 
 	/**
 	 * Creates a message for UPDATING(!) a number of context attribute values.
@@ -77,7 +75,6 @@ public class Converter {
 		return returnMe;
 
 	}
-
 
 	public static UpdateContextRequest toUpdateContextRequest(
 			UpdateContextAttributeRequest request, String entityID,
@@ -290,9 +287,13 @@ public class Converter {
 		response.setErrorCode(resp.getErrorCode());
 
 		// create the new context attribute response
-		ContextAttributeResponse ar = new ContextAttributeResponse();
-		ar.setContextAttribute(resp.getContextElementResponse().get(0)
-				.getContextElement().getContextAttributeList());
+		ArrayList<ContextAttributeResponse> ar = new ArrayList<ContextAttributeResponse>();
+		for (ContextElementResponse element : resp.getContextElementResponse()) {
+			ContextAttributeResponse attrib = new ContextAttributeResponse();
+			attrib.setContextAttribute(element.getContextElement()
+					.getContextAttributeList());
+			ar.add(attrib);
+		}
 
 		// add the list to the response
 		response.setContextAttributeResponseList(ar);
@@ -363,7 +364,7 @@ public class Converter {
 			req.getRestriction().setOperationScope(
 					new ArrayList<OperationScope>()); // must be initalized!
 			req.getRestriction().getOperationScope()
-			.add(new OperationScope(scopeType, scopeValue));
+					.add(new OperationScope(scopeType, scopeValue));
 
 		}
 

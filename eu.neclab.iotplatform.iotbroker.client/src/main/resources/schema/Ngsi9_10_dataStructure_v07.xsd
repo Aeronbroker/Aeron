@@ -158,7 +158,7 @@
 				minOccurs="1" maxOccurs="1" />
 			<xs:element name="condValueList" type="CondValueList"
 				minOccurs="0" maxOccurs="1" />
-			<xs:element name="restriction" type="xs:string" minOccurs="0"
+			<xs:element name="restriction" type="Restriction" minOccurs="0"
 				maxOccurs="1" />
 		</xs:sequence>
 	</xs:complexType>
@@ -198,6 +198,37 @@
 	</xs:complexType>
 
 
+	<xs:complexType name="circle">
+		<xs:sequence>
+			<xs:element name="centerLatitude" type="xs:float" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="centerLongitude" type="xs:float" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="radius" type="xs:float" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="polygon">
+		<xs:sequence>
+			<xs:element name="vertexList" type="vertexList" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+		<xs:complexType name="vertexList">
+		<xs:sequence>
+			<xs:element name="vertex" type="vertex" minOccurs="1" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="vertex">
+		<xs:sequence>
+			<xs:element name="latitude" type="xs:float" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="longitude" type="xs:float" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="segment">
+		<xs:sequence>
+			<xs:element name="NW_Corner" type="xs:string" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="SE_Corner" type="xs:string" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="Height" type="xs:double" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
 	<xs:complexType name="Restriction">
 		<xs:sequence>
 			<xs:element name="attributeExpression" type="xs:string"
@@ -230,6 +261,9 @@
 				minOccurs="0" maxOccurs="1" />
 		</xs:sequence>
 	</xs:complexType>
+
+
+
 
 	<xs:complexType name="ContextRegistrationAttributeList">
 		<xs:sequence>

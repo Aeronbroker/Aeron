@@ -1,3 +1,4 @@
+
 var jMenu_timeout    = 300;
 var jMenu_effectTime = 200;
 var jMenu_closetimer = 0;

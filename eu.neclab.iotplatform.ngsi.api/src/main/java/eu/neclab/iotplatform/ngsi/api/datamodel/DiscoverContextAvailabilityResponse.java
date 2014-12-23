@@ -42,6 +42,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
  * Implements DiscoverContextAvailabilityResponse
  * as defined in OMA NGSI 9/10 approved version 1.0.
@@ -52,6 +54,7 @@ public class DiscoverContextAvailabilityResponse extends NgsiStructure {
 
 	@XmlElementWrapper(name = "contextRegistrationResponseList")
 	@XmlElement(name = "contextRegistrationResponse", required = false)
+	@JsonProperty("contextRegistrationResponses")
 	private List<ContextRegistrationResponse> contextRegistrationResponse = null;
 	@XmlElement(name = "errorCode", required = false)
 	private StatusCode errorCode = null;

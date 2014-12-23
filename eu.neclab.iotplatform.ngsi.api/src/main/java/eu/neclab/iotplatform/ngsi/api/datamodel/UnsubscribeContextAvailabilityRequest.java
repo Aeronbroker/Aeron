@@ -57,12 +57,12 @@ public class UnsubscribeContextAvailabilityRequest extends NgsiStructure {
 		this.subscriptionId = subscriptionId;
 	}
 
-	public String getSubscribeId() {
+	public String getSubscriptionId() {
 		return subscriptionId;
 	}
 
-	public void setSubscribeId(String subscribeId) {
-		this.subscriptionId = subscribeId;
+	public void setSubscriptionId(String subscriptionId) {
+		this.subscriptionId = subscriptionId;
 
 	}
 

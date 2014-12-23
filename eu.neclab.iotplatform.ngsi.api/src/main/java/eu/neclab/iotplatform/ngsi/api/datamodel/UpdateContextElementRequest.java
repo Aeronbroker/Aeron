@@ -42,6 +42,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
  * Implements UpdateContextElementRequest
  * as defined in the FI-WARE binding of NGSI 9/10.
@@ -55,10 +57,12 @@ public class UpdateContextElementRequest extends NgsiStructure {
 
 	@XmlElementWrapper(name = "contextAttributeList")
 	@XmlElement(name = "contextAttribute")
+	@JsonProperty("attributes")
 	private List<ContextAttribute> contextAttribute;
 
 	@XmlElementWrapper(name = "domainMetadata")
 	@XmlElement(name = "contextMetadata")
+	@JsonProperty("domainMetaData")
 	private List<ContextMetadata> contextMetadata;
 
 	public UpdateContextElementRequest() {

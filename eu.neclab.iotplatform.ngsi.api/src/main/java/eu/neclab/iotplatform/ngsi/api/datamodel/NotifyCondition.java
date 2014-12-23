@@ -33,7 +33,6 @@
  *******************************************************************************/
 package eu.neclab.iotplatform.ngsi.api.datamodel;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -55,7 +54,7 @@ public class NotifyCondition extends NgsiStructure {
 
 	@XmlElementWrapper(name = "condValueList")
 	@XmlElement(name = "condValue", required = false)
-	private List<CondValue> condValue;
+	private List<String> condValues;
 
 	@XmlElement(name = "restriction")
 	private Restriction restriction = null;
@@ -65,29 +64,27 @@ public class NotifyCondition extends NgsiStructure {
 	}
 
 	public NotifyCondition(NotifyConditionEnum notifyConditionEnum,
-			List<CondValue> condValue, Restriction restriction) {
+			List<String> condValues, Restriction restriction) {
 		this.type = notifyConditionEnum;
-		this.condValue = condValue;
+		this.condValues = condValues;
 		this.restriction = restriction;
 	}
 
-	public NotifyConditionEnum getNotifyConditionEnum() {
+	public NotifyConditionEnum getType() {
 		return type;
 	}
 
-	public void setNotifyConditionEnum(NotifyConditionEnum notifyConditionEnum) {
-		this.type = notifyConditionEnum;
+	public void setType(NotifyConditionEnum type) {
+		this.type = type;
 	}
 
-	public List<CondValue> getCondValue() {
-		if (condValue == null) {
-			condValue = new ArrayList<CondValue>();
-		}
-		return condValue;
+	public List<String> getCondValues() {
+		
+		return condValues;
 	}
 
-	public void setCondValue(List<CondValue> condValue) {
-		this.condValue = condValue;
+	public void setCondValues(List<String> condValue) {
+		this.condValues = condValue;
 	}
 
 	public Restriction getRestriction() {

@@ -42,6 +42,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
  * Implements NotifyContextAvailabilityRequest
  * as defined in OMA NGSI 9/10 approved version 1.0.
@@ -55,6 +57,7 @@ public class NotifyContextAvailabilityRequest extends NgsiStructure {
 
 	@XmlElementWrapper(name = "contextRegistrationResponseList")
 	@XmlElement(name = "contextRegistrationResponse", required = true)
+	@JsonProperty("contextRegistrationResponses")
 	private List<ContextRegistrationResponse> contextRegistrationResponse = null;
 
 	@XmlElement(name = "errorCode", required = true)

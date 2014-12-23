@@ -42,6 +42,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
  * Implements ContextAttributeResponse
  * as defined in the FI-WARE binding of NGSI 9/10.
@@ -52,6 +54,7 @@ public class ContextAttributeResponse extends NgsiStructure {
 
 	@XmlElementWrapper(name = "contextAttributeList")
 	@XmlElement(name = "contextAttribute", required = true)
+	@JsonProperty("attributes")
 	private List<ContextAttribute> contextAttribute = null;
 
 	@XmlElement(name = "statusCode", required = true)

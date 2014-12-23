@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>eu.neclab.iotplatform</groupId>
 		<artifactId>IoTbrokerParent</artifactId>
-		<version>3.4.2</version>
+		<version>4.1.3</version>
 		<relativePath>../IoTbrokerParent</relativePath>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
@@ -33,15 +33,13 @@
 					<manifestLocation>META-INF</manifestLocation>
 					<instructions>
 						<Private-Package>eu.neclab.iotplatform.iotbroker.core.*</Private-Package>
-						<Import-Package>eu.neclab.iotplatform.iotbroker.commons,
-							eu.neclab.iotplatform.iotbroker.commons.interfaces,
-							eu.neclab.iotplatform.iotbroker.core,
-							eu.neclab.iotplatform.iotbroker.core.data,
-							eu.neclab.iotplatform.iotbroker.storage,
-							eu.neclab.iotplatform.ngsi.api.datamodel,
-							eu.neclab.iotplatform.ngsi.api.ngsi10,
-							eu.neclab.iotplatform.ngsi.api.ngsi9,
-							eu.neclab.iotplatform.ngsi.association.datamodel,
+						<Import-Package>eu.neclab.iotplatform.iotbroker.commons;version="${pom.version}",
+							eu.neclab.iotplatform.iotbroker.commons.interfaces;version="${pom.version}",
+					     	eu.neclab.iotplatform.iotbroker.storage;version="${pom.version}",
+							eu.neclab.iotplatform.ngsi.api.datamodel;version="${pom.version}",
+							eu.neclab.iotplatform.ngsi.api.ngsi10;version="${pom.version}",
+							eu.neclab.iotplatform.ngsi.api.ngsi9;version="${pom.version}",
+							eu.neclab.iotplatform.ngsi.association.datamodel;version="${pom.version}",
 							javax.xml.bind,
 							javax.xml.bind.annotation,
 							javax.xml.datatype,

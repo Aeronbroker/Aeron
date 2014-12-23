@@ -43,6 +43,9 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.datatype.Duration;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
+
 @XmlRootElement(name = "subscribeContextRequest")
 @XmlAccessorType(XmlAccessType.FIELD)
 
@@ -54,9 +57,11 @@ public class SubscribeContextRequest extends NgsiStructure {
 
 	@XmlElementWrapper(name = "entityIdList", required = true)
 	@XmlElement(name = "entityId", required = true)
+	@JsonProperty("entities")
 	private List<EntityId> entityId;
 	@XmlElementWrapper(name = "attributeList", required = true)
 	@XmlElement(name = "attribute", nillable = true)
+	@JsonProperty("attributes")
 	protected List<String> attribute;
 	@XmlElement(name = "reference", required = true)
 	private String reference = null;
@@ -73,32 +78,32 @@ public class SubscribeContextRequest extends NgsiStructure {
 	public SubscribeContextRequest() {
 
 	}
-
+	@JsonIgnore
 	public List<EntityId> getEntityIdList() {
 		if (entityId == null) {
 			entityId = new ArrayList<EntityId>();
 		}
 		return entityId;
 	}
-
+	@JsonIgnore
 	public void setEntityIdList(List<EntityId> entityId) {
 		this.entityId = entityId;
 
 	}
-
+	@JsonIgnore
 	public List<EntityId> getAllEntity() {
 
 		return new ArrayList<EntityId>(entityId);
 
 	}
-
+	@JsonIgnore
 	public List<String> getAttributeList() {
 		if (attribute == null) {
 			attribute = new ArrayList<String>();
 		}
 		return attribute;
 	}
-
+	@JsonIgnore
 	public void setAttributeList(List<String> attributeList) {
 		this.attribute = attributeList;
 	}

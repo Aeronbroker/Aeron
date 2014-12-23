@@ -98,7 +98,7 @@ public class AgentWrapper {
 				+ uri.toString());
 		SubscribeContextResponse scRes = ngsi10Requestor.subscribeContext(
 				scReq, uri);
-		logger.debug("Receive Request:" + scRes.toString());
+		logger.info("###################Receive Request:" + scRes.toString());
 		return scRes;
 	}
 

@@ -41,6 +41,9 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.datatype.Duration;
+
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * Implements SubscribeContextAvailabilityRequest
@@ -52,17 +55,19 @@ public class SubscribeContextAvailabilityRequest extends NgsiStructure {
 
 	@XmlElementWrapper(name = "entityIdList")
 	@XmlElement(name = "entityId", required = true)
+	@JsonProperty("entities")
 	private List<EntityId> entityId = null;
 
 	@XmlElementWrapper(name = "attributeList")
 	@XmlElement(name = "attribute", required = false)
+	@JsonProperty("attributes")
 	private List<String> attribute = null;
 
 	@XmlElement(name = "reference", required = true)
 	private String reference = null;
 
 	@XmlElement(name = "duration", required = false)
-	private String duration = null;
+	private Duration duration = null;
 
 	@XmlElement(name = "subscriptionId", required = false)
 	private String subscriptionId = null;
@@ -71,11 +76,11 @@ public class SubscribeContextAvailabilityRequest extends NgsiStructure {
 	private Restriction restriction = null;
 
 	public SubscribeContextAvailabilityRequest(List<EntityId> entityId,
-			List<String> attributeList, String reference, String duration,
+			List<String> attributeList, String reference, Duration duration,
 			String subscriptionId, Restriction restriction) {
 
 		this.entityId = entityId;
-		attribute = attributeList;
+		this.attribute = attributeList;
 		this.reference = reference;
 		this.duration = duration;
 		this.subscriptionId = subscriptionId;
@@ -116,11 +121,11 @@ public class SubscribeContextAvailabilityRequest extends NgsiStructure {
 		this.reference = reference;
 	}
 
-	public String getDuration() {
+	public Duration getDuration() {
 		return duration;
 	}
 
-	public void setDuration(String duration) {
+	public void setDuration(Duration duration) {
 		this.duration = duration;
 	}
 

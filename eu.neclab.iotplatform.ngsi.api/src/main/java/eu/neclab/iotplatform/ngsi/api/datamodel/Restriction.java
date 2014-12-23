@@ -42,6 +42,9 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
  * Implements Restriction
  * as defined in OMA NGSI 9/10 approved version 1.0.
@@ -55,12 +58,14 @@ public class Restriction extends NgsiStructure {
 
 	@XmlElementWrapper(name = "scope")
 	@XmlElement(name = "operationScope")
+	@JsonProperty("scopes")
 	private List<OperationScope> operationScope = null;
-
+	
 	public Restriction() {
 
 	}
-
+	
+	@JsonIgnore
 	public Restriction(String attributeExpression, List<OperationScope> scope) {
 		this.attributeExpression = attributeExpression;
 		operationScope = scope;
@@ -74,14 +79,14 @@ public class Restriction extends NgsiStructure {
 	public void setAttributeExpression(String attributeExpression) {
 		this.attributeExpression = attributeExpression;
 	}
-
+	@JsonIgnore
 	public List<OperationScope> getOperationScope() {
 		if (operationScope == null) {
 			operationScope = new ArrayList<OperationScope>();
 		}
 		return operationScope;
 	}
-
+	@JsonIgnore
 	public void setOperationScope(List<OperationScope> scope) {
 		operationScope = scope;
 	}

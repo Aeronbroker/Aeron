@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>eu.neclab.iotplatform</groupId>
 		<artifactId>IoTbrokerParent</artifactId>
-		<version>3.4.2</version>
+		<version>4.1.3</version>
 		<relativePath>../IoTbrokerParent</relativePath>
 	</parent>
 
@@ -28,12 +28,26 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
-				<artifactId>maven-bundle-plugin</artifactId>				
+				<artifactId>maven-bundle-plugin</artifactId>
 				<extensions>true</extensions>
 				<configuration>
 					<manifestLocation>META-INF</manifestLocation>
+					<instructions>
+						<Private-Package>eu.neclab.iotplatform.ngsi.*</Private-Package>
+						<Import-Package>javax.annotation,
+							javax.xml.bind,
+							javax.xml.bind.annotation,
+							javax.xml.datatype,
+							org.apache.log4j,
+							org.codehaus.jackson,
+							org.codehaus.jackson.annotate;version="[1.4,2)",
+							org.codehaus.jackson.map;version="[1.4,2)",
+							org.codehaus.jackson.map.annotate;version="[1.4,2)",
+							org.w3c.dom
+						</Import-Package>
+					</instructions>
 				</configuration>
-			</plugin>			
+			</plugin>
 		</plugins>
 	</build>
 

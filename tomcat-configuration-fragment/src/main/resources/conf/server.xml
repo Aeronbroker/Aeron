@@ -3,12 +3,12 @@
 	<Service name="Catalina">
 	
 		<Connector port="${tomcat.init.port}"/>
-		 <Connector port="9443" protocol="HTTP/1.1"
+		<Connector port="9443" protocol="HTTP/1.1"
 		 SSLEnabled="true" maxThreads="150" scheme="https" secure="true" clientAuth="false" 
-			sslProtocol="TLS" keystoreFile="${dir.config}fiwareRelease/iotBroker/https/key" keystorePass="123456"/> 
+			sslProtocol="TLS" keystoreFile="${dir.config}/fiwareRelease/iotBroker/https/key" keystorePass="123456"/> 
 
 		<Engine name="Catalina" defaultHost="localhost">
-			<Host name="localhost" unpackWARs="false" autoDeploy="false"
+			<Host name="localhost" unpackWARs="false" autoDeploy="true"
 				liveDeploy="false" deployOnStartup="false" xmlValidation="false"
 				xmlNamespaceAware="false" />
 		</Engine>

@@ -89,7 +89,7 @@ public class ThrottlingTask extends TimerTask {
 				.get(subId);		
 		
 		if (subscriptionData.getContextResponseQueue().isEmpty()) {
-			logger.info("Terminating notification task as there are no notifications to send.");
+			logger.debug("Terminating notification task as there are no notifications to send.");
 			return;
 		}
 		

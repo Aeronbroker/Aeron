@@ -10,6 +10,8 @@
 	<context:annotation-config />
 	
 	<bean id="connector" class="eu.neclab.iotplatform.iotbroker.client.Southbound" />
+	
+	<bean id="httpclient" class="eu.neclab.iotplatform.iotbroker.client.HttpConnectionClient" />
 
 	<context:property-placeholder
 		location="file:///${dir.config}/fiwareRelease/iotBroker/config/config.xml" />

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/mvc 
+    http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
+	http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context-3.0.xsd
+	http://www.springframework.org/schema/osgi  
+    http://www.springframework.org/schema/osgi/spring-osgi.xsd">
+
+	<context:annotation-config />
+
+
+	<mvc:annotation-driven>
+		<mvc:message-converters>
+			<beans:bean
+				class="org.springframework.http.converter.ByteArrayHttpMessageConverter">
+				<beans:property name="supportedMediaTypes">
+					<beans:list>
+						<beans:value>image/jpeg</beans:value>
+						<beans:value>image/png</beans:value>
+					</beans:list>
+				</beans:property>
+			</beans:bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+
+
+	<osgi:reference id="Ngsi10Interface"
+		interface="eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Interface"></osgi:reference>
+	
+		<osgi:reference id="Ngsi9Interface"
+		interface="eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface"
+		bean-name="brokercore"></osgi:reference>
+	
+		<beans:bean id="RestProviderController"
+		class="eu.neclab.iotplatform.iotbroker.restcontroller.RestProviderController">
+		<beans:property name="ngsi9Core" ref="Ngsi9Interface"></beans:property>
+		<beans:property name="ngsiCore" ref="Ngsi10Interface"></beans:property>
+	</beans:bean>
+
+	<context:property-placeholder
+		location="file:///${dir.config}/fiwareRelease/iotBroker/config/config.xml" />
+
+
+	<mvc:view-controller path="/" view-name="index" />
+
+	<beans:bean
+		class="org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping" />
+
+
+	<mvc:default-servlet-handler />
+
+	<beans:bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+		id="htmlre">
+		<beans:property name="prefix" value="/WEB-INF/jsp/" />
+		<beans:property name="suffix" value=".html" />
+	</beans:bean>
+
+	
+
+
+</beans:beans>

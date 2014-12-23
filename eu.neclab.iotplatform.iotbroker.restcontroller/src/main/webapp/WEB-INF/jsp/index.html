@@ -13,6 +13,7 @@
 <script type="text/javascript" src="resources/js/slideshow.js"></script>
 <script type="text/javascript" src="resources/js/cufon-yui.js"></script>
 <script type="text/javascript" src="resources/js/Arial.font.js"></script>
+<script type="text/javascript" src="resources/js/jquery.formautofill.js"></script>
 <script type="text/javascript">
 	Cufon.replace('h1,h2,h3,h4,h5,#menu,#copy,.blog-date');
 </script>
@@ -24,9 +25,35 @@
 			e.preventDefault();
 			$('#intro').replaceWith($("#page").show());
 		});
+		/* $(".httpclient").click(function(e) {
+			e.preventDefault();
+			$('#intro').replaceWith($("#client").show());
+		}); */
 	});
 </script>
+<script type="text/javascript">
+
+
+$(document).ready(function(){
+	
+	// bind demo events
+	// try it!
+	$('#f_try .clickaction').bind( 'click', function() {
+		$('#f_try').autofill({
+			"url": "http://localhost:8090/ngsi10/contextEntities/dummyEntity",
+			"Method":"GET",
+			"token": "token",
+			"body": "test2"
+		});
+	});
+	
+});
+
+
+
+</script>
 <link rel="stylesheet" href="resources/css/main.css" type="text/css" />
+<link rel="stylesheet" href="resources/css/bootstrap.min.css" type="text/css" />
 </head>
 <body>
 	<div id="bg">
@@ -43,6 +70,7 @@
 				<ul id="menu">
 					<li><a class="home" href="index.html">Home</a></li>
 					<li><a class="operations" href="#">Operations</a></li>
+					<li><a class="httpclient" href="restclient.html">Http Client</a></li>
 					<li><a class="admin" href="admin">Admin Login</a></li>
 
 				</ul>
@@ -57,10 +85,9 @@
 					<div class="active">
 						<img src="resources/images/pitch1.jpg" alt="" />
 						<div class="overlay transparent">
-							<h2>Collecting Data From Sensors</h2>
-							<p>Serving as a management repository that maintains the
-								availability information about a huge number of real-world
-								Things and Devices.</p>
+							<h2>Collecting data from sensors and gateways</h2>
+							<p>Maintaining availability information on large numbers of real-world
+								things and devices</p>
 						</div>
 						<p class="arrow">
 							<a href="#"></a>
@@ -72,9 +99,9 @@
 					<div>
 						<img src="resources/images/pitch2.jpg" alt="" />
 						<div class="overlay transparent">
-							<h2>Scalable and Distributed System</h2>
-							<p>Collecting and aggregating information about thousands of
-								real-world objects on behalf of the user.</p>
+							<h2>Scalable system architecture</h2>
+							<p>Collecting and aggregating information from thousands of
+								real-world objects</p>
 						</div>
 						<p class="arrow">
 							<a href="#"></a>
@@ -86,11 +113,9 @@
 					<div>
 						<img src="resources/images/pitch3.jpg" alt="" />
 						<div class="overlay transparent">
-							<h2>NGSI 10 REST Interface for easy access to the Sensors
-								Information</h2>
-							<p>Offering a single point of contact to the user, hiding the
-								complexity of the multi-provider nature of the Internet of
-								Things</p>
+							<h2>NGSI 10 REST interface for easy access to the Internet of Things</h2>
+							<p>A single point of contact, hiding the complexity of the 
+							     multi-provider nature of the Internet of Things</p>
 						</div>
 						<p class="arrow">
 							<a href="#"></a>
@@ -106,9 +131,9 @@
 			<div id="main">
 				<div id="intro">
 					<h2>Welcome</h2>
-					<p>The IoT Broker GE is a component for retrieving and
+					<p>The NEC IoT Broker is a component for retrieving and
 						aggregating information from the Internet of Things. The
-						underlying data model of this GE is based on the OMA NGSI (Next
+						underlying data model of this enabler is based on the OMA NGSI (Next
 						Generation Service Interface) Context Management Information
 						Model, which is centered on the concept of context entities.
 						Context entities represent arbitrary objects of the real world,
@@ -119,13 +144,13 @@
 						but also - and more importantly - arbitrary physical objects
 						(Things) like rooms, persons, etc. and their attributes like
 						temperature, geo-location, etc. The OMA NGSI context management
-						interface distinguishes between two types of information. This
+						interface distinguishes between two types of information. The
 						first type is so-called context information and consists of
 						attribute values and associated metadata as described above. This
-						kind of information is exchanged using the operations defined in
-						OMA NGSI 10. The second type of information is information on
+						information is exchanged using the operations defined in
+						OMA NGSI 10. The second type is information on
 						where certain context information can be retrieved by OMA NGSI 10
-						operations. This kind of information is referred to as context
+						operations. This is referred to as context
 						availability information; it is exchanged using the operations
 						defined in OMA NGSI 9. More details and references on these
 						interfaces can be found below.</p>
@@ -139,18 +164,19 @@
 							
 							<a><img src="resources/images/thumb1.png" alt="Thumb" /></a>
 						</div>
-						<h4>IoT Broker GE ver. 2.3.0 Running..</h4>
+						<h4>IoT Broker GE ver. 4.2.0 running..</h4>
+
 
 			
 					</div>
 					<div class="bit">
-						<h4>FI-WARE Project WIKI</h4>
+						<h4>FI-WARE Project Wiki</h4>
 						<div class="photo">
 							
 							<a><img src="resources/images/thumb1.png" alt="Thumb" /></a>
 						</div>
 						<h4>
-							FI-WARE WIKI Page <a
+							FI-WARE Wiki Page <a
 								href="https://forge.fi-ware.eu/plugins/mediawiki/wiki/fiware/index.php/Main_Page">
 								Wiki Link</a>
 						</h4>
@@ -307,8 +333,6 @@
 
 
 
-
-
 			</div>
 			<!-- /main -->
 
@@ -325,12 +349,6 @@
 				<div class="news">
 					<h5>
 						<a href="mailto:tobias.jacobs@neclab.eu">Tobias Jacobs</a>
-					</h5>
-				</div>
-
-				<div class="news">
-					<h5>
-						<a href="mailto:raihan.ul-islam@neclab.eu">Raihan Ul Islam</a>
 					</h5>
 				</div>
 
@@ -360,7 +378,7 @@
 					<!-- /footer links -->
 
 					<p id="copy">
-						Copyright <span> NEC Europe Ltd 2013. All Rights Reserved</span>
+						Copyright <span> NEC Europe Ltd 2014. All Rights Reserved</span>
 					</p>
 
 					<div class="clear"></div>

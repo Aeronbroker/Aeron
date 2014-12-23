@@ -37,12 +37,19 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
+
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
+
+import eu.neclab.iotplatform.ngsi.api.serialization.json.OperationScopeValueDeserializer;
 
 /**
  * Implements OperationScope
  * as defined in OMA NGSI 9/10 approved version 1.0.
  */
 @XmlRootElement(name = "operationScope")
+@XmlSeeAlso({Segment.class,Circle.class,Polygon.class,Point.class})
 @XmlAccessorType(XmlAccessType.FIELD)
 public class OperationScope extends NgsiStructure {
 
@@ -50,11 +57,13 @@ public class OperationScope extends NgsiStructure {
 	private String scopeType = null;
 
 	@XmlElement(name = "scopeValue", required = true)
+	@JsonDeserialize(using = OperationScopeValueDeserializer.class)
 	private Object scopeValue = null;
+	
 	public OperationScope() {
 
 	}
-
+	@JsonIgnore
 	public OperationScope(String scopeType, Object scopeValue) {
 		this.scopeType = scopeType;
 		this.scopeValue = scopeValue;

@@ -43,6 +43,9 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.OperationScope;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextRequest;
 
+/**
+ *  Note: class is experimental and currently not used in any unit tests.
+ */
 public class ContextRequestMatcher implements IArgumentMatcher {
 	/** The logger. */
 	private static Logger logger = Logger.getLogger(ContextRequestMatcher.class);

@@ -33,6 +33,8 @@ package eu.neclab.iotplatform.ngsi.api.datamodel;
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -50,14 +52,14 @@ public class AppendContextElementResponse extends NgsiStructure {
 	private StatusCode errorCode = null;
 
 	@XmlElement(name = "contextAttributeResponse", required = false)
-	private ContextAttributeResponse contextAttributeResponse;
+	private List<ContextAttributeResponse> contextAttributeResponse;
 
 	public AppendContextElementResponse() {
 
 	}
 
 	public AppendContextElementResponse(StatusCode errorCode,
-			ContextAttributeResponse contextAttributeResponseList) {
+			List<ContextAttributeResponse> contextAttributeResponseList) {
 		this.errorCode = errorCode;
 		this.contextAttributeResponse = contextAttributeResponseList;
 	}
@@ -70,13 +72,13 @@ public class AppendContextElementResponse extends NgsiStructure {
 		this.errorCode = errorCode;
 	}
 
-	public ContextAttributeResponse getContextAttributeResponse() {
+	public List<ContextAttributeResponse> getContextAttributeResponse() {
 
 		return contextAttributeResponse;
 	}
 
 	public void setContextAttributeResponseList(
-			ContextAttributeResponse contextAttributeResponseList) {
+			List<ContextAttributeResponse> contextAttributeResponseList) {
 		this.contextAttributeResponse = contextAttributeResponseList;
 	}
 
