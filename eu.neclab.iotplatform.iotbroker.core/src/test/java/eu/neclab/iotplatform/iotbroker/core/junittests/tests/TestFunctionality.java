@@ -116,7 +116,7 @@ public class TestFunctionality {
 			(new XmlFactory()).convertFileToXML("src/test/resources/queryReq.xml", QueryContextRequest.class);
 	
 	QueryContextRequest queryReq_attribExpr = (QueryContextRequest) 
-			(new XmlFactory()).convertFileToXML("src/test/resources/queryReq_attribExpr.xml", QueryContextRequest.class);
+			(new XmlFactory()).convertFileToXML("src/test/resources/queryReq_AttribExpr.xml", QueryContextRequest.class);
 	
 	QueryContextRequest queryReq_type = (QueryContextRequest) 
 			(new XmlFactory()).convertFileToXML("src/test/resources/queryReq_type.xml", QueryContextRequest.class);
