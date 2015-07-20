@@ -1,36 +1,44 @@
 /*******************************************************************************
- *   Copyright (c) 2014, NEC Europe Ltd.
- *   All rights reserved.
- *
- *   Authors:
- *           * Salvatore Longo - salvatore.longo@neclab.eu
- *           * Tobias Jacobs - tobias.jacobs@neclab.eu
- *           * Raihan Ul-Islam - raihan.ul-islam@neclab.eu
- *
- *    Redistribution and use in source and binary forms, with or without
- *    modification, are permitted provided that the following conditions are met:
- *   1. Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   2. Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *   3. All advertising materials mentioning features or use of this software
- *     must display the following acknowledgement:
- *     This product includes software developed by NEC Europe Ltd.
- *   4. Neither the name of the NEC nor the
- *     names of its contributors may be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ * Copyright (c) 2015, NEC Europe Ltd.
+ * All rights reserved.
+ * 
+ * Authors:
+ *          * Salvatore Longo - salvatore.longo@neclab.eu
+ *          * Tobias Jacobs - tobias.jacobs@neclab.eu
+ *          * Flavio Cirillo - flavio.cirillo@neclab.eu
+ *          * Raihan Ul-Islam
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions 
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright 
+ * notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above 
+ * copyright notice, this list of conditions and the following disclaimer 
+ * in the documentation and/or other materials provided with the 
+ * distribution.
+ * 3. All advertising materials mentioning features or use of this 
+ * software must display the following acknowledgment: This 
+ * product includes software developed by NEC Europe Ltd.
+ * 4. Neither the name of NEC nor the names of its contributors may 
+ * be used to endorse or promote products derived from this 
+ * software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY 
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY 
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN 
+ * NO EVENT SHALL NEC BE LIABLE FOR ANY DIRECT, INDIRECT, 
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT 
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH 
+ * DAMAGE.
+ ******************************************************************************/
 package eu.neclab.iotplatform.ngsi.api.datamodel;
 
 import java.net.URI;
@@ -63,8 +71,8 @@ public final class ContextAttribute extends NgsiStructure {
 	private String contextValue = null;
 
 	@XmlElementWrapper(name = "metadata")
-	@XmlElement(required = false)
-	private List<ContextMetadata> contextMetadata;
+	@XmlElement(name = "contextMetadata")
+	private List<ContextMetadata> metadata;
 
 	/**
 	 * Creates a new ContextAttribute object.
@@ -89,7 +97,7 @@ public final class ContextAttribute extends NgsiStructure {
 	public ContextAttribute(String name, URI type, String value,
 			List<ContextMetadata> metaData) {
 		this(name, type, value);
-		contextMetadata = metaData;
+		metadata = metaData;
 	}
 
 	public String getName() {
@@ -117,11 +125,11 @@ public final class ContextAttribute extends NgsiStructure {
 	}
 
 	public List<ContextMetadata> getMetadata() {
-		return contextMetadata;
+		return metadata;
 	}
 
 	public void setMetaData(List<ContextMetadata> metaData) {
-		contextMetadata = metaData;
+		metadata = metaData;
 	}
 
 	@Override
@@ -129,7 +137,7 @@ public final class ContextAttribute extends NgsiStructure {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-				+ (contextMetadata == null ? 0 : contextMetadata.hashCode());
+				+ (metadata == null ? 0 : metadata.hashCode());
 		result = prime * result
 				+ (contextValue == null ? 0 : contextValue.hashCode());
 		result = prime * result + (name == null ? 0 : name.hashCode());
@@ -149,11 +157,11 @@ public final class ContextAttribute extends NgsiStructure {
 			return false;
 		}
 		ContextAttribute other = (ContextAttribute) obj;
-		if (contextMetadata == null) {
-			if (other.contextMetadata != null) {
+		if (metadata == null) {
+			if (other.metadata != null) {
 				return false;
 			}
-		} else if (!contextMetadata.equals(other.contextMetadata)) {
+		} else if (!metadata.equals(other.metadata)) {
 			return false;
 		}
 		if (contextValue == null) {

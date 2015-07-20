@@ -39,63 +39,75 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH 
  * DAMAGE.
  ******************************************************************************/
- package eu.neclab.iotplatform.ngsi.api.datamodel;
- 
-import java.util.ArrayList;
-import java.util.List;
+package eu.neclab.iotplatform.ngsi.api.datamodel;
+
+import java.io.Serializable;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.codehaus.jackson.annotate.JsonProperty;
 
-/**
- * Implements ContextAttributeResponse
- * as defined in the FI-WARE binding of NGSI 9/10.
- */
-@XmlRootElement(name = "contextAttributeResponse")
+@XmlRootElement(name = "pepCredentials")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ContextAttributeResponse extends NgsiStructure {
+public class PEPCredentials implements Serializable {
 
-	@XmlElementWrapper(name = "contextAttributeList")
-	@XmlElement(name = "contextAttribute", required = true)
-	@JsonProperty("attributes")
-	private List<ContextAttribute> contextAttribute = null;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7587400124126739643L;
 
-	@XmlElement(name = "statusCode", required = true)
-	private StatusCode statusCode = null;
-
-	public ContextAttributeResponse() {
-
+	@XmlElement(name = "userName", required = true)
+	private String username;
+	
+	@XmlElement(name = "password", required = true)
+	private String password;
+	
+	public String getUsername() {
+		return username;
 	}
-
-	public ContextAttributeResponse(List<ContextAttribute> contextAttribute,
-			StatusCode statusCode) {
-
-		this.contextAttribute = contextAttribute;
-		this.statusCode = statusCode;
+	public void setUsername(String username) {
+		this.username = username;
 	}
-
-	public List<ContextAttribute> getContextAttribute() {
-		if (contextAttribute == null) {
-			contextAttribute = new ArrayList<ContextAttribute>();
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	
+	public PEPCredentials()
+	{}
+	
+	public PEPCredentials(String username, String password)
+	{
+		setUsername(username);
+		setPassword(password);
+	}
+	
+//	@Override
+//	public String toString() {
+//		return "PEPCredentials [userName=" + username
+//				+ ", password=" + password + "]";
+//	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof PEPCredentials)
+		{
+			PEPCredentials other = (PEPCredentials) obj;
+			if (other.username == null || other.password == null)
+				return false;
+			return other.username.equals(username) && other.password.equals(password);
 		}
-		return contextAttribute;
+		return super.equals(obj);
 	}
-
-	public void setContextAttribute(List<ContextAttribute> contextAttribute) {
-		this.contextAttribute = contextAttribute;
+	
+	@Override
+	public int hashCode() {
+		if (username != null && password != null)
+			return username.hashCode() ^ password.hashCode();
+		return super.hashCode();
 	}
-
-	public StatusCode getStatusCode() {
-		return statusCode;
-	}
-
-	public void setStatusCode(StatusCode statusCode) {
-		this.statusCode = statusCode;
-	}
-
 }

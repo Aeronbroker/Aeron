@@ -1,3 +1,44 @@
+/*******************************************************************************
+ * Copyright (c) 2015, NEC Europe Ltd.
+ * All rights reserved.
+ * 
+ * Authors:
+ *          * Salvatore Longo - salvatore.longo@neclab.eu
+ *          * Tobias Jacobs - tobias.jacobs@neclab.eu
+ *          * Flavio Cirillo - flavio.cirillo@neclab.eu
+ *          * Raihan Ul-Islam
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions 
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright 
+ * notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above 
+ * copyright notice, this list of conditions and the following disclaimer 
+ * in the documentation and/or other materials provided with the 
+ * distribution.
+ * 3. All advertising materials mentioning features or use of this 
+ * software must display the following acknowledgment: This 
+ * product includes software developed by NEC Europe Ltd.
+ * 4. Neither the name of NEC nor the names of its contributors may 
+ * be used to endorse or promote products derived from this 
+ * software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY 
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY 
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN 
+ * NO EVENT SHALL NEC BE LIABLE FOR ANY DIRECT, INDIRECT, 
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT 
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH 
+ * DAMAGE.
+ ******************************************************************************/
 package eu.neclab.iotplatform.ngsi.api.serialization.json;
 
 import java.io.IOException;
@@ -18,7 +59,7 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.Vertex;
 /**
  *  Deserializer to obtain operation scopes from JSON objects.
  */
-public class OperationScopeValueDeserializer extends JsonDeserializer<Object> {
+public class MetadataValueDeserializer extends JsonDeserializer<Object> {
 
 	/*
 	 * "scopeValue" : { "vertices" : [ { "latitude" : 12312.0, "longitude" :
@@ -29,7 +70,7 @@ public class OperationScopeValueDeserializer extends JsonDeserializer<Object> {
 	 * 312.0, "centerLongitude" : 564.0, "radius" : 8.0 } }, { "scopeType" :
 	 * "segment", "scopeValue" : { "height" : 234234.0, "nw_Corner" :
 	 * "312312.2", "se_Corner" : "423423.212" } (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.codehaus.jackson.map.JsonDeserializer#deserialize(org.codehaus.jackson
 	 * .JsonParser, org.codehaus.jackson.map.DeserializationContext)
@@ -72,11 +113,11 @@ public class OperationScopeValueDeserializer extends JsonDeserializer<Object> {
 	 * "se_Corner" : "423423.212" }
 	 */
 	private Object getSegment(JsonParser jp) throws JsonParseException,
-			IOException {
+	IOException {
 		JsonToken token = jp.getCurrentToken();
-		
+
 		Segment result = new Segment();
-		
+
 		while (!token.equals(JsonToken.END_OBJECT)) {
 			token = jp.nextToken();
 			if (jp.getCurrentName().equalsIgnoreCase("height")) {
@@ -98,10 +139,10 @@ public class OperationScopeValueDeserializer extends JsonDeserializer<Object> {
 	 * "radius" : 8.0 }
 	 */
 	private Object getCircle(JsonParser jp) throws JsonParseException, IOException {
-JsonToken token = jp.getCurrentToken();
-		
+		JsonToken token = jp.getCurrentToken();
+
 		Circle result = new Circle();
-		
+
 		while (!token.equals(JsonToken.END_OBJECT)) {
 			token = jp.nextToken();
 			if (jp.getCurrentName().equalsIgnoreCase("centerLatitude")) {
@@ -126,8 +167,8 @@ JsonToken token = jp.getCurrentToken();
 	 */
 	private Object getPolygon(JsonParser jp) throws JsonParseException, IOException {
 		JsonToken token = jp.nextToken();
-		
-		
+
+
 		if(!token.equals(JsonToken.START_ARRAY)){
 			throw new JsonParseException("Vertices has to be an array", null);
 		}
@@ -151,7 +192,7 @@ JsonToken token = jp.getCurrentToken();
 				vertices.add(vertex);
 			}
 			token = jp.nextToken();
-			
+
 		}
 		jp.nextToken();
 		result.setVertexList(vertices);
