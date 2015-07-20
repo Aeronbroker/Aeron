@@ -48,6 +48,38 @@
 		<servlet-name>spring</servlet-name>
 		<url-pattern>*.htm</url-pattern>
 	</servlet-mapping>
+	
+	<error-page>
+		<error-code>400</error-code>
+		<location>/WEB-INF/errors/400.html</location>
+	</error-page>
+	<error-page>
+		<error-code>401</error-code>
+		<location>/WEB-INF/errors/401.html</location>
+	</error-page>
+	
+	<error-page>
+		<error-code>403</error-code>
+		<location>/WEB-INF/errors/403.html</location>
+	</error-page>
+	<error-page>
+		<error-code>404</error-code>
+		<location>/WEB-INF/errors/404.html</location>
+	</error-page>
+	<error-page>
+		<error-code>405</error-code>
+		<location>/WEB-INF/errors/405.html</location>
+	</error-page>
+	
+	<error-page>
+		<error-code>406</error-code>
+		<location>/WEB-INF/errors/406.html</location>
+	</error-page>
+	
+	<error-page>
+		<exception-type>java.lang.Throwable</exception-type> 
+		<location>/WEB-INF/errors/500.html</location>
+	</error-page>
 
 
  <!-- Spring Security -->
