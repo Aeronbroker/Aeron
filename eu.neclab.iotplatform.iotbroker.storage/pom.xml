@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>IoTbrokerParent</artifactId>
 		<groupId>eu.neclab.iotplatform</groupId>
-		<version>4.1.3</version>
+		<version>4.3.3-SNAPSHOT</version>
 		<relativePath>../IoTbrokerParent</relativePath>
 	</parent>
 
@@ -47,6 +47,9 @@
 							javax.xml.validation,
 							javax.xml.xpath,
 							org.apache.log4j;version="[1.2,2)",
+							org.codehaus.jackson;version="1.9.2",
+							org.codehaus.jackson.map;version="1.9.2",
+							org.codehaus.jackson.map.annotate;version="1.9.2",
 							org.hsqldb,
 							org.hsqldb.jdbc,
 							org.hsqldb.persist,
@@ -54,7 +57,13 @@
 							org.springframework.context;version="3.2.3.RELEASE",
 							org.springframework.context.annotation;version="3.2.3.RELEASE",
 							org.w3c.dom,
-							org.xml.sax</Import-Package>
+							org.xml.sax,
+							org.apache.http,
+							org.apache.http.message</Import-Package>
+						<Export-Package>
+							eu.neclab.iotplatform.iotbroker.storage;version="${pom.version}",
+							eu.neclab.iotplatform.iotbroker.storage.hsqldb;version="${pom.version}"
+						</Export-Package>
 					</instructions>
 				</configuration>
 
@@ -73,13 +82,13 @@
 		<dependency>
 			<groupId>eu.neclab.iotplatform</groupId>
 			<artifactId>ngsi.api</artifactId>
-
 		</dependency>
+		
 		<dependency>
 			<groupId>eu.neclab.iotplatform</groupId>
 			<artifactId>iotbroker.commons</artifactId>
-
 		</dependency>
+
 	</dependencies>
 
 
