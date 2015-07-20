@@ -1,0 +1,11 @@
+CREATE TABLE public.tablenameplaceholder
+(
+   id serial NOT NULL PRIMARY KEY,
+  serviceid character varying(500) NOT NULL,
+  box character varying(100000) NOT NULL,
+  geoid character varying(500) NOT NULL
+) 
+WITH (
+  OIDS = FALSE
+)
+;

@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-
-<!-- FI-WARE NGSI 9/10 RESTful binding version 1.0 -->
-
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 		   elementFormDefault="qualified">      
 
-		   <xs:include schemaLocation="Ngsi9_10_dataStructures.xsd"/>   
+		   <xs:include schemaLocation="Ngsi9_10_dataStructure_v08.xsd"/>   
 		   
-<!-- _______________________________________ complex type instantiations ___________________________________________ -->
+<!-- _______________________________________ Complex types instantiation ___________________________________________ -->
 
 
 
@@ -22,10 +19,10 @@
   <xs:element name="unsubscribeContextAvailabilityRequest"         type="UnsubscribeContextAvailabilityRequest"/>  
   <xs:element name="unsubscribeContextAvailabilityResponse"        type="UnsubscribeContextAvailabilityResponse"/>
   <xs:element name="notifyContextAvailabilityRequest"              type="NotifyContextAvailabilityRequest"/>  
-  <xs:element name="notifyContextAvailabilityResponse"             type="NotifyContextAvailabilityResponse"/>
+  <xs:element name="notifyContextAvailabilitytResponse"             type="NotifyContextAvailabilityResponse"/>
  
 
-<!-- ________________________________________ operation message bodies ________________________________________________ -->
+<!-- ________________________________________ Methods messages ________________________________________________ -->
 
   <xs:complexType name="RegisterContextRequest">
     <xs:sequence>
@@ -71,8 +68,8 @@
        <xs:element name="attributeList" type="AttributeList" minOccurs="0" maxOccurs="1"/>
       <xs:element name="reference" type="xs:anyURI" minOccurs="1" maxOccurs="1"/>
       <xs:element name="duration" type="xs:duration" minOccurs="0" maxOccurs="1"/>
-      <xs:element name="restriction" type="Restriction" minOccurs="0" maxOccurs="1"/>
       <xs:element name="subscriptionId" type="xs:string" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="restriction" type="Restriction" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -87,10 +84,10 @@
   <xs:complexType name="UpdateContextAvailabilitySubscriptionRequest">
     <xs:sequence>
       <xs:element name="entityIdList" type="EntityIdList" minOccurs="1" maxOccurs="1"/>
-       <xs:element name="attributeList" type="AttributeList" minOccurs="0" maxOccurs="1"/>
-       <xs:element name="duration" type="xs:duration" minOccurs="0" maxOccurs="1"/>
-       <xs:element name="restriction" type="Restriction" minOccurs="0" maxOccurs="1"/>
-      <xs:element name="subscriptionId" type="xs:string" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="attributeList" type="AttributeList" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="duration" type="xs:duration" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="subscriptionId" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="restriction" type="Restriction" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
   </xs:complexType>  
 
