@@ -12,14 +12,14 @@ IoT Broker Documentation
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | FIWARE wiki                 | https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/Main_Page                                      |
 | IoT Broker GE specification | https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/FIWARE.OpenSpecification.IoT.Backend.IoTBroker |
-| NGSI 9/10 API specification | https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/FI-WARE_NGSI_Open_RESTful_API_Specification    |
-| IoT Broker in FIWARE catalogue   | http://catalogue.fi-ware.org/enablers/nec-iot-broker                                                             |
+| FIWARE NGSI API specification | https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/FI-WARE_NGSI_Open_RESTful_API_Specification    |
+| IoT Broker in FIWARE catalogue   | http://catalogue.fiware.org/enablers/iot-broker                                                             |
 
 
 What you get
 ---
 
-IoT Broker is an implementation of the IoT Broker Generic Enabler from FIWARE (http://catalogue.fi-ware.org/enablers/nec-iot-broker). 
+IoT Broker is an implementation of the IoT Broker Generic Enabler from FIWARE (http://catalogue.fiware.org/enablers/iot-broker). 
 It is specified as a lightweight and scalable middleware component that separates IoT applications from the underlying device installations. 
 This implementation satisfies all properties described in the specification of the FIWARE Generic Enabler (https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/FIWARE.OpenSpecification.IoT.Backend.IoTBroker).
 
@@ -38,11 +38,11 @@ in the application's context. On the other hand, IoT applications have to be wri
 installations in order to be applicable in more than one specific environment. This gap is closed by IoT Broker by the use 
 of so-called associations between device-level and thing-level information.
 * The IoT Broker is based on the simple and powerful information model standardized in OMA Next Generation Service Interface 
-Context Enabler (NGSI 9 / NGSI 10). This API has emerged in FIWARE as an important open standard of information 
-exchange, implemented by a considerable number of FIWARE GEs. In NGSI 9/10, all objects of the real world, 
+Context Enabler (FIWARE NGSI). This API has emerged in FIWARE as an important open standard of information 
+exchange, implemented by a considerable number of FIWARE GEs. In FIWARE NGSI, all objects of the real world, 
 being it sensor/actuator devices or arbitrary objects (like tables, rooms, cars, ...) are represented as so-called 
 Context Entities, while information about these objects is expressed in the form of attributes. For more information 
-about the OMA NGSI 9/10 information model and the related interfaces, please refer to the Open API Specification (https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/FI-WARE_NGSI_Open_RESTful_API_Specification).
+about the FIWARE NGSI information model and the related interfaces, please refer to the Open API Specification (https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/FI-WARE_NGSI_Open_RESTful_API_Specification).
 
 Why you should get it 
 ---
@@ -151,7 +151,7 @@ logger configuration file)
 
 In addition to that, the fiwareRelease folder needs to be copied in the user/home directory (or to the folder specified by dir.config).
 
-An example of an OSGI configuration using the EQUINOX framework (e.g. config.ini) is shown below. For a working example configuration please also see the latest binary release to be found in http://catalogue.fi-ware.org/enablers/nec-iot-broker.
+An example of an OSGI configuration using the EQUINOX framework (e.g. config.ini) is shown below. For a working example configuration please also see the latest binary release to be found in http://catalogue.fiware.org/enablers/iot-broker.
 
 ```
 ##############################
@@ -290,7 +290,7 @@ User and Programmers Guide: https://forge.fi-ware.org/plugins/mediawiki/wiki/fiw
 Installation and Administration Guide: https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/IoT_Broker_-_Installation_and_Administration_Guide
 
 Pre-compiled and configured binaries: 
-http://catalogue.fi-ware.org/enablers/nec-iot-broker
+http://catalogue.fiware.org/enablers/iot-broker
 
 
 Bugs & Questions
