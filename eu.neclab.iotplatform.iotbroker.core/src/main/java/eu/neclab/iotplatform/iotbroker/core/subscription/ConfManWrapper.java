@@ -1,36 +1,44 @@
 /*******************************************************************************
- *   Copyright (c) 2014, NEC Europe Ltd.
- *   All rights reserved.
- *
- *   Authors:
- *           * Salvatore Longo - salvatore.longo@neclab.eu
- *           * Tobias Jacobs - tobias.jacobs@neclab.eu
- *           * Raihan Ul-Islam - raihan.ul-islam@neclab.eu
- *
- *    Redistribution and use in source and binary forms, with or without
- *    modification, are permitted provided that the following conditions are met:
- *   1. Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   2. Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *   3. All advertising materials mentioning features or use of this software
- *     must display the following acknowledgement:
- *     This product includes software developed by NEC Europe Ltd.
- *   4. Neither the name of the NEC nor the
- *     names of its contributors may be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ * Copyright (c) 2015, NEC Europe Ltd.
+ * All rights reserved.
+ * 
+ * Authors:
+ *          * Salvatore Longo - salvatore.longo@neclab.eu
+ *          * Tobias Jacobs - tobias.jacobs@neclab.eu
+ *          * Flavio Cirillo - flavio.cirillo@neclab.eu
+ *          * Raihan Ul-Islam
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions 
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright 
+ * notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above 
+ * copyright notice, this list of conditions and the following disclaimer 
+ * in the documentation and/or other materials provided with the 
+ * distribution.
+ * 3. All advertising materials mentioning features or use of this 
+ * software must display the following acknowledgment: This 
+ * product includes software developed by NEC Europe Ltd.
+ * 4. Neither the name of NEC nor the names of its contributors may 
+ * be used to endorse or promote products derived from this 
+ * software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY 
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY 
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN 
+ * NO EVENT SHALL NEC BE LIABLE FOR ANY DIRECT, INDIRECT, 
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT 
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH 
+ * DAMAGE.
+ ******************************************************************************/
 package eu.neclab.iotplatform.iotbroker.core.subscription;
 
 import java.util.ArrayList;
@@ -45,7 +53,6 @@ import eu.neclab.iotplatform.iotbroker.storage.LinkSubscriptionAvailabilityInter
 import eu.neclab.iotplatform.iotbroker.storage.LinkSubscriptionInterface;
 import eu.neclab.iotplatform.iotbroker.storage.OutgoingSubscriptionInterface;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
-import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
@@ -77,10 +84,10 @@ import eu.neclab.iotplatform.ngsi.association.datamodel.AssociationDS;
  * applications arrive, or such subscriptions are updated
  * <p>
  * - handing availability notifications arriving from configuration management
- * 
+ *
  * Important to note, this class never writes to the storage but only reads from
  * it.
- * 
+ *
  */
 public class ConfManWrapper {
 	private static Logger logger = Logger.getLogger(ConfManWrapper.class);
@@ -183,7 +190,7 @@ public class ConfManWrapper {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return Pointer to the Associations Utility.
 	 */
 	public AssociationsUtil getAssociationsUtil() {
@@ -203,11 +210,11 @@ public class ConfManWrapper {
 	/**
 	 * Calls the NGSI 9 UnsubscribeContextAvailability operation on the NGSI 9
 	 * Configuration Management component.
-	 * 
+	 *
 	 * @param uCAReq
 	 *            The NGSI 9 {@link UnsubscribeContextAvailabilityRequest}.
 	 * @return The NGSI 9 {@link UnsubscribeContextAvailabilityResponse}.
-	 * 
+	 *
 	 */
 	public UnsubscribeContextAvailabilityResponse receiveReqFrmSubscriptionController(
 			UnsubscribeContextAvailabilityRequest uCAReq) {
@@ -221,14 +228,14 @@ public class ConfManWrapper {
 
 	}
 
-/*
- *  Note: the  method directly below is an alternative implementation that 
- *  can replace the currently enabled implementation of   
- *  "receiveReqFrmSubscriptionController" to enable subscription in case the 
- *  configuration management does not support availability subscriptions. If the 
- *  configuration management does support availability subscriptions the currently
- *  enabled implementation is to be preferred. 
- */	
+	/*
+	 *  Note: the  method directly below is an alternative implementation that
+	 *  can replace the currently enabled implementation of
+	 *  "receiveReqFrmSubscriptionController" to enable subscription in case the
+	 *  configuration management does not support availability subscriptions. If the
+	 *  configuration management does support availability subscriptions the currently
+	 *  enabled implementation is to be preferred.
+	 */
 	/**
 	 * This function initiates the communication with configuration management
 	 * in reaction to a new subscription. In particular, this function
@@ -238,21 +245,21 @@ public class ConfManWrapper {
 	 * <p>
 	 * (2) makes a context availability subscription in order to be informed
 	 * about future data source availability
-	 * 
+	 *
 	 * Note that although the function is called with a
 	 * subscribeContextAvailabilityRequest as the parameter, it still makes a
 	 * discovery in addition.
-	 * 
+	 *
 	 * @param scaReq
 	 *            The NGSI 9 {@link SubscribeContextAvailabilityRequest}.
 	 * @return The NGSI 9 {@link SubscribeContextAvailabilityResponse}.
-	 * 
+	 *
 	 */
 	public SubscribeContextAvailabilityResponse receiveReqFrmSubscriptionControllerAlternative(
 			final SubscribeContextAvailabilityRequest scaReq) {
 
 		/*
-		 * 
+		 *
 		 * Create the operation scope for the discovery. As this is the reaction
 		 * to a subscription, the scope is 'IncludeAssociations' with value
 		 * 'SOURCES'. The operation scope is then added to the existing scopes
@@ -288,7 +295,7 @@ public class ConfManWrapper {
 		/*
 		 * If the discovery is unsuccessful, the function is aborted and returns
 		 * an error.
-		 * 
+		 *
 		 * Else the function is continued.
 		 */
 
@@ -309,7 +316,7 @@ public class ConfManWrapper {
 				ContextRegistrationResponse response = iter.next();
 				if (response.getContextRegistration().getListEntityId() == null
 						|| response.getContextRegistration().getListEntityId()
-								.isEmpty()) {
+						.isEmpty()) {
 
 					response.getContextRegistration().setListEntityId(
 							scaReq.getEntityIdList());
@@ -319,7 +326,7 @@ public class ConfManWrapper {
 				if (response.getContextRegistration()
 						.getContextRegistrationAttribute() == null
 						|| response.getContextRegistration()
-								.getContextRegistrationAttribute().isEmpty()) {
+						.getContextRegistrationAttribute().isEmpty()) {
 
 					Iterator<String> iterAttribute = scaReq.getAttributeList()
 							.iterator();
@@ -333,8 +340,8 @@ public class ConfManWrapper {
 
 					}
 					response.getContextRegistration()
-							.setListContextRegistrationAttribute(
-									conteRegAttrList);
+					.setListContextRegistrationAttribute(
+							conteRegAttrList);
 
 				}
 
@@ -350,7 +357,7 @@ public class ConfManWrapper {
 			 * Again, if this is unsuccessful, then the function is aborted and
 			 * an error is returned. (this behavior could be changed in a future
 			 * release)
-			 * 
+			 *
 			 * Otherwise, the function continues.
 			 */
 
@@ -359,7 +366,7 @@ public class ConfManWrapper {
 				return new SubscribeContextAvailabilityResponse(null, null,
 						new StatusCode(500,
 								ReasonPhrase.RECEIVERINTERNALERROR_500
-										.toString(), null));
+								.toString(), null));
 			} else if (scaRes.getErrorCode() == null
 					|| scaRes.getErrorCode().getCode() == 200) {
 
@@ -367,7 +374,7 @@ public class ConfManWrapper {
 				 * After also the availability subscription being successful,
 				 * the function returns a success message in the
 				 * SubscribeContextAvailabilityResponse.
-				 * 
+				 *
 				 * What is done in addition is to further process the result
 				 * from the discovery, but this is done in a different Thread.
 				 */
@@ -459,24 +466,24 @@ public class ConfManWrapper {
 		}
 
 	}
-	
+
 	/**
 	 * This function initiates the communication with configuration management
 	 * in reaction to a new subscription. In particular, this function
 	 * <p>
 	 * makes a context availability subscription in order to be informed
 	 * about future data source availability
-	 * 
+	 *
 	 * @param scaReq
 	 *            The NGSI 9 {@link SubscribeContextAvailabilityRequest}.
 	 * @return The NGSI 9 {@link SubscribeContextAvailabilityResponse}.
-	 * 
+	 *
 	 */
 	public SubscribeContextAvailabilityResponse receiveReqFrmSubscriptionController(
 			final SubscribeContextAvailabilityRequest scaReq) {
 
 		/*
-		 * 
+		 *
 		 * Create the operation scope for the discovery. As this is the reaction
 		 * to a subscription, the scope is 'IncludeAssociations' with value
 		 * 'SOURCES'. The operation scope is then added to the existing scopes
@@ -498,27 +505,27 @@ public class ConfManWrapper {
 		}
 
 
-			/*
-			 * We now also make an availability subscription to config
-			 * management. Also this includes asking for SOURCES.
-			 */
-			final SubscribeContextAvailabilityResponse scaRes = ngsi9Impl
-					.subscribeContextAvailability(scaReq);
-			/*
-			 * Again, if this is unsuccessful, then the function is aborted and
-			 * an error is returned. (this behavior could be changed in a future
-			 * release)
-			 * 
-			 * Otherwise, the function continues.
-			 */
+		/*
+		 * We now also make an availability subscription to config
+		 * management. Also this includes asking for SOURCES.
+		 */
+		final SubscribeContextAvailabilityResponse scaRes = ngsi9Impl
+				.subscribeContextAvailability(scaReq);
+		/*
+		 * Again, if this is unsuccessful, then the function is aborted and
+		 * an error is returned. (this behavior could be changed in a future
+		 * release)
+		 *
+		 * Otherwise, the function continues.
+		 */
 
-			if (scaRes.getErrorCode() != null
-					&& scaRes.getErrorCode().getCode() > 499) {
-				return new SubscribeContextAvailabilityResponse(null, null,
-						new StatusCode(500,
-								ReasonPhrase.RECEIVERINTERNALERROR_500
-										.toString(), null));
-			} else {
+		if (scaRes.getErrorCode() != null
+				&& scaRes.getErrorCode().getCode() > 499) {
+			return new SubscribeContextAvailabilityResponse(null, null,
+					new StatusCode(500,
+							ReasonPhrase.RECEIVERINTERNALERROR_500
+							.toString(), null));
+		} else {
 
 
 			return scaRes;
@@ -532,11 +539,11 @@ public class ConfManWrapper {
 	 * Processes the NGSI 9 NotifyContextAvailability operation. This operation
 	 * is called when an availability notification arrives from the
 	 * configuration manager.
-	 * 
+	 *
 	 * What the operation does is to extract the final set of associations
 	 * (applying transitiveness and filtering) and then pass the notification
 	 * and associations on to the subscription controller.
-	 * 
+	 *
 	 * @param notifyContextAvailabilityRequest
 	 *            The NGSI 9 {@link NotifyContextAvailabilityRequest}.
 	 * @return The NGSI 9 {@link NotifyContextAvailabilityResponse}.
@@ -550,21 +557,21 @@ public class ConfManWrapper {
 		 * made. Note that this is a 2-step process, as first the subscription
 		 * id needs to be retrieved and then the NGSI10 subscription itself is
 		 * retrieved from that id.
-		 * 
+		 *
 		 * If this is not found or more than one are found (which is not
 		 * expected), then the function is aborted and an error is returned.
 		 */
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			logger.info("InterruptedException",e);
 		}
 		List<String> lsubAvailID = linkAvSub
 				.getInIDs(notifyContextAvailabilityRequest.getSubscribeId());
 		if (lsubAvailID.size() != 1) {
-			
+
 			logger.info("SUBSCRIPTION NOT FOUND!!");
-			
+
 			return new NotifyContextAvailabilityResponse(new StatusCode(
 					Code.SUBSCRIPTIONIDNOTFOUND_470.getCode(),
 					ReasonPhrase.SUBSCRIPTIONIDNOTFOUND_470.toString(), null));
@@ -595,7 +602,7 @@ public class ConfManWrapper {
 				 * We represent the availability notification as a discovery
 				 * response, because the association utility is made for the
 				 * latter data structure.
-				 * 
+				 *
 				 * Then the set of relevant associations is computed by the same
 				 * three step that were also applied at the time the discovery
 				 * was made.
@@ -603,8 +610,8 @@ public class ConfManWrapper {
 
 				DiscoverContextAvailabilityResponse discoveryResponse = new DiscoverContextAvailabilityResponse();
 				discoveryResponse
-						.setContextRegistrationResponse(notifyContextAvailabilityRequest
-								.getContextRegistrationResponseList());
+				.setContextRegistrationResponse(notifyContextAvailabilityRequest
+						.getContextRegistrationResponseList());
 
 				/* extract the associations from the discovery response */
 				List<AssociationDS> assocList = associationsUtil
@@ -640,7 +647,7 @@ public class ConfManWrapper {
 						+ dcaRes);
 
 				/*
-				 * 
+				 *
 				 * Now the resulting discovery response (represented as
 				 * notification) and the associations are passed to the
 				 * subscription handler.
@@ -664,7 +671,7 @@ public class ConfManWrapper {
 
 	/**
 	 * This method is currently not implemented and returns null.
-	 * 
+	 *
 	 * @return null
 	 */
 	public UpdateContextAvailabilitySubscriptionResponse receiveReqFrmSubscriptionController(

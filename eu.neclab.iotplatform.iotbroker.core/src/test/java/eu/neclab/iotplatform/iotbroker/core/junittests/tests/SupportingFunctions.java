@@ -167,7 +167,7 @@ public class SupportingFunctions {
 	public DiscoverContextAvailabilityRequest prepareDiscoverContextAvailabilityRequest(
 			String path) {
 		DiscoverContextAvailabilityRequest discoverContextAvailabilityRequest = (DiscoverContextAvailabilityRequest)convertStringToXml(readFromFile(path),
-						DiscoverContextAvailabilityRequest.class);
+				DiscoverContextAvailabilityRequest.class);
 		return discoverContextAvailabilityRequest;
 	}
 
