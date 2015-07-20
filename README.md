@@ -161,6 +161,8 @@ In addition to that, the fiwareRelease folder needs to be copied in the user/hom
 
 An example of an OSGI configuration using the EQUINOX framework (e.g. config.ini) is shown below. For a working example configuration please also see the latest binary release to be found in http://catalogue.fiware.org/enablers/iot-broker.
 
+One of the most simple ways to compile and run your custom version of IoT Broker is to (a) do the modifications of the source code as desired (b) compile the IoT Broker OSGi bundles, (c) replace in a recent binary release of IoT Broker (see http://catalogue.fiware.org/enablers/iot-broker) the IoT Broker bundles by your new custom bundles.
+
 ```
 ##############################
 # Equinox settings
