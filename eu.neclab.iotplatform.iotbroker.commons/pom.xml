@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>IoTbrokerParent</artifactId>
 		<groupId>eu.neclab.iotplatform</groupId>
-		<version>4.1.3</version>
+		<version>4.3.3-SNAPSHOT</version>
 		<relativePath>../IoTbrokerParent</relativePath>
 	</parent>
 
@@ -35,7 +35,7 @@
 						<Import-Package>com.sun.xml.bind.marshaller,
 							org.codehaus.jackson;version="1.9.2",
 							org.codehaus.jackson.map;version="1.9.2",
-							eu.neclab.iotplatform.ngsi.api.datamodel;version="${pom.version}",
+							eu.neclab.iotplatform.ngsi.api.datamodel;version="${project.version}",
 							org.codehaus.jackson.map.annotate;version="1.9.2",
 							javax.xml.bind,
 							javax.xml.bind.util,
@@ -46,9 +46,11 @@
 							javax.xml.xpath,
 							org.apache.log4j;version="[1.2,2)",
 							org.w3c.dom,
-							org.xml.sax</Import-Package>
-						<Export-Package>eu.neclab.iotplatform.iotbroker.commons;version="${pom.version}",
-							eu.neclab.iotplatform.iotbroker.commons.interfaces;version="${pom.version}"</Export-Package>
+							org.xml.sax,
+							org.apache.http,
+							org.apache.http.message</Import-Package>
+						<Export-Package>eu.neclab.iotplatform.iotbroker.commons;version="${project.version}",
+							eu.neclab.iotplatform.iotbroker.commons.interfaces;version="${project.version}"</Export-Package>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -58,6 +60,18 @@
 
 
 	<dependencies>
+
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.3.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore</artifactId>
+			<version>4.3.2</version>
+		</dependency>
 
 		<dependency>
 			<groupId>eu.neclab.iotplatform</groupId>

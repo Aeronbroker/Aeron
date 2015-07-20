@@ -39,64 +39,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH 
  * DAMAGE.
  ******************************************************************************/
-package eu.neclab.iotplatform.iotbroker.commons;
+package eu.neclab.iotplatform.iotbroker.commons.interfaces;
 
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Collections;
-import java.util.Enumeration;
+import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextRequest;
 
-import org.apache.log4j.Logger;
+public interface LeafengineInterface {
 
-/**
- * A class giving access to the system MAC address.
- */
-public class MacAddress {
-
-	private static Logger logger = Logger.getLogger(MacAddress.class);
-	private static String MACADDRESS;
-
-	/**
-	 * Creates a new instance of the class. Objects of this class are stateless,
-	 * which means that a singleton instance will be sufficient.
-	 */
-	public MacAddress() {
-		super();
-
-	}
-
-	/**
-	 * Returns the MAC address of the system.
-	 */
-	public static String getMACADDRESS() {
-
-		StringBuilder b = new StringBuilder();
-		try {
-
-			Enumeration<NetworkInterface> nets = NetworkInterface
-					.getNetworkInterfaces();
-
-			for (NetworkInterface netIf : Collections.list(nets)) {
-				byte[] mac = netIf.getHardwareAddress();
-				if (mac != null) {
-
-					for (int i = 0; i < mac.length; i++) {
-						b.append(String.format("%02X%s", mac[i],
-								i < mac.length - 1 ? "-" : "").toString());
-					}
-					MACADDRESS = b.toString();
-					logger.debug("MAC address found : " + MACADDRESS);
-					break;
-				}
-			}
-			if (MACADDRESS == null || MACADDRESS.equals("")) {
-				logger.info("Address doesn't exist or is not " + "accessible.");
-			}
-		} catch (SocketException e) {
-			logger.debug("SocketException", e);
-		}
-
-		return MACADDRESS;
-	}
+	public UpdateContextRequest convertSubscriptionToUpdate(String notify);
 
 }
