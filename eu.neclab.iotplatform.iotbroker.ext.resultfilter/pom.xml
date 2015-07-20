@@ -3,8 +3,9 @@
  <parent>
 		<groupId>eu.neclab.iotplatform</groupId>
 		<artifactId>IoTbrokerParent</artifactId>
-		<version>4.1.3</version>
-	</parent>
+		<version>4.3.3-SNAPSHOT</version>
+		<relativePath>../IoTbrokerParent</relativePath>
+ </parent>
 	<artifactId>iotbroker.ext.resultfilter</artifactId>
 	<name>eu.neclab.iotplatform.iotbroker.ext.resultfilter</name>
 	<packaging>bundle</packaging>
