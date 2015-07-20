@@ -52,7 +52,7 @@ The main features of IoT Broker are:
 * Offering a single point of contact to the user, hiding the complexity of the multi-provider nature of the 
   Internet of Things.
 * Collecting and aggregating information about thousands of real-world objects on behalf of the user.
-* Provide means to assemble lower-level device information (device-centric access) into higher-level Thing information 
+* Provide means to assemble lower-level device information (device-centric access) into higher-level thing information 
   (information-centric access).
   
 
