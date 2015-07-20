@@ -114,17 +114,7 @@ for being built:
 
 The basic procedure for compiling the IoT Broker is the following:
 
-* Before to compile the software with Maven, please install the following two libraries 
-  httpclient-4.2.0-osgi.jar and httpcore-4.2.0-osgi.jar manually in your local Maven .m2 repository. 
-  For doing this, navigate into the lib folder and run the two following commands:
-
-```
-mvn install:install-file -DgroupId=org.apache.httpcomponents -DartifactId=httpclient -Dversion=4.2.0-osgi -Dfile=httpclient-4.2.0-osgi.jar -Dpackaging=jar -DgeneratePom=true
-
-mvn install:install-file -DgroupId=org.apache.httpcomponents -DartifactId=httpcore -Dversion=4.2.0-osgi -Dfile=httpclient-4.2.0-osgi.jar -Dpackaging=jar -DgeneratePom=true
-```
-
-* After having installed the two libraries, navigate into the IoTBrokerParent folder and compile the pom file as follows:
+Navigate into the IoTBrokerParent folder and compile the pom file as follows:
 
 ```
 mvn install
@@ -136,17 +126,21 @@ mvn install
 mvn install
 ```
 
-  This command will generate 8 OSGI bundles inside the eu.neclab.iotplatform.iotbroker.builder\target\iotbroker.builder-3.3.3-assembly\bundle folder:
+  This command will generate 8 OSGI bundles inside the eu.neclab.iotplatform.iotbroker.builder\target folder:
+  
+  (Note that the version numbers might differ from what is
+  written in this document.)
 
 ```
-iotbroker.client-3.3.3.jar
-iotbroker.commons-3.3.3.jar
-iotbroker.core-3.3.3.jar
-iotbroker.ext.resultfilter-3.3.3.jar
-iotbroker.restcontroller-3.3.3.jar
-iotbroker.storage-3.3.3.jar
-ngsi.api-3.3.3.jar
-tomcat-configuration-fragment-3.3.3.jar
+iotbroker.client-4.3.3.jar
+iotbroker.commons-4.3.3.jar
+iotbroker.core-4.3.3.jar
+iotbroker.couchdb-4.3.3.jar
+iotbroker.ext.resultfilter-4.3.3.jar
+iotbroker.restcontroller-4.3.3.jar
+iotbroker.storage-4.3.3.jar
+ngsi.api-4.3.3.jar
+tomcat-configuration-fragment-4.3.3.jar
 ```
 
 How to Use the IoT Broker Bundles
