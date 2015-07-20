@@ -61,44 +61,58 @@ Directory Structure
 ------------------------
 .
 
+├── iotplatform.couchdb				     Optional bundle for
+                                         connection with 
+										 couchDB
+
 ├── iotbroker.builder                    Maven builder
 
 ├── iotbroker.client                     HTTP client
 
-├── iotbroker.commons                    Commons package
+├── iotbroker.commons                    Commons package for 
+                                         basic functionalities
 
 ├── iotbroker.core                       Functional core
 
-├── iotbroker.resultfilter               Result filter (optional)
+├── iotbroker.resultfilter               Optional bundle for 
+                                         filtering results
 
 ├── iotbroker.restcontroller             HTTP REST interface
 
-├── iotbroker.storage                    Internal database
+├── iotbroker.storage                    Connector to internal 	  	
+									     database
 
-├── ngsi.api                             NGSI 9/10 API
-
+├── ngsi.api                             Implementation of 
+                                         FIWARE NGSI API
+										 
 ├── fiwareRelease                        Configuration folder
+										 used by IoT Broker
+										 bundles during 
+										 runtime
 
-├── IoTbrokerParent                      Maven parent
+├── IoTbrokerParent                      Maven parent project
 
-├── lib								     Folder contains dependencies
+├── lib								     Folder contains OSGI
+										 bundles needed by
+										 IoT Broker to run
 
-├── SQL_database                         HSQLDB folder
+├── SQL_database                         HSQLDB folder containing
+										 the internal IoT Broker
+										 database files.
 
-└── tomcat-configuration-fragment 		 Tomcat configuration
+└── tomcat-configuration-fragment 		 Tomcat server configuration
 
 
 Building IoT Broker Source Code
 ---
 
-IoT Broker uses the following libraries as build dependencies:
+IoT Broker requires the following software to be installed
+for being built:
 
 * JAVA JDK 7 or OpenJDK 7
 * MAVEN 3
-* httpclient-4.2.0-osgi.jar ( present in the lib folder )
-* httpcore-4.2.0-osgi.jar ( present in the lib folder )
 
-The basic procedure for compiling Areon is the following:
+The basic procedure for compiling the IoT Broker is the following:
 
 * Before to compile the software with Maven, please install the following two libraries 
   httpclient-4.2.0-osgi.jar and httpcore-4.2.0-osgi.jar manually in your local Maven .m2 repository. 
