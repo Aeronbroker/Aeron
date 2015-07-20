@@ -1,37 +1,44 @@
 /*******************************************************************************
- *   Copyright (c) 2014, NEC Europe Ltd.
- *   All rights reserved.
- *
- *   Authors:
- *           * Salvatore Longo - salvatore.longo@neclab.eu
- *           * Tobias Jacobs - tobias.jacobs@neclab.eu
- *           * Raihan Ul-Islam - raihan.ul-islam@neclab.eu
- *
- *    Redistribution and use in source and binary forms, with or without
- *    modification, are permitted provided that the following conditions are met:
- *   1. Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   2. Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *   3. All advertising materials mentioning features or use of this software
- *     must display the following acknowledgement:
- *     This product includes software developed by NEC Europe Ltd.
- *   4. Neither the name of the NEC nor the
- *     names of its contributors may be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
-
+ * Copyright (c) 2015, NEC Europe Ltd.
+ * All rights reserved.
+ * 
+ * Authors:
+ *          * Salvatore Longo - salvatore.longo@neclab.eu
+ *          * Tobias Jacobs - tobias.jacobs@neclab.eu
+ *          * Flavio Cirillo - flavio.cirillo@neclab.eu
+ *          * Raihan Ul-Islam
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions 
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright 
+ * notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above 
+ * copyright notice, this list of conditions and the following disclaimer 
+ * in the documentation and/or other materials provided with the 
+ * distribution.
+ * 3. All advertising materials mentioning features or use of this 
+ * software must display the following acknowledgment: This 
+ * product includes software developed by NEC Europe Ltd.
+ * 4. Neither the name of NEC nor the names of its contributors may 
+ * be used to endorse or promote products derived from this 
+ * software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY 
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY 
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN 
+ * NO EVENT SHALL NEC BE LIABLE FOR ANY DIRECT, INDIRECT, 
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT 
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH 
+ * DAMAGE.
+ ******************************************************************************/
 package eu.neclab.iotplatform.iotbroker.client;
 
 import java.io.IOException;
@@ -53,9 +60,6 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
-
-import eu.neclab.iotplatform.iotbroker.commons.XmlFactory;
-import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextRequest;
 
 /**
  * Represents a generic client for NGSI via HTTP.
@@ -108,7 +112,6 @@ public class HttpConnectionClient {
 		connection.setRequestProperty("Content-Type", contentType);
 		connection.setRequestProperty("Accept",contentType);
 		connection.setRequestProperty("X-Auth-Token", xAuthToken);
-		connection.setRequestProperty("X-Auth-Token", xAuthToken);
 
 
 		// set connection timeout
@@ -138,8 +141,8 @@ public class HttpConnectionClient {
 	 *            to be an instance of an NGSI 9 or 10 message body.
 	 * @param contentType
 	 *            The content type that is announced in the request header. The request object
-	 *            in the message body will be sent in XML format for contentType  
-	 *            "application/xml" and JSON format otherwise.                
+	 *            in the message body will be sent in XML format for contentType
+	 *            "application/xml" and JSON format otherwise.
 	 * @param xAuthToken
 	 * 			  The security token used by this connection in order to connect to
 	 * 			  a component secured by the FIWARE security mechanisms.
@@ -162,7 +165,7 @@ public class HttpConnectionClient {
 			// resource and the method.
 			connection = createConnection(url, resource, method, contentType, xAuthToken);
 
-			if(contentType.equals("application/xml")){				
+			if(contentType.equals("application/xml")){
 				//connect using XML message body
 
 				logger.info("URL" + url + resource);
@@ -184,10 +187,10 @@ public class HttpConnectionClient {
 				// Ask the marshaller to marshall the request for you
 				logger.info("Request Class: " + request.getClass().toString());
 				m.marshal(request, os);
-				
+
 			}else{
 				//connect using JSON message body
-				
+
 				// get the OutputStram form the connection
 				os = connection.getOutputStream();
 
@@ -200,13 +203,10 @@ public class HttpConnectionClient {
 					mapper.writeValue(os,request);
 					logger.info("----------------->"+mapper.writeValueAsString(request));
 				} catch (JsonGenerationException e) {
-
 					logger.debug("JsonGenerationException", e);
 				} catch (JsonMappingException e) {
-
 					logger.debug("JsonMappingException", e);
 				} catch (IOException e) {
-
 					logger.debug("IOException", e);
 				}
 
@@ -219,7 +219,7 @@ public class HttpConnectionClient {
 			os.close();
 
 
-			
+
 			// now it is time to receive the response
 			// get input stream from the connection
 			is = connection.getInputStream();
@@ -231,6 +231,15 @@ public class HttpConnectionClient {
 			is.close();
 
 			logger.info("------------->Response = "+resp);
+
+			if(connection.getResponseCode() == 415){
+
+				logger.info("Connection Error: Format not supported by "+ url);
+
+				return "415";
+
+
+			}
 
 			return resp;
 
@@ -248,8 +257,21 @@ public class HttpConnectionClient {
 					+ " is not correct!";
 		} catch (IOException e) {
 
+			try {
+				if(connection != null && connection.getResponseCode() == 415){
+
+					logger.info("Connection Error: Format not supported by "+ url);
+
+					return "415";
+
+
+				}
+			} catch (IOException e1) {
+				logger.info("IOException",e);
+			}
+
 			logger.info("500 - Error I/O with: " + url);
-			logger.debug("IOException",e);
+			logger.info("IOException",e);
 
 			return "500 - Error I/O with: " + url;
 
