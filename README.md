@@ -281,7 +281,7 @@ Installing and Using the IoT Broker
 Minimum System Requirements:
 * Processor: 1 CPU 1.2 GHZ
 * RAM: 1 GB
-* DISK Spacd:50 MB
+* DISK Space:50 MB
 * JAVA : Java 7
 * Operating System: 32 or 64-bit version Windows or Linux
 
