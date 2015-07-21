@@ -126,7 +126,7 @@ mvn install
 mvn install
 ```
 
-  This command will generate 8 OSGI bundles inside the eu.neclab.iotplatform.iotbroker.builder\target folder:
+  This command will generate 9 OSGI bundles inside the eu.neclab.iotplatform.iotbroker.builder\target folder:
   
   (Note that the version numbers might differ from what is
   written in this document.)
