@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<entry key="couchdb_name">iotbrokerdb</entry>
+<entry key="couchdb_protocol">http</entry>
+<entry key="couchdb_host">127.0.0.1</entry>
+<entry key="couchdb_port">5984</entry>
+<entry key="couchdb_username"></entry>
+<entry key="couchdb_password"></entry>
+</properties>

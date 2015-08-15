@@ -11,9 +11,9 @@
 			<concurrency-control max-sessions="1" />
 		</session-management>
 		
-		<intercept-url pattern="/admin*" access="hasRole('ROLE_ADMIN')" requires-channel="https"/>
+		<intercept-url pattern="/admin*" access="hasRole('ROLE_ADMIN')" requires-channel="http"/>
 	
-			<intercept-url pattern="/monitoring/**" access="hasRole('ROLE_ADMIN')" />
+		<intercept-url pattern="/monitoring/**" access="hasRole('ROLE_ADMIN')" />
 	
 
 		<form-login login-page="/login.html" authentication-failure-url="/loginfailed.html"
@@ -30,7 +30,7 @@
 			<port-mapping http="8090" https="9443" />
 		</port-mappings> 
 		
-		<access-denied-handler ref="accessDeniedHandler"/>
+		
 
 	</http>
 
@@ -39,7 +39,7 @@
 	<authentication-manager>
 		<authentication-provider>
 			<user-service id="userDetailsService"
-				properties="file:///${dir.config}/fiwareRelease/iotBroker/config/users.properties" />
+				properties="file:///${dir.config}/iotbrokerconfig/iotBroker/config/users.properties" />
 		
 		</authentication-provider>
 	</authentication-manager>

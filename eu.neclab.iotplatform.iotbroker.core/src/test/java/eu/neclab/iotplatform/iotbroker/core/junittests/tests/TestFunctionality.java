@@ -186,6 +186,8 @@ public class TestFunctionality {
 	@Test
 	public void restrictionTest(){
 
+		logger.info("Now testing FIWARE.Feature.IoT.BackendIoTBroker.Query.Restriction");
+		
 		//configure mocks
 		EasyMock.expect(ngsi9InterfaceMock.discoverContextAvailability(discoverReq_attribExpr))
 			.andReturn(discoverResp);
@@ -216,6 +218,8 @@ public class TestFunctionality {
 	
 	@Test
 	public void typeTest(){
+		
+		logger.info("Now testing FIWARE.Feature.IoT.BackendThingsManagement.Query.typeBased");
 		
 		//configure mocks
 		EasyMock.expect(ngsi9InterfaceMock.discoverContextAvailability(discoverReq_type))
@@ -249,6 +253,8 @@ public class TestFunctionality {
 	@Test
 	public void patternTest(){
 		
+		logger.info("Now testing FIWARE.Feature.IoT.BackendIoTBroker.Query.Patterns");
+		
 		//configure mocks
 		EasyMock.expect(ngsi9InterfaceMock.discoverContextAvailability(discoverReq_pattern))
 			.andReturn(discoverResp);
@@ -280,6 +286,8 @@ public class TestFunctionality {
 	
 	@Test
 	public void updateTest(){
+		
+		logger.info("Now testing FIWARE.Feature.IoT.BackendIoTBroker.Update.IdBased");
 		
 		//configure mocks
 		EasyMock.expect(ngsi9InterfaceMock.discoverContextAvailability(discoverReq_update))
@@ -313,6 +321,8 @@ public class TestFunctionality {
 	
 	@Test
 	public void attributeDomainTest(){
+		
+		logger.info("Now testing FIWARE.Feature.IoT.BackendThingsManagement.Query.attributeDomain");
 		
 		//configure mocks
 		EasyMock.expect(ngsi9InterfaceMock.discoverContextAvailability(discoverReq_attribDom))

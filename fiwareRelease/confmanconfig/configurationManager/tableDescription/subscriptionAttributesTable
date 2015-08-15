@@ -1,0 +1,10 @@
+CREATE TABLE public.subscriptionattributes
+(
+subscriptionid character varying(500) NOT NULL REFERENCES subscriptions(subscriptionid) ON DELETE CASCADE,
+  attribute character varying(500) NOT NULL
+) 
+WITH (
+  OIDS = FALSE
+)
+;
+

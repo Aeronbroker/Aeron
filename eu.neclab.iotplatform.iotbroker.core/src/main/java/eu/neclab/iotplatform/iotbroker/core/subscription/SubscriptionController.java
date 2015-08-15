@@ -1,40 +1,49 @@
 /*******************************************************************************
- *   Copyright (c) 2014, NEC Europe Ltd.
- *   All rights reserved.
- *
- *   Authors:
- *           * Salvatore Longo - salvatore.longo@neclab.eu
- *           * Tobias Jacobs - tobias.jacobs@neclab.eu
- *           * Raihan Ul-Islam - raihan.ul-islam@neclab.eu
- *
- *    Redistribution and use in source and binary forms, with or without
- *    modification, are permitted provided that the following conditions are met:
- *   1. Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   2. Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *   3. All advertising materials mentioning features or use of this software
- *     must display the following acknowledgement:
- *     This product includes software developed by NEC Europe Ltd.
- *   4. Neither the name of the NEC nor the
- *     names of its contributors may be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ * Copyright (c) 2015, NEC Europe Ltd.
+ * All rights reserved.
+ * 
+ * Authors:
+ *          * Salvatore Longo - salvatore.longo@neclab.eu
+ *          * Tobias Jacobs - tobias.jacobs@neclab.eu
+ *          * Flavio Cirillo - flavio.cirillo@neclab.eu
+ *          * Raihan Ul-Islam
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions 
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright 
+ * notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above 
+ * copyright notice, this list of conditions and the following disclaimer 
+ * in the documentation and/or other materials provided with the 
+ * distribution.
+ * 3. All advertising materials mentioning features or use of this 
+ * software must display the following acknowledgment: This 
+ * product includes software developed by NEC Europe Ltd.
+ * 4. Neither the name of NEC nor the names of its contributors may 
+ * be used to endorse or promote products derived from this 
+ * software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY 
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY 
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN 
+ * NO EVENT SHALL NEC BE LIABLE FOR ANY DIRECT, INDIRECT, 
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT 
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH 
+ * DAMAGE.
+ ******************************************************************************/
 package eu.neclab.iotplatform.iotbroker.core.subscription;
 
 import java.net.InetAddress;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,6 +51,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -54,9 +64,11 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import eu.neclab.iotplatform.iotbroker.commons.ComplexMetadataUtil;
 import eu.neclab.iotplatform.iotbroker.commons.EntityIDMatcher;
 import eu.neclab.iotplatform.iotbroker.commons.GenerateUniqueID;
 import eu.neclab.iotplatform.iotbroker.commons.Pair;
+import eu.neclab.iotplatform.iotbroker.commons.TraceKeeper;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface;
 import eu.neclab.iotplatform.iotbroker.core.IotBrokerCore;
 import eu.neclab.iotplatform.iotbroker.core.QueryResponseMerger;
@@ -69,6 +81,8 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
@@ -76,9 +90,12 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityRequest
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextResponse;
+import eu.neclab.iotplatform.ngsi.api.datamodel.OperationScope;
+import eu.neclab.iotplatform.ngsi.api.datamodel.PEPCredentials;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ReasonPhrase;
+import eu.neclab.iotplatform.ngsi.api.datamodel.Restriction;
 import eu.neclab.iotplatform.ngsi.api.datamodel.StatusCode;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextAvailabilityResponse;
@@ -106,6 +123,50 @@ public class SubscriptionController {
 
 	private static Logger logger = Logger
 			.getLogger(SubscriptionController.class);
+
+	/**
+	 * This flag enables the presence information forwarding to NGSI-10
+	 * subscriber
+	 */
+	@Value("${forwardAvailabilityNotifications:false}")
+	private boolean forwardAvailabilityNotifications;
+
+	/**
+	 * This flag enables the keeping of trace in order to avoid loop in presence
+	 * of chain of IoT platform
+	 */
+	@Value("${traceKeeper_enabled:false}")
+	private boolean traceKeeperEnabled;
+
+	/**
+	 * This flag enables the forwarding of NGSI-10 notifications to a proxy,
+	 * instead of a direct notification to the subscriber
+	 */
+	@Value("${notificationProxyEnabled:false}")
+	private boolean notificationProxyEnabled;
+
+	/**
+	 * The proxy that will intercept the notifications instead of a direct
+	 * notification to the subscriber.
+	 */
+	@Value("${notificationProxy:}")
+	private String notificationProxy;
+
+	/**
+	 * This flag enables the forwarding of NGSI-10 notifications to a proxy,
+	 * instead of a direct notification to the subscriber
+	 */
+	@Value("${PEPCredentialsEnabled:false}")
+	private boolean PEPCredentialsEnabled;
+
+	//	@Value("${forcePepCredentials:false}")
+	//	private boolean forcePepCredentials;
+
+	/**
+	 * It enable the tracing of the originator IP of the subscription request
+	 */
+	@Value("${traceOriginatorOfSubscription:false}")
+	private boolean traceOriginatorOfSubscription;
 
 	/**
 	 * Pointer to the component from which notifications will be received.
@@ -162,6 +223,20 @@ public class SubscriptionController {
 	@Autowired
 	private ResultFilterInterface resultFilter = null;
 
+	private static final String NOTIFICATION_HANDLER = "NotificationHandler";
+
+	private static final String SUBSCRIPTION_ORIGINATOR = "SubscriptionOriginator";
+
+	//	private static final String PEP_CREDENTIALS_REQUIRED = "PEPCredentialsRequired";
+
+	private final ContextUniqueIdentifierComparator contextUniqueIdentifierComparator = new ContextUniqueIdentifierComparator();
+
+	/**
+	 * A key-value store for storing subscription-related information.
+	 */
+	private final Map<String, SubscriptionData> subscriptionStore = Collections
+			.synchronizedMap(new HashMap<String, SubscriptionData>());
+
 	/**
 	 * @return The result filter used for filtering notifications.
 	 */
@@ -182,12 +257,6 @@ public class SubscriptionController {
 	public NorthBoundWrapper getNorthBoundWrapper() {
 		return northBoundWrapper;
 	}
-
-	/**
-	 * A key-value store for storing subscription-related information.
-	 */
-	private final Map<String, SubscriptionData> subscriptionStore = Collections
-			.synchronizedMap(new HashMap<String, SubscriptionData>());
 
 	/**
 	 * Creates a new instance.
@@ -334,7 +403,7 @@ public class SubscriptionController {
 		String ref = null;
 		try {
 			ref = "http://" + InetAddress.getLocalHost().getHostAddress() + ":"
-					+ System.getProperty("tomcat.init.port") + "/ngsi9";
+					+ System.getProperty("tomcat.init.port") + "/ngsi9/notifyContextAvailability";
 
 		} catch (UnknownHostException e) {
 			logger.error("Unknown Host", e);
@@ -345,7 +414,7 @@ public class SubscriptionController {
 	/**
 	 * The function is by the northbound wrapper when a new NGSI 10 subscription
 	 * arrives.
-	 * 
+	 *
 	 * @param scReq
 	 *            The NGSI 10 SubscribeContextRequest.
 	 * @return The NGSI 10 SusbcribeContextResponse.
@@ -418,6 +487,24 @@ public class SubscriptionController {
 						+ scReq.getDuration().toString());
 			}
 
+			// logger.info(String.format("Notification enable %b, at the proxy: %s",notificationProxyEnabled,
+			// notificationProxy));
+
+			// Lets define who should receive the notification when generated.
+			// Usually is the one defined by the Reference field in the
+			// subscription but it can overridden if we define a proxy
+			String notificationHandler;
+			if (notificationProxyEnabled) {
+				if (notificationProxy == null || notificationProxy.isEmpty()) {
+					notificationHandler = scReq.getReference();
+					logger.warn("Notification proxy is not valid: "
+							+ notificationProxy);
+				}
+				notificationHandler = notificationProxy;
+			} else {
+				notificationHandler = scReq.getReference();
+			}
+
 			/*
 			 * Now we create a container where the relevant information about
 			 * this subscription is packed together. This relevant data consists
@@ -425,9 +512,14 @@ public class SubscriptionController {
 			 * unsubscribe task
 			 */
 
-			SubscriptionData subData = new SubscriptionData();
+			SubscriptionData subData = new SubscriptionData(notificationHandler);
 			subData.setStartTime(associationUtil.currentTime());
 			subData.setUnsubscribeTask(task);
+
+			if (traceOriginatorOfSubscription) {
+				String originator = getSubscriptionOriginator(scReq);
+				subData.setOriginator(originator);
+			}
 
 			/*
 			 * The subscription data is now put into the persistent storage,
@@ -496,9 +588,32 @@ public class SubscriptionController {
 
 	}
 
+	private String getSubscriptionOriginator(
+			SubscribeContextRequest subscription) {
+
+		if (subscription.getRestriction() != null
+				&& subscription.getRestriction().getOperationScope() != null
+				&& !subscription.getRestriction().getOperationScope().isEmpty()) {
+
+			Iterator<OperationScope> operationScopeIterator = subscription
+					.getRestriction().getOperationScope().iterator();
+			while (operationScopeIterator.hasNext()) {
+				OperationScope operationScope = operationScopeIterator.next();
+
+				if (SUBSCRIPTION_ORIGINATOR.toLowerCase().equals(
+						operationScope.getScopeType().toLowerCase())) {
+					return operationScope.getScopeValue().toString();
+				}
+			}
+		}
+
+		return null;
+
+	}
+
 	/**
 	 * Updates an existing subscription.
-	 * 
+	 *
 	 * @param uCSreq
 	 *            The NGSI 10 UpdateContextSubscriptionRequest.
 	 * @return The NGSI 10 UpdateContextSubscriptionResponse.
@@ -553,7 +668,7 @@ public class SubscriptionController {
 						new SubscribeError(null, new StatusCode(
 								Code.INTERNALERROR_500.getCode(),
 								ReasonPhrase.RECEIVERINTERNALERROR_500
-										.toString(), null)));
+								.toString(), null)));
 			}
 		} else {
 			try {
@@ -568,7 +683,7 @@ public class SubscriptionController {
 						new SubscribeError(null, new StatusCode(
 								Code.INTERNALERROR_500.getCode(),
 								ReasonPhrase.RECEIVERINTERNALERROR_500
-										.toString(), null)));
+								.toString(), null)));
 			}
 		}
 		final String idSubscription = uCSreq.getSubscriptionId();
@@ -582,7 +697,7 @@ public class SubscriptionController {
 
 	/**
 	 * Cancels the (incoming) subscription having the given identifier.
-	 * 
+	 *
 	 * @param subscriptionID
 	 *            The identifier of the subscription to cancel.
 	 */
@@ -614,7 +729,7 @@ public class SubscriptionController {
 
 	/**
 	 * Cancels an existing subscription.
-	 * 
+	 *
 	 * @param uCReq
 	 *            The NGSI 10 UnsubscribeContextRequest.
 	 * @return The NGSI 10 UnsubscribeContextResponse.
@@ -694,7 +809,7 @@ public class SubscriptionController {
 	 * Return a List of ContextElementResponse items that is the result of
 	 * applying the given list of associations to the give list of
 	 * ContextElementResponse items.
-	 * 
+	 *
 	 */
 	private List<ContextElementResponse> modifyEntityAttributeBasedAssociation(
 			List<AssociationDS> assocList, List<ContextElementResponse> lCres) {
@@ -725,7 +840,7 @@ public class SubscriptionController {
 					 * For each such pair we first look whether the source
 					 * entity of the association matches the entity id of the
 					 * context element response.
-					 * 
+					 *
 					 * If not, then nothing is done
 					 */
 
@@ -758,9 +873,9 @@ public class SubscriptionController {
 									 * then we check if the attribute domain
 									 * name of the context element matches with
 									 * the source attribute of the association.
-									 * 
+									 *
 									 * If it does not match, nothing happens.
-									 * 
+									 *
 									 * If it matches, then the association is
 									 * applicable and we translate the given
 									 * context element response into one where
@@ -777,15 +892,15 @@ public class SubscriptionController {
 										ContextElement cETmp = new ContextElement(
 												aDS.getTargetEA().getEntity(),
 												aDS.getTargetEA()
-														.getEntityAttribute(),
+												.getEntityAttribute(),
 												ceResp.getContextElement()
-														.getContextAttributeList(),
+												.getContextAttributeList(),
 												ceResp.getContextElement()
-														.getDomainMetadata());
+												.getDomainMetadata());
 										ContextElementResponse cEresTmp = new ContextElementResponse(
 												cETmp, ceResp.getStatusCode());
 										resultingContextElRespList
-												.add(cEresTmp);
+										.add(cEresTmp);
 										logger.debug("SubscriptionController: Successfully applied association, created the context element "
 												+ cETmp.toString());
 									}
@@ -801,11 +916,11 @@ public class SubscriptionController {
 									ContextElement cETmp = new ContextElement(
 											aDS.getTargetEA().getEntity(),
 											ceResp.getContextElement()
-													.getAttributeDomainName(),
+											.getAttributeDomainName(),
 											ceResp.getContextElement()
-													.getContextAttributeList(),
+											.getContextAttributeList(),
 											ceResp.getContextElement()
-													.getDomainMetadata());
+											.getDomainMetadata());
 									ContextElementResponse cEresTmp = new ContextElementResponse(
 											cETmp, ceResp.getStatusCode());
 
@@ -818,7 +933,7 @@ public class SubscriptionController {
 
 						/*
 						 * In case there is no attribute domain name specified
-						 * in the context element response, we again check
+						 * in the context element responsem we again check
 						 * whether the association is an attribute association.
 						 */
 						if (attributeDomainNameExists == false) {
@@ -829,7 +944,7 @@ public class SubscriptionController {
 								 * If it is an attribute association, we need to
 								 * find the attribute values that can be
 								 * translated using this association.
-								 * 
+								 *
 								 * For this, we run through all attributes
 								 * specified in the context element response,
 								 * and when we found one that matches with the
@@ -845,7 +960,7 @@ public class SubscriptionController {
 										.getContextAttributeList()) {
 									if (ca.getName().equals(
 											aDS.getSourceEA()
-													.getEntityAttribute())) {
+											.getEntityAttribute())) {
 										List<ContextAttribute> lCaTmp = new ArrayList<ContextAttribute>();
 										ca.setName(aDS.getTargetEA()
 												.getEntityAttribute());
@@ -853,14 +968,14 @@ public class SubscriptionController {
 										ContextElement cETmp = new ContextElement(
 												aDS.getTargetEA().getEntity(),
 												ceResp.getContextElement()
-														.getAttributeDomainName(),
+												.getAttributeDomainName(),
 												lCaTmp, ceResp
-														.getContextElement()
-														.getDomainMetadata());
+												.getContextElement()
+												.getDomainMetadata());
 										ContextElementResponse cEresTmp = new ContextElementResponse(
 												cETmp, ceResp.getStatusCode());
 										resultingContextElRespList
-												.add(cEresTmp);
+										.add(cEresTmp);
 										logger.debug("SubscriptionController: Successfully applied association, created the context element "
 												+ cETmp.toString());
 									}
@@ -902,7 +1017,7 @@ public class SubscriptionController {
 
 	/**
 	 * Processes an NGSI 10 notification.
-	 * 
+	 *
 	 * @param ncReq
 	 *            The NGSI 10 NotifyContextRequest.
 	 * @return The NGSI 10 NotifyContextResponse.
@@ -910,7 +1025,7 @@ public class SubscriptionController {
 	public NotifyContextResponse receiveReqFrmAgentWrapper(
 			NotifyContextRequest ncReq) {
 
-		logger.debug("SubscriptionController: Received the following notify context request:"
+		logger.info("SubscriptionController: Received the following notify context request:"
 				+ ncReq.toString()
 				+ "/n"
 				+ "SubscriptionID is: "
@@ -935,12 +1050,12 @@ public class SubscriptionController {
 		 * It is expected that exactly one incoming subscription id will be
 		 * found. If this is not the case, then the function is aborted and an
 		 * error is returned.
-		 * 
+		 *
 		 * Otherwise, the function continues.
 		 */
 		if (inIDs == null || inIDs.size() != 1) {
 			logger.debug("SubscriptionController: Aborting, because did not find exactly one incoming"
-					+ "subscription, but found " + inIDs.toString());
+					+ "subscription");
 			return new NotifyContextResponse(new StatusCode(470,
 					ReasonPhrase.SUBSCRIPTIONIDNOTFOUND_470.toString(), null));
 		} else {
@@ -982,7 +1097,7 @@ public class SubscriptionController {
 			 * It is again assumed that exactly one availability subscription id
 			 * is has been found. If not, then the function aborts and returns
 			 * nothing.
-			 * 
+			 *
 			 * Otherwise the list of associations that have been stored with
 			 * this availability subscription is retrieved. These are the
 			 * associations that are potentially applicable for this
@@ -994,8 +1109,7 @@ public class SubscriptionController {
 						+ availId.get(0));
 				listAssoc = availabilitySub.getListOfAssociations(availId
 						.get(0));
-				logger.debug("SusbcriptionController: The associations are:"
-						+ listAssoc.toString());
+
 			} else {
 				logger.error("SubscriptionController: found wrong number of availability subscriptions, aborting.");
 				return null;
@@ -1014,7 +1128,7 @@ public class SubscriptionController {
 
 				lCERes = modifyEntityAttributeBasedAssociation(
 						associationUtil
-								.convertToAssociationDS(listAssoc.get(0)),
+						.convertToAssociationDS(listAssoc.get(0)),
 						ncReq.getContextElementResponseList());
 
 				/*
@@ -1100,7 +1214,7 @@ public class SubscriptionController {
 
 				logger.debug("SubscriptionController: Response list after applying merger:"
 						+ qCRes_forMerger.getListContextElementResponse()
-								.toString());
+						.toString());
 
 				/*
 				 * We retrieve the subscriptionData for the incoming
@@ -1137,6 +1251,33 @@ public class SubscriptionController {
 					logger.info(qCRes_forMerger.getListContextElementResponse()
 							.get(i));
 
+					ContextElementResponse contextElementResponse = qCRes_forMerger
+							.getListContextElementResponse().get(i);
+
+					/*
+					 * Here we insert PEP credentials if the incoming
+					 * Subscription has one in his operation scope list
+					 */
+					if (PEPCredentialsEnabled) {
+						this.addPEPCredentialsToContextElementResponse(
+								inSubReq, contextElementResponse);
+					}
+
+					/*
+					 * If it is enabled the notification proxy, we insert as a
+					 * metadata the final NotificationHandler, who should
+					 * actually receive the notification
+					 */
+					if (notificationProxyEnabled) {
+						try {
+							this.addNotificationHandler(
+									inSubReq.getReference(),
+									contextElementResponse);
+						} catch (URISyntaxException e) {
+							logger.info("URISyntaxException",e);
+						}
+					}
+
 					notificationQueue.add(qCRes_forMerger
 							.getListContextElementResponse().get(i));
 				}
@@ -1154,18 +1295,97 @@ public class SubscriptionController {
 		}
 
 		/*
-		 * finally the function can return with a positive status code.
+		 * Finally the function can return with a positive status code.
 		 */
 		return new NotifyContextResponse(new StatusCode(200,
 				ReasonPhrase.OK_200.toString(), null));
 
 	}
 
+	private void addPEPCredentialsToContextElementResponse(
+			SubscribeContextRequest incominbSubscriptionReq,
+			ContextElementResponse contextElementResponse) {
+
+		if (incominbSubscriptionReq.getRestriction() != null
+				&& incominbSubscriptionReq.getRestriction().getOperationScope() != null
+				&& !incominbSubscriptionReq.getRestriction()
+				.getOperationScope().isEmpty()) {
+
+			PEPCredentials pepCredentials = null;
+
+			Iterator<OperationScope> operationScopeIter = incominbSubscriptionReq
+					.getRestriction().getOperationScope().iterator();
+
+			while (operationScopeIter.hasNext()) {
+				OperationScope operationScope = operationScopeIter.next();
+				if (operationScope.getScopeType() != null
+						&& operationScope.getScopeType().equals(
+								"PEPCredentials")) {
+					pepCredentials = (PEPCredentials) ComplexMetadataUtil
+							.getComplexMetadataValue(
+									operationScope.getScopeType(),
+									operationScope);
+					break;
+				}
+			}
+
+			if (pepCredentials == null) {
+				return;
+			}
+
+			List<ContextMetadata> contextMetadataList = contextElementResponse
+					.getContextElement().getDomainMetadata();
+			try {
+				if (contextMetadataList == null) {
+					contextMetadataList = new ArrayList<ContextMetadata>();
+
+					contextMetadataList.add(new ContextMetadata(
+							"PEPCredentials", new URI("PEPCredentials"),
+							pepCredentials));
+
+					contextElementResponse.getContextElement()
+					.setDomainMetadata(contextMetadataList);
+
+				} else {
+
+					contextMetadataList.add(new ContextMetadata(
+							"PEPCredentials", new URI("PEPCredentials"),
+							pepCredentials));
+				}
+			} catch (URISyntaxException e) {
+				logger.info("URISyntaxException",e);
+			}
+
+		}
+
+	}
+
+	private void addNotificationHandler(String notificationHandler,
+			ContextElementResponse contextElementResponse)
+					throws URISyntaxException {
+
+		ContextElement contextElement = contextElementResponse
+				.getContextElement();
+		if (contextElement.getDomainMetadata() == null) {
+
+			List<ContextMetadata> contextMetadataList = new ArrayList<ContextMetadata>();
+			ContextMetadata contexMetadata = new ContextMetadata(
+					NOTIFICATION_HANDLER, new URI("URI"), notificationHandler);
+			contextMetadataList.add(contexMetadata);
+
+			contextElement.setDomainMetadata(contextMetadataList);
+		} else {
+			ContextMetadata contexMetadata = new ContextMetadata(
+					NOTIFICATION_HANDLER, new URI("URI"), notificationHandler);
+			contextElement.getDomainMetadata().add(contexMetadata);
+		}
+	}
+
 	/**
 	 * Instructs the SubscriptionController to process an Availability
 	 * Notification and additionally passes it a list of associations which
 	 * determine how the data from the agents is to be interpreted.
-	 * 
+	 *
 	 * @param notifyContextAvailabilityRequest
 	 *            The NGSI 9 NotifyContextAvailabilityRequest.
 	 * @param transitiveList
@@ -1175,18 +1395,15 @@ public class SubscriptionController {
 	public NotifyContextAvailabilityResponse receiveReqFrmConfManWrapper(
 			NotifyContextAvailabilityRequest notifyContextAvailabilityRequest,
 			List<AssociationDS> transitiveList) {
-//		try {
-//			Thread.sleep(5000);
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
+
 		logger.info("Received NotifyContextAvailabilityRequest:"
 				+ notifyContextAvailabilityRequest);
-		String subscriptionId = "";
-		
+		String incomingSubscriptionId = "";
+
 		/*
 		 * First, the storage is updated with the new availability notification
 		 * and the new association list.
+		 * (See documentation of availability subscription storage)
 		 */
 		String association = associationUtil
 				.convertAssociationToString(transitiveList);
@@ -1207,58 +1424,95 @@ public class SubscriptionController {
 		logger.info("List Incoming Subscription Id ------------------>" + inIDs);
 
 		if (inIDs.size() != 0) {
-			subscriptionId = inIDs.get(0);
+			incomingSubscriptionId = inIDs.get(0);
 		} else {
-			// TODO generate error.
-		}
-
-		//TODO to review (generate error on outOfBoundArray on inIDs)
-		if (subscriptionId.isEmpty()) {
-
+			logger.error("No incoming subscriptions matching the availability notification found.");
 			
-			availabilitySub.updateAvalabilitySubscription(
-					notifyContextAvailabilityRequest, association,
-					notifyContextAvailabilityRequest.getSubscribeId());
-
-			/*
-			 * Now the id of the incoming subscription corresponding to this
-			 * availability notification is retrieved from storage.
-			 */
-			inIDs = linkAvSub.getInIDs(notifyContextAvailabilityRequest
-					.getSubscribeId());
-
-			logger.info("List Incoming Subscription Id ------------------>"
-					+ inIDs);
-
-			subscriptionId = inIDs.get(0);
-
+			//The notification seems to come from an availability subscription not represented in
+			//IoT Broker; so the process is aborted and an error message is returned.
+			
+			return
+					new NotifyContextAvailabilityResponse(new StatusCode(400,"NOTIFICATION NOT USED", "The IoT Broker has no data " +
+							"subscriptions to match against this context availability notification "));
+						
 		}
 
-		logger.info("Subscription Id ------------------>" + inIDs);
+		// Get the Incoming NGSI-10 Subscription data from its ID 
+		SubscribeContextRequest incomingSubscription = incomingSub
+				.getIncomingSubscription(incomingSubscriptionId);
 
 		/*
-		 * We retrieve a sorted list (by agent URI) of all outgoing
+		 * We retrieve a sorted list (by agent ContextUniqueIdentifier made of
+		 * EntityId, Type and ProvidingApplication) of all outgoing
 		 * subscriptions made on behalf of this incoming subscription.
-		 * Furthermore, we retrieve a sorted (again by URI) list that contains
+		 */ 
+
+		PriorityQueue<Pair<ContextUniqueIdentifier, SubscribeContextRequest>> existingSubscribedAgentQ = getExistingOutgoingSubs(incomingSubscriptionId);
+		
+		 /* Furthermore, we retrieve a sorted (again by URI) list that contains
 		 * all subscriptions that are recommended by this availability
 		 * notification.
 		 */
-
-		PriorityQueue<Pair<URI, SubscribeContextRequest>> existingSubscribedAgentQ = getExistingOutgoingSubs(subscriptionId);
-		PriorityQueue<Pair<URI, ContextRegistrationResponse>> newProposedSubscribedAgentQ = convertToPrioQueue(notifyContextAvailabilityRequest
+	
+		PriorityQueue<Pair<ContextUniqueIdentifier, ContextRegistrationResponse>> newProposedSubscribedAgentQ = convertToPrioQueue(notifyContextAvailabilityRequest
 				.getContextRegistrationResponseList());
+
+		/*
+		 * Here we pre-process the ContextRegistrationResponseList in order to
+		 * find ContextRegistrations that are updated. [Status Code 410 means 
+		 * that a Registration is not anymore valid]
+		 * 
+		 * In order to do so, we
+		 * iterate over the ContextRegistrations and we find the couples of
+		 * ContextRegistration with the same ContextUniqueIdentifier but one of
+		 * them with StatusCode 410-Gone.
+		 * 
+		 * What this method returns is the filtered list where the "410-gone" 
+		 * registrations have been removed.
+		 */
+		newProposedSubscribedAgentQ = this
+				.checkUpdates(newProposedSubscribedAgentQ);
+
+		/*
+		 * Here we check for each ContextRegistrationResponse if it has a
+		 * ProvidingApplication that is present in the trace of the
+		 * IncomingSubscription
+		 */
+		if (traceKeeperEnabled) {
+
+			Iterator<Pair<ContextUniqueIdentifier, ContextRegistrationResponse>> pairIterator = newProposedSubscribedAgentQ
+					.iterator();
+			while (pairIterator.hasNext()) {
+
+				Pair<ContextUniqueIdentifier, ContextRegistrationResponse> pair = pairIterator
+						.next();
+
+				if (TraceKeeper.checkRequestorHopVSTrace(
+						incomingSubscription.getRestriction(), pair.getRight()
+						.getContextRegistration()
+						.getProvidingApplication().toString())) {
+					logger.info(String
+							.format("Discarding ContextRegistrationResponse: %s \n"
+									+ "In order to avoid loop with the SubscribeContext: %s",
+									pair.getRight(), incomingSubscription));
+					pairIterator.remove();
+				}
+
+			}
+
+		}
 
 		/*
 		 * Here I write what !should! be done; the below code seems not to do
 		 * that properly.
-		 * 
+		 *
 		 * What we want to achieve is that - existing subscriptions that are not
 		 * needed anymore are cancelled - new subscriptions that are needed are
 		 * made
-		 * 
+		 *
 		 * How this can be achieved with the prio queues is: (assuming they
 		 * always have the lexicogr. largest element on top)
-		 * 
+		 *
 		 * - While the existing subscr queue is not empty -- if the recomm.queue
 		 * is empty, break -- if the top element of the recom queue is lexicog.
 		 * larger than the top element of the exist. queue: ---- make
@@ -1269,10 +1523,10 @@ public class SubscriptionController {
 		 * recom queue is lexicog. smaller than the top element of the exist.
 		 * queue: ---- cancel subscription corresp. to top element of exist.
 		 * queue ---- remove top element of exist. queue ---- continue
-		 * 
+		 *
 		 * After the loop, one of the queues is empty and the remaining
 		 * subscriptions from the resp. other queue are issued or cancelled.
-		 * 
+		 *
 		 * To see that this is correct, observe that 1) an action performed for
 		 * each subscription in any of the queues exactly once, because whenever
 		 * an action is performed for a queue element, the element is removed
@@ -1282,57 +1536,122 @@ public class SubscriptionController {
 		 * action.
 		 */
 
-		Pair<URI, SubscribeContextRequest> exSATmp = null;
-		Pair<URI, ContextRegistrationResponse> npSATmp = null;
+		ContextUniqueIdentifierComparator keyComparator = new ContextUniqueIdentifierComparator();
+
+		Pair<ContextUniqueIdentifier, SubscribeContextRequest> exSATmp = null;
+		Pair<ContextUniqueIdentifier, ContextRegistrationResponse> npSATmp = null;
 		if (!existingSubscribedAgentQ.isEmpty()) {
 
 			while (!existingSubscribedAgentQ.isEmpty()
 					&& !newProposedSubscribedAgentQ.isEmpty()) {
-				Pair<URI, SubscribeContextRequest> exSA = existingSubscribedAgentQ
+				// Peek the head from both priority queue
+				Pair<ContextUniqueIdentifier, SubscribeContextRequest> exSA = existingSubscribedAgentQ
 						.peek();
-				Pair<URI, ContextRegistrationResponse> npSA = newProposedSubscribedAgentQ
+				Pair<ContextUniqueIdentifier, ContextRegistrationResponse> npSA = newProposedSubscribedAgentQ
 						.peek();
 
-				int compareResult = exSA.getLeft().toString()
-						.compareToIgnoreCase(npSA.getLeft().toString());
+				// Compare the key
+				int compareResult = keyComparator.compare(exSA.getLeft(),
+						npSA.getLeft());
+
 				logger.debug("PEEK exist " + exSA.getLeft().toString()
 						+ " : PEEK new" + npSA.getLeft().toString() + " : "
 						+ compareResult);
+
 				if (compareResult == 0) {
 
-					npSATmp = newProposedSubscribedAgentQ.poll();
-					logger.info("POLL new" + npSATmp.getLeft().toString());
-					sendSubscribeContextRequest(
-							createSubscribeContextRequestFromCRRes(
-									npSATmp.getRight(), subscriptionId),
-							npSATmp.getLeft(), subscriptionId);
+					/*
+					 * If we are here the two top element of the two queue
+					 * refers to the same ContextRegistration
+					 */
+
+					// Unsubscribe from the previous subscription
 					exSATmp = existingSubscribedAgentQ.poll();
 					logger.info("POLL exist" + exSATmp.getLeft().toString());
-					sendUnsubscribeContextRequest(exSATmp.getRight(),
-							exSATmp.getLeft(), subscriptionId);
+					sendUnsubscribeContextRequest(exSATmp.getRight(), exSATmp
+							.getLeft().getProvidingApplication(),
+							incomingSubscriptionId);
+
+					// Subscribe with a new subscription
+					npSATmp = newProposedSubscribedAgentQ.poll();
+					logger.info("POLL new" + npSATmp.getLeft().toString());
+					if (npSA.getRight().getErrorCode() == null
+							|| npSA.getRight().getErrorCode().getCode() != 410) {
+						sendSubscribeContextRequest(
+								createSubscribeContextRequestFromCRRes(
+										npSATmp.getRight(), incomingSubscriptionId),
+										npSATmp.getLeft().getProvidingApplication(),
+										incomingSubscriptionId);
+					}
+
+					// In case the forwardAvailabilityNotifications feature is
+					// on, perform the forwarding
+					if (forwardAvailabilityNotifications) {
+						if (npSA.getRight().getErrorCode() == null
+								|| npSA.getRight().getErrorCode().getCode() != 410) {
+							this.notifyAgentAboutAvailability(
+									Availability.UPDATE, npSA.getRight(),
+									incomingSubscriptionId);
+						} else {
+							this.notifyAgentAboutAvailability(
+									Availability.GONE, npSA.getRight(),
+									incomingSubscriptionId);
+						}
+					}
+
 				} else if (compareResult > 0) {
 					npSATmp = newProposedSubscribedAgentQ.poll();
 					logger.info("POLL new" + npSATmp.getLeft().toString());
 
-					sendSubscribeContextRequest(
-							createSubscribeContextRequestFromCRRes(
-									npSATmp.getRight(), subscriptionId),
-							npSATmp.getLeft(), subscriptionId);
+					if (npSA.getRight().getErrorCode() == null
+							|| npSA.getRight().getErrorCode().getCode() != 410) {
+						sendSubscribeContextRequest(
+								createSubscribeContextRequestFromCRRes(
+										npSATmp.getRight(), incomingSubscriptionId),
+										npSATmp.getLeft().getProvidingApplication(),
+										incomingSubscriptionId);
+
+						if (forwardAvailabilityNotifications) {
+							this.notifyAgentAboutAvailability(Availability.NEW,
+									npSA.getRight(), incomingSubscriptionId);
+						}
+					}
+
 				} else if (compareResult < 0) {
 					exSATmp = existingSubscribedAgentQ.poll();
-					logger.info("POLL exist" + exSATmp.getLeft().toString());
 
-					sendUnsubscribeContextRequest(exSATmp.getRight(),
-							exSATmp.getLeft(), subscriptionId);
+					/*
+					 * Since this version of IoT Broker is incremental, the
+					 * following operations should not be done
+					 */
+
+					// logger.info("POLL exist" + exSATmp.getLeft().toString());
+					//
+					// sendUnsubscribeContextRequest(exSATmp.getRight(), exSATmp
+					// .getLeft().getProvidingApplication(),
+					// subscriptionId);
+					//
+					// if (forwardAvailabilityNotifications) {
+					// this.notifyAgentAboutAvailability(Availability.GONE,
+					// npSA.getRight(), subscriptionId);
+					// }
 				}
 			}
-			while (!existingSubscribedAgentQ.isEmpty()) {
-				exSATmp = existingSubscribedAgentQ.poll();
-				logger.info("POLL exist" + exSATmp.getLeft().toString()
-						+ " :q " + existingSubscribedAgentQ.size());
-				sendUnsubscribeContextRequest(exSATmp.getRight(),
-						exSATmp.getLeft(), subscriptionId);
-			}
+
+			/*
+			 * Since this version of IoT Broker is incremental, the following
+			 * operations should not be done
+			 */
+
+			// while (!existingSubscribedAgentQ.isEmpty()) {
+			// exSATmp = existingSubscribedAgentQ.poll();
+			// logger.info("POLL exist" + exSATmp.getLeft().toString()
+			// + " :q " + existingSubscribedAgentQ.size());
+			// sendUnsubscribeContextRequest(exSATmp.getRight(),
+			// exSATmp.getLeft(), subscriptionId);
+			//
+			// }
+
 			while (!newProposedSubscribedAgentQ.isEmpty()) {
 				npSATmp = newProposedSubscribedAgentQ.poll();
 				logger.info("POLL new" + npSATmp.getLeft().toString() + " :q "
@@ -1341,26 +1660,309 @@ public class SubscriptionController {
 				logger.info("ContextRegistrationResponse" + npSATmp.getRight());
 				logger.info("URI Agent" + npSATmp.getLeft());
 
-				sendSubscribeContextRequest(
-						createSubscribeContextRequestFromCRRes(
-								npSATmp.getRight(), subscriptionId),
-						npSATmp.getLeft(), subscriptionId);
+				if (npSATmp.getRight().getErrorCode() == null
+						|| npSATmp.getRight().getErrorCode().getCode() != 410) {
+					sendSubscribeContextRequest(
+							createSubscribeContextRequestFromCRRes(
+									npSATmp.getRight(), incomingSubscriptionId),
+									npSATmp.getLeft().getProvidingApplication(),
+									incomingSubscriptionId);
+
+					if (forwardAvailabilityNotifications) {
+						this.notifyAgentAboutAvailability(Availability.NEW,
+								npSATmp.getRight(), incomingSubscriptionId);
+					}
+				}
 			}
 		} else {
 			while (!newProposedSubscribedAgentQ.isEmpty()) {
 				npSATmp = newProposedSubscribedAgentQ.poll();
 				logger.info("POLL new" + npSATmp.getLeft().toString() + " :q "
 						+ newProposedSubscribedAgentQ.size());
-				sendSubscribeContextRequest(
-						createSubscribeContextRequestFromCRRes(
-								npSATmp.getRight(), subscriptionId),
-						npSATmp.getLeft(), subscriptionId);
+
+				if (npSATmp.getRight().getErrorCode() == null
+						|| npSATmp.getRight().getErrorCode().getCode() != 410) {
+					sendSubscribeContextRequest(
+							createSubscribeContextRequestFromCRRes(
+									npSATmp.getRight(), incomingSubscriptionId),
+									npSATmp.getLeft().getProvidingApplication(),
+									incomingSubscriptionId);
+
+					if (forwardAvailabilityNotifications) {
+						this.notifyAgentAboutAvailability(Availability.NEW,
+								npSATmp.getRight(), incomingSubscriptionId);
+					}
+				}
 			}
 		}
 
 		// TODO check why there is no proper return statement.
 		return null;
 	}
+
+	
+	
+	private PriorityQueue<Pair<ContextUniqueIdentifier, ContextRegistrationResponse>> checkUpdates(
+			PriorityQueue<Pair<ContextUniqueIdentifier, ContextRegistrationResponse>> notifiedPriorityQueue) {
+
+//		logger.info("running the checkUpdates function for \n"+notifiedPriorityQueue.toString() );
+		
+		/*
+		 * TODO: currently this function removes registrations that are outdated. But it could
+		 * be enhanced to in general remove duplicate registrations.
+		 */
+		
+		/*
+		 * Create new Priority Queue for Pairs of Identifier and Context Registration response. The queue is sorted
+		 * by the identifier.
+		 */
+		PriorityQueue<Pair<ContextUniqueIdentifier, ContextRegistrationResponse>> priorityQueueWithUpdateInfo = new PriorityQueue<Pair<ContextUniqueIdentifier, ContextRegistrationResponse>>(
+				2,
+				new Comparator<Pair<ContextUniqueIdentifier, ContextRegistrationResponse>>() {
+					@Override
+					public int compare(
+							Pair<ContextUniqueIdentifier, ContextRegistrationResponse> pair1,
+							Pair<ContextUniqueIdentifier, ContextRegistrationResponse> pair2) {
+						return contextUniqueIdentifierComparator.compare(
+								pair1.getLeft(), pair2.getLeft());
+					}
+				});
+
+		/*
+		 * here another instance of the ContextUniqueIdentifierComparator is created (in addition to the final
+		 * one called contextUniqueIdentifierComparator
+		 */
+		ContextUniqueIdentifierComparator comparator = new ContextUniqueIdentifierComparator();
+
+		/*
+		 * Now we run through the input priority queue...
+		 */		
+		Pair<ContextUniqueIdentifier, ContextRegistrationResponse> pairPolled;
+		Pair<ContextUniqueIdentifier, ContextRegistrationResponse> pairPeeked;
+		
+		while (!notifiedPriorityQueue.isEmpty()) {
+
+			
+			pairPolled = notifiedPriorityQueue.poll();
+
+			/*
+			 * If pairPolled was the last element of the queue, then
+			 * add it to the output queue
+			 */
+			if(notifiedPriorityQueue.isEmpty())
+			{
+				priorityQueueWithUpdateInfo.add(pairPolled);
+				continue;
+			}
+			
+			/*
+			 * Otherwise look at the current tail of the queue
+			 */			
+			pairPeeked = notifiedPriorityQueue.peek();
+			
+			
+			/*
+			 * check whether the queue tail and the polled element have
+			 * the same identifier.
+			 */
+			/*
+			 * if the identifiers of the polled element and the 
+			 * queue tail are not the same, then we simply add
+			 * the polled element to the output queue.
+			 */
+			if (comparator.compare(pairPolled.getLeft(),
+					pairPeeked.getLeft()) != 0)
+			{
+
+				priorityQueueWithUpdateInfo.add(pairPolled);
+				continue;
+			}
+			
+		
+			/*
+			 * If they are the same, then additionally check if the error code
+			 * of the queue tail has error code 410
+			 */
+			if (pairPeeked.getRight().getErrorCode() != null &&
+					pairPeeked.getRight().getErrorCode().getCode() == 410) {
+				
+				/*
+				 * if the identifiers are the same and the error code of
+				 * the queue tail is
+				 * 410, then add to the output priority queue a pair consisting
+				 * of that identifier and a new context registration response
+				 * with 
+				 *  - the context registration of the POLLED element
+				 *  - status code 301 "Moved Permanently"
+				 *  
+				 *  Then remove and throw away the queue tail
+				 */					
+				priorityQueueWithUpdateInfo
+				.add(new Pair<SubscriptionController.ContextUniqueIdentifier, ContextRegistrationResponse>(
+						pairPolled.getLeft(),
+						new ContextRegistrationResponse(
+								pairPolled
+								.getRight()
+								.getContextRegistration(),
+								new StatusCode(301,
+										"Moved Permanently",
+										"Update Entity"))));
+
+				notifiedPriorityQueue.poll();
+			} else {
+				
+				/*
+				 * If the identifiers the same, but the error code of the queue
+				 * tail is not 410, then add to the output priority queue a pair consisting
+				 * of that identifier and a new context registration response
+				 * with 
+				 *  - the context registration of the TAIL QUEUE
+				 *  - status code 301 "Moved Permanently"
+				 *  
+				 *  Then, also here, remove and throw away the queue tail.
+				 */
+				
+				priorityQueueWithUpdateInfo
+				.add(new Pair<SubscriptionController.ContextUniqueIdentifier, ContextRegistrationResponse>(
+						pairPeeked.getLeft(),
+						new ContextRegistrationResponse(
+								pairPolled
+								.getRight()
+								.getContextRegistration(),
+								new StatusCode(301,
+										"Moved Permanently",
+										"Update Entity"))));
+
+				notifiedPriorityQueue.poll();
+			}
+
+		}
+
+		return priorityQueueWithUpdateInfo;
+
+	}
+
+	private enum Availability {
+		NEW, UPDATE, GONE;
+	}
+
+	private void notifyAgentAboutAvailability(Availability availability,
+			ContextRegistrationResponse contextRegistrationResponse,
+			String incomingSubscriptionID) {
+
+		StatusCode statusCode = new StatusCode();
+		switch (availability) {
+		case NEW:
+			statusCode.setCode(201);
+			statusCode.setReasonPhrase("Created");
+			statusCode.setDetails("New Entity Available");
+			break;
+		case UPDATE:
+			statusCode.setCode(301);
+			statusCode.setReasonPhrase("Moved Permanently");
+			statusCode.setDetails("Update Entity");
+			break;
+		case GONE:
+			statusCode.setCode(410);
+			statusCode.setReasonPhrase("Gone");
+			statusCode.setDetails("Not Available Anymore");
+			break;
+		}
+
+		SubscribeContextRequest incomingSubscription = incomingSub
+				.getIncomingSubscription(incomingSubscriptionID);
+
+		NotifyContextRequest notifyContextRequest = new NotifyContextRequest();
+
+		notifyContextRequest.setSubscriptionId(incomingSubscriptionID);
+
+		if (traceOriginatorOfSubscription) {
+			String originator = getSubscriptionOriginator(incomingSubscription);
+			notifyContextRequest.setOriginator(originator);
+		}
+
+		/*
+		 * Create the ContextElementResponse list
+		 */
+		List<ContextElementResponse> contextElementResponseList = new ArrayList<ContextElementResponse>();
+
+		Iterator<EntityId> entityIdIter = contextRegistrationResponse
+				.getContextRegistration().getListEntityId().iterator();
+		while (entityIdIter.hasNext()) {
+			EntityId entityId = entityIdIter.next();
+
+			ContextElement contextElement = new ContextElement();
+
+			contextElement.setEntityId(entityId);
+			contextElement.setDomainMetadata(contextRegistrationResponse
+					.getContextRegistration().getListContextMetadata());
+
+			ContextElementResponse contElementResponse = new ContextElementResponse();
+			contElementResponse.setContextElement(contextElement);
+			contElementResponse.setStatusCode(statusCode);
+
+			/*
+			 * Here we insert PEP credentials if the incoming Subscription has
+			 * one in his operation scope list
+			 */
+			if (PEPCredentialsEnabled) {
+				this.addPEPCredentialsToContextElementResponse(
+						incomingSubscription, contElementResponse);
+			}
+
+			if (notificationProxyEnabled) {
+				try {
+					this.addNotificationHandler(
+							incomingSubscription.getReference(),
+							contElementResponse);
+				} catch (URISyntaxException e) {
+					logger.info("URISyntaxException",e);
+				}
+			}
+
+			contextElementResponseList.add(contElementResponse);
+		}
+
+		notifyContextRequest.setContextResponseList(contextElementResponseList);
+
+		try {
+			northBoundWrapper.forwardNotification(notifyContextRequest,
+					new URI(subscriptionStore.get(incomingSubscriptionID)
+							.getNotificationHandler()));
+		} catch (URISyntaxException e) {
+			logger.info("URISyntaxException",e);
+		}
+
+	}
+
+	//	private boolean isPepCredentialsRequired(
+	//			ContextRegistrationResponse contextRegistrationResponse) {
+	//
+	//		if (forcePepCredentials) {
+	//			return true;
+	//		} else {
+	//
+	//			ContextRegistration contextRegistration = contextRegistrationResponse
+	//					.getContextRegistration();
+	//
+	//			List<ContextMetadata> contextMetadataList = contextRegistration
+	//					.getListContextMetadata();
+	//			if (contextMetadataList == null || contextMetadataList.isEmpty()) {
+	//				return false;
+	//			} else {
+	//				for (ContextMetadata contextMetadata : contextMetadataList) {
+	//					if (PEP_CREDENTIALS_REQUIRED.toLowerCase().equals(
+	//							contextMetadata.getName().toLowerCase())
+	//							&& contextMetadata.getValue().toString()
+	//									.toLowerCase().equals("true")) {
+	//						return true;
+	//					}
+	//				}
+	//			}
+	//		}
+	//
+	//		return false;
+	//	}
 
 	private SubscribeContextRequest createSubscribeContextRequestFromCRRes(
 			ContextRegistrationResponse contextRegistrationResponse,
@@ -1380,15 +1982,20 @@ public class SubscriptionController {
 
 		logger.info("ContextRegistrationResponse-------->"
 				+ contextRegistrationResponse.getContextRegistration()
-						.getListEntityId());
+				.getListEntityId());
 		logger.info("Subscription Id-------->" + originalId);
 
-		/*In case the ContextElementResponse does not contain an EntityIdList or it is Empty
-		 * here it will be populated with a wildcard EntityId*/
+		// TODO filter between original incomingSubscription and
+		// ContextRegistrationResponse that is coming the NGSI-9-notification
+
+		/*
+		 * In case the ContextElementResponse does not contain an EntityIdList
+		 * or it is Empty here it will be populated with a wildcard EntityId
+		 */
 		if (contextRegistrationResponse.getContextRegistration()
 				.getListEntityId() == null
 				|| contextRegistrationResponse.getContextRegistration()
-						.getListEntityId().isEmpty()) {
+				.getListEntityId().isEmpty()) {
 			EntityId wildcardEntityId = new EntityId(".*", null, true);
 			List<EntityId> entityIdList = new ArrayList<EntityId>();
 			entityIdList.add(wildcardEntityId);
@@ -1397,7 +2004,7 @@ public class SubscriptionController {
 			sCReq.setEntityIdList(contextRegistrationResponse
 					.getContextRegistration().getListEntityId());
 		}
-		
+
 		List<String> attribute = new ArrayList<String>();
 		for (ContextRegistrationAttribute cRAttributeName : contextRegistrationResponse
 				.getContextRegistration().getContextRegistrationAttribute()) {
@@ -1405,12 +2012,22 @@ public class SubscriptionController {
 		}
 		sCReq.setAttributeList(attribute);
 		sCReq.setReference(getRefURl());
+
+		/*
+		 * Here we add trace information.
+		 */
+		if (traceKeeperEnabled) {
+			Restriction restriction = sCReq.getRestriction();
+			restriction = TraceKeeper.addHopToTrace(restriction);
+			sCReq.setRestriction(restriction);
+		}
+
 		SubscriptionData subdata = subscriptionStore.get(originalId);
 
 		logger.info("Current Duration: " + sCReq.getDuration().toString());
 		sCReq.setDuration(associationUtil.newDuration(sCReq.getDuration(),
 				associationUtil.currentTime().getTime()
-						- subdata.getStartTime().getTime()));
+				- subdata.getStartTime().getTime()));
 		logger.info("New Duration: " + sCReq.getDuration().toString());
 		return sCReq;
 	}
@@ -1460,10 +2077,23 @@ public class SubscriptionController {
 		}
 	}
 
+	/**
+	 *
+	 * @param subscribeRequest
+	 * @param agentURi
+	 * @param originalID
+	 *            The Id of the NGSI-10 subscription arrived at the north bound
+	 */
 	private void sendSubscribeContextRequest(
-			final SubscribeContextRequest subscribeRequest, final URI agentURi,
+			final SubscribeContextRequest subscribeRequest,
+			final URI agentURi,
 			final String originalID) {
 
+		//		SubscribeContextRequest subscribeRequestToSend = subscribeRequest;
+		//		if (sendPepCredentials) {
+		//			subscribeRequestToSend = this
+		//					.replacePepCredentials(subscribeRequest);
+		//		}
 
 		new Thread() {
 			@Override
@@ -1485,33 +2115,42 @@ public class SubscriptionController {
 		}.start();
 	}
 
+
 	/**
 	 * Given an id of an incoming subscription, this function retrieves all
 	 * existing out- going subscriptions that were made on behalf of this
 	 * incoming subscription.
-	 * 
+	 *
 	 * The returned outgoing subscriptions are represented in a priority queue
 	 * that is sorted by the URI of the agent.
 	 */
-	private PriorityQueue<Pair<URI, SubscribeContextRequest>> getExistingOutgoingSubs(
+	private PriorityQueue<Pair<ContextUniqueIdentifier, SubscribeContextRequest>> getExistingOutgoingSubs(
 			String originalID) {
 
-		PriorityQueue<Pair<URI, SubscribeContextRequest>> existingSubscribedAgents = new PriorityQueue<Pair<URI, SubscribeContextRequest>>(
-				2, new Comparator<Pair<URI, SubscribeContextRequest>>() {
+		PriorityQueue<Pair<ContextUniqueIdentifier, SubscribeContextRequest>> existingSubscribedAgents = new PriorityQueue<Pair<ContextUniqueIdentifier, SubscribeContextRequest>>(
+				2,
+				new Comparator<Pair<ContextUniqueIdentifier, SubscribeContextRequest>>() {
 					@Override
 					public int compare(
-							Pair<URI, SubscribeContextRequest> pair1,
-							Pair<URI, SubscribeContextRequest> pair2) {
-						return pair1.getLeft().compareTo(pair2.getLeft());
+							Pair<ContextUniqueIdentifier, SubscribeContextRequest> pair1,
+							Pair<ContextUniqueIdentifier, SubscribeContextRequest> pair2) {
+						return contextUniqueIdentifierComparator.compare(
+								pair1.getLeft(), pair2.getLeft());
 					}
 				});
 
 		List<String> tmpOutGoingID = linkSub.getOutIDs(originalID);
 		for (String s : tmpOutGoingID) {
 
+			SubscribeContextRequest subscribeContext = outgoingSub
+					.getOutgoingSubscription(s);
+
+			URI agentUri = outgoingSub.getAgentUri(s);
+
 			existingSubscribedAgents
-					.add(new Pair<URI, SubscribeContextRequest>(outgoingSub
-							.getAgentUri(s), outgoingSub
+			.add(new Pair<ContextUniqueIdentifier, SubscribeContextRequest>(
+					new ContextUniqueIdentifier(subscribeContext
+							.getEntityIdList(), agentUri), outgoingSub
 							.getOutgoingSubscription(s)));
 		}
 
@@ -1522,28 +2161,214 @@ public class SubscriptionController {
 	/**
 	 * Given an list of context registration responses, this list is represented
 	 * as a priority queue sorted by the reference URI in the responses.
-	 * 
+	 *
 	 */
-	private PriorityQueue<Pair<URI, ContextRegistrationResponse>> convertToPrioQueue(
+	private PriorityQueue<Pair<ContextUniqueIdentifier, ContextRegistrationResponse>> convertToPrioQueue(
 			List<ContextRegistrationResponse> lCRRes) {
 
-		PriorityQueue<Pair<URI, ContextRegistrationResponse>> newSubscribedAgent = new PriorityQueue<Pair<URI, ContextRegistrationResponse>>(
-				2, new Comparator<Pair<URI, ContextRegistrationResponse>>() {
+		PriorityQueue<Pair<ContextUniqueIdentifier, ContextRegistrationResponse>> newSubscribedAgent = new PriorityQueue<Pair<ContextUniqueIdentifier, ContextRegistrationResponse>>(
+				2,
+				new Comparator<Pair<ContextUniqueIdentifier, ContextRegistrationResponse>>() {
 					@Override
 					public int compare(
-							Pair<URI, ContextRegistrationResponse> pair1,
-							Pair<URI, ContextRegistrationResponse> pair2) {
-						return pair1.getLeft().compareTo(pair2.getLeft());
+							Pair<ContextUniqueIdentifier, ContextRegistrationResponse> pair1,
+							Pair<ContextUniqueIdentifier, ContextRegistrationResponse> pair2) {
+						return contextUniqueIdentifierComparator.compare(
+								pair1.getLeft(), pair2.getLeft());
 					}
 				});
 		for (ContextRegistrationResponse cRRes : lCRRes) {
-			newSubscribedAgent.add(new Pair<URI, ContextRegistrationResponse>(
-					cRRes.getContextRegistration().getProvidingApplication(),
-					cRRes));
+
+			newSubscribedAgent
+			.add(new Pair<ContextUniqueIdentifier, ContextRegistrationResponse>(
+					new ContextUniqueIdentifier(cRRes
+							.getContextRegistration()), cRRes));
 		}
 
 		return newSubscribedAgent;
 
+	}
+
+	/*
+	 *  Contains the data that makes a context registration unique:
+	 *  the entity ID List and the providing application.
+	 */
+	private class ContextUniqueIdentifier {
+		List<EntityId> entityIdList;
+		URI providingApplication;
+
+		ContextUniqueIdentifier(ContextRegistration contextRegistration) {
+			entityIdList = contextRegistration.getListEntityId();
+			providingApplication = contextRegistration
+					.getProvidingApplication();
+		}
+
+		ContextUniqueIdentifier(List<EntityId> entityIdList,
+				URI providingApplication) {
+			this.entityIdList = entityIdList;
+			this.providingApplication = providingApplication;
+		}
+
+		public List<EntityId> getEntityIdList() {
+			return entityIdList;
+		}
+
+		public URI getProvidingApplication() {
+			return providingApplication;
+		}
+
+	}
+
+	/*
+	 * Comparator for ContextUniqueIdentifier 
+	 */
+	private class ContextUniqueIdentifierComparator implements
+	Comparator<ContextUniqueIdentifier> {
+		@Override
+		public int compare(ContextUniqueIdentifier o1,
+				ContextUniqueIdentifier o2) {
+			if (o1 == o2) {
+				return 0;
+			} else if (o1 == null) {
+				return -1;
+			} else if (o2 == null) {
+				return 1;
+			}
+
+			if (o1.getProvidingApplication() != o2.getProvidingApplication()) {
+				if (o1.getProvidingApplication() == null) {
+					return -1;
+				} else if (o2.getProvidingApplication() == null) {
+					return 1;
+				} else if (!o1
+						.getProvidingApplication()
+						.toString()
+						.equalsIgnoreCase(
+								o2.getProvidingApplication().toString())) {
+					return o1
+							.getProvidingApplication()
+							.toString()
+							.compareToIgnoreCase(
+									o2.getProvidingApplication().toString());
+				}
+			}
+
+			if (o1.getEntityIdList() != o2.getEntityIdList()) {
+				List<EntityId> o1List = new ArrayList<EntityId>(
+						o1.getEntityIdList());
+				List<EntityId> o2List = new ArrayList<EntityId>(
+						o2.getEntityIdList());
+				EntityIdComparator entityIdComparator = new EntityIdComparator();
+				Collections.sort(o1List, entityIdComparator);
+				Collections.sort(o2List, entityIdComparator);
+				int comp = new ListComparator<EntityId>(entityIdComparator)
+						.compare(o1List, o2List);
+				if (comp != 0) {
+					return comp;
+				}
+			}
+
+			return 0;
+		}
+	}
+
+	private class EntityIdComparator implements Comparator<EntityId> {
+		@Override
+		public int compare(EntityId o1, EntityId o2) {
+			if (o1 == o2) {
+				return 0;
+			} else if (o1 == null) {
+				return -1;
+			} else if (o2 == null) {
+				return 1;
+			}
+
+			if (o1.getIsPattern() != o2.getIsPattern()) {
+				if (!o1.getIsPattern()) {
+					return -1;
+				} else {
+					return 1;
+				}
+			}
+
+			if (o1.getId() != o2.getId()) {
+				if (o1.getId() == null) {
+					return -1;
+				} else if (o2.getId() == null) {
+					return 1;
+				} else if (!o1.getId().equals(o2.getId())) {
+					return o1.getId().compareTo(o2.getId());
+				}
+			}
+
+			if (o1.getType() != o2.getType()) {
+				if (o1.getType() == null) {
+					return -1;
+				} else if (o2.getType() == null) {
+					return 1;
+				} else if (!o1.getType().toString()
+						.equalsIgnoreCase(o2.getType().toString())) {
+					return o1.getType().toString()
+							.compareToIgnoreCase(o2.getType().toString());
+				}
+			}
+
+			return 0;
+		}
+	}
+
+	private class ListComparator<T> implements Comparator<List<T>> {
+		private final Comparator<T> comparator;
+
+		ListComparator(Comparator<T> comparator) {
+			this.comparator = comparator;
+
+		}
+
+		/**
+		 * Compare two lists. It returns 0 if the two objects are the same list,
+		 * or both are null, or both have the same objects. How the elements are
+		 * stored in the list matter, hence if you want to check regardless the
+		 * order of the elements, submit the lists already sorted.
+		 */
+		@Override
+		public int compare(List<T> o1, List<T> o2) {
+			if (o1 != o2) {
+				if (o1 == null) {
+					return -1;
+				} else if (o2 == null) {
+					return 1;
+				} else {
+
+					if (o1.size() != o2.size()) {
+					}
+					// Collections.sort(o1,comparator);
+					// Collections.sort(o2,comparator);
+					Iterator<T> bigIter;
+					Iterator<T> smallIter;
+					int factor = 1;
+					if (o1.size() > o2.size()) {
+						bigIter = o1.iterator();
+						smallIter = o2.iterator();
+						factor = -1;
+					} else {
+						smallIter = o1.iterator();
+						bigIter = o2.iterator();
+					}
+					while (smallIter.hasNext()) {
+						int comp = comparator.compare(smallIter.next(),
+								bigIter.next());
+						if (comp != 0) {
+							return comp * factor;
+						}
+					}
+					if (bigIter.hasNext()) {
+						return o1.size() - o2.size();
+					}
+				}
+			}
+			return 0;
+		}
 	}
 
 }

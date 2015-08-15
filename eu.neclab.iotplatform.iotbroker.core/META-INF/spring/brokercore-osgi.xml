@@ -15,6 +15,7 @@
 	<osgi:reference id="ResultFilterInterface"
 		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface" cardinality="0..1"></osgi:reference>
 
+		<!-- cardinality="0..1" it is used for specify that the reference is optional  -->
 	<osgi:reference id="BigDataRepositoryInterface"
 		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.BigDataRepository" cardinality="0..1"></osgi:reference>
 

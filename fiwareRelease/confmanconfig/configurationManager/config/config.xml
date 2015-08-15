@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<entry key="schema_ngsi9_operation">${dir.config}/schemas/Ngsi9_Operations_v08.xsd</entry>
+<entry key="pathPreFix_ngsi9">ngsi9</entry>
+<entry key="Ngsi9_10_dataStructure_v07">${dir.config}/schemas/Ngsi9_10_dataStructure_v08.xsd</entry>
+</properties>

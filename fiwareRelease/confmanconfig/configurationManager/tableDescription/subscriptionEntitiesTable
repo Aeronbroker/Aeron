@@ -1,0 +1,12 @@
+CREATE TABLE public.subscriptionentities
+(
+subscriptionid character varying(500) NOT NULL REFERENCES subscriptions(subscriptionid) ON DELETE CASCADE,
+  entityid character varying(500) NOT NULL,
+  type character varying(500),
+  ispattern boolean NOT NULL
+) 
+WITH (
+  OIDS = FALSE
+)
+;
+

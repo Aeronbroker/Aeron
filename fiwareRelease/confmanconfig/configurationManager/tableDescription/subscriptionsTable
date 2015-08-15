@@ -1,0 +1,8 @@
+CREATE TABLE public.subscriptions
+(
+  subscriptionid character varying(500) NOT NULL PRIMARY KEY,
+  reference character varying(500) NOT NULL
+)
+WITH (
+  OIDS=FALSE
+);

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<entry key="schema_ngsi9_operation">${dir.config}/schemas/Ngsi9_Operations_v08.xsd</entry>
+<entry key="pathPreFix_ngsi9">ngsi9</entry>
+<entry key="ngsi9Uri">http://localhost:8002</entry>
+<entry key="pathPreFix_ngsi10">ngsi10</entry>
+<entry key="schema_ngsi10_operation">${dir.config}/schemas/Ngsi10_Operations_v08.xsd</entry>
+<entry key="pub_sub_addr">http://localhost:8070/ngsi10</entry>
+<entry key="path_config_folder">/fiwareRelease/iotBroker/config/</entry>
+<entry key="default_throttling">1000</entry>
+<entry key="default_duration">31536000000</entry>
+<entry key="Ngsi9_10_dataStructure_v07">${dir.config}/schemas/Ngsi9_10_dataStructure_v08.xsd</entry>
+<entry key="hsqldb.username">NEC</entry>
+<entry key="hsqldb.password">neclab</entry>
+<entry key="X-Auth-Token">-2cp0dugeiRDIn8Rw4R4yzlw6rG7qXgt0nsyVetJnTPNHqSsQLlhxRavcBasB_VjoKdtbJylnI0iXtDjymxa_g</entry>
+<entry key="default_content_type">application/xml</entry>
+</properties>

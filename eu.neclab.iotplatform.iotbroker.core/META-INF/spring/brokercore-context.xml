@@ -10,7 +10,7 @@
 	<context:component-scan base-package="eu.neclab.iotplatform" />
 
 	<context:property-placeholder
-		location="file:///${dir.config}/fiwareRelease/iotBroker/config/config.xml" />
+		location="file:///${dir.config}/iotbrokerconfig/iotBroker/config/config.xml" />
 
 	<bean id="brokercore" class="eu.neclab.iotplatform.iotbroker.core.IotBrokerCore">
 		<property name="availabilitySub" ref="AvailabilitySubStorage"></property>

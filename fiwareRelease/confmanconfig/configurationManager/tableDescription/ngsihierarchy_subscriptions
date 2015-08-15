@@ -1,0 +1,9 @@
+CREATE TABLE public.ngsihierarchy_subscriptions
+(
+department character varying(500) NOT NULL,
+subscriptionid character varying(500) NOT NULL
+) 
+WITH (
+  OIDS = FALSE
+)
+;

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<discoverContextAvailabilityResponse>
+  <contextRegistrationResponseList>
+    <contextRegistrationResponse>
+      <contextRegistration>
+        <entityIdList>
+          <entityId type="santander:traffic" isPattern="false">
+            <id>urn:smartsantander:testbed:3323</id>
+          </entityId>
+        </entityIdList>
+        <providingApplication>http://orion.lab.fi-ware.org:1026/NGSI10</providingApplication>
+      </contextRegistration>
+	  </contextRegistrationResponse>
+	  <contextRegistrationResponse>
+	          <contextRegistration>
+            <entityIdList>
+                <entityId>
+                    <id>carsInGarage</id>
+                </entityId>
+            </entityIdList>
+            <contextRegistrationAttributeList>
+                <contextRegistrationAttribute>
+                    <name>count</name>
+                    <type>long</type>
+                    <isDomain>false</isDomain>
+                </contextRegistrationAttribute>
+            </contextRegistrationAttributeList>
+            <registrationMetadata/>
+            <providingApplication>http://gwdatahdl2.testbed.fi-ware.eu:8080/EspR4FastData/ngsi10</providingApplication>
+        </contextRegistration>
+		</contextRegistrationResponse>
+	<contextRegistrationResponse>
+	   <contextRegistration>
+         <registrationMetaData>
+            <contextMetadata>
+               <name>santandertraffic_to_cityinfo</name>
+               <type>Association</type>
+               <value>				
+                     <sourceEntityId type="santander:traffic" isPattern="false">
+                        <id>urn:smartsantander:testbed:3323</id>
+                     </sourceEntityId>
+                     <targetEntityId type="cityInfo" isPattern="false">
+                        <id>mySantanderInfo</id>		
+                     </targetEntityId>
+					 <attributeAssociationList>
+                        <attributeAssociation>
+                           <sourceAttribute>trafficIntensity</sourceAttribute>
+                           <targetAttribute>myTrafficIntensity</targetAttribute>
+                         </attributeAssociation>
+                      </attributeAssociationList>
+                </value>
+             </contextMetadata>
+          </registrationMetaData>
+          <providingApplication>http://www.fi-ware.eu/NGSI/association</providingApplication>
+      </contextRegistration>
+	  </contextRegistrationResponse>
+		<contextRegistrationResponse>
+		  <contextRegistration>
+			 <registrationMetaData>
+				<contextMetadata>
+				   <name>carCounter_to_cityinfo</name>
+				   <type>Association</type>
+				   <value>			   
+						 <sourceEntityId isPattern="false">
+							<id>carsInGarage</id>
+						 </sourceEntityId>
+						 <targetEntityId type="cityInfo" isPattern="false">
+							<id>myCityInfo</id>			
+						 </targetEntityId>	
+						<attributeAssociationList>
+							<attributeAssociation>
+							   <sourceAttribute>count</sourceAttribute>
+							   <targetAttribute>carsInMyGarage</targetAttribute>
+							 </attributeAssociation>
+						  </attributeAssociationList>
+					</value>
+				 </contextMetadata>
+			  </registrationMetaData>
+			  <providingApplication>http://www.fi-ware.eu/NGSI/association</providingApplication>
+		   </contextRegistration>
+		</contextRegistrationResponse>
+  </contextRegistrationResponseList>
+  <errorCode>
+		<code>200</code>
+		<reasonPhrase>OK</reasonPhrase>
+	</errorCode>
+</discoverContextAvailabilityResponse>

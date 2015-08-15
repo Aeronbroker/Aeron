@@ -31,21 +31,26 @@
 	</mvc:annotation-driven>
 
 
+<osgi:reference id="leafengineInterface"
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.LeafengineInterface" cardinality="1..1"></osgi:reference>
+
+
 	<osgi:reference id="Ngsi10Interface"
 		interface="eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Interface"></osgi:reference>
-	
-		<osgi:reference id="Ngsi9Interface"
+
+	<osgi:reference id="Ngsi9Interface"
 		interface="eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface"
 		bean-name="brokercore"></osgi:reference>
-	
-		<beans:bean id="RestProviderController"
+
+	<beans:bean id="RestProviderController"
 		class="eu.neclab.iotplatform.iotbroker.restcontroller.RestProviderController">
 		<beans:property name="ngsi9Core" ref="Ngsi9Interface"></beans:property>
 		<beans:property name="ngsiCore" ref="Ngsi10Interface"></beans:property>
+		<beans:property name="leafengine" ref="leafengineInterface"></beans:property>
 	</beans:bean>
 
 	<context:property-placeholder
-		location="file:///${dir.config}/fiwareRelease/iotBroker/config/config.xml" />
+		location="file:///${dir.config}/iotbrokerconfig/iotBroker/config/config.xml" />
 
 
 	<mvc:view-controller path="/" view-name="index" />
@@ -64,6 +69,8 @@
 	</beans:bean>
 
 	
+
+
 
 
 </beans:beans>

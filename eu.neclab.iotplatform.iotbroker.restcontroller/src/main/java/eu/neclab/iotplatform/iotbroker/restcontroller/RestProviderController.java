@@ -1,36 +1,44 @@
 /*******************************************************************************
- *   Copyright (c) 2014, NEC Europe Ltd.
- *   All rights reserved.
- *
- *   Authors:
- *           * Salvatore Longo - salvatore.longo@neclab.eu
- *           * Tobias Jacobs - tobias.jacobs@neclab.eu
- *           * Raihan Ul-Islam - raihan.ul-islam@neclab.eu
- *
- *    Redistribution and use in source and binary forms, with or without
- *    modification, are permitted provided that the following conditions are met:
- *   1. Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   2. Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *   3. All advertising materials mentioning features or use of this software
- *     must display the following acknowledgement:
- *     This product includes software developed by NEC Europe Ltd.
- *   4. Neither the name of the NEC nor the
- *     names of its contributors may be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NEC BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ * Copyright (c) 2015, NEC Europe Ltd.
+ * All rights reserved.
+ * 
+ * Authors:
+ *          * Salvatore Longo - salvatore.longo@neclab.eu
+ *          * Tobias Jacobs - tobias.jacobs@neclab.eu
+ *          * Flavio Cirillo - flavio.cirillo@neclab.eu
+ *          * Raihan Ul-Islam
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions 
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright 
+ * notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above 
+ * copyright notice, this list of conditions and the following disclaimer 
+ * in the documentation and/or other materials provided with the 
+ * distribution.
+ * 3. All advertising materials mentioning features or use of this 
+ * software must display the following acknowledgment: This 
+ * product includes software developed by NEC Europe Ltd.
+ * 4. Neither the name of NEC nor the names of its contributors may 
+ * be used to endorse or promote products derived from this 
+ * software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY NEC ''AS IS'' AND ANY 
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY 
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN 
+ * NO EVENT SHALL NEC BE LIABLE FOR ANY DIRECT, INDIRECT, 
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT 
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH 
+ * DAMAGE.
+ ******************************************************************************/
 package eu.neclab.iotplatform.iotbroker.restcontroller;
 
 import java.io.BufferedReader;
@@ -57,9 +65,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import eu.neclab.iotplatform.iotbroker.commons.GenerateMetadata;
-import eu.neclab.iotplatform.iotbroker.commons.JsonFactory;
 import eu.neclab.iotplatform.iotbroker.commons.JsonValidator;
 import eu.neclab.iotplatform.iotbroker.commons.XmlValidator;
+import eu.neclab.iotplatform.iotbroker.commons.interfaces.LeafengineInterface;
 import eu.neclab.iotplatform.iotbroker.restcontroller.sanitycheck.SanityCheck;
 import eu.neclab.iotplatform.ngsi.api.datamodel.AppendContextElementRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.AppendContextElementResponse;
@@ -68,6 +76,7 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttributeResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Converter;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityRequest;
@@ -116,8 +125,17 @@ public class RestProviderController {
 	/** String representing xml content type. */
 	private final String CONTENT_TYPE_XML = "application/xml";
 
+	/** The component for receiving Leafengine requests. */
+	@Autowired
+	private LeafengineInterface leafengine;
 
-	private final JsonFactory jsonFactory = new JsonFactory();
+	public LeafengineInterface getLeafengine() {
+		return leafengine;
+	}
+
+	public void setLeafengine(LeafengineInterface leafengine) {
+		this.leafengine = leafengine;
+	}
 
 	/** The component for receiving NGSI9 requests. */
 	@Autowired
@@ -169,46 +187,15 @@ public class RestProviderController {
 	}
 
 	/** String representing the xml schema for NGSI 10. */
-	private @Value("${schema_ngsi10_operation}")
-	String sNgsi10schema;
+	private @Value("${schema_ngsi10_operation}") String sNgsi10schema;
 
 	/** String representing the xml schema for NGSI 9. */
-	private @Value("${schema_ngsi9_operation}")
-	String sNgsi9schema;
+	private @Value("${schema_ngsi9_operation}") String sNgsi9schema;
 
 	/**
 	 * Instantiates a new controller object.
 	 */
 	public RestProviderController() {
-
-	}
-
-	/**
-	 * The IoT Broker uses a fixed mapping for assigning NGSI status codes to
-	 * HTTP status codes. This mapping is implemented by this private method.
-	 *
-	 * @param statusCode
-	 *            the statusCode
-	 * @return the http status
-	 */
-	private static HttpStatus makeHttpStatus(StatusCode statusCode) {
-
-		if (statusCode == null) {
-			return HttpStatus.OK;
-		}
-
-		int nCode = statusCode.getCode();
-
-		if (nCode == Code.INTERNALERROR_500.getCode()) {
-			return HttpStatus.INTERNAL_SERVER_ERROR;
-		}
-
-		if (nCode >= Code.BADREQUEST_400.getCode()
-				&& nCode < Code.INTERNALERROR_500.getCode()) {
-			return HttpStatus.NOT_FOUND;
-		}
-
-		return HttpStatus.OK;
 
 	}
 
@@ -233,8 +220,9 @@ public class RestProviderController {
 	}
 
 	/**
-	 * Redirector to the administration web page.
+	 * Monitoring.
 	 *
+	 * @return the string
 	 */
 	@RequestMapping(value = "/monitoring", method = RequestMethod.GET)
 	public String monitoring() {
@@ -254,7 +242,6 @@ public class RestProviderController {
 	public String restclient() {
 		return "restclient";
 	}
-
 
 	/**
 	 * Redirector to the administration web page.
@@ -292,42 +279,42 @@ public class RestProviderController {
 
 	}
 
-
 	/**
-	 * Executes the test of the IoT Broker, which simply returns the request message.
+	 * Executes the test of the IoT Broker, which simply returns the request
+	 * message.
 	 *
 	 * @return the response entity
 	 */
 	@RequestMapping(value = "/ngsi10/test", method = RequestMethod.POST, consumes = { "*/*" }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-	public ResponseEntity<QueryContextRequest> test(HttpServletRequest requester,
+	public ResponseEntity<QueryContextRequest> test(
+			HttpServletRequest requester,
 			@RequestBody QueryContextRequest request) {
 
 		System.out.println(request);
-
 
 		return new ResponseEntity<QueryContextRequest>(request, HttpStatus.OK);
 
 	}
 
-
 	/**
-	 *  Executes a syntax check of incoming messages. Currently supported formats are 
-	 *  XML and JSON.
+	 * Executes a syntax check of incoming messages. Currently supported formats
+	 * are XML and JSON.
 	 */
-	private boolean validateMessageBody(HttpServletRequest request, Object objRequest, String schema){
+	private boolean validateMessageBody(HttpServletRequest request,
+			Object objRequest, String schema) {
 
 		boolean status = false;
-		
-		logger.info("ContentType: "+request.getContentType());
 
-		if(request.getContentType().contains("application/xml")){
+		logger.info("ContentType: " + request.getContentType());
+
+		if (request.getContentType().contains("application/xml")) {
 
 			XmlValidator validator = new XmlValidator();
 
 			status = validator.xmlValidation(objRequest, schema);
 
-		}else if (request.getContentType().contains("application/json")){
+		} else if (request.getContentType().contains("application/json")) {
 
 			JsonValidator validator = new JsonValidator();
 
@@ -342,7 +329,6 @@ public class RestProviderController {
 				logger.info("Impossible to get the Json Request! Please check the error using debug mode.");
 				logger.debug("Impossible to get the Json Request", e);
 			}
-
 
 			status = validator.isValidJSON(jb.toString());
 
@@ -373,8 +359,7 @@ public class RestProviderController {
 
 		logger.info(" <--- NGSI-10 has received request for Context query resource ---> \n");
 
-
-		if (validateMessageBody(requester,request, sNgsi10schema)) {
+		if (validateMessageBody(requester, request, sNgsi10schema)) {
 
 			QueryContextResponse response = ngsiCore.queryContext(request);
 
@@ -382,7 +367,7 @@ public class RestProviderController {
 					+ request.getEntityIdList().get(0).getType());
 
 			return new ResponseEntity<QueryContextResponse>(response,
-					makeHttpStatus(response.getErrorCode()));
+					HttpStatus.OK);
 		} else {
 
 			QueryContextResponse response = new QueryContextResponse();
@@ -410,14 +395,13 @@ public class RestProviderController {
 	@RequestMapping(value = "/ngsi10/subscribeContext", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-	public ResponseEntity<SubscribeContextResponse> subscription(HttpServletRequest requester,
+	public ResponseEntity<SubscribeContextResponse> subscription(
+			HttpServletRequest requester,
 			@RequestBody SubscribeContextRequest request) {
 
 		logger.info(" <--- NGSI-10 has received request for Subscribe Context resource ---> \n");
 
-
-
-		if (!validateMessageBody(requester,request, sNgsi10schema)) {
+		if (!validateMessageBody(requester, request, sNgsi10schema)) {
 			SubscribeContextResponse response = new SubscribeContextResponse(
 					null, new SubscribeError(null, new StatusCode(
 							Code.BADREQUEST_400.getCode(),
@@ -429,12 +413,6 @@ public class RestProviderController {
 		}
 
 		SubscribeContextResponse response = ngsiCore.subscribeContext(request);
-
-		if (response.getSubscribeError() != null) {
-			return new ResponseEntity<SubscribeContextResponse>(
-					response,
-					makeHttpStatus(response.getSubscribeError().getStatusCode()));
-		}
 
 		return new ResponseEntity<SubscribeContextResponse>(response,
 				HttpStatus.OK);
@@ -451,14 +429,13 @@ public class RestProviderController {
 	@RequestMapping(value = "/ngsi10/updateContextSubscription", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-	public ResponseEntity<UpdateContextSubscriptionResponse> updateContextSubscription(HttpServletRequest requester,
+	public ResponseEntity<UpdateContextSubscriptionResponse> updateContextSubscription(
+			HttpServletRequest requester,
 			@RequestBody UpdateContextSubscriptionRequest request) {
 
 		logger.info(" <--- NGSI-10 has received request for Update Context Subscription resource ---> \n");
 
-
-
-		if (!validateMessageBody(requester,request, sNgsi10schema)) {
+		if (!validateMessageBody(requester, request, sNgsi10schema)) {
 			UpdateContextSubscriptionResponse response = new UpdateContextSubscriptionResponse(
 					null, new SubscribeError(null, new StatusCode(
 							Code.BADREQUEST_400.getCode(),
@@ -471,12 +448,6 @@ public class RestProviderController {
 
 		UpdateContextSubscriptionResponse response = ngsiCore
 				.updateContextSubscription(request);
-
-		if (response.getSubscribeError() != null) {
-			return new ResponseEntity<UpdateContextSubscriptionResponse>(
-					response, makeHttpStatus(response.getSubscribeError()
-							.getStatusCode()));
-		}
 
 		return new ResponseEntity<UpdateContextSubscriptionResponse>(response,
 				HttpStatus.OK);
@@ -492,13 +463,13 @@ public class RestProviderController {
 	@RequestMapping(value = "/ngsi10/unsubscribeContext", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-	public ResponseEntity<UnsubscribeContextResponse> unsubscribeContext(HttpServletRequest requester,
+	public ResponseEntity<UnsubscribeContextResponse> unsubscribeContext(
+			HttpServletRequest requester,
 			@RequestBody UnsubscribeContextRequest request) {
 
 		logger.info(" <--- NGSI-10 has received request for Unsubscribe context resource ---> \n");
 
-
-		if (validateMessageBody(requester,request, sNgsi10schema)) {
+		if (validateMessageBody(requester, request, sNgsi10schema)) {
 
 			logger.info("SubscriptionIDRequest: " + request.getSubscriptionId());
 
@@ -506,7 +477,7 @@ public class RestProviderController {
 					.unsubscribeContext(request);
 
 			return new ResponseEntity<UnsubscribeContextResponse>(response,
-					makeHttpStatus(response.getStatusCode()));
+					HttpStatus.OK);
 
 		} else {
 
@@ -541,43 +512,52 @@ public class RestProviderController {
 
 		logger.info(" <--- NGSI-10 has received request for Update Context resource ---> \n");
 
-
-
-
-		if (validateMessageBody(requester,request, sNgsi10schema)) {
+		if (validateMessageBody(requester, request, sNgsi10schema)) {
 
 			for (int i = 0; i < request.getContextElement().size(); i++) {
-	
+
 				/*
 				 * Add metadata to each context element contained by the update.
 				 */
-				try {
-					request.getContextElement()
-					.get(i)
-					.getDomainMetadata()
-					.add(GenerateMetadata
-							.createSourceIPMetadata(new URI(requester
-									.getRequestURL().toString())));
+				if (!requester.getContentType().contains("application/json")) {
+					if (request.getContextElement().get(i).getDomainMetadata() != null) {
+						request.getContextElement()
+						.get(i)
+						.setDomainMetadata(
+								new ArrayList<ContextMetadata>());
+					}
 
-					request.getContextElement()
-					.get(i)
-					.getDomainMetadata()
-					.add(GenerateMetadata
-							.createDomainTimestampMetadata());
-				} catch (URISyntaxException e) {
-					logger.info(" URI Syntax Exception ", e);
+					try {
+
+						request.getContextElement()
+						.get(i)
+						.getDomainMetadata()
+						.add(GenerateMetadata
+								.createSourceIPMetadata(new URI(
+										requester.getRequestURL()
+										.toString())));
+
+						request.getContextElement()
+						.get(i)
+						.getDomainMetadata()
+						.add(GenerateMetadata
+								.createDomainTimestampMetadata());
+					} catch (URISyntaxException e) {
+						logger.info(" URI Syntax Exception ", e);
+					}
+
 				}
-
 			}
-
-
+			
+			
 
 			UpdateContextResponse response = ngsiCore.updateContext(request);
 
-			System.out.println("########## Response to Converter ##########"+response);
+			System.out.println("########## Response to Converter ##########"
+					+ response);
 
 			return new ResponseEntity<UpdateContextResponse>(response,
-					makeHttpStatus(response.getErrorCode()));
+					HttpStatus.OK);
 
 		} else {
 
@@ -587,7 +567,7 @@ public class RestProviderController {
 							"XML syntax Error!"), null);
 
 			return new ResponseEntity<UpdateContextResponse>(response,
-					makeHttpStatus(response.getErrorCode()));
+					HttpStatus.OK);
 		}
 
 	}
@@ -628,8 +608,7 @@ public class RestProviderController {
 								null, null), response.getErrorCode());
 
 				return new ResponseEntity<ContextElementResponse>(
-						contextElementResp,
-						makeHttpStatus(response.getErrorCode()));
+						contextElementResp, HttpStatus.OK);
 
 			} else if (response.getErrorCode().getCode() == Code.INTERNALERROR_500
 					.getCode()) {
@@ -639,8 +618,7 @@ public class RestProviderController {
 								null, null), response.getErrorCode());
 
 				return new ResponseEntity<ContextElementResponse>(
-						contextElementResp,
-						makeHttpStatus(response.getErrorCode()));
+						contextElementResp, HttpStatus.OK);
 
 			}
 
@@ -650,7 +628,7 @@ public class RestProviderController {
 				.getListContextElementResponse().get(0);
 
 		return new ResponseEntity<ContextElementResponse>(contextElementResp,
-				makeHttpStatus(response.getErrorCode()));
+				HttpStatus.OK);
 
 	}
 
@@ -668,11 +646,11 @@ public class RestProviderController {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public ResponseEntity<UpdateContextElementResponse> simpleQueryIdPut(
-			@PathVariable("entityID") String EntityID,HttpServletRequest requester,
+			@PathVariable("entityID") String EntityID,
+			HttpServletRequest requester,
 			@RequestBody UpdateContextElementRequest request) {
 
 		logger.info(" <--- NGSI-10 has received request for Update ( PUT ) to Individual context entity ---> \n");
-
 
 		if (validateMessageBody(requester, request, sNgsi10schema)) {
 
@@ -700,8 +678,7 @@ public class RestProviderController {
 						response.getErrorCode(), contextAttributeResp);
 
 				return new ResponseEntity<UpdateContextElementResponse>(
-						respUpdate, makeHttpStatus(respUpdate.getErrorCode()));
-
+						respUpdate, HttpStatus.OK);
 			}
 
 		}
@@ -712,7 +689,7 @@ public class RestProviderController {
 						"XML syntax Error!"), null);
 
 		return new ResponseEntity<UpdateContextElementResponse>(response,
-				makeHttpStatus(response.getErrorCode()));
+				HttpStatus.OK);
 
 	}
 
@@ -733,11 +710,11 @@ public class RestProviderController {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public ResponseEntity<AppendContextElementResponse> simpleQueryIdPost(
-			@PathVariable("entityID") String EntityID,HttpServletRequest requester,
+			@PathVariable("entityID") String EntityID,
+			HttpServletRequest requester,
 			@RequestBody AppendContextElementRequest request) {
 
 		logger.info(" <--- NGSI-10 has received request for Append ( POST ) to Individual context entity ---> \n");
-
 
 		if (validateMessageBody(requester, request, sNgsi10schema)) {
 
@@ -769,7 +746,7 @@ public class RestProviderController {
 					response.getErrorCode(), ar);
 
 			return new ResponseEntity<AppendContextElementResponse>(respAppend,
-					makeHttpStatus(respAppend.getErrorCode()));
+					HttpStatus.OK);
 
 		} else {
 
@@ -779,7 +756,7 @@ public class RestProviderController {
 							"XML syntax Error!"), null);
 
 			return new ResponseEntity<AppendContextElementResponse>(response,
-					makeHttpStatus(response.getErrorCode()));
+					HttpStatus.OK);
 		}
 
 	}
@@ -828,8 +805,7 @@ public class RestProviderController {
 
 		}
 
-		return new ResponseEntity<StatusCode>(statusCode,
-				makeHttpStatus(statusCode));
+		return new ResponseEntity<StatusCode>(statusCode, HttpStatus.OK);
 
 	}
 
@@ -866,12 +842,13 @@ public class RestProviderController {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public ResponseEntity<UpdateContextElementResponse> simpleQueryAttributesContainerPut(
-			@PathVariable("entityID") String EntityID,HttpServletRequest requester,
+			@PathVariable("entityID") String EntityID,
+			HttpServletRequest requester,
 			@RequestBody UpdateContextElementRequest request) {
 
 		logger.info(" <--- NGSI-10 has received request for Update ( PUT ) to Attribute container of individual context entity ---> \n");
 
-		return simpleQueryIdPut(EntityID, requester,request);
+		return simpleQueryIdPut(EntityID, requester, request);
 
 	}
 
@@ -892,12 +869,13 @@ public class RestProviderController {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public ResponseEntity<AppendContextElementResponse> simpleQueryAttributesContainerPost(
-			@PathVariable("entityID") String EntityID,HttpServletRequest requester,
+			@PathVariable("entityID") String EntityID,
+			HttpServletRequest requester,
 			@RequestBody AppendContextElementRequest request) {
 
 		logger.info(" <--- NGSI-10 has received request for Append ( POST ) to Attribute container of individual context entity ---> \n");
 
-		return simpleQueryIdPost(EntityID,requester, request);
+		return simpleQueryIdPost(EntityID, requester, request);
 
 	}
 
@@ -947,11 +925,9 @@ public class RestProviderController {
 				.toContextAttributeResponse(normalResp);
 
 		return new ResponseEntity<ContextAttributeResponse>(response,
-				makeHttpStatus(response.getStatusCode()));
+				HttpStatus.OK);
 
 	}
-
-
 
 	/**
 	 * Executes the convenience method for appending a value to an individual
@@ -968,13 +944,13 @@ public class RestProviderController {
 	@RequestMapping(value = "/ngsi10/contextEntities/{entityID}/attributes/{attributeName}", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-	public ResponseEntity<StatusCode> simpleQueryAttributePost(HttpServletRequest requester,
+	public ResponseEntity<StatusCode> simpleQueryAttributePost(
+			HttpServletRequest requester,
 			@PathVariable("entityID") String EntityID,
 			@PathVariable("attributeName") String attributeName,
 			@RequestBody UpdateContextAttributeRequest request) {
 
 		logger.info(" <--- NGSI-10 has received request for Append ( POST ) to Attribute of individual context entity ---> \n");
-
 
 		if (validateMessageBody(requester, request, sNgsi10schema)) {
 
@@ -996,21 +972,17 @@ public class RestProviderController {
 					.getCode(), response.getErrorCode().getReasonPhrase(),
 					response.getErrorCode().getDetails().toString());
 
-			return new ResponseEntity<StatusCode>(statusCode,
-					makeHttpStatus(statusCode));
+			return new ResponseEntity<StatusCode>(statusCode, HttpStatus.OK);
 
 		} else {
 
 			StatusCode response = new StatusCode(Code.BADREQUEST_400.getCode(),
 					ReasonPhrase.BADREQUEST_400.toString(), "XML syntax Error!");
 
-			return new ResponseEntity<StatusCode>(response,
-					makeHttpStatus(response));
+			return new ResponseEntity<StatusCode>(response, HttpStatus.OK);
 		}
 
 	}
-
-
 
 	/**
 	 * Executes the convenience method for deleting all values of an individual
@@ -1048,8 +1020,7 @@ public class RestProviderController {
 				.getCode(), response.getErrorCode().getReasonPhrase(), response
 				.getErrorCode().getDetails().toString());
 
-		return new ResponseEntity<StatusCode>(statusCode,
-				makeHttpStatus(statusCode));
+		return new ResponseEntity<StatusCode>(statusCode, HttpStatus.OK);
 	}
 
 	/**
@@ -1082,7 +1053,7 @@ public class RestProviderController {
 				.toContextAttributeResponse(normalResp);
 
 		return new ResponseEntity<ContextAttributeResponse>(response,
-				makeHttpStatus(response.getStatusCode()));
+				HttpStatus.OK);
 
 	}
 
@@ -1103,7 +1074,8 @@ public class RestProviderController {
 	@RequestMapping(value = "/ngsi10/contextEntities/{entityID}/attributes/{attributeName}/{valueID}", method = RequestMethod.PUT, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-	public ResponseEntity<StatusCode> simpleQuerySpecialAttributeValuePut(HttpServletRequest requester,
+	public ResponseEntity<StatusCode> simpleQuerySpecialAttributeValuePut(
+			HttpServletRequest requester,
 			@PathVariable("entityID") String EntityID,
 			@PathVariable("attributeName") String attributeName,
 			@PathVariable("valueID") String valueID,
@@ -1111,8 +1083,8 @@ public class RestProviderController {
 
 		logger.info(" <--- NGSI-10 has received request for Update ( PUT ) to Specific attribute value of individual context entity ---> \n");
 
-		ResponseEntity<StatusCode> response = simpleQueryAttributePost(requester,
-				EntityID, attributeName, request);
+		ResponseEntity<StatusCode> response = simpleQueryAttributePost(
+				requester, EntityID, attributeName, request);
 
 		return response;
 
@@ -1163,8 +1135,7 @@ public class RestProviderController {
 	 */
 	@RequestMapping(value = "/ngsi10/contextEntities/{entityID}/attributeDomains/{attributeDomainName}", method = RequestMethod.GET, consumes = { "*/*" }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-	public @ResponseBody
-	ResponseEntity<ContextAttributeResponse> simpleQueryAttributeDomainGet(
+	public @ResponseBody ResponseEntity<ContextAttributeResponse> simpleQueryAttributeDomainGet(
 			@PathVariable("entityID") String id,
 			@PathVariable("attributeDomainName") String attrDomainName,
 			@RequestParam(required = false) String scopeType,
@@ -1181,7 +1152,7 @@ public class RestProviderController {
 				.toContextAttributeResponse(normalResp);
 
 		return new ResponseEntity<ContextAttributeResponse>(response,
-				makeHttpStatus(response.getStatusCode()));
+				HttpStatus.OK);
 
 	}
 
@@ -1210,8 +1181,7 @@ public class RestProviderController {
 
 		QueryContextResponse response = ngsiCore.queryContext(request);
 
-		return new ResponseEntity<QueryContextResponse>(response,
-				makeHttpStatus(response.getErrorCode()));
+		return new ResponseEntity<QueryContextResponse>(response, HttpStatus.OK);
 	}
 
 	/**
@@ -1284,7 +1254,6 @@ public class RestProviderController {
 				HttpStatus.NOT_FOUND);
 	}
 
-
 	/**
 	 * Executes the convenience method for querying an attribute domain from all
 	 * context entities having a specified type.
@@ -1297,8 +1266,7 @@ public class RestProviderController {
 	 */
 	@RequestMapping(value = "/ngsi10/contextEntityTypes/{typeName}/attributeDomains/{attributeDomainName}", method = RequestMethod.GET, consumes = { "*/*", }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-	public @ResponseBody
-	ResponseEntity<QueryContextResponse> simpleQueryEntityTypeAttributeDomain(
+	public @ResponseBody ResponseEntity<QueryContextResponse> simpleQueryEntityTypeAttributeDomain(
 			@PathVariable("typeName") URI typeName,
 			@PathVariable("attributeDomainName") String attrDomain) {
 
@@ -1309,10 +1277,8 @@ public class RestProviderController {
 
 		QueryContextResponse response = ngsiCore.queryContext(regReq);
 
-		return new ResponseEntity<QueryContextResponse>(response,
-				makeHttpStatus(response.getErrorCode()));
+		return new ResponseEntity<QueryContextResponse>(response, HttpStatus.OK);
 	}
-
 
 	/**
 	 * Executes the convenience method for subscribing.
@@ -1324,11 +1290,11 @@ public class RestProviderController {
 	@RequestMapping(value = "/ngsi10/contextSubscriptions/{subscriptionId}", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-	public ResponseEntity<SubscribeContextResponse> simpleSubscription(HttpServletRequest requester,
+	public ResponseEntity<SubscribeContextResponse> simpleSubscription(
+			HttpServletRequest requester,
 			@RequestBody SubscribeContextRequest request) {
 
 		logger.info(" <--- NGSI-10 has received request for Subscription ( POST ) to Subscriptions container  ---> \n");
-
 
 		if (!validateMessageBody(requester, request, sNgsi10schema)) {
 			SubscribeContextResponse response = new SubscribeContextResponse(
@@ -1344,9 +1310,10 @@ public class RestProviderController {
 		SubscribeContextResponse response = ngsiCore.subscribeContext(request);
 
 		if (response.getSubscribeError() != null) {
-			return new ResponseEntity<SubscribeContextResponse>(
-					response,
-					makeHttpStatus(response.getSubscribeError().getStatusCode()));
+
+			return new ResponseEntity<SubscribeContextResponse>(response,
+					HttpStatus.OK);
+
 		}
 
 		return new ResponseEntity<SubscribeContextResponse>(response,
@@ -1366,11 +1333,12 @@ public class RestProviderController {
 	@RequestMapping(value = "/ngsi10/contextSubscriptions/{subscriptionId}", method = RequestMethod.PUT, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-	public ResponseEntity<UpdateContextSubscriptionResponse> updateSubscription(HttpServletRequest requester,
+	public ResponseEntity<UpdateContextSubscriptionResponse> updateSubscription(
+			HttpServletRequest requester,
 			@RequestBody UpdateContextSubscriptionRequest request,
 			@PathVariable("subscriptionId") String subscriptionId) {
 
-		return updateContextSubscription(requester,request);
+		return updateContextSubscription(requester, request);
 	}
 
 	/**
@@ -1383,14 +1351,15 @@ public class RestProviderController {
 	@RequestMapping(value = "/ngsi10/contextSubscriptions/{subscriptionId}", method = RequestMethod.DELETE, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-	public ResponseEntity<UnsubscribeContextResponse> unsubscribe(HttpServletRequest requester,
+	public ResponseEntity<UnsubscribeContextResponse> unsubscribe(
+			HttpServletRequest requester,
 			@PathVariable("subscriptionId") String subscriptionId) {
 
 		logger.info(" <--- NGSI-10 has received request for Unsubscribe ( DELETE ) to Subscriptions container  ---> \n");
 
-		return unsubscribeContext(requester,new UnsubscribeContextRequest(subscriptionId));
+		return unsubscribeContext(requester, new UnsubscribeContextRequest(
+				subscriptionId));
 	}
-
 
 	/**
 	 * Executes the convenience method for processing a notification.
@@ -1410,13 +1379,12 @@ public class RestProviderController {
 
 		logger.info(" <--- NGSI-10 has received a context notification  ---> \n");
 
-
 		if (validateMessageBody(requester, request, sNgsi10schema)) {
 
 			NotifyContextResponse response = ngsiCore.notifyContext(request);
 
 			return new ResponseEntity<NotifyContextResponse>(response,
-					makeHttpStatus(response.getResponseCode()));
+					HttpStatus.OK);
 
 		} else {
 
@@ -1426,7 +1394,7 @@ public class RestProviderController {
 							"XML syntax Error!"));
 
 			return new ResponseEntity<NotifyContextResponse>(response,
-					makeHttpStatus(response.getResponseCode()));
+					HttpStatus.OK);
 		}
 
 	}
@@ -1442,11 +1410,12 @@ public class RestProviderController {
 	@RequestMapping(value = "/ngsi9/notifyContextAvailability", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-	public ResponseEntity<NotifyContextAvailabilityResponse> notifyContextAvailability(HttpServletRequest requester,
+	public ResponseEntity<NotifyContextAvailabilityResponse> notifyContextAvailability(
+			HttpServletRequest requester,
 			@RequestBody NotifyContextAvailabilityRequest request) {
 
-		logger.info(" <--- NGSI-9 has received a context notification  ---> \n");
-
+		logger.info(" <--- NGSI-9 has received a context notification  ---> \n"
+				+ request);
 
 		if (!validateMessageBody(requester, request, sNgsi9schema)) {
 			NotifyContextAvailabilityResponse response = new NotifyContextAvailabilityResponse(
@@ -1461,7 +1430,53 @@ public class RestProviderController {
 				.notifyContextAvailability(request);
 
 		return new ResponseEntity<NotifyContextAvailabilityResponse>(response,
-				makeHttpStatus(response.getResponseCode()));
+				HttpStatus.OK);
+
+	}
+
+	/**
+	 * Executes the convenience method for processing a notification.
+	 *
+	 * @param requester
+	 *            Represents the HTTP request message.
+	 * @param request
+	 *            The notification request body.
+	 * @return The response body.
+	 */
+	@RequestMapping(value = "/leafengine/notify", method = RequestMethod.POST, consumes = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
+	public ResponseEntity<String> notifyContext(
+			HttpServletRequest requester, @RequestBody String notify) {
+
+		logger.info(" <--- Leafengine notification has been arrived  ---> \n");
+
+		final String notification = notify;
+
+		logger.debug("leafnegine Notification: "+ notify);
+
+		new Thread() {
+			@Override
+			public void run() {
+
+				UpdateContextRequest request = leafengine
+						.convertSubscriptionToUpdate(notification);
+
+
+				// TODO: check the request
+				ngsiCore.updateContext(request);
+				// TODO: check the response and create an response
+				//System.out.println(request.toString());
+
+			}
+		}.start();
+
+
+
+
+
+		return new ResponseEntity<String>("",
+				HttpStatus.OK);
 
 	}
 
