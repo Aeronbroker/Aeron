@@ -1,0 +1,37 @@
+FORMAT: 1A
+HOST: http://polls.apiblueprint.org/
+
+(this document is work in progress)
+
+# IoT Broker NGSI Interface
+
+This document describes the FIWARE NGSI interface as implemented by the IoT Broker Generic Enabler.
+
+## Context Entities [/ngsi10/contextEntities]
+
+### Query all Context Entities [GET]
+
++ Response 200 (application/xml)
+
+        [
+            {
+                "question": "Favourite programming language?",
+                "published_at": "2015-08-05T08:40:51.620Z",
+                "choices": [
+                    {
+                        "choice": "Swift",
+                        "votes": 2048
+                    }, {
+                        "choice": "Python",
+                        "votes": 1024
+                    }, {
+                        "choice": "Objective-C",
+                        "votes": 512
+                    }, {
+                        "choice": "Ruby",
+                        "votes": 256
+                    }
+                ]
+            }
+        ]
+
