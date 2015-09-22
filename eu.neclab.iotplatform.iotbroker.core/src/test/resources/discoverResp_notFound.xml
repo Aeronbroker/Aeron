@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<discoverContextAvailabilityResponse>	
-	<errorCode>
-		<code>400</code>
-		 <reasonPhrase>CONTEXT ELEMENT NOT FOUND</reasonPhrase>		
-	</errorCode>
-</discoverContextAvailabilityResponse>

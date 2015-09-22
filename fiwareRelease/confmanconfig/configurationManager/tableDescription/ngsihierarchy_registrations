@@ -1,9 +1,0 @@
-CREATE TABLE public.ngsihierarchy_registrations
-(
-department character varying(500) NOT NULL,
-registrationid character varying(500) NOT NULL
-) 
-WITH (
-  OIDS = FALSE
-)
-;

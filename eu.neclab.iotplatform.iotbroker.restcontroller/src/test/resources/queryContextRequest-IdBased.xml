@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<queryContextRequest>
-	<entityIdList>
-		<entityId isPattern="false">
-			<id>room1</id>
-		</entityId>
-	</entityIdList>
-</queryContextRequest>
