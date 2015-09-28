@@ -1,0 +1,3 @@
+mvn install:install-file -DgroupId=org.apache.httpcomponents -DartifactId=httpclient -Dversion=4.2.0-osgi -Dfile=httpclient-4.2.0-osgi.jar -Dpackaging=jar -DgeneratePom=true
+
+mvn install:install-file -DgroupId=org.apache.httpcomponents -DartifactId=httpcore -Dversion=4.2.0-osgi -Dfile=httpclient-4.2.0-osgi.jar -Dpackaging=jar -DgeneratePom=true

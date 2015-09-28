@@ -48,9 +48,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -70,6 +70,7 @@ import eu.neclab.iotplatform.iotbroker.commons.TraceKeeper;
 import eu.neclab.iotplatform.iotbroker.commons.XmlFactory;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.BigDataRepository;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.NgsiHierarchyInterface;
+import eu.neclab.iotplatform.iotbroker.commons.interfaces.QueryService;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface;
 import eu.neclab.iotplatform.iotbroker.core.subscription.AgentWrapper;
 import eu.neclab.iotplatform.iotbroker.core.subscription.AssociationsUtil;
@@ -88,6 +89,7 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadataAssociation;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityResponse;
@@ -130,6 +132,19 @@ import eu.neclab.iotplatform.ngsi.association.datamodel.EntityAttribute;
  * deployment uses exactly one instance of this class.
  */
 public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
+
+	/**
+	 * List of query services to pass queries to
+	 */
+	private List<QueryService> queryServiceList;
+	
+	public List<QueryService> getQueryServiceList() {
+		return queryServiceList;
+	}
+
+	public void setQueryServiceList(List<QueryService> queryServiceList) {
+		this.queryServiceList = queryServiceList;
+	}
 
 	/** The URL of the pub/sub broker */
 	@Value("${dumbInBigDataRepo:false}")
@@ -194,8 +209,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	private ResultFilterInterface resultFilter;
 
 	/**
-	 * A pointer to a Big Data repository. (This functionality is currently
-	 * disabled.)
+	 * A pointer to a Big Data repository.
 	 */
 	private BigDataRepository bigDataRepository;
 
@@ -581,7 +595,30 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			.filterOutSelfSubordination(discoveryResponse);
 		}
 		/* till here */
+		
+		/*
+		 * Now as we have done the discovery of data sources, we go and
+		 * exploit these data sources for answering the query.
+		 */
+		
+		/*
+		 * We first initialize the merger for merging the query results later
+		 */
+		QueryResponseMerger merger = new QueryResponseMerger(request);
 
+		/*
+		 * Then we initialize a task list that will contain the data retrieval 
+		 * tasks.
+		 * The reason we use such a task list is that we want to execute
+		 * the data retrieval tasks all in parallel.
+		 */
+		List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
+		
+		
+		/*
+		 * Now check if the discovery response is useful; if yes, then we
+		 * populate the query task list with query tasks accordingly.
+		 */
 		if ((discoveryResponse.getErrorCode() == null || discoveryResponse
 				.getErrorCode().getCode() == 200)
 				&& discoveryResponse.getContextRegistrationResponse() != null) {
@@ -610,17 +647,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 					+ additionalRequestList);
 
 			List<Pair<QueryContextRequest, URI>> queryList = createQueryRequestList(
-					discoveryResponse, request);
-
-			logger.debug("Query List Size: " + queryList.size());
-
-			QueryResponseMerger merger = new QueryResponseMerger(request);
-
-			// List of Task
-			List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
-
-			// Countdown of Task
-			CountDownLatch count = new CountDownLatch(queryList.size());
+					discoveryResponse, request);						
 
 			for (int i = 0; i < queryList.size(); i++) {
 				logger.debug("Starting Thread number: " + i);
@@ -633,126 +660,254 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 						.get(i).getContextRegistration()
 						.getProvidingApplication());
 
-				tasks.add(Executors.callable(new RequestThread(resultFilter,
+				tasks.add(Executors.callable(new RequestThread(
 						ngsi10Requester, queryList.get(i).getLeft(), queryList
-						.get(i).getRight(), merger, count,
+						.get(i).getRight(), merger, 
 						transitiveList)));
 
 			}
+			
+		}
+			
+		/*
+		 * In addition to the regular tasks of trying to get information
+		 * from NGSI10 providers, we create  for each 'query service' a task
+		 * to obtain information from it.
+		 * 
+		 * Query services are additional service, obtained from OSGi bundles, 
+		 * that can make queries for entities. Examples are: retrieving data
+		 * from a database, resolving association, etc.
+		 */
+		
+		//this has only to be executed once...
+		if(queryServiceList == null) queryServiceList = new ArrayList<QueryService>();
+		
+		logger.info(queryServiceList.size() + " query Services found");
+		
+		/*
+		 * Definition of Thread calling the query services and 
+		 * adding the query result to the merger. Implementation
+		 * should be straightforward to understand.
+		 */
+		class queryServiceCaller implements Runnable{
 
-			try {
+			QueryService qS;
+			QueryContextRequest qCR;
+			List<ContextRegistration> regList;
+			QueryResponseMerger merger;
+			
+			queryServiceCaller(						
+					QueryService qS, 
+					QueryContextRequest qCR, 
+					List<ContextRegistration> regList,
+					QueryResponseMerger merger){					
+				this.qS=qS;this.qCR=qCR;this.regList=regList;
+				this.merger=merger;
+			}
+			
+			@Override
+			public void run() {
+				//query the query service
+				QueryContextResponse qCResp = qS.queryContext(qCR, regList);
+				
+				//add result to the merger
+				synchronized(merger)
+				{
+					merger.put(qCResp);						
+				}					
+			}
+			
+		}
+		
+		/*
+		 * We extract the list of context registrations from the
+		 * discovery response
+		 */
+		List<ContextRegistration> registrationList = new ArrayList<ContextRegistration>(discoveryResponse.getContextRegistrationResponse().size());
+		if(discoveryResponse.getContextRegistrationResponse() != null)
+		{
+			for(ContextRegistrationResponse cRR: discoveryResponse.getContextRegistrationResponse())
+			{
+				registrationList.add(cRR.getContextRegistration());
+			}
+		}
+		
+		/*
+		 * Initialize the tasks for calling the query service
+		 */			
+		for(QueryService qS: queryServiceList)
+		{
+			tasks.add(Executors.callable(
+					new queryServiceCaller(qS, request, registrationList, merger)));
+		}
 
-				long t0 = System.currentTimeMillis();
-				taskExecutor.invokeAll(tasks);
-				long t1 = System.currentTimeMillis();
-				logger.debug("Finished all tasks in " + (t1 - t0) + " ms");
+		
+		/*
+		 * Now we are finally ready to execute all the data retrieval 
+		 * tasks in parallel. Yeah! Let's Do it.
+		 */
+		
+		try {
 
-			} catch (InterruptedException e) {
-				logger.debug("Thread Error", e);
+			long t0 = System.currentTimeMillis();
+			taskExecutor.invokeAll(tasks, 10000, TimeUnit.MILLISECONDS);
+			long t1 = System.currentTimeMillis();
+			logger.debug("Finished all tasks in " + (t1 - t0) + " ms");
+
+		} catch (InterruptedException e) {
+			logger.error("Thread Error", e);
+		}
+		
+		
+		/*
+		 * And now that all our tasks have nicely at least tried to
+		 * retrieve their data and have put their data into the
+		 * merger, we use the merger to do what is was designed for: 
+		 * to merge.
+		 */ 
+		
+		QueryContextResponse mergerResponse = merger.get();
+
+		logger.debug("Response after merging: " + mergerResponse);
+
+		/*
+		 * Now we call also the result filter if it is present. The result
+		 * filter will check the merged query result against the original
+		 * request to check whether the response matches what actually
+		 * has been queried. Everything that is not matching is thrown
+		 * out of the result.
+		 * 
+		 * (Note that the try-catch is a workaround of the fact
+		 * that this is the only way we see for testing wether
+		 * the OSGi service is available)
+		 */		
+		try{	
+			logger.info("trying to apply result filter");
+			logger.debug("-----------++++++++++++++++++++++Begin Filter");
+			List<QueryContextRequest> lqcReq = new ArrayList<QueryContextRequest>();
+			lqcReq.add(request);
+			List<ContextElementResponse> lceRes = mergerResponse
+					.getListContextElementResponse();
+			logger.debug("-----------++++++++++++++++++++++ QueryContextRequest:"
+					+ lqcReq.toString()
+					+ " ContextElementResponse:"
+					+ lceRes.toString());
+
+			logger.debug(lqcReq.size());
+			logger.debug(lceRes.size());
+
+			List<QueryContextResponse> lqcRes = resultFilter.filterResult(
+					lceRes, lqcReq);
+
+			if (lqcRes.size() == 1) {
+				mergerResponse = lqcRes.get(0);
 			}
 
-			// Call the Merge Method
-			QueryContextResponse threadResponse = merger.get();
+			logger.debug("-----------++++++++++++++++++++++ After Filter ListContextElementResponse:"
+					+ lqcRes.toString()
+					+ " ContextElementResponse:"
+					+ lqcRes.toString());
+			logger.debug("-----------++++++++++++++++++++++End Filter");
+			logger.info("Result filter found and applied.");
+		}
+		catch(Exception E)
+		{
+			logger.info("Error executing result filter; possibly bundle not present.");
+		}
 
-			logger.debug("Response after merging: " + threadResponse);
 
-			if (resultFilter != null) {
-				logger.info("-----------++++++++++++++++++++++Begin Filter");
-				List<QueryContextRequest> lqcReq = new ArrayList<QueryContextRequest>();
-				lqcReq.add(request);
-				List<ContextElementResponse> lceRes = threadResponse
-						.getListContextElementResponse();
-				logger.info("-----------++++++++++++++++++++++ QueryContextRequest:"
-						+ lqcReq.toString()
-						+ " ContextElementResponse:"
-						+ lceRes.toString());
+		logger.debug("QueryContextResponse after merger and (maybe) result filter:" + mergerResponse);
 
-				logger.info(lqcReq.size());
-				logger.info(lceRes.size());
+		/*
+		 * The code snippet below is for dumping the data in a Big Data
+		 * repository in addition.
+		 * 
+		 * (And again we a similar workaround as above for the result filter)
+		 */
+		
+		logger.info("Trying to access Big Data repository");
+		final QueryContextResponse queryContextRespListAfterMerge = mergerResponse;
 
-				List<QueryContextResponse> lqcRes = resultFilter.filterResult(
-						lceRes, lqcReq);
+		new Thread() {
+			@Override
+			public void run() {
+				
+				try{
+					
 
-				if (lqcRes.size() == 1) {
-					threadResponse = lqcRes.get(0);
+				List<ContextElement> contextElementList = new ArrayList<ContextElement>();
+
+				Iterator<ContextElementResponse> iter = queryContextRespListAfterMerge
+						.getListContextElementResponse().iterator();
+
+				while (iter.hasNext()) {
+
+					ContextElementResponse contextElementResp = iter
+							.next();
+
+					contextElementList.add(contextElementResp
+							.getContextElement());
+					
 				}
 
-				logger.info("-----------++++++++++++++++++++++ After Filter ListContextElementResponse:"
-						+ lqcRes.toString()
-						+ " ContextElementResponse:"
-						+ lqcRes.toString());
-				logger.info("-----------++++++++++++++++++++++End Filter");
-			} else {
-
-				logger.info("Result filter not found!!");
+				bigDataRepository.storeData(contextElementList);
+				
+				} catch(Exception E)
+				{
+					logger.info("Error accessing Big data repository; possibly plugin not found.");
+				}
 
 			}
+		}.start();
+			
+		
 
-			final QueryContextResponse queryContextRespLIstAfterMerge = threadResponse;
+		/*
+		 * Now, having the nicely merged (and maybe even filtered) query
+		 * result, it is time to apply the xpath restriction to it.
+		 */
+		
+		if (request.getRestriction() != null) {
 
-			logger.debug("QueryContextResponse after merger:" + threadResponse);
-
-			/**
-			 * The code snippet below is for dumping the data in a Big Data
-			 * repository in addition. This feature is currently disabled.
-			 */
-			if (bigDataRepository != null) {
-
-				new Thread() {
-					@Override
-					public void run() {
-
-						List<ContextElement> contextElementList = new ArrayList<ContextElement>();
-
-						Iterator<ContextElementResponse> iter = queryContextRespLIstAfterMerge
-								.getListContextElementResponse().iterator();
-
-						while (iter.hasNext()) {
-
-							ContextElementResponse contextElementResp = iter
-									.next();
-
-							contextElementList.add(contextElementResp
-									.getContextElement());
-
-						}
-
-						bigDataRepository.storeData(contextElementList);
-
-					}
-				}.start();
-			}
-
-			if (request.getRestriction() != null) {
-
-				String xpathExpression = request.getRestriction()
-						.getAttributeExpression();
-				applyRestriction(xpathExpression, threadResponse);
-
-			}
-
-			if (threadResponse.getListContextElementResponse() == null
-					|| threadResponse.getListContextElementResponse().isEmpty()) {
-
-				threadResponse.setErrorCode(new StatusCode(
-						Code.CONTEXTELEMENTNOTFOUND_404.getCode(),
-						ReasonPhrase.CONTEXTELEMENTNOTFOUND_404.toString(),
-						null));
-
-			}
-
-			return threadResponse;
-
-		} else {
-
-			QueryContextResponse response = new QueryContextResponse(null,
-					discoveryResponse.getErrorCode());
-
-			return response;
+			String xpathExpression = request.getRestriction()
+					.getAttributeExpression();
+			applyRestriction(xpathExpression, mergerResponse);
 
 		}
 
-	}
+		/*
+		 * Now the final thing to do is to check if at all there is any-
+		 * thing contained in the response or if all the work was for
+		 * nothing. 
+		 * Well, if all was for nothing we at least add an error message...
+		 */
+		
+		if (mergerResponse.getListContextElementResponse() == null
+				|| mergerResponse.getListContextElementResponse().isEmpty()) {
+
+			/*
+			 * The details of the error message are taken from the 
+			 * discovery response if present.
+			 */
+			String details = null;
+			if(discoveryResponse != null && discoveryResponse.getErrorCode() != null)
+				details = "Discovery response: "+discoveryResponse.getErrorCode().getReasonPhrase()+" (details: "+
+			discoveryResponse.getErrorCode().getDetails()+")";
+			
+			logger.debug("No query results to return! Discovery response:" + discoveryResponse.toString());
+			
+			mergerResponse.setErrorCode(new StatusCode(
+					Code.CONTEXTELEMENTNOTFOUND_404.getCode(),
+					ReasonPhrase.CONTEXTELEMENTNOTFOUND_404.toString(),
+					details));
+
+		}
+		
+
+		return mergerResponse;
+
+	} 
+	
 
 	/**
 	 * This method is destructive: it changes the input contextElementResponse.

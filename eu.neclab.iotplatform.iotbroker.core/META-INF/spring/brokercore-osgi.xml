@@ -13,11 +13,18 @@
 		interface="eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface" />
 		
 	<osgi:reference id="ResultFilterInterface"
-		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface" cardinality="0..1"></osgi:reference>
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface" 
+		cardinality="0..1" 
+		timeout="0"
+		>		
+		</osgi:reference>
 
 		<!-- cardinality="0..1" it is used for specify that the reference is optional  -->
 	<osgi:reference id="BigDataRepositoryInterface"
-		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.BigDataRepository" cardinality="0..1"></osgi:reference>
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.BigDataRepository" 
+		cardinality="0..1"
+		timeout="0"
+		></osgi:reference>
 
 
 	<osgi:reference id="Ngsi9Interface"
@@ -42,7 +49,11 @@
 	<osgi:reference id="OutgoingSubStorage"
 		interface="eu.neclab.iotplatform.iotbroker.storage.OutgoingSubscriptionInterface"></osgi:reference>
 
-
+	<!-- For the list of query services--> 
+	<osgi:list id="QueryServices"
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.QueryService"
+		cardinality = "0..N"
+		></osgi:list>
 
 
 

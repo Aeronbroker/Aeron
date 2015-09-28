@@ -72,7 +72,7 @@ public class ContextRegistration extends NgsiStructure {
 	@JsonProperty("attributes")
 	private List<ContextRegistrationAttribute> contextRegistrationAttribute = null;
 
-	@XmlElementWrapper(name = "registrationMetaData")
+	@XmlElementWrapper(name = "registrationMetadata")
 	@XmlElement(name = "contextMetadata")
 	private List<ContextMetadata> contextMetadata = null;
 

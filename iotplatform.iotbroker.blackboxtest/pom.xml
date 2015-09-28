@@ -1,0 +1,54 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>eu.neclab</groupId>
+	<artifactId>iotplatform.iotbroker.blackboxtest</artifactId>
+	<version>4.4.3</version>
+	<packaging>jar</packaging>
+
+	<name>iotplatform.iotbroker.blackboxtest</name>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mock-server</groupId>
+			<artifactId>mockserver-netty</artifactId>
+			<version>RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.neclab.iotplatform</groupId>
+			<artifactId>ngsi.api</artifactId>
+			<version>4.4.3</version>
+		</dependency>
+				<dependency>
+			<groupId>eu.neclab.iotplatform</groupId>
+			<artifactId>iotbroker.commons</artifactId>
+			<version>4.4.3</version>
+		</dependency>
+	</dependencies>
+	
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.3</version>
+        <configuration>
+          <source>5</source>
+          <target>5</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+	
+</project>

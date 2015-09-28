@@ -26,6 +26,10 @@
 		<property name="agentWrapper" ref="agentWrapp"></property>
 		<property name="resultFilter" ref="ResultFilterInterface"></property>
 		<property name="bigDataRepository" ref="BigDataRepositoryInterface"></property>
+		
+		<!-- for the list of query services--> 
+		<property name="queryServiceList" ref="QueryServices"></property>
+		
 	</bean>
 
 	<!-- <bean id="requestThread" class="eu.neclab.iotplatform.iotbroker.core.RequestThread">

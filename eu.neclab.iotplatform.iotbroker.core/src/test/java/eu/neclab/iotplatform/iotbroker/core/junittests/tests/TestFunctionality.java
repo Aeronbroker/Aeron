@@ -211,6 +211,9 @@ public class TestFunctionality {
 		EasyMock.verify(ngsi9InterfaceMock);
 		EasyMock.verify(ngsi10RequesterMock);
 		
+		//manually remove the details from the broker response
+		brokerResp.getErrorCode().setDetails(null);
+		
 		assertEquals(brokerResp,queryResp_notFound);
 		
 		logger.info("Successfully tested FIWARE.Feature.IoT.BackendIoTBroker.Query.Restriction");

@@ -71,7 +71,6 @@ public class RequestThread implements Runnable {
 	private QueryContextRequest request;
 	private URI uri;
 	private QueryResponseMerger merger;
-	private CountDownLatch count;
 
 	private Ngsi10Requester requestor;
 
@@ -109,16 +108,15 @@ public class RequestThread implements Runnable {
 	 *            it will decrement the latch.
 	 * @param additionalRequestList
 	 */
-	public RequestThread(ResultFilterInterface resultFilter,
+	public RequestThread(
 			Ngsi10Requester requestor, QueryContextRequest request, URI uri,
-			QueryResponseMerger merger, CountDownLatch count,
+			QueryResponseMerger merger,
 			List<AssociationDS> additionalRequestList) {
 
 		this.requestor = requestor;
 		this.request = request;
 		this.uri = uri;
 		this.merger = merger;
-		this.count = count;
 		this.additionalRequestList = additionalRequestList;
 
 	}
@@ -243,7 +241,6 @@ public class RequestThread implements Runnable {
 			logger.debug("Start Merger!");
 			logger.debug("Response to put into merger: " + response);
 			merger.put(response);
-			count.countDown();
 		}
 
 	}

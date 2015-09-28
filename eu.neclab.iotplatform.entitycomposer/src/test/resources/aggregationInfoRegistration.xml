@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This xml file is an xml example for a registration that contains
+aggregation information to assemble attribute values from sets of
+other attribute values. 
+ -->
+<discoverContextAvailabilityResponse>
+	<contextRegistrationResponseList>
+		<contextRegistrationResponse>
+			<contextRegistration>
+				<entityIdList>
+					<entityId type="Room" isPattern="false">
+						<id>ConferenceRoom</id>
+					</entityId>
+				</entityIdList>
+				<contextRegistrationAttributeList>
+					<contextRegistrationAttribute>
+						<name>temperature</name>
+						<isDomain>false</isDomain>						
+					</contextRegistrationAttribute>
+				</contextRegistrationAttributeList>
+				<providingApplication></providingApplication>
+				<registrationMetadata>
+					<contextMetadata>
+						<name>aggregationInfo</name>
+						<type>org.fiware.type.metadata.sourceinformation</type>
+						<value>
+							<sourceType>org.fiware.type.sourceinformation.aggregation</sourceType>
+							<sourceData>
+								<targetEntity type="Room" isPattern="false">
+									<id>ConferenceRoom</id>						
+								</targetEntity>
+								<sourceEntityList>
+									<entityId type="TemperatureSensor" isPattern="false">
+										<id>Sensor_A</id>						
+									</entityId>
+									<entityId type="TemperatureSensor" isPattern="false">
+										<id>Sensor_B</id>						
+									</entityId>
+								</sourceEntityList>
+								<attributeAssociationList>
+									<attributeAssociation>
+										<sourceAttribute>sensorValue</sourceAttribute>
+										<targetAttribute>temperature</targetAttribute>
+									</attributeAssociation>
+								</attributeAssociationList>
+								<aggregationType>
+									AVG
+								</aggregationType>
+							</sourceData>
+						</value>
+					</contextMetadata>
+				</registrationMetadata>
+			</contextRegistration>
+		</contextRegistrationResponse>
+	</contextRegistrationResponseList>
+</discoverContextAvailabilityResponse>

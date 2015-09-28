@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>eu.neclab.iotplatform</groupId>
 		<artifactId>IoTbrokerParent</artifactId>
-		<version>4.3.3-SNAPSHOT</version>
+		<version>4.4.3</version>
 		<relativePath>../IoTbrokerParent</relativePath>
 	</parent>
 
@@ -50,6 +50,7 @@
 
 
 	<modules>
+		<!-- <module>../IoTbrokerParent</module> -->
 		<module>../tomcat-configuration-fragment</module>
 		<module>../eu.neclab.iotplatform.iotbroker.commons</module>
 		<module>../eu.neclab.iotplatform.iotbroker.storage</module>
@@ -58,7 +59,8 @@
 		<module>../eu.neclab.iotplatform.iotbroker.restcontroller</module>
 		<module>../eu.neclab.iotplatform.ngsi.api</module>
 		<module>../eu.neclab.iotplatform.iotbroker.ext.resultfilter</module>
- 		<module>../eu.neclab.iotplatform.couchdb</module> 
+		<module>../eu.neclab.iotplatform.entitycomposer</module>		
+ 		<module>../eu.neclab.iotplatform.couchdb</module>
 	</modules>
 
 
