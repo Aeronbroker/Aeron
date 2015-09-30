@@ -1,0 +1,31 @@
+# This is the dockerfile for IoT Broker version 4.4.3, September 2015
+
+FROM ubuntu
+
+MAINTAINER 'NEC Laboratories Europe, Tobias Jacobs, tobias.jacobs@neclab.eu'
+
+RUN apt-get update
+
+RUN apt-get install maven -y
+
+RUN apt-get install default-jdk -y
+
+RUN apt-get install git -y
+
+WORKDIR /root
+
+RUN git clone https://github.com/Aeronbroker/Aeron.git
+
+WORKDIR /root/Aeron/IoTbrokerParent
+
+RUN mvn install
+
+WORKDIR /root/Aeron/eu.neclab.iotplatform.iotbroker.builder/
+
+RUN mvn install
+
+WORKDIR /root/Aeron/IoTBroker-runner
+
+RUN chmod +x unix64_start-IoTBroker.sh
+
+CMD bash -C '/root/Aeron/IoTBroker-runner/unix64_start-IoTBroker.sh'
