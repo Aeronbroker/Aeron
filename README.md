@@ -5,7 +5,7 @@ IoT Broker is the FIWARE reference implementation by the IoT Broker Generic Enab
 
 The IoT Broker is an Internet-of-Things middleware based on the FIWARE NGSI standard. It is provided by NEC Laboratories Europe as part of their contribution to the European Future Internet Platform FIWARE.
 
-IoT Broker Documentation
+IoT Broker References
 ---
 
 | Document                    | Reference                                                                                                        | Contents |
@@ -18,6 +18,7 @@ IoT Broker Documentation
 |IoT Broker Installation and Administration guide| https://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/IoT_Broker_-_Installation_and_Administration_Guide | Installation guide (for binary release of IoT Broker) and administration guide.
 |IoT Broker User and Programmer Guide| https://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/IoT_Broker_-_User_and_Programmers_Guide | Guide showing some toy interactions with the IoT Broker. |
 |IoT Broker extension point documentation| [doc/extensionpoint.md](./doc/extensionpoint.md) | Documentation on how to write and use plugins for additional data source types |
+|IoT Broker on DockerHub | https://hub.docker.com/r/fiware/iotbroker/ | DockerHub Repository for IoT Broker docker image |
 | IoT Broker in FIWARE catalogue   | http://catalogue.fiware.org/enablers/iot-broker                                                             | Access to IoT Broker binaries and images. |
 
 
