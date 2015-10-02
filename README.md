@@ -1,3 +1,5 @@
+This project is part of [FIWARE](https://www.fiware.org/).
+
 IoT Broker
 ===========
 
