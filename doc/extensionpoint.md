@@ -33,6 +33,12 @@ as parameter a *QueryContextRequest* object and a list of *ContextRegistration* 
 For a guiding example, please refer to the existing plugin 'eu.neclab.iotplatform.entitycomposer'. This plugin exposes its Query Service by means of Spring OSGi; see the 'eu.neclab.iotplatform.entitycomposer/META-INF/spring' folder. 
 The Query Service interface is implemented by the class *eu.neclab.iotplatform.entitycomposer.CompositeEntityQueryService*. This class realizes a Query Service which reads entity composition information (i.e. information how to compose entities from other entities) from context registrations and executes these entity compositions; see the documentation of this plugin for details.
 
+How to Register Data Sources for Custom Query Services
+---
+Through the *interfaces.QueryService* interface, query services not only retrieve the application's NGSI query, but also the relevant context registrations retrieved from the IoT Discovery GE. Thus, query services can interpret the context registrations in order to query non-NGSI data sources. 
+
+It is recommended that the details about such non-NGSI data sources are written in the registration metadata of context registrations. The best practice to do so is to define a metadata item with metadata type **
+
 Further Extension Points
 ---------
 Extension points for FIWARE NGSI subscriptions and updates are planned to be realized in future releases.
