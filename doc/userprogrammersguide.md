@@ -1,14 +1,59 @@
-= Introduction =
-Welcome the IoT Broker GE User and Programmer Guide. The IoT Broker is the component implemented by NEC in the IoT WP (WP5). It is built in JAVA over OSGI using standard interface NGSI 9/10 to comunicate with the other components/GEs. The online documents are being continuously updated and improved, and the FI-WARE wiki will be the appropriate place to get the most up-to-date information on this GE.
+Introduction
+==
 
-= User Guide =
+Welcome to the Installation and Administration Guide for the IoT Broker GE reference implementation. This guide explains how to interact with the IoT Broker GE from the perspective of users and developers.
+
+API walkthrough
+==
+
+For more details about the data flows during the different interactions, please refer to the [FIWARE IoT Broker GE Open Specification](https://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/FIWARE.OpenSpecification.IoT.Backend.IoTBroker).
+
+FIWARE NGSI 10
+--
+
+The IoT Broker GE is a middleware making data from multiple providers accessible for data consumers. The interaction with both data providers and data consumers is taking place via the FIWARE NGSI 10 API (the context data API of FIWARE NGSI).
+
+For using the IoT Broker, the API needs to be contacted via HTTP the server on port 80 (if default configuration applies) with one of the HTTP methods (GET, POST, PUT, DELETE) according to the NGSI-10 specification.
+
+The FIWARE NGSI-10 interactions are
+
+ * context queries (e.g. via HTTP POST to `{IoT Broker IP}/ngsi10/queryContext`)
+ * context subscription (e.g. via HTTP POST to `{IoT Broker IP}/ngsi10/subscribeContext`)
+ * context updates (e.g. via HTTP POST to `{IoT Broker IP}/ngsi10/updateContext`)
+
+For details on the FIWARE NGSI-10 API exposed by the IoT Broker, please refer to the [API specs](http://aeronbroker.github.io/Aeron/).
+
+FIWARE NGSI 9
+--
+  
+The each Iot Broker instance needs to interact with an instance of the IoT Discovery GE. This interaction is done via the FIWARE NGSI 9 API (the context availability API of FIWARE NGSI). However, this interaction is mostly transparent to the user.
+
+
+Data Provider Perspective
+==
+Data providers who want to make their data available to an IoT Broker instance have two possibilities
+
+1. Expose a FIWARE NGSI-10 interface which the IoT Broker can query for data whenever needed. This interface and the data it provides needs to be registered using the FIWARE NGSI-0 *registerContext* operation. Please note that the IoT Broker does not handle registrations by itself. Instead, the registration has to be sent to the instance of the IoT Discovery GE responsible for this FIWARE IoT installation.
+
+2. Push data updates towards the IoT Broker using the *updateContext* method provided by FIWARE NGSI-10. This is the simpler kind of interactions, because data providers do not need to expose an NGSI API. On the downside, this interaction mode potentially uses network resources inefficiently, because the data push takes place regardless of whether the data is needed by the IoT Broker or not.
+
+Data Consumer Perspective
+==
+
+Data consumers can retrieve context data from the IoT Broker via the FIWARE NGSI-10 interface as described above.
+
+Additionally, the IoT Broker offers a simple web interface accessible by entering its network address into a browser (e.g. "localhost" when the IoT Broker is running on a local machine). From the home page the user can access a query interface for basic NGSI queries.
+
+Developer Guide
+==
+
+The IoT Broker is based on the OSGi framework and has a dedicated extension point for custom data retrieval and data processing plugins. Please see [here]() for details
+
+
+User Guide
+==
 
 The NGSI-10 reference ([[OMA_NGSI-10]]) describes how to use the NGSI-10 API in detail. 
-For using the IoT Broker you need to contact via HTTP the server on port 80 with one of the REST HTTP METHOD (GET, POST, PUT, DELETE) according to the NGSI-10 reference document.
-
-In addition to the basic OMA NGSI 10 interface, the NEC IoT Broker also implements full support of the NGSI entity-to-entity association concept; please follow this [https://forge.fi-ware.eu/plugins/mediawiki/wiki/fiware/index.php/NGSI_association link] for documentation.
-
-In the following section it is detailed how to use the Iot Broker GE from a user or developer perspective.
 
 = Developer Guide =
 
