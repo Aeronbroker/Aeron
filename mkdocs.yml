@@ -9,4 +9,9 @@ theme: readthedocs
 extra_css: ["http://fiware.org/style/monokai_sublime.css"]
 pages:
   - Home: index.md
+  - 'Getting Started': '../README.MD'
   - 'Installation and Administration Guide': 'installadminguide.md'
+  - 'Advanced Topics':
+	- 'Composing Entities': '../eu.neclab.iotplatform.entitycomposer/README.MD'
+	- 'Writing Own Plugins': 'extensionpoint.md'
+  
