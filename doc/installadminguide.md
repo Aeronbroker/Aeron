@@ -24,7 +24,7 @@ The easiest way to come to a running version of the IoT Broker is to run it as a
 
 ```
  docker pull fiware/iotbroker
- ```
+```
 
 and for running it the command 
 
