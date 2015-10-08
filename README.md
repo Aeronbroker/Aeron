@@ -186,6 +186,7 @@ Minimum System Requirements
 ---
 
 Minimum System Requirements:
+
 * Processor: 1 CPU 1.2 GHZ
 * RAM: 1 GB
 * DISK Space:50 MB
