@@ -52,10 +52,13 @@ IoT Broker System Configuration
 ==
 
 The basic configuration of the IoT Broker is done via configuration of the OSGi runtime environment. In the pre-configured Equinox environment included by this release (*IoTBroker-runner* folder), this is done by the file */configuration/config.ini*. The most important parameters to specify here are
+
 * The port the IoT Broker NGSI interface listens to. The default is port 80.
 * The location of the *fiwareRelease* folder where further configuration information is found. As this needs to be an absolute path, setting this parameter is for most installations necessary in order to get the IoT Broker running.
 
-Further configuration is done by files in the *fiwareRelease* folder. The most important configuration file is found in *fiwareRelease/iotbrokerconfig/iotBroker/config/config.xml*. Here the user can set
+Further configuration is done by files in the *fiwareRelease* folder. The most important configuration file is found in
+
+* fiwareRelease/iotbrokerconfig/iotBroker/config/config.xml*. Here the user can set
 * **ngsi9Uri** and **pathPreFix_ngsi9:** The URL of the Iot Discovery GE instance the IoT Broker communicates with in order to retrieve the Context Registrations it needs.
 * **pathPreFix_ngsi10:** The root of the FIWARE NGSI resource tree the IoT Broker exposes.
 * **pub_sub_addr:** The address of an NGSI component where updates are forwarded to (e.g. a FIWARE Context Broker GE instance).
@@ -93,6 +96,7 @@ The logger is configured in  *fiwareRelease/iotbrokerconfig/bundleConfigurations
 ```
 
 In the example above, the log level is selected in the first line. The possible log levels are:
+
 * log4j.rootLogger=INFO
 * log4j.rootLogger=DEBUG
 
