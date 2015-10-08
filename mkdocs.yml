@@ -1,17 +1,17 @@
 site_name: FIWARE IoT Broker
 repo_url: https://github.com/Aeronbroker/Aeron.git
 site_description: IoT Broker documentation
-docs_dir: .
+docs_dir: doc
 site_dir: html
 markdown_extensions: [toc,fenced_code]
 use_directory_urls: false
 theme: readthedocs
 extra_css: ["http://fiware.org/style/monokai_sublime.css"]
 pages:
-  - Home: 'doc/index.md'
-  - 'Getting Started': README.md
-  - 'Installation and Administration Guide': 'doc/installadminguide.md'
+  - Home: 'index.md'
+  - 'Getting Started': ../README.md
+  - 'Installation and Administration Guide': 'installadminguide.md'
   - 'Advanced Topics':
-    - 'Composing Entities': 'eu.neclab.iotplatform.entitycomposer/README.MD'
-    - 'Writing Own Plugins': 'doc/extensionpoint.md'
+    - 'Composing Entities': '../eu.neclab.iotplatform.entitycomposer/README.MD'
+    - 'Writing Own Plugins': '../doc/extensionpoint.md'
   
