@@ -226,6 +226,7 @@ Resource consumption
 --
 
 In the idle State the IoT Broker consumption is:
+
 * Memory consumption = 20MB (idle state)
 * CPU Usage = 0% (idle state)
 * Thread runnning = 21 (idle state)
