@@ -12,6 +12,6 @@ pages:
   - 'Getting Started': README.MD
   - 'Installation and Administration Guide': 'doc/installadminguide.md'
   - 'Advanced Topics':
-    - 'Composing Entities': 'eu.neclab.iotplatform.entitycomposer/README.MD'
+    - 'Composing Entities': 'eu.neclab.iotplatform.entitycomposer/README.md'
     - 'Writing Own Plugins': 'doc/extensionpoint.md'
   
