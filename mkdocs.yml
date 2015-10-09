@@ -10,5 +10,6 @@ extra_css: ["http://fiware.org/style/monokai_sublime.css"]
 pages:
   - Home: 'index.md'
   - 'Installation and Administration Guide': 'installadminguide.md'
+  - 'User and Developer Guide': 'userprogrammersguide.md'
 
   
