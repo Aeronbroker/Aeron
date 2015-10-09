@@ -50,7 +50,7 @@ Developer Guide
 
 The IoT Broker is based on the OSGi framework and is composed of a number of different plugins. The role of the individual plugins is described in the [README](https://github.com/Aeronbroker/Aeron/blob/master/README.md).
 
-Importantly, the IoT broker core has a dedicated extension point for custom data retrieval and data processing plugins. Please see [here](extensionpoint.md) for details on how to write custom plugins.
+Importantly, the IoT broker core has a dedicated extension point for custom data retrieval and data processing plugins. Please see [here](https://github.com/Aeronbroker/Aeron/blob/master/doc/extensionpoint.md) for details on how to write custom plugins.
 
 
 
