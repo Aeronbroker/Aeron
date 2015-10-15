@@ -49,23 +49,52 @@ import org.codehaus.jackson.map.JsonSerializer;
 import org.codehaus.jackson.map.SerializerProvider;
 import org.w3c.dom.Node;
 
+import eu.neclab.iotplatform.ngsi.api.datamodel.Circle;
+import eu.neclab.iotplatform.ngsi.api.datamodel.PEPCredentials;
+import eu.neclab.iotplatform.ngsi.api.datamodel.Point;
+import eu.neclab.iotplatform.ngsi.api.datamodel.Polygon;
+import eu.neclab.iotplatform.ngsi.api.datamodel.Segment;
+
 /**
- *  Serializer to convert metadata values to JSON format.
+ * Serializer to convert metadata values to JSON format.
  */
-public class MetadataObjectValueSerializer extends JsonSerializer<Object>{
+public class MetadataObjectValueSerializer extends JsonSerializer<Object> {
 
 	@Override
 	public void serialize(Object value, JsonGenerator jgen,
 			SerializerProvider provider) throws IOException,
 			JsonProcessingException {
 
-		if(value instanceof Node){
+		if (value instanceof Node) {
+
 			Node node = (Node) value;
 			String textValue = node.getFirstChild().getTextContent();
 			jgen.writeString(textValue);
-			//jgen.writeStringField("value", textValue);
-		}else{
+			// jgen.writeStringField("value", textValue);
+
+		} else if (value instanceof Segment) {
+
+			jgen.writeObject((Segment) value);
+
+		} else if (value instanceof Point) {
+
+			jgen.writeObject((Point) value);
+
+		} else if (value instanceof Circle) {
+
+			jgen.writeObject((Circle) value);
+
+		} else if (value instanceof Polygon) {
+
+			jgen.writeObject((Polygon) value);
+
+		} else if (value instanceof PEPCredentials) {
+
+			jgen.writeObject((PEPCredentials) value);
+
+		} else {
 			provider.defaultSerializeValue(value, jgen);
+
 		}
 
 	}

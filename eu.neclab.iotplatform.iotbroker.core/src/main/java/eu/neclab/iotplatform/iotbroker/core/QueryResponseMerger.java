@@ -41,6 +41,7 @@
  ******************************************************************************/
 package eu.neclab.iotplatform.iotbroker.core;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -49,23 +50,23 @@ import java.util.List;
 import java.util.Map;
 
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
+import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
 
 /**
  * Objects of this class have the purpose to merge multiple
- * {@link QueryContextResponse} objects into a single QueryContextResponse.
- * <br>
- * By the put method, further QueryContextResponse objects are inserted. By 
- * calling the get method, a QueryContextResponse merging all objects 
- * inserted so far is retrieved. 
+ * {@link QueryContextResponse} objects into a single QueryContextResponse. <br>
+ * By the put method, further QueryContextResponse objects are inserted. By
+ * calling the get method, a QueryContextResponse merging all objects inserted
+ * so far is retrieved.
  */
 public class QueryResponseMerger {
 	// Primary Key is EntityId and SecondaryKey is AttributeDomain
 	// if no AttributeDomain present we assume empyString is used as Secondary
 	// Key
-	private final Map<String, Map<String, ContextElementResponse>> storeTable = Collections
-			.synchronizedMap(new HashMap<String, Map<String, ContextElementResponse>>());
+	private final Map<Integer, Map<String, ContextElementResponse>> storeTable = Collections
+			.synchronizedMap(new HashMap<Integer, Map<String, ContextElementResponse>>());
 
 	final QueryContextRequest request;
 
@@ -73,20 +74,35 @@ public class QueryResponseMerger {
 	 * Creates a new QueryResponseMerger instance.
 	 * 
 	 * @param request
-	 * This field is supposed to contain the original {@link QueryContextRequest} to
-	 * which the responses represented by this instance are corresponding.
-	 * However, the parameter is not used in the current implementation, so it can
-	 * as well be set to <code>null</code>. 
+	 *            This field is supposed to contain the original
+	 *            {@link QueryContextRequest} to which the responses represented
+	 *            by this instance are corresponding. However, the parameter is
+	 *            not used in the current implementation, so it can as well be
+	 *            set to <code>null</code>.
 	 */
 	public QueryResponseMerger(QueryContextRequest request) {
 		this.request = request;
+	}
+
+	private int generateId(EntityId entityId) {
+
+		final int prime = 31;
+		int result = 1;
+		result = prime
+				* result
+				+ ((entityId.getId() == null) ? 0 : entityId.getId().hashCode());
+		result = prime
+				* result
+				+ ((entityId.getType() == null) ? 0 : entityId.getType()
+						.hashCode());
+		return result;
 	}
 
 	/**
 	 * Adds a new {@link QueryContextResponse} to the merger.
 	 * 
 	 * @param response
-	 * The QueryContextResponse to add.
+	 *            The QueryContextResponse to add.
 	 */
 	public void put(QueryContextResponse response) {
 
@@ -94,13 +110,17 @@ public class QueryResponseMerger {
 			return;
 		}
 
-		for (int i = 0; i < response.getListContextElementResponse().size(); i++) {
+		for (ContextElementResponse contextElementResponse : response
+				.getListContextElementResponse()) {
 
-			String id = response.getListContextElementResponse().get(i)
-					.getContextElement().getEntityId().getId();
+			// String id = response.getListContextElementResponse().get(i)
+			// .getContextElement().getEntityId().getId();
 
-			String attributeDomain = response.getListContextElementResponse()
-					.get(i).getContextElement().getAttributeDomainName();
+			Integer id = generateId(contextElementResponse.getContextElement()
+					.getEntityId());
+
+			String attributeDomain = contextElementResponse.getContextElement()
+					.getAttributeDomainName();
 
 			if (attributeDomain == null) {
 
@@ -121,22 +141,19 @@ public class QueryResponseMerger {
 					contextElemResp
 							.getContextElement()
 							.getContextAttributeList()
-							.addAll(response.getListContextElementResponse()
-									.get(i).getContextElement()
+							.addAll(contextElementResponse.getContextElement()
 									.getContextAttributeList());
 
 				} else {
 
-					existingMap.put(attributeDomain, response
-							.getListContextElementResponse().get(i));
+					existingMap.put(attributeDomain, contextElementResponse);
 
 				}
 
 			} else {
 
 				existingMap = new HashMap<String, ContextElementResponse>();
-				existingMap.put(attributeDomain, response
-						.getListContextElementResponse().get(i));
+				existingMap.put(attributeDomain, contextElementResponse);
 				storeTable.put(id, existingMap);
 
 			}
@@ -163,8 +180,8 @@ public class QueryResponseMerger {
 				// Check if the attributeDomain is empty string and substitute
 				// it with null
 				if (contEle.getContextElement().getAttributeDomainName() != null
-						&& "".equals(contEle.getContextElement().getAttributeDomainName()
-								)) {
+						&& "".equals(contEle.getContextElement()
+								.getAttributeDomainName())) {
 					contEle.getContextElement().setAttributeDomainName(null);
 					contextElementRespList.add(contEle);
 				}

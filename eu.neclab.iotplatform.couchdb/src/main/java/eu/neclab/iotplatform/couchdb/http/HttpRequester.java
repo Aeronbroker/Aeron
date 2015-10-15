@@ -54,7 +54,7 @@ public class HttpRequester {
 	/** The logger. */
 	private static Logger logger = Logger.getLogger(HttpRequester.class);
 
-	public static FullHttpResponse sendPost(URL url, String data,
+	public FullHttpResponse sendPost(URL url, String data,
 			String contentType) throws Exception {
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
@@ -114,7 +114,7 @@ public class HttpRequester {
 		}
 	}
 
-	public static FullHttpResponse sendGet(URL url) {
+	public FullHttpResponse sendGet(URL url) {
 
 		FullHttpResponse httpResponse = null;
 
@@ -162,8 +162,11 @@ public class HttpRequester {
 				httpResponse.setBody(response.toString());
 
 				// logger.info("Response Code : " + responseCode);
-				logger.info("\nResponse Code : " + responseCode + "\n"
-						+ "Response : " + response.toString());
+				if (logger.isDebugEnabled()) {
+					logger.debug("\nResponse Code : " + responseCode + "\n"
+							+ "Response : " + response.toString());
+				}
+
 
 				connection.disconnect();
 			}
@@ -197,7 +200,7 @@ public class HttpRequester {
 
 	}
 
-	public static FullHttpResponse sendPut(URL url, String data,
+	public FullHttpResponse sendPut(URL url, String data,
 			String contentType) throws Exception {
 
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -259,7 +262,7 @@ public class HttpRequester {
 
 	}
 
-	public static FullHttpResponse sendDelete(URL url) throws Exception {
+	public FullHttpResponse sendDelete(URL url) throws Exception {
 
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
@@ -271,18 +274,18 @@ public class HttpRequester {
 
 		int responseCode = con.getResponseCode();
 		logger.info("\nResponse Code : " + responseCode + "\n");
-		
+
 		FullHttpResponse httpResponse = new FullHttpResponse(
 				HttpVersion.HTTP_1_0, con.getResponseCode(),
 				con.getResponseMessage());
-		
+
 		con.disconnect();
-		
+
 		return httpResponse;
 
 	}
 
-	public static void sendRequest(URL url, String method, String data,
+	public void sendRequest(URL url, String method, String data,
 			String contentType) throws Exception {
 
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();

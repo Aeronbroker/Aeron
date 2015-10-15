@@ -53,6 +53,7 @@ import org.apache.log4j.Logger;
 
 import eu.neclab.iotplatform.ngsi.api.datamodel.OperationScope;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Restriction;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ScopeTypes;
 
 /**
  * This class is used to keep trace of QueryContextRequest and
@@ -62,10 +63,9 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.Restriction;
  * 
  */
 public class TraceKeeper {
-	
-	private static Logger logger = Logger
-			.getLogger(TraceKeeper.class);
-	
+
+	private static Logger logger = Logger.getLogger(TraceKeeper.class);
+
 	/**
 	 * @return The URL where agents should send there notifications to. This is
 	 *         the address where the NGSI RESTful interface is reachable.
@@ -81,7 +81,7 @@ public class TraceKeeper {
 		}
 		return ref;
 	}
-	
+
 	public static Restriction addHopToTrace(Restriction restriction) {
 
 		/*
@@ -113,7 +113,7 @@ public class TraceKeeper {
 
 			// Create the Trace OperationScope
 			OperationScope traceOperationScope = new OperationScope();
-			traceOperationScope.setScopeType("Trace");
+			traceOperationScope.setScopeType(ScopeTypes.Trace.toString());
 			traceOperationScope.setScopeValue(getRefURl());
 
 			// Add the OperationScope
@@ -138,7 +138,11 @@ public class TraceKeeper {
 
 				if (operationScope.getScopeType() != null
 						&& !operationScope.getScopeType().isEmpty()
-						&& operationScope.getScopeType().equals("Trace")) {
+						&& ScopeTypes.Trace
+								.toString()
+								.toLowerCase()
+								.equals(operationScope.getScopeType()
+										.toLowerCase())) {
 					/*
 					 * Trace OperationScope found
 					 */
@@ -153,7 +157,7 @@ public class TraceKeeper {
 				 * found. So it will be created.
 				 */
 				traceOperationScope = new OperationScope();
-				traceOperationScope.setScopeType("Trace");
+				traceOperationScope.setScopeType(ScopeTypes.Trace.toString());
 				traceOperationScope.setScopeValue(getRefURl());
 				operationScopeList.add(traceOperationScope);
 			} else {
@@ -186,20 +190,25 @@ public class TraceKeeper {
 
 			if (operationScope.getScopeType() != null
 					&& !operationScope.getScopeType().isEmpty()
-					&& operationScope.getScopeType().equals("Trace")) {
+					&& ScopeTypes.Trace
+							.toString()
+							.toLowerCase()
+							.equals(operationScope.getScopeType().toLowerCase())) {
 
 				String trace = (String) operationScope.getScopeValue();
 
 				String[] hops = trace.split(";");
 				for (int i = 0; i < hops.length; i++) {
 					try {
-						if (new URI(hops[i]).equals(new URI(hopReference)) ||
-								new URI(hops[i]+"/").equals(new URI(hopReference)) ||
-								new URI(hops[i]).equals(new URI(hopReference+"/")) ) {
+						if (new URI(hops[i]).equals(new URI(hopReference))
+								|| new URI(hops[i] + "/").equals(new URI(
+										hopReference))
+								|| new URI(hops[i]).equals(new URI(hopReference
+										+ "/"))) {
 							return true;
 						}
 					} catch (URISyntaxException e) {
-						logger.debug("Exception: "+e);
+						logger.debug("Exception: " + e);
 					}
 				}
 				break;

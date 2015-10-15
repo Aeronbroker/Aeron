@@ -57,7 +57,7 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.Segment;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Vertex;
 
 /**
- *  Deserializer to obtain operation scopes from JSON objects.
+ * Deserializer to obtain operation scopes from JSON objects.
  */
 public class MetadataValueDeserializer extends JsonDeserializer<Object> {
 
@@ -70,7 +70,7 @@ public class MetadataValueDeserializer extends JsonDeserializer<Object> {
 	 * 312.0, "centerLongitude" : 564.0, "radius" : 8.0 } }, { "scopeType" :
 	 * "segment", "scopeValue" : { "height" : 234234.0, "nw_Corner" :
 	 * "312312.2", "se_Corner" : "423423.212" } (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * org.codehaus.jackson.map.JsonDeserializer#deserialize(org.codehaus.jackson
 	 * .JsonParser, org.codehaus.jackson.map.DeserializationContext)
@@ -79,7 +79,9 @@ public class MetadataValueDeserializer extends JsonDeserializer<Object> {
 	@Override
 	public Object deserialize(JsonParser jp, DeserializationContext ctxt)
 			throws IOException, JsonProcessingException {
+
 		JsonToken token = jp.getCurrentToken();
+
 		if (token.equals(JsonToken.START_OBJECT)) {
 			token = jp.nextToken();
 			if (token.equals(JsonToken.FIELD_NAME)) {
@@ -102,8 +104,7 @@ public class MetadataValueDeserializer extends JsonDeserializer<Object> {
 			}
 
 		} else {
-
-			return null;
+			return jp.getText();
 		}
 
 	}
@@ -113,7 +114,7 @@ public class MetadataValueDeserializer extends JsonDeserializer<Object> {
 	 * "se_Corner" : "423423.212" }
 	 */
 	private Object getSegment(JsonParser jp) throws JsonParseException,
-	IOException {
+			IOException {
 		JsonToken token = jp.getCurrentToken();
 
 		Segment result = new Segment();
@@ -138,7 +139,8 @@ public class MetadataValueDeserializer extends JsonDeserializer<Object> {
 	 * "scopeValue" : { "centerLatitude" : 312.0, "centerLongitude" : 564.0,
 	 * "radius" : 8.0 }
 	 */
-	private Object getCircle(JsonParser jp) throws JsonParseException, IOException {
+	private Object getCircle(JsonParser jp) throws JsonParseException,
+			IOException {
 		JsonToken token = jp.getCurrentToken();
 
 		Circle result = new Circle();
@@ -165,25 +167,26 @@ public class MetadataValueDeserializer extends JsonDeserializer<Object> {
 	 * "longitude" : 23125.22 }, { "latitude" : 12315.0, "longitude" : 23126.22
 	 * }, { "latitude" : 12316.0, "longitude" : 23127.22 } ] }
 	 */
-	private Object getPolygon(JsonParser jp) throws JsonParseException, IOException {
+	private Object getPolygon(JsonParser jp) throws JsonParseException,
+			IOException {
 		JsonToken token = jp.nextToken();
 
-
-		if(!token.equals(JsonToken.START_ARRAY)){
+		if (!token.equals(JsonToken.START_ARRAY)) {
 			throw new JsonParseException("Vertices has to be an array", null);
 		}
 		token = jp.nextToken();
 		Polygon result = new Polygon();
 		ArrayList<Vertex> vertices = new ArrayList<Vertex>();
-		while(!token.equals(JsonToken.END_ARRAY)){
-			if(token.equals(JsonToken.START_OBJECT)){
+		while (!token.equals(JsonToken.END_ARRAY)) {
+			if (token.equals(JsonToken.START_OBJECT)) {
 				Vertex vertex = new Vertex();
-				while(!token.equals(JsonToken.END_OBJECT)){
-					if(token.equals(JsonToken.FIELD_NAME)){
+				while (!token.equals(JsonToken.END_OBJECT)) {
+					if (token.equals(JsonToken.FIELD_NAME)) {
 						token = jp.nextToken();
-						if(jp.getCurrentName().equalsIgnoreCase("latitude")){
+						if (jp.getCurrentName().equalsIgnoreCase("latitude")) {
 							vertex.setLatitude(jp.getFloatValue());
-						}else if(jp.getCurrentName().equalsIgnoreCase("longitude")){
+						} else if (jp.getCurrentName().equalsIgnoreCase(
+								"longitude")) {
 							vertex.setLongitude(jp.getFloatValue());
 						}
 					}

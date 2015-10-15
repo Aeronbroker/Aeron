@@ -123,15 +123,6 @@ public class ThrottlingTask extends TimerTask {
 			logger.debug("subscription ID to notify: " + subId);
 
 			/*
-			 * Get the availability subscription
-			 */
-			List<String> subIdAgent = subContoller.getLinkAvSub().getAvailIDs(
-					subId);
-			logger.debug("Number of availability subscriptions corresponding to the incoming:"
-					+ subIdAgent.size());
-			logger.debug("First availability subscription:" + subIdAgent.get(0));
-
-			/*
 			 * Get the incoming subscription
 			 */
 			SubscribeContextRequest request = subContoller.getIncomingSub()

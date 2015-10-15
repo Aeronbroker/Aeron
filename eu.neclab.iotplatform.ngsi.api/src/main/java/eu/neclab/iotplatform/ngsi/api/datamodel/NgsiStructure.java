@@ -41,6 +41,7 @@
  ******************************************************************************/
 package eu.neclab.iotplatform.ngsi.api.datamodel;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 
@@ -50,9 +51,16 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.DeserializationConfig;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
+import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 
 /**
- *  Common super-type for NGSI data structure implementations.
+ * Common super-type for NGSI data structure implementations.
  */
 public abstract class NgsiStructure {
 
@@ -75,6 +83,34 @@ public abstract class NgsiStructure {
 		}
 
 		return result;
+
+	}
+
+	public String toJsonString() {
+
+		ObjectMapper mapper = new ObjectMapper();
+		SerializationConfig config1 = mapper.getSerializationConfig();
+		config1.setSerializationInclusion(Inclusion.NON_NULL);
+
+		String jsonString = "";
+
+		try {
+			// logger.info("----------------->"
+			// + mapper.writeValueAsString(this));
+
+			jsonString = mapper.writeValueAsString(this);
+		} catch (JsonGenerationException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		} catch (JsonMappingException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+
+		return jsonString;
 
 	}
 
@@ -101,5 +137,28 @@ public abstract class NgsiStructure {
 
 	}
 
+	public static Object parseStringToJson(String json, Class<?> clazz){
+		ObjectMapper mapper = new ObjectMapper();
+		Object object = null;
+		
+		
+		mapper.configure(
+				DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES,
+				false);
 
+		try {
+			object = mapper.readValue(json,
+					clazz);
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return object;
+	}
 }

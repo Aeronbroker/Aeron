@@ -84,10 +84,10 @@ import eu.neclab.iotplatform.ngsi.association.datamodel.AssociationDS;
  * applications arrive, or such subscriptions are updated
  * <p>
  * - handing availability notifications arriving from configuration management
- *
+ * 
  * Important to note, this class never writes to the storage but only reads from
  * it.
- *
+ * 
  */
 public class ConfManWrapper {
 	private static Logger logger = Logger.getLogger(ConfManWrapper.class);
@@ -190,7 +190,7 @@ public class ConfManWrapper {
 	}
 
 	/**
-	 *
+	 * 
 	 * @return Pointer to the Associations Utility.
 	 */
 	public AssociationsUtil getAssociationsUtil() {
@@ -210,11 +210,11 @@ public class ConfManWrapper {
 	/**
 	 * Calls the NGSI 9 UnsubscribeContextAvailability operation on the NGSI 9
 	 * Configuration Management component.
-	 *
+	 * 
 	 * @param uCAReq
 	 *            The NGSI 9 {@link UnsubscribeContextAvailabilityRequest}.
 	 * @return The NGSI 9 {@link UnsubscribeContextAvailabilityResponse}.
-	 *
+	 * 
 	 */
 	public UnsubscribeContextAvailabilityResponse receiveReqFrmSubscriptionController(
 			UnsubscribeContextAvailabilityRequest uCAReq) {
@@ -229,12 +229,12 @@ public class ConfManWrapper {
 	}
 
 	/*
-	 *  Note: the  method directly below is an alternative implementation that
-	 *  can replace the currently enabled implementation of
-	 *  "receiveReqFrmSubscriptionController" to enable subscription in case the
-	 *  configuration management does not support availability subscriptions. If the
-	 *  configuration management does support availability subscriptions the currently
-	 *  enabled implementation is to be preferred.
+	 * Note: the method directly below is an alternative implementation that can
+	 * replace the currently enabled implementation of
+	 * "receiveReqFrmSubscriptionController" to enable subscription in case the
+	 * configuration management does not support availability subscriptions. If
+	 * the configuration management does support availability subscriptions the
+	 * currently enabled implementation is to be preferred.
 	 */
 	/**
 	 * This function initiates the communication with configuration management
@@ -245,21 +245,21 @@ public class ConfManWrapper {
 	 * <p>
 	 * (2) makes a context availability subscription in order to be informed
 	 * about future data source availability
-	 *
+	 * 
 	 * Note that although the function is called with a
 	 * subscribeContextAvailabilityRequest as the parameter, it still makes a
 	 * discovery in addition.
-	 *
+	 * 
 	 * @param scaReq
 	 *            The NGSI 9 {@link SubscribeContextAvailabilityRequest}.
 	 * @return The NGSI 9 {@link SubscribeContextAvailabilityResponse}.
-	 *
+	 * 
 	 */
 	public SubscribeContextAvailabilityResponse receiveReqFrmSubscriptionControllerAlternative(
 			final SubscribeContextAvailabilityRequest scaReq) {
 
 		/*
-		 *
+		 * 
 		 * Create the operation scope for the discovery. As this is the reaction
 		 * to a subscription, the scope is 'IncludeAssociations' with value
 		 * 'SOURCES'. The operation scope is then added to the existing scopes
@@ -295,7 +295,7 @@ public class ConfManWrapper {
 		/*
 		 * If the discovery is unsuccessful, the function is aborted and returns
 		 * an error.
-		 *
+		 * 
 		 * Else the function is continued.
 		 */
 
@@ -316,7 +316,7 @@ public class ConfManWrapper {
 				ContextRegistrationResponse response = iter.next();
 				if (response.getContextRegistration().getListEntityId() == null
 						|| response.getContextRegistration().getListEntityId()
-						.isEmpty()) {
+								.isEmpty()) {
 
 					response.getContextRegistration().setListEntityId(
 							scaReq.getEntityIdList());
@@ -326,7 +326,7 @@ public class ConfManWrapper {
 				if (response.getContextRegistration()
 						.getContextRegistrationAttribute() == null
 						|| response.getContextRegistration()
-						.getContextRegistrationAttribute().isEmpty()) {
+								.getContextRegistrationAttribute().isEmpty()) {
 
 					Iterator<String> iterAttribute = scaReq.getAttributeList()
 							.iterator();
@@ -340,8 +340,8 @@ public class ConfManWrapper {
 
 					}
 					response.getContextRegistration()
-					.setListContextRegistrationAttribute(
-							conteRegAttrList);
+							.setListContextRegistrationAttribute(
+									conteRegAttrList);
 
 				}
 
@@ -357,7 +357,7 @@ public class ConfManWrapper {
 			 * Again, if this is unsuccessful, then the function is aborted and
 			 * an error is returned. (this behavior could be changed in a future
 			 * release)
-			 *
+			 * 
 			 * Otherwise, the function continues.
 			 */
 
@@ -366,7 +366,7 @@ public class ConfManWrapper {
 				return new SubscribeContextAvailabilityResponse(null, null,
 						new StatusCode(500,
 								ReasonPhrase.RECEIVERINTERNALERROR_500
-								.toString(), null));
+										.toString(), null));
 			} else if (scaRes.getErrorCode() == null
 					|| scaRes.getErrorCode().getCode() == 200) {
 
@@ -374,7 +374,7 @@ public class ConfManWrapper {
 				 * After also the availability subscription being successful,
 				 * the function returns a success message in the
 				 * SubscribeContextAvailabilityResponse.
-				 *
+				 * 
 				 * What is done in addition is to further process the result
 				 * from the discovery, but this is done in a different Thread.
 				 */
@@ -471,19 +471,19 @@ public class ConfManWrapper {
 	 * This function initiates the communication with configuration management
 	 * in reaction to a new subscription. In particular, this function
 	 * <p>
-	 * makes a context availability subscription in order to be informed
-	 * about future data source availability
-	 *
+	 * makes a context availability subscription in order to be informed about
+	 * future data source availability
+	 * 
 	 * @param scaReq
 	 *            The NGSI 9 {@link SubscribeContextAvailabilityRequest}.
 	 * @return The NGSI 9 {@link SubscribeContextAvailabilityResponse}.
-	 *
+	 * 
 	 */
 	public SubscribeContextAvailabilityResponse receiveReqFrmSubscriptionController(
 			final SubscribeContextAvailabilityRequest scaReq) {
 
 		/*
-		 *
+		 * 
 		 * Create the operation scope for the discovery. As this is the reaction
 		 * to a subscription, the scope is 'IncludeAssociations' with value
 		 * 'SOURCES'. The operation scope is then added to the existing scopes
@@ -504,18 +504,17 @@ public class ConfManWrapper {
 			scaReq.setRestriction(restriction);
 		}
 
-
 		/*
-		 * We now also make an availability subscription to config
-		 * management. Also this includes asking for SOURCES.
+		 * We now also make an availability subscription to config management.
+		 * Also this includes asking for SOURCES.
 		 */
 		final SubscribeContextAvailabilityResponse scaRes = ngsi9Impl
 				.subscribeContextAvailability(scaReq);
 		/*
-		 * Again, if this is unsuccessful, then the function is aborted and
-		 * an error is returned. (this behavior could be changed in a future
+		 * Again, if this is unsuccessful, then the function is aborted and an
+		 * error is returned. (this behavior could be changed in a future
 		 * release)
-		 *
+		 * 
 		 * Otherwise, the function continues.
 		 */
 
@@ -523,10 +522,9 @@ public class ConfManWrapper {
 				&& scaRes.getErrorCode().getCode() > 499) {
 			return new SubscribeContextAvailabilityResponse(null, null,
 					new StatusCode(500,
-							ReasonPhrase.RECEIVERINTERNALERROR_500
-							.toString(), null));
+							ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
+							null));
 		} else {
-
 
 			return scaRes;
 
@@ -534,16 +532,15 @@ public class ConfManWrapper {
 
 	}
 
-
 	/**
 	 * Processes the NGSI 9 NotifyContextAvailability operation. This operation
 	 * is called when an availability notification arrives from the
 	 * configuration manager.
-	 *
+	 * 
 	 * What the operation does is to extract the final set of associations
 	 * (applying transitiveness and filtering) and then pass the notification
 	 * and associations on to the subscription controller.
-	 *
+	 * 
 	 * @param notifyContextAvailabilityRequest
 	 *            The NGSI 9 {@link NotifyContextAvailabilityRequest}.
 	 * @return The NGSI 9 {@link NotifyContextAvailabilityResponse}.
@@ -557,14 +554,14 @@ public class ConfManWrapper {
 		 * made. Note that this is a 2-step process, as first the subscription
 		 * id needs to be retrieved and then the NGSI10 subscription itself is
 		 * retrieved from that id.
-		 *
+		 * 
 		 * If this is not found or more than one are found (which is not
 		 * expected), then the function is aborted and an error is returned.
 		 */
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
-			logger.info("InterruptedException",e);
+			logger.info("InterruptedException", e);
 		}
 		List<String> lsubAvailID = linkAvSub
 				.getInIDs(notifyContextAvailabilityRequest.getSubscribeId());
@@ -602,7 +599,7 @@ public class ConfManWrapper {
 				 * We represent the availability notification as a discovery
 				 * response, because the association utility is made for the
 				 * latter data structure.
-				 *
+				 * 
 				 * Then the set of relevant associations is computed by the same
 				 * three step that were also applied at the time the discovery
 				 * was made.
@@ -610,13 +607,20 @@ public class ConfManWrapper {
 
 				DiscoverContextAvailabilityResponse discoveryResponse = new DiscoverContextAvailabilityResponse();
 				discoveryResponse
-				.setContextRegistrationResponse(notifyContextAvailabilityRequest
-						.getContextRegistrationResponseList());
+						.setContextRegistrationResponse(notifyContextAvailabilityRequest
+								.getContextRegistrationResponseList());
+
+				/*
+				 * ########################### Starting code for associations
+				 * ###########################
+				 */
 
 				/* extract the associations from the discovery response */
 				List<AssociationDS> assocList = associationsUtil
 						.retrieveAssociation(discoveryResponse);
-				logger.debug("Association List:" + assocList);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Association List:" + assocList);
+				}
 
 				/* represent the NGSI 10 subscription as a query */
 				QueryContextRequest qcReq = new QueryContextRequest(
@@ -625,8 +629,10 @@ public class ConfManWrapper {
 				/* Step 1 of association application (find targets) */
 				List<AssociationDS> additionalRequestList = associationsUtil
 						.initialLstOfmatchedAssociation(qcReq, assocList);
-				logger.debug("(Step 1) Initial List Of matchedAssociation:"
-						+ additionalRequestList);
+				if (logger.isDebugEnabled()) {
+					logger.debug("(Step 1) Initial List Of matchedAssociation:"
+							+ additionalRequestList);
+				}
 
 				/*
 				 * Step 2 (transitivity)
@@ -634,8 +640,10 @@ public class ConfManWrapper {
 				List<AssociationDS> transitiveList = associationsUtil
 						.transitiveAssociationAnalysisFrQuery(assocList,
 								additionalRequestList);
-				logger.debug("(Step 2 ) Transitive List Of matchedAssociation:"
-						+ transitiveList);
+				if (logger.isDebugEnabled()) {
+					logger.debug("(Step 2 ) Transitive List Of matchedAssociation:"
+							+ transitiveList);
+				}
 
 				/*
 				 * Step 3 (find sources)
@@ -643,11 +651,18 @@ public class ConfManWrapper {
 				DiscoverContextAvailabilityResponse dcaRes = associationsUtil
 						.validDiscoverContextAvailabiltyResponse(
 								discoveryResponse, transitiveList);
-				logger.debug("(Step 3 ) Final valid DiscoverContextAvailabilityResponse List Of matchedAssociation:"
-						+ dcaRes);
+				if (logger.isDebugEnabled()) {
+					logger.debug("(Step 3 ) Final valid DiscoverContextAvailabilityResponse List Of matchedAssociation:"
+							+ dcaRes);
+				}
 
 				/*
-				 *
+				 * ########################### Ending code for associations
+				 * ###########################
+				 */
+
+				/*
+				 * 
 				 * Now the resulting discovery response (represented as
 				 * notification) and the associations are passed to the
 				 * subscription handler.
@@ -656,8 +671,10 @@ public class ConfManWrapper {
 						notifyContextAvailabilityRequest.getSubscribeId(),
 						dcaRes.getContextRegistrationResponse(),
 						new StatusCode(200, "Ok", null));
-				logger.debug("Sending NotifyContextAvailabilityRequest to SubscriptionController:"
-						+ ncaReq.toString());
+				if (logger.isDebugEnabled()) {
+					logger.debug("Sending NotifyContextAvailabilityRequest to SubscriptionController:"
+							+ ncaReq.toString());
+				}
 
 				subscriptionController.receiveReqFrmConfManWrapper(ncaReq,
 						transitiveList);
@@ -671,7 +688,7 @@ public class ConfManWrapper {
 
 	/**
 	 * This method is currently not implemented and returns null.
-	 *
+	 * 
 	 * @return null
 	 */
 	public UpdateContextAvailabilitySubscriptionResponse receiveReqFrmSubscriptionController(

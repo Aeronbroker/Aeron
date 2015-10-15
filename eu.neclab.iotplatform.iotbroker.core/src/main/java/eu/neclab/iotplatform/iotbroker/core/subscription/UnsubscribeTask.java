@@ -76,7 +76,7 @@ public class UnsubscribeTask extends TimerTask {
 	public void run() {
 
 		
-		logger.debug("unsubscribe "+subId);
+		logger.info("Duration Expired: Unsubscribe "+subId);
 		sc.unsubscribeOperation(subId);
 
 	}

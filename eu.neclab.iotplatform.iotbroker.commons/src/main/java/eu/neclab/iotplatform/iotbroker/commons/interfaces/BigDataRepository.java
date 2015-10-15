@@ -41,22 +41,49 @@
  ******************************************************************************/
 package eu.neclab.iotplatform.iotbroker.commons.interfaces;
 
+import java.net.URI;
+import java.util.Date;
 import java.util.List;
 
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
-import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
+import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextRequest;
+import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Interface;
 
 /**
- *  Interface for connecting IoT Broker with a Big Data Repository
- *  to store all entity data it receives. This feature is however
- *  currently not enabled.
+ * Interface for connecting IoT Broker with a Big Data Repository to store all
+ * entity data it receives. This feature is however currently not enabled.
  */
 public interface BigDataRepository {
 
 	void storeData(List<ContextElement> contextElementList);
-	
-	List<ContextElementResponse> getEntityLatestValues(EntityId entityId);
 
+	ContextElement getLatestValue(String id, URI type, String attributeName);
+
+	List<ContextElement> getLatestValues(List<EntityId> entityIdList,
+			List<String> attributeNames);
+
+	List<ContextElement> getLatestValues(List<EntityId> entityIdList);
+
+	ContextElement getHistoricalValues(String id, URI type,
+			String attributeName, Date startDate, Date endDate);
+
+	List<ContextElement> getHistoricalValues(List<EntityId> entityIdList,
+			List<String> attributeNames, Date startDate, Date endDate);
+
+	List<ContextElement> getHistoricalValues(List<EntityId> entityIdList,
+			Date startDate, Date endDate);
+
+	boolean subscribe(String subscriptionId,
+			SubscribeContextRequest subscription);
+
+	Ngsi10Interface getNgsi10Callback();
+
+	/**
+	 * 
+	 * @param ngsi10Callback
+	 *            Ngsi10Interface to call when a notification needs to be issued
+	 */
+	void setNgsi10Callback(Ngsi10Interface ngsi10Callback);
 
 }
