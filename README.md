@@ -23,6 +23,7 @@ IoT Broker References
 |Entity composition guide| [eu.neclab.iotplatform.entitycomposer/README.MD](./eu.neclab.iotplatform.entitycomposer/README.MD) | Documentation on how to use the IoT Broker to compose entities from other entities. |
 |IoT Broker on DockerHub | https://hub.docker.com/r/fiware/iotbroker/ | DockerHub Repository for IoT Broker docker image |
 | IoT Broker in FIWARE catalogue   | http://catalogue.fiware.org/enablers/iot-broker                                                             | Access to IoT Broker binaries and images. |
+| NEC ConfMan   | https://github.com/Aeronbroker/NEConfMan| NEC implementation of FIWARE IoT Discovery GE. |
 
 
 What you get
