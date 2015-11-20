@@ -119,12 +119,12 @@ public class NorthBoundWrapper {
 	 * the respective applications.
 	 * 
 	 * @param notifyContextRequest
-	 * @param popSubURI
+	 * @param pubSubURL
 	 * @return
 	 */
 	public NotifyContextResponse forwardNotification(
-			NotifyContextRequest notifyContextRequest, URI popSubURI) {
-		return ngsi10Requestor.notifyContext(notifyContextRequest, popSubURI);
+			NotifyContextRequest notifyContextRequest, URI pubSubURL) {
+		return ngsi10Requestor.notifyContext(notifyContextRequest, pubSubURL);
 	}
 
 	public SubscribeContextResponse receiveReqFrmSubscribeController(
