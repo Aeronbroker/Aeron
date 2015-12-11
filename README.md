@@ -94,6 +94,7 @@ instance.
 |├── IoTBroker-runner | Pre-configured runtime environment for IoT Broker, based on the Equinox OSGi implementation.|
 |├── iotplatform.iotbroker.blackboxtest | Maven project for a blackbox test based on JUNIT. This can be used to test a running instance of IoT Broker. The tests require the running instance to include some optional bundles included by this release.|
 |├── lib |Folder contains some OSGI bundles needed by IoT Broker to run.|
+|├── puppet |Puppet scripts for installing, starting, stopping, and uninstalling the IoT Broker.|
 |├── SQL_database | HSQLDB folder containing internal IoT Broker database files.|
 |├── targetPlatform| Contains the OSGi bundles needed for the IoT Broker at runtime. These bundles are pre-configured to be loaded by the runtime environment in the "IoTBroker-runner" folder.|
 |└── tomcat-configuration-fragment | Required bundle for tomcat server configuration.|
