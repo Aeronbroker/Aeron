@@ -1,0 +1,32 @@
+#/bin/bash
+
+case "$1" in
+start)
+	if pgrep -f "java -jar org.eclipse.osgi_iotbroker.jar" > /dev/null
+	then
+		echo "Service already runing"
+		exit 1
+	fi
+
+	cd /root/Aeron/IoTBroker-runner/
+	./unix64_start-IoTBroker_as_Demon.sh
+;;
+stop)
+	cd /root/Aeron/IoTBroker-runner/
+	./unix64_stop-IoTBroker.sh
+;;
+status)
+	if pgrep -f "java -jar org.eclipse.osgi_iotbroker.jar" > /dev/null
+	then
+		echo "Running"
+	else
+		echo "Stopped"
+	fi
+;;
+
+restart)
+	$0 stop
+	$0 start
+;;
+
+esac
