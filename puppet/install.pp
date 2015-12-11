@@ -75,7 +75,8 @@ file{'/etc/init.d':
    group  => 'root',
    mode   => '0755',
    before => Service['iotbroker'],
-   source => "/root/Aeron/IoTBroker-runner/unix64_service"
+   source => "/root/Aeron/IoTBroker-runner/unix64_service",
+   require => File["/etc/init.d"],
  }
 
 service{"iotbroker":
