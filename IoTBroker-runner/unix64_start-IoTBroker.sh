@@ -1,2 +1,2 @@
 #!/bin/bash
-java -jar org.eclipse.osgi.jar -console
+java -jar org.eclipse.osgi_iotbroker.jar -console

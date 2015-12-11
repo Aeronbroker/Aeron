@@ -1,2 +1,2 @@
 #/bin/bash
-nohup java -jar org.eclipse.osgi.jar &
+nohup java -jar org.eclipse.osgi_iotbroker.jar &

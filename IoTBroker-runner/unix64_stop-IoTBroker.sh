@@ -1,2 +1,2 @@
 #!/bin/bash
-pkill -f 'java -jar org.eclipse.osgi.jar'
+pkill -f 'java -jar org.eclipse.osgi_iotbroker.jar'
