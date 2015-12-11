@@ -18,9 +18,11 @@ stop)
 status)
 	if pgrep -f "java -jar org.eclipse.osgi_iotbroker.jar" > /dev/null
 	then
-		echo "Running"
+		echo "iotbroker running"
+		exit 0
 	else
-		echo "Stopped"
+		echo "iotbroker stopped"
+		exit 1
 	fi
 ;;
 
