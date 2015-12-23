@@ -472,5 +472,5 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-	<version>4.4.3</version>
+	<version>5.1.3</version>
 </project>
