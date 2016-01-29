@@ -21,6 +21,7 @@ IoT Broker References
 |IoT Broker User and Programmer Guide| https://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/IoT_Broker_-_User_and_Programmers_Guide | Guide showing some toy interactions with the IoT Broker. |
 |IoT Broker extension point documentation| [doc/extensionpoint.md](./doc/extensionpoint.md) | Documentation on how to write and use plugins for additional data source types. |
 |Entity composition guide| [eu.neclab.iotplatform.entitycomposer/README.MD](./eu.neclab.iotplatform.entitycomposer/README.MD) | Documentation on how to use the IoT Broker to compose entities from other entities. |
+|History Queries| [doc/historyqueries.md](./doc/historyqueries.md) | Documentation on history queries on the IoT Broker. |
 |IoT Broker on DockerHub | https://hub.docker.com/r/fiware/iotbroker/ | DockerHub Repository for IoT Broker docker image |
 | IoT Broker in FIWARE catalogue   | http://catalogue.fiware.org/enablers/iot-broker                                                             | Access to IoT Broker binaries and images. |
 | NEC ConfMan   | https://github.com/Aeronbroker/NEConfMan| NEC implementation of FIWARE IoT Discovery GE. |
