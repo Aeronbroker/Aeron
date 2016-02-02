@@ -48,10 +48,8 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import eu.neclab.iotplatform.iotbroker.storage.AvailabilitySubscriptionInterface;
-import eu.neclab.iotplatform.iotbroker.storage.IncomingSubscriptionInterface;
 import eu.neclab.iotplatform.iotbroker.storage.LinkSubscriptionAvailabilityInterface;
-import eu.neclab.iotplatform.iotbroker.storage.LinkSubscriptionInterface;
-import eu.neclab.iotplatform.iotbroker.storage.OutgoingSubscriptionInterface;
+import eu.neclab.iotplatform.iotbroker.storage.SubscriptionStorageInterface;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationResponse;
@@ -94,10 +92,8 @@ public class ConfManWrapper {
 	private final SubscriptionController subscriptionController;
 	private final AssociationsUtil associationsUtil = new AssociationsUtil();
 	private AvailabilitySubscriptionInterface availabilitySub;
-	private IncomingSubscriptionInterface incomingSub;
-	private OutgoingSubscriptionInterface outgoingSub;
 	private LinkSubscriptionAvailabilityInterface linkAvSub;
-	private LinkSubscriptionInterface linkSub;
+	private SubscriptionStorageInterface subscriptionStorage;
 	private Ngsi9Interface ngsi9Impl;
 
 	/**
@@ -130,32 +126,20 @@ public class ConfManWrapper {
 	}
 
 	/**
-	 * @return Pointer to the incoming subscription storage.
+	 * @return Pointer to the subscription storage.
 	 */
-	public IncomingSubscriptionInterface getIncomingSub() {
-		return incomingSub;
+	public SubscriptionStorageInterface getSubscriptionStorage() {
+		return subscriptionStorage;
 	}
 
 	/**
-	 * Assigns the pointer to the incoming subscription storage.
+	 * Assigns the pointer to the subscription storage.
 	 */
-	public void setIncomingSub(IncomingSubscriptionInterface incomingSub) {
-		this.incomingSub = incomingSub;
+	public void setSubscriptionStorage(
+			SubscriptionStorageInterface subscriptionStorage) {
+		this.subscriptionStorage = subscriptionStorage;
 	}
 
-	/**
-	 * @return Pointer to the outgoing subscription storage.
-	 */
-	public OutgoingSubscriptionInterface getOutgoingSub() {
-		return outgoingSub;
-	}
-
-	/**
-	 * Sets the pointer to the outgoing subscription storage.
-	 */
-	public void setOutgoingSub(OutgoingSubscriptionInterface outgoingSub) {
-		this.outgoingSub = outgoingSub;
-	}
 
 	/**
 	 * @return Pointer to the storage for links between incoming subscriptions
@@ -173,21 +157,21 @@ public class ConfManWrapper {
 		this.linkAvSub = linkAvSub;
 	}
 
-	/**
-	 * @return Pointer to the storage for links between incoming subscriptions
-	 *         and outgoing subscriptions.
-	 */
-	public LinkSubscriptionInterface getLinkSub() {
-		return linkSub;
-	}
-
-	/**
-	 * Assigns the pointer to the storage for links between incoming
-	 * subscriptions and outgoing subscriptions.
-	 */
-	public void setLinkSub(LinkSubscriptionInterface linkSub) {
-		this.linkSub = linkSub;
-	}
+	// /**
+	// * @return Pointer to the storage for links between incoming subscriptions
+	// * and outgoing subscriptions.
+	// */
+	// public LinkSubscriptionInterface getLinkSub() {
+	// return linkSub;
+	// }
+	//
+	// /**
+	// * Assigns the pointer to the storage for links between incoming
+	// * subscriptions and outgoing subscriptions.
+	// */
+	// public void setLinkSub(LinkSubscriptionInterface linkSub) {
+	// this.linkSub = linkSub;
+	// }
 
 	/**
 	 * 
@@ -574,7 +558,7 @@ public class ConfManWrapper {
 					ReasonPhrase.SUBSCRIPTIONIDNOTFOUND_470.toString(), null));
 		}
 
-		final SubscribeContextRequest scReq = incomingSub
+		final SubscribeContextRequest scReq = subscriptionStorage
 				.getIncomingSubscription(lsubAvailID.get(0));
 
 		/*

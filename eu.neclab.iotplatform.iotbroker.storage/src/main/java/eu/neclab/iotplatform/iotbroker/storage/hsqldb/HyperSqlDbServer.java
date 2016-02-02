@@ -78,7 +78,9 @@ public class HyperSqlDbServer implements SmartLifecycle {
 	@Override
 	public void start() {
 
-		if (available(Integer.valueOf(System.getProperty("hsqldb.port")))) {
+		int port = Integer.valueOf(System.getProperty("hsqldb.port"));
+		
+		if (available(port)) {
 
 			if (server == null) {
 				server = new Server();
@@ -95,7 +97,7 @@ public class HyperSqlDbServer implements SmartLifecycle {
 				}
 			}
 		} else {
-
+			logger.error("Port "+ port +" specified for HSQLDB is not available");
 		}
 	}
 

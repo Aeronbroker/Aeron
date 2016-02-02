@@ -11,6 +11,6 @@
 	<bean id="couchdb" class="eu.neclab.iotplatform.couchdb.CouchDB" />
 
 	<context:property-placeholder
-		location="file:///${dir.config}/iotbrokerconfig/storageCouchDB/couchdb.xml"/>
+		location="file:///${dir.config}/iotbrokerconfig/bigDataRepository/couchdb.xml"/>
 
 </beans>

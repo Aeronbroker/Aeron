@@ -71,7 +71,9 @@ public class LinkSubAvailabilityStorage implements
 
 	private final static String NAME_DB = "linkDB";
 
-	private final static String URICONNECTION = "jdbc:hsqldb:hsql://localhost/";
+	private final String port = System.getProperty("hsqldb.port");
+	private final String URICONNECTION = "jdbc:hsqldb:hsql://localhost:" + port
+			+ "/";
 
 	public LinkSubAvailabilityStorage() {
 		super();
@@ -293,6 +295,39 @@ public class LinkSubAvailabilityStorage implements
 		}
 
 		return listInID;
+	}
+	
+	@Override
+	public void resetDB() {
+		Connection c = null;
+		PreparedStatement stmt = null;
+
+		try {
+
+			Class.forName("org.hsqldb.jdbc.JDBCDriver");
+
+			c = DriverManager.getConnection(URICONNECTION + NAME_DB, username,
+					password);
+
+			stmt = c.prepareStatement("DELETE FROM PAIRSAV");
+
+			stmt.execute();
+
+		} catch (SQLException e) {
+			logger.error(e.toString());
+		} catch (ClassNotFoundException e) {
+			logger.error(e.toString());
+		} finally {
+
+			try {
+				if (stmt != null) {
+					stmt.close();
+				}
+			} catch (SQLException e) {
+				logger.info("SQL Exception", e);
+			}
+		}
+
 	}
 
 }

@@ -50,6 +50,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
@@ -94,6 +95,7 @@ public class UpdateContextElementRequest extends NgsiStructure {
 		this.attributeDomainName = attributeDomainName;
 	}
 
+	@JsonIgnore
 	public List<ContextAttribute> getContextAttributeList() {
 		if (contextAttribute == null) {
 			contextAttribute = new ArrayList<ContextAttribute>();
@@ -101,11 +103,13 @@ public class UpdateContextElementRequest extends NgsiStructure {
 		return contextAttribute;
 	}
 
+	@JsonIgnore
 	public void setContextAttributeList(
 			List<ContextAttribute> contextAttributeList) {
 		this.contextAttribute = contextAttributeList;
 	}
 
+	@JsonIgnore
 	public List<ContextMetadata> getDomainMetadata() {
 		if (contextMetadata == null) {
 			contextMetadata = new ArrayList<ContextMetadata>();
@@ -113,6 +117,7 @@ public class UpdateContextElementRequest extends NgsiStructure {
 		return contextMetadata;
 	}
 
+	@JsonIgnore
 	public void setDomainMetadata(List<ContextMetadata> domainMetadata) {
 		this.contextMetadata = domainMetadata;
 	}

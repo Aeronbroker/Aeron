@@ -65,8 +65,16 @@
 		<module>../eu.neclab.iotplatform.iotbroker.restcontroller</module>
 		<module>../eu.neclab.iotplatform.ngsi.api</module>
 		<module>../eu.neclab.iotplatform.iotbroker.ext.resultfilter</module>
-		<module>../eu.neclab.iotplatform.entitycomposer</module>		
- 		<module>../eu.neclab.iotplatform.couchdb</module>
+		<module>../eu.neclab.iotplatform.couchdb</module>
+		<module>../eu.neclab.iotplatform.entitycomposer</module>
+		<module>../eu.neclab.iotplatform.iotbroker.embeddediotagent.core</module>
+		<module>../eu.neclab.iotplatform.iotbroker.embeddediotagent.couchdb</module>
+		<module>../eu.neclab.iotplatform.iotbroker.embeddediotagent.indexer</module>
+		<module>../eu.neclab.iotplatform.iotbroker.embeddediotagent.storage</module>
+		<module>../../Iot-Broker-Internal/eu.neclab.iotplatform.iotbroker.embeddediotagent.subscription</module>
+		<module>../../Iot-Broker-Internal/eu.neclab.iotplatform.iotbroker.leafengine.connector</module>
+		<module>../../Iot-Broker-Internal/eu.neclab.iotplatform.iotbroker.embeddediotagent.registry</module>
+		<module>../../Iot-Broker-Internal/eu.neclab.iotplatform.iotbroker.ngsihierarchyextension</module>
 	</modules>
 
 

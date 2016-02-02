@@ -51,6 +51,7 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.datatype.Duration;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
@@ -65,8 +66,10 @@ public class RegisterContextRequest extends NgsiStructure {
 	@XmlElement(name = "contextRegistration", required = true)
 	@JsonProperty("contextRegistrations")
 	private List<ContextRegistration> contextRegistration = null;
+
 	@XmlElement(name = "duration", required = false)
 	private Duration duration = null;
+
 	@XmlElement(name = "registrationId", required = false)
 	private String registrationId = null;
 
@@ -82,7 +85,8 @@ public class RegisterContextRequest extends NgsiStructure {
 		this.duration = duration;
 		this.registrationId = registrationId;
 	}
-
+	
+	@JsonIgnore
 	public List<ContextRegistration> getContextRegistrationList() {
 		if (contextRegistration == null) {
 			contextRegistration = new ArrayList<ContextRegistration>();
@@ -90,6 +94,7 @@ public class RegisterContextRequest extends NgsiStructure {
 		return contextRegistration;
 	}
 
+	@JsonIgnore
 	public void setContextRegistrationList(
 			List<ContextRegistration> contextRegistrationList) {
 		contextRegistration = contextRegistrationList;

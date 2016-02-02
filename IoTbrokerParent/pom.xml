@@ -14,6 +14,7 @@
 		<equinox.version>3.7.0.v20110221</equinox.version>
 	</properties>
 
+	<version>4.4.3</version>
 
 	<dependencies>
 
@@ -258,6 +259,12 @@
 			<version>1.0.0</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>com.springsource.org.apache.commons.csv</artifactId>
+			<version>1.0.0.BUILD-20080106</version>
+		</dependency>
+
 
 
 		<!-- javamelody-core for DASHBOARD -->
@@ -470,7 +477,11 @@
 				<artifactId>iotbroker.ext.resultfilter</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>eu.neclab.iotplatform</groupId>
+				<artifactId>iotbroker.embeddediotagent.storage</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
-	<version>4.4.3</version>
 </project>

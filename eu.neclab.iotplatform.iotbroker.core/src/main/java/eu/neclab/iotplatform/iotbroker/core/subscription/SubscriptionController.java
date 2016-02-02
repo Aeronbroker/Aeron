@@ -67,16 +67,15 @@ import org.springframework.beans.factory.annotation.Value;
 import eu.neclab.iotplatform.iotbroker.commons.ComplexMetadataUtil;
 import eu.neclab.iotplatform.iotbroker.commons.EntityIDMatcher;
 import eu.neclab.iotplatform.iotbroker.commons.GenerateUniqueID;
+import eu.neclab.iotplatform.iotbroker.commons.OutgoingSubscriptionWithInfo;
 import eu.neclab.iotplatform.iotbroker.commons.Pair;
 import eu.neclab.iotplatform.iotbroker.commons.TraceKeeper;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface;
 import eu.neclab.iotplatform.iotbroker.core.IotBrokerCore;
 import eu.neclab.iotplatform.iotbroker.core.QueryResponseMerger;
 import eu.neclab.iotplatform.iotbroker.storage.AvailabilitySubscriptionInterface;
-import eu.neclab.iotplatform.iotbroker.storage.IncomingSubscriptionInterface;
 import eu.neclab.iotplatform.iotbroker.storage.LinkSubscriptionAvailabilityInterface;
-import eu.neclab.iotplatform.iotbroker.storage.LinkSubscriptionInterface;
-import eu.neclab.iotplatform.iotbroker.storage.OutgoingSubscriptionInterface;
+import eu.neclab.iotplatform.iotbroker.storage.SubscriptionStorageInterface;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
@@ -175,8 +174,8 @@ public class SubscriptionController {
 	 * reachable. Useful for example when there is the bigDataRepository
 	 * enabled.
 	 */
-	@Value("${ignoreConfManFailure:false}")
-	private boolean ignoreConfManFailure;
+	@Value("${ignoreIoTDiscoveryFailure:false}")
+	private boolean ignoreIoTDiscoveryFailure;
 
 	/**
 	 * Pointer to the component from which notifications will be received.
@@ -200,10 +199,8 @@ public class SubscriptionController {
 	 * Used for storage of subscription-related information.
 	 */
 	private AvailabilitySubscriptionInterface availabilitySub;
-	private IncomingSubscriptionInterface incomingSub;
-	private OutgoingSubscriptionInterface outgoingSub;
 	private LinkSubscriptionAvailabilityInterface linkAvSub;
-	private LinkSubscriptionInterface linkSub;
+	private SubscriptionStorageInterface subscriptionStorage;
 
 	/**
 	 * Used to generate subscription IDs.
@@ -279,19 +276,6 @@ public class SubscriptionController {
 		return subscriptionStore;
 	}
 
-	/**
-	 * @return Pointer to the incoming subscription storage.
-	 */
-	public IncomingSubscriptionInterface getIncomingSub() {
-		return incomingSub;
-	}
-
-	/**
-	 * Sets the pointer to the incoming subscription storage.
-	 */
-	public void setIncomingSub(IncomingSubscriptionInterface incomingSub) {
-		this.incomingSub = incomingSub;
-	}
 
 	/**
 	 * @return Pointer to the availability subscription storage.
@@ -308,19 +292,6 @@ public class SubscriptionController {
 		this.availabilitySub = availabilitySub;
 	}
 
-	/**
-	 * @return Pointer to the outgoing subscription storage.
-	 */
-	public OutgoingSubscriptionInterface getOutgoingSub() {
-		return outgoingSub;
-	}
-
-	/**
-	 * Sets the pointer to the outgoing subscription storage.
-	 */
-	public void setOutgoingSub(OutgoingSubscriptionInterface outgoingSub) {
-		this.outgoingSub = outgoingSub;
-	}
 
 	/**
 	 * @return Pointer to the storage for links between incoming subscriptions
@@ -339,19 +310,18 @@ public class SubscriptionController {
 	}
 
 	/**
-	 * @return Pointer to the storage for links between incoming subscriptions
-	 *         and outgoing subscriptions.
+	 * @return Pointer to the subscription storage.
 	 */
-	public LinkSubscriptionInterface getLinkSub() {
-		return linkSub;
+	public SubscriptionStorageInterface getSubscriptionStorage() {
+		return subscriptionStorage;
 	}
 
 	/**
-	 * Sets the pointer to the storage for links between incoming subscriptions
-	 * and outgoing subscriptions.
+	 * Set the pointer to the subscription storage.
 	 */
-	public void setLinkSub(LinkSubscriptionInterface linkSub) {
-		this.linkSub = linkSub;
+	public void setSubscriptionStorage(
+			SubscriptionStorageInterface subscriptionStorage) {
+		this.subscriptionStorage = subscriptionStorage;
 	}
 
 	/**
@@ -409,7 +379,12 @@ public class SubscriptionController {
 		try {
 			ref = "http://" + InetAddress.getLocalHost().getHostAddress() + ":"
 					+ System.getProperty("tomcat.init.port")
-					+ "/ngsi9/notifyContextAvailability";
+					/*
+					 * It was decided within a FIWARE discussion, that the ngsi9
+					 * reference must be the full path (comprehensive of the
+					 * notifyContextAvailability resource)
+					 */
+					 + "/ngsi9/notifyContextAvailability";
 
 		} catch (UnknownHostException e) {
 			logger.error("Unknown Host", e);
@@ -469,7 +444,7 @@ public class SubscriptionController {
 		 */
 		if (subscribeContextAvailability.getErrorCode() != null
 				&& subscribeContextAvailability.getErrorCode().getCode() != 200
-				&& !ignoreConfManFailure) {
+				&& !ignoreIoTDiscoveryFailure) {
 			scRes = new SubscribeContextResponse(null, new SubscribeError(null,
 					new StatusCode(500,
 							ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
@@ -554,7 +529,7 @@ public class SubscriptionController {
 			 * Here the incoming subscription is stored in the persistent
 			 * storage.
 			 */
-			incomingSub.saveIncomingSubscription(scReq, idSubRequest,
+			subscriptionStorage.saveIncomingSubscription(scReq, idSubRequest,
 					System.currentTimeMillis());
 
 			/*
@@ -615,7 +590,12 @@ public class SubscriptionController {
 
 				if (ScopeTypes.SubscriptionOriginator.toString().toLowerCase()
 						.equals(operationScope.getScopeType().toLowerCase())) {
-					return operationScope.getScopeValue().toString();
+					String originator = operationScope.getScopeValue().toString();
+					if (originator.matches("http://.*")){
+						return originator;
+					} else {
+						return "http://"+originator;
+					}
 				}
 			}
 		}
@@ -634,7 +614,7 @@ public class SubscriptionController {
 	public UpdateContextSubscriptionResponse receiveReqFrmNorthBoundWrapper(
 			UpdateContextSubscriptionRequest uCSreq) {
 		UpdateContextSubscriptionResponse uCSres = null;
-		SubscribeContextRequest sCReq = incomingSub
+		SubscribeContextRequest sCReq = subscriptionStorage
 				.getIncomingSubscription(uCSreq.getSubscriptionId());
 		if (sCReq == null) {
 			return new UpdateContextSubscriptionResponse(null,
@@ -726,13 +706,11 @@ public class SubscriptionController {
 			String tmp = lSubscriptionIDOriginal.get(0);
 			availabilitySub.deleteAvalabilitySubscription(tmp);
 			linkAvSub.delete(subscriptionID, tmp);
-			incomingSub.deleteIncomingSubscription(subscriptionID);
-			List<String> lSubscriptionIDAgent = linkSub
-					.getOutIDs(subscriptionID);
-			for (String subscriptionAgent : lSubscriptionIDAgent) {
-				linkSub.delete(subscriptionID, subscriptionAgent);
-				outgoingSub.deleteOutgoingSubscription(subscriptionAgent);
-			}
+
+			// Deleting the subscription, all the linked outgoing subscription
+			// will be deleted as a cascade effect
+			subscriptionStorage.deleteIncomingSubscription(subscriptionID);
+
 			SubscriptionData sData = subscriptionStore.get(subscriptionID);
 			sData.getUnsubscribeTask().cancel();
 			sData.getThrottlingTask().cancel();
@@ -779,12 +757,12 @@ public class SubscriptionController {
 			}.start();
 			availabilitySub.deleteAvalabilitySubscription(tmp);
 			linkAvSub.delete(uCReq.getSubscriptionId(), tmp);
-			incomingSub.deleteIncomingSubscription(uCReq.getSubscriptionId());
-			List<String> lSubscriptionIDAgent = linkSub.getOutIDs(uCReq
-					.getSubscriptionId());
+			List<String> lSubscriptionIDAgent = subscriptionStorage
+					.getOutIDs(uCReq.getSubscriptionId());
 			for (String subscriptionAgent : lSubscriptionIDAgent) {
 				final String tmp1 = subscriptionAgent;
-				final URI agentURi = outgoingSub.getAgentUri(subscriptionAgent);
+				final URI agentURi = subscriptionStorage
+						.getAgentUri(subscriptionAgent);
 				logger.debug("subscriptionAgent: " + subscriptionAgent
 						+ " agentURi:" + agentURi.toString());
 				new Thread() {
@@ -803,8 +781,13 @@ public class SubscriptionController {
 						}
 					}
 				}.start();
-				linkSub.delete(uCReq.getSubscriptionId(), subscriptionAgent);
-				outgoingSub.deleteOutgoingSubscription(subscriptionAgent);
+
+				// Deleting the subscription, all the linked outgoing
+				// subscription
+				// will be deleted as a cascade effect
+				subscriptionStorage.deleteIncomingSubscription(uCReq
+						.getSubscriptionId());
+
 				SubscriptionData sData = subscriptionStore.get(uCReq
 						.getSubscriptionId());
 				sData.getUnsubscribeTask().cancel();
@@ -1059,7 +1042,7 @@ public class SubscriptionController {
 		 * of an outgoing subscription).
 		 */
 
-		List<String> inIDs = linkSub.getInIDs(ncReq.getSubscriptionId());
+		String inID = subscriptionStorage.getInID(ncReq.getSubscriptionId());
 
 		/*
 		 * It is expected that exactly one incoming subscription id will be
@@ -1068,23 +1051,25 @@ public class SubscriptionController {
 		 * 
 		 * Otherwise, the function continues.
 		 */
-		if (inIDs == null || inIDs.size() != 1) {
+		if (inID == null) {
 			if (logger.isDebugEnabled()) {
-				logger.debug("SubscriptionController: Aborting, because did not find exactly one incoming"
+				logger.debug("SubscriptionController: Aborting, because did not find the incoming"
 						+ "subscription");
 			}
 			return new NotifyContextResponse(new StatusCode(470,
 					ReasonPhrase.SUBSCRIPTIONIDNOTFOUND_470.toString(), null));
 		} else {
-			logger.debug("SubscriptionController: found incoming subscription ID: "
-					+ inIDs.get(0));
+			if (logger.isDebugEnabled()) {
+				logger.debug("SubscriptionController: found incoming subscription ID: "
+						+ inID);
+			}
 
 			/*
 			 * We also retrieve the original incoming subscription message from
 			 * the storage.
 			 */
-			SubscribeContextRequest inSubReq = incomingSub
-					.getIncomingSubscription(inIDs.get(0));
+			SubscribeContextRequest inSubReq = subscriptionStorage
+					.getIncomingSubscription(inID);
 
 			if (inSubReq == null) {
 				logger.error("Incoming subscription id found, but no incoming subscription found. Aborting "
@@ -1108,7 +1093,7 @@ public class SubscriptionController {
 			 * identified incoming subscription.
 			 */
 
-			List<String> availId = linkAvSub.getAvailIDs(inIDs.get(0));
+			List<String> availId = linkAvSub.getAvailIDs(inID);
 
 			/*
 			 * It is again assumed that exactly one availability subscription id
@@ -1127,7 +1112,7 @@ public class SubscriptionController {
 				listAssoc = availabilitySub.getListOfAssociations(availId
 						.get(0));
 
-			} else if (!ignoreConfManFailure){
+			} else if (!ignoreIoTDiscoveryFailure) {
 				logger.error("SubscriptionController: found wrong number of availability subscriptions, aborting.");
 				return null;
 			}
@@ -1238,8 +1223,7 @@ public class SubscriptionController {
 				 * subscription of this notification.
 				 */
 
-				SubscriptionData subscriptionData = subscriptionStore.get(inIDs
-						.get(0));
+				SubscriptionData subscriptionData = subscriptionStore.get(inID);
 
 				List<ContextElementResponse> notificationQueue;
 
@@ -1304,9 +1288,11 @@ public class SubscriptionController {
 				 * subscription data, which is then put back into the storage.
 				 */
 				subscriptionData.setContextResponseQueue(notificationQueue);
-				subscriptionStore.put(inIDs.get(0), subscriptionData);
-				logger.debug("Adding to subdata subid:" + inIDs.get(0) + " : "
-						+ subscriptionData);
+				subscriptionStore.put(inID, subscriptionData);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Adding to subdata subid:" + inID + " : "
+							+ subscriptionData);
+				}
 			}
 
 		}
@@ -1464,7 +1450,7 @@ public class SubscriptionController {
 		}
 
 		// Get the Incoming NGSI-10 Subscription data from its ID
-		SubscribeContextRequest incomingSubscription = incomingSub
+		SubscribeContextRequest incomingSubscription = subscriptionStorage
 				.getIncomingSubscription(incomingSubscriptionId);
 
 		/*
@@ -1473,12 +1459,12 @@ public class SubscriptionController {
 		 * subscriptions made on behalf of this incoming subscription.
 		 */
 
-		PriorityQueue<Pair<ContextUniqueIdentifier, SubscribeContextRequest>> existingSubscribedAgentQ = getExistingOutgoingSubs(incomingSubscriptionId);
+		PriorityQueue<Pair<ContextUniqueIdentifier, OutgoingSubscriptionWithInfo>> existingSubscribedAgentQ = getExistingOutgoingSubs(incomingSubscriptionId);
 
 		/*
-		 * Furthermore, we retrieve a sorted (again by URI) list that contains
-		 * all subscriptions that are recommended by this availability
-		 * notification.
+		 * Furthermore, we retrieve a sorted (again by ContextUniqueIdentifier)
+		 * list that contains all subscriptions that are recommended by this
+		 * availability notification.
 		 */
 
 		PriorityQueue<Pair<ContextUniqueIdentifier, ContextRegistrationResponse>> newProposedSubscribedAgentQ = convertToPrioQueue(notifyContextAvailabilityRequest
@@ -1562,14 +1548,14 @@ public class SubscriptionController {
 
 		ContextUniqueIdentifierComparator keyComparator = new ContextUniqueIdentifierComparator();
 
-		Pair<ContextUniqueIdentifier, SubscribeContextRequest> exSATmp = null;
+		Pair<ContextUniqueIdentifier, OutgoingSubscriptionWithInfo> exSATmp = null;
 		Pair<ContextUniqueIdentifier, ContextRegistrationResponse> npSATmp = null;
 		if (!existingSubscribedAgentQ.isEmpty()) {
 
 			while (!existingSubscribedAgentQ.isEmpty()
 					&& !newProposedSubscribedAgentQ.isEmpty()) {
 				// Peek the head from both priority queue
-				Pair<ContextUniqueIdentifier, SubscribeContextRequest> exSA = existingSubscribedAgentQ
+				Pair<ContextUniqueIdentifier, OutgoingSubscriptionWithInfo> exSA = existingSubscribedAgentQ
 						.peek();
 				Pair<ContextUniqueIdentifier, ContextRegistrationResponse> npSA = newProposedSubscribedAgentQ
 						.peek();
@@ -1585,16 +1571,15 @@ public class SubscriptionController {
 				if (compareResult == 0) {
 
 					/*
-					 * If we are here the two top element of the two queue
+					 * If we are here the two top elements of the two queue
 					 * refers to the same ContextRegistration
 					 */
 
 					// Unsubscribe from the previous subscription
 					exSATmp = existingSubscribedAgentQ.poll();
 					logger.info("POLL exist" + exSATmp.getLeft().toString());
-					sendUnsubscribeContextRequest(exSATmp.getRight(), exSATmp
-							.getLeft().getProvidingApplication(),
-							incomingSubscriptionId);
+					sendUnsubscribeContextRequest(exSATmp.getRight().getId(),
+							exSATmp.getLeft().getProvidingApplication());
 
 					// Subscribe with a new subscription
 					npSATmp = newProposedSubscribedAgentQ.poll();
@@ -1614,11 +1599,11 @@ public class SubscriptionController {
 					if (forwardAvailabilityNotifications) {
 						if (npSA.getRight().getErrorCode() == null
 								|| npSA.getRight().getErrorCode().getCode() != 410) {
-							this.notifyAgentAboutAvailability(
+							this.notifyAvailabilityToSubscriber(
 									Availability.UPDATE, npSA.getRight(),
 									incomingSubscriptionId);
 						} else {
-							this.notifyAgentAboutAvailability(
+							this.notifyAvailabilityToSubscriber(
 									Availability.GONE, npSA.getRight(),
 									incomingSubscriptionId);
 						}
@@ -1638,8 +1623,9 @@ public class SubscriptionController {
 								incomingSubscriptionId);
 
 						if (forwardAvailabilityNotifications) {
-							this.notifyAgentAboutAvailability(Availability.NEW,
-									npSA.getRight(), incomingSubscriptionId);
+							this.notifyAvailabilityToSubscriber(
+									Availability.NEW, npSA.getRight(),
+									incomingSubscriptionId);
 						}
 					}
 
@@ -1695,7 +1681,7 @@ public class SubscriptionController {
 							incomingSubscriptionId);
 
 					if (forwardAvailabilityNotifications) {
-						this.notifyAgentAboutAvailability(Availability.NEW,
+						this.notifyAvailabilityToSubscriber(Availability.NEW,
 								npSATmp.getRight(), incomingSubscriptionId);
 					}
 				}
@@ -1715,7 +1701,7 @@ public class SubscriptionController {
 							incomingSubscriptionId);
 
 					if (forwardAvailabilityNotifications) {
-						this.notifyAgentAboutAvailability(Availability.NEW,
+						this.notifyAvailabilityToSubscriber(Availability.NEW,
 								npSATmp.getRight(), incomingSubscriptionId);
 					}
 				}
@@ -1860,7 +1846,7 @@ public class SubscriptionController {
 		NEW, UPDATE, GONE;
 	}
 
-	private void notifyAgentAboutAvailability(Availability availability,
+	private void notifyAvailabilityToSubscriber(Availability availability,
 			ContextRegistrationResponse contextRegistrationResponse,
 			String incomingSubscriptionID) {
 
@@ -1883,7 +1869,7 @@ public class SubscriptionController {
 			break;
 		}
 
-		SubscribeContextRequest incomingSubscription = incomingSub
+		SubscribeContextRequest incomingSubscription = subscriptionStorage
 				.getIncomingSubscription(incomingSubscriptionID);
 
 		NotifyContextRequest notifyContextRequest = new NotifyContextRequest();
@@ -1982,7 +1968,7 @@ public class SubscriptionController {
 			ContextRegistrationResponse contextRegistrationResponse,
 			String originalId) {
 
-		SubscribeContextRequest sCReq = incomingSub
+		SubscribeContextRequest sCReq = subscriptionStorage
 				.getIncomingSubscription(originalId);
 
 		if (sCReq.getDuration() == null) {
@@ -2046,12 +2032,10 @@ public class SubscriptionController {
 		return sCReq;
 	}
 
-	private void sendUnsubscribeContextRequest(SubscribeContextRequest sCReq,
-			final URI agentURi, String originalId) {
+	private void sendUnsubscribeContextRequest(String outGoingID,
+			final URI agentURi) {
 
-		String outGoingID = outgoingSub.getOutID(sCReq.toString(), agentURi);
-		outgoingSub.deleteOutgoingSubscription(outGoingID);
-		linkSub.delete(originalId, outGoingID);
+		subscriptionStorage.deleteOutgoingSubscription(outGoingID);
 		final UnsubscribeContextRequest uCRequest = new UnsubscribeContextRequest(
 				outGoingID);
 		new Thread() {
@@ -2067,7 +2051,13 @@ public class SubscriptionController {
 	private void sendUpdateSubscribeContextRequest(
 			UpdateContextSubscriptionRequest updateRequest, String originalID) {
 
-		List<String> listOutIDs = linkSub.getOutIDs(originalID);
+		// TODO check here if it is correct. I'm afraid that here it sending
+		// directly subscription update to IoT Agent without checking against the
+		// IoT discovery if the IoT Agent are anymore compliant with the
+		// subscription parameter
+
+		// List<String> listOutIDs = linkSub.getOutIDs(originalID);
+		List<String> listOutIDs = subscriptionStorage.getOutIDs(originalID);
 
 		for (String id : listOutIDs) {
 
@@ -2078,7 +2068,7 @@ public class SubscriptionController {
 			tuCReq.setRestriction(updateRequest.getRestriction());
 			tuCReq.setThrottling(updateRequest.getThrottling());
 			tuCReq.setSubscriptionId(id);
-			final URI agentUri = outgoingSub.getAgentUri(id);
+			final URI agentUri = subscriptionStorage.getAgentUri(id);
 			new Thread() {
 				@Override
 				public void run() {
@@ -2117,11 +2107,11 @@ public class SubscriptionController {
 				if (scr.getSubscribeError() == null
 						|| scr.getSubscribeError().getStatusCode() == null
 						|| scr.getSubscribeError().getStatusCode().getCode() == 200) {
-					outgoingSub.saveOutgoingSubscription(subscribeRequest, scr
-							.getSubscribeResponse().getSubscriptionId(),
-							agentURi, System.currentTimeMillis());
-					linkSub.insert(originalID, scr.getSubscribeResponse()
-							.getSubscriptionId());
+
+					subscriptionStorage.saveOutgoingSubscription(
+							subscribeRequest, scr.getSubscribeResponse()
+									.getSubscriptionId(), originalID, agentURi,
+							System.currentTimeMillis());
 				}
 			}
 
@@ -2136,34 +2126,36 @@ public class SubscriptionController {
 	 * The returned outgoing subscriptions are represented in a priority queue
 	 * that is sorted by the URI of the agent.
 	 */
-	private PriorityQueue<Pair<ContextUniqueIdentifier, SubscribeContextRequest>> getExistingOutgoingSubs(
-			String originalID) {
+	private PriorityQueue<Pair<ContextUniqueIdentifier, OutgoingSubscriptionWithInfo>> getExistingOutgoingSubs(
+			String incomingSubId) {
 
-		PriorityQueue<Pair<ContextUniqueIdentifier, SubscribeContextRequest>> existingSubscribedAgents = new PriorityQueue<Pair<ContextUniqueIdentifier, SubscribeContextRequest>>(
+		PriorityQueue<Pair<ContextUniqueIdentifier, OutgoingSubscriptionWithInfo>> existingSubscribedAgents = new PriorityQueue<Pair<ContextUniqueIdentifier, OutgoingSubscriptionWithInfo>>(
 				2,
-				new Comparator<Pair<ContextUniqueIdentifier, SubscribeContextRequest>>() {
+				new Comparator<Pair<ContextUniqueIdentifier, OutgoingSubscriptionWithInfo>>() {
 					@Override
 					public int compare(
-							Pair<ContextUniqueIdentifier, SubscribeContextRequest> pair1,
-							Pair<ContextUniqueIdentifier, SubscribeContextRequest> pair2) {
+							Pair<ContextUniqueIdentifier, OutgoingSubscriptionWithInfo> pair1,
+							Pair<ContextUniqueIdentifier, OutgoingSubscriptionWithInfo> pair2) {
 						return contextUniqueIdentifierComparator.compare(
 								pair1.getLeft(), pair2.getLeft());
 					}
 				});
 
-		List<String> tmpOutGoingID = linkSub.getOutIDs(originalID);
-		for (String s : tmpOutGoingID) {
+		List<String> outgoingIdList = subscriptionStorage
+				.getOutIDs(incomingSubId);
+		for (String s : outgoingIdList) {
 
-			SubscribeContextRequest subscribeContext = outgoingSub
-					.getOutgoingSubscription(s);
+			OutgoingSubscriptionWithInfo subscriptionWithMetadata = subscriptionStorage
+					.getOutgoingSubscriptionWithMetadata(s);
 
-			URI agentUri = outgoingSub.getAgentUri(s);
+			// URI agentUri = outgoingSub.getAgentUri(s);
 
 			existingSubscribedAgents
-					.add(new Pair<ContextUniqueIdentifier, SubscribeContextRequest>(
-							new ContextUniqueIdentifier(subscribeContext
-									.getEntityIdList(), agentUri), outgoingSub
-									.getOutgoingSubscription(s)));
+					.add(new Pair<ContextUniqueIdentifier, OutgoingSubscriptionWithInfo>(
+							new ContextUniqueIdentifier(
+									subscriptionWithMetadata.getEntityIdList(),
+									subscriptionWithMetadata.getAgentURI()),
+							subscriptionWithMetadata));
 		}
 
 		return existingSubscribedAgents;
@@ -2172,11 +2164,12 @@ public class SubscriptionController {
 
 	/**
 	 * Given an list of context registration responses, this list is represented
-	 * as a priority queue sorted by the reference URI in the responses.
+	 * as a priority queue sorted by the reference ContextUniqueIdentifier in
+	 * the responses.
 	 * 
 	 */
 	private PriorityQueue<Pair<ContextUniqueIdentifier, ContextRegistrationResponse>> convertToPrioQueue(
-			List<ContextRegistrationResponse> lCRRes) {
+			List<ContextRegistrationResponse> contextRegistrationResponseList) {
 
 		PriorityQueue<Pair<ContextUniqueIdentifier, ContextRegistrationResponse>> newSubscribedAgent = new PriorityQueue<Pair<ContextUniqueIdentifier, ContextRegistrationResponse>>(
 				2,
@@ -2189,12 +2182,14 @@ public class SubscriptionController {
 								pair1.getLeft(), pair2.getLeft());
 					}
 				});
-		for (ContextRegistrationResponse cRRes : lCRRes) {
+		for (ContextRegistrationResponse contextRegistrationResponse : contextRegistrationResponseList) {
 
 			newSubscribedAgent
 					.add(new Pair<ContextUniqueIdentifier, ContextRegistrationResponse>(
-							new ContextUniqueIdentifier(cRRes
-									.getContextRegistration()), cRRes));
+							new ContextUniqueIdentifier(
+									contextRegistrationResponse
+											.getContextRegistration()),
+							contextRegistrationResponse));
 		}
 
 		return newSubscribedAgent;
@@ -2228,6 +2223,14 @@ public class SubscriptionController {
 		public URI getProvidingApplication() {
 			return providingApplication;
 		}
+
+		@Override
+		public String toString() {
+			return "ContextUniqueIdentifier [entityIdList=" + entityIdList
+					+ ", providingApplication=" + providingApplication + "]";
+		}
+		
+		
 
 	}
 

@@ -49,6 +49,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
@@ -87,10 +88,12 @@ public class UpdateContextResponse extends NgsiStructure {
 		this.errorCode = errorCode;
 	}
 
+	@JsonIgnore
 	public List<ContextElementResponse> getContextElementResponse() {
 		return contextElementResponse;
 	}
 
+	@JsonIgnore
 	public void setContextElementResponse(
 			List<ContextElementResponse> contextElementResponse) {
 		this.contextElementResponse = contextElementResponse;

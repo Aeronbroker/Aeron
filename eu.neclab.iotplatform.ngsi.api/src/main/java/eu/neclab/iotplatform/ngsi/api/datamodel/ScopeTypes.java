@@ -4,7 +4,8 @@ public enum ScopeTypes {
 	
 	ISO8601TimeInterval("ISO8601TimeInterval"),
 	SubscriptionOriginator("SubscriptionOriginator"),
-	Trace("Trace");
+	Trace("Trace"),
+	SimpleGeolocation("SimpleGeoLocation");
 	
 	private String string;
 

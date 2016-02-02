@@ -42,6 +42,7 @@
 package eu.neclab.iotplatform.iotbroker.restcontroller;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -329,7 +330,9 @@ public class RestProviderController {
 				}
 			} catch (Exception e) {
 				logger.info("Impossible to get the Json Request! Please check the error using debug mode.");
-				logger.debug("Impossible to get the Json Request", e);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Impossible to get the Json Request", e);
+				}
 			}
 
 			status = validator.isValidJSON(jb.toString());
@@ -417,6 +420,8 @@ public class RestProviderController {
 			return new ResponseEntity<SubscribeContextResponse>(response,
 					HttpStatus.BAD_REQUEST);
 		}
+
+		// TODO here it seems it got lost the traceOriginator in the code.
 
 		SubscribeContextResponse response = ngsiCore.subscribeContext(request);
 

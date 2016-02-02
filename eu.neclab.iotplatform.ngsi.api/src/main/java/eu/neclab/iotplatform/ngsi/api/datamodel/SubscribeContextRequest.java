@@ -41,6 +41,8 @@
  ******************************************************************************/
 package eu.neclab.iotplatform.ngsi.api.datamodel;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +51,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
@@ -67,19 +71,25 @@ public class SubscribeContextRequest extends NgsiStructure {
 	@XmlElement(name = "entityId", required = true)
 	@JsonProperty("entities")
 	private List<EntityId> entityId;
+	
 	@XmlElementWrapper(name = "attributeList")
 	@XmlElement(name = "attribute", nillable = true)
 	@JsonProperty("attributes")
 	protected List<String> attribute;
+	
 	@XmlElement(name = "reference", required = true)
 	private String reference = null;
+	
 	@XmlElement(name = "duration")
 	private Duration duration = null;
+	
 	@XmlElement(name = "restriction")
 	private Restriction restriction = null;
+	
 	@XmlElementWrapper(name = "notifyConditions")
 	@XmlElement(name = "notifyCondition")
 	private List<NotifyCondition> notifyCondition;
+	
 	@XmlElement(name = "throttling")
 	private Duration throttling = null;
 

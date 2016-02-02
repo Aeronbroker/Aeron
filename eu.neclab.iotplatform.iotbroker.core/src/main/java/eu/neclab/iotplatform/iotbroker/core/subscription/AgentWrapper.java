@@ -118,7 +118,7 @@ public class AgentWrapper {
 	 * @return
 	 * The NGSI 10 NotifyContextResponse.
 	 */
-	public NotifyContextResponse receiveFrmAgents(NotifyContextRequest ncReq) {
+	public NotifyContextResponse receiveFrmAgents(NotifyContextRequest notifyContextRequest) {
 		
 		/*
 		 * We pass the notification directly to the subscription controller.
@@ -127,15 +127,15 @@ public class AgentWrapper {
 		 * with status code 500 "internal error" is returned. 
 		 */
 		
-		NotifyContextResponse ncRes = subscriptionController
-				.receiveReqFrmAgentWrapper(ncReq);
-		if ((ncRes == null)
-				|| (ncRes.getResponseCode() != null && ncRes.getResponseCode()
+		NotifyContextResponse notifyContextResponse = subscriptionController
+				.receiveReqFrmAgentWrapper(notifyContextRequest);
+		if ((notifyContextResponse == null)
+				|| (notifyContextResponse.getResponseCode() != null && notifyContextResponse.getResponseCode()
 				.getCode() != 200)) {
 			return new NotifyContextResponse(new StatusCode(500,
 					"Receiver internal error", null));
 		} else {
-			return ncRes;
+			return notifyContextResponse;
 		}
 	}
 
