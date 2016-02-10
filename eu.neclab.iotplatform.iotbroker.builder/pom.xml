@@ -71,10 +71,6 @@
 		<module>../eu.neclab.iotplatform.iotbroker.embeddediotagent.couchdb</module>
 		<module>../eu.neclab.iotplatform.iotbroker.embeddediotagent.indexer</module>
 		<module>../eu.neclab.iotplatform.iotbroker.embeddediotagent.storage</module>
-		<module>../../Iot-Broker-Internal/eu.neclab.iotplatform.iotbroker.embeddediotagent.subscription</module>
-		<module>../../Iot-Broker-Internal/eu.neclab.iotplatform.iotbroker.leafengine.connector</module>
-		<module>../../Iot-Broker-Internal/eu.neclab.iotplatform.iotbroker.embeddediotagent.registry</module>
-		<module>../../Iot-Broker-Internal/eu.neclab.iotplatform.iotbroker.ngsihierarchyextension</module>
 	</modules>
 
 
