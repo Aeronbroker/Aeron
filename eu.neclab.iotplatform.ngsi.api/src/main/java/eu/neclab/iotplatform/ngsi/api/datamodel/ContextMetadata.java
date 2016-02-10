@@ -45,6 +45,7 @@ import java.net.URI;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
@@ -68,8 +69,10 @@ public class ContextMetadata extends NgsiStructure {
 
 	@XmlElement(name = "name")
 	private String name = null;
+	
 	@XmlSchemaType(name = "anyURI")
 	private URI type = null;
+	
 	@XmlElement(name = "value")
 	@JsonSerialize(using = MetadataObjectValueSerializer.class)
 	@JsonDeserialize(using = MetadataValueDeserializer.class)
@@ -82,6 +85,13 @@ public class ContextMetadata extends NgsiStructure {
 	public ContextMetadata(String name, URI type, Object value) {
 
 		this.name = name;
+		this.type = type;
+		this.value = value;
+	}
+	
+	public ContextMetadata(MetadataTypes metadataType, URI type, Object value) {
+
+		this.name = metadataType.toString();
 		this.type = type;
 		this.value = value;
 	}

@@ -60,7 +60,8 @@
 							org.springframework.web.servlet.mvc;version="${spring.version}",
 							org.springframework.web.servlet.mvc.annotation;version="${spring.version}",
 							org.w3c.dom,
-							org.xml.sax
+							org.xml.sax,
+							org.springframework.osgi.service
 						</Import-Package>
 					</instructions>
 				</configuration>
@@ -84,7 +85,7 @@
 		</dependency>
 		<dependency>
 			<groupId>eu.neclab.iotplatform</groupId>
-			<artifactId>iotbroker.commons</artifactId>		
+			<artifactId>iotbroker.commons</artifactId>
 		</dependency>
 
 	</dependencies>

@@ -46,6 +46,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
@@ -68,10 +69,12 @@ public class NotifyContextAvailabilityResponse extends NgsiStructure {
 		this.responseCode = responseCode;
 	}
 
+	@JsonIgnore
 	public StatusCode getResponseCode() {
 		return responseCode;
 	}
 
+	@JsonIgnore
 	public void setResponseCode(StatusCode responseCode) {
 		this.responseCode = responseCode;
 	}

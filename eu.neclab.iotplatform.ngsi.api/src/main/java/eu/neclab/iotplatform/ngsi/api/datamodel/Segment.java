@@ -55,8 +55,10 @@ public class Segment extends NgsiStructure{
 
 	@XmlElement(name = "NW_Corner", required = true)
 	private String NW_Corner;
+	
 	@XmlElement(name = "SE_Corner", required = true)
 	private String SE_Corner;
+	
 	@XmlElement(name = "Height", required = false)
 	private Double height;
 

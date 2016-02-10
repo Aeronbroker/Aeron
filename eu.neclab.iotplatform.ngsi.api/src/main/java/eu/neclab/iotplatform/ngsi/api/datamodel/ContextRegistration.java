@@ -52,6 +52,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
@@ -94,16 +95,19 @@ public class ContextRegistration extends NgsiStructure {
 
 	}
 
+	@JsonIgnore
 	public List<EntityId> getListEntityId() {
 
 		return entityId;
 	}
 
+	@JsonIgnore
 	public void setListEntityId(List<EntityId> entityId) {
 		this.entityId = entityId;
 
 	}
 
+	@JsonIgnore
 	public List<ContextRegistrationAttribute> getContextRegistrationAttribute() {
 		if (contextRegistrationAttribute == null) {
 			contextRegistrationAttribute = new ArrayList<ContextRegistrationAttribute>();
@@ -111,6 +115,7 @@ public class ContextRegistration extends NgsiStructure {
 		return contextRegistrationAttribute;
 	}
 
+	@JsonIgnore
 	public void setListContextRegistrationAttribute(
 			List<ContextRegistrationAttribute> contextRegistrationAttribute) {
 		this.contextRegistrationAttribute = contextRegistrationAttribute;

@@ -50,6 +50,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
@@ -64,6 +65,7 @@ public class DiscoverContextAvailabilityResponse extends NgsiStructure {
 	@XmlElement(name = "contextRegistrationResponse", required = false)
 	@JsonProperty("contextRegistrationResponses")
 	private List<ContextRegistrationResponse> contextRegistrationResponse = null;
+	
 	@XmlElement(name = "errorCode", required = false)
 	private StatusCode errorCode = null;
 
@@ -78,6 +80,7 @@ public class DiscoverContextAvailabilityResponse extends NgsiStructure {
 		this.errorCode = errorCode;
 	}
 
+	@JsonIgnore
 	public List<ContextRegistrationResponse> getContextRegistrationResponse() {
 		if (contextRegistrationResponse == null) {
 			contextRegistrationResponse = new ArrayList<ContextRegistrationResponse>();
@@ -85,6 +88,7 @@ public class DiscoverContextAvailabilityResponse extends NgsiStructure {
 		return contextRegistrationResponse;
 	}
 
+	@JsonIgnore
 	public void setContextRegistrationResponse(
 			List<ContextRegistrationResponse> contextRegistrationResponse) {
 		this.contextRegistrationResponse = contextRegistrationResponse;

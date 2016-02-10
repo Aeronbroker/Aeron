@@ -125,7 +125,7 @@ public class ThrottlingTask extends TimerTask {
 			/*
 			 * Get the incoming subscription
 			 */
-			SubscribeContextRequest request = subContoller.getIncomingSub()
+			SubscribeContextRequest request = subContoller.getSubscriptionStorage()
 					.getIncomingSubscription(subId);
 
 			logger.debug("Processing Notication for this subscription:"

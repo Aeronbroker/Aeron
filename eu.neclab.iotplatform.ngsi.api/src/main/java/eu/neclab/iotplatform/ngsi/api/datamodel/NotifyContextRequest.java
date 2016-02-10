@@ -85,6 +85,7 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 @XmlRootElement(name = "notifyContextRequest")
@@ -131,6 +132,7 @@ public class NotifyContextRequest extends NgsiStructure {
 		this.originator = originator;
 	}
 
+	@JsonIgnore
 	public List<ContextElementResponse> getContextElementResponseList() {
 		if (contextElementResponse == null) {
 			contextElementResponse = new ArrayList<ContextElementResponse>();
@@ -138,6 +140,7 @@ public class NotifyContextRequest extends NgsiStructure {
 		return contextElementResponse;
 	}
 
+	@JsonIgnore
 	public void setContextResponseList(
 			List<ContextElementResponse> contextResponseList) {
 		this.contextElementResponse = contextResponseList;

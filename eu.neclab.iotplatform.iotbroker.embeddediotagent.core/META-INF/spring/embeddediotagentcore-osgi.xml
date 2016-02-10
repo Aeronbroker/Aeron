@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans   
+       http://www.springframework.org/schema/beans/spring-beans.xsd                      
+       http://www.springframework.org/schema/osgi  
+       http://www.springframework.org/schema/osgi/spring-osgi.xsd">
+
+	<osgi:service id="EmbeddedIoTAgent" ref="embeddedIoTAgent"
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.IoTAgentInterface" />
+
+	<osgi:reference id="EmbeddedAgentRegistry"
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.EmbeddedAgentRegistryInterface"></osgi:reference>
+
+	<osgi:reference id="EmbeddedAgentStorage"
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.EmbeddedAgentStorageInterface"></osgi:reference>
+
+	<osgi:reference id="EmbeddedAgentSubscriptionHandler"
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.EmbeddedAgentSubscriptionHandlerInterface"></osgi:reference>
+</beans>

@@ -55,6 +55,7 @@ public class Vertex {
 
 	@XmlElement(name = "latitude", required = true)
 	private float latitude;
+
 	@XmlElement(name = "longitude", required = true)
 	private float longitude;
 
