@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queryContextResponse>
+	<contextResponseList>
+		<contextElementResponse>
+			<contextElement>
+				<entityId type="TemperatureSensor" isPattern="false">
+					<id>Sensor_A</id>
+				</entityId>
+				<contextAttributeList>
+					<contextAttribute>
+						<name>sensorValue</name>
+						<contextValue>10</contextValue>
+					</contextAttribute>
+				</contextAttributeList>
+			</contextElement>
+			<statusCode>
+				<code>200</code>
+				<reasonPhrase>Ok</reasonPhrase>
+			</statusCode>
+		</contextElementResponse>
+		<contextElementResponse>
+			<contextElement>
+				<entityId type="TemperatureSensor" isPattern="false">
+					<id>Sensor_B</id>
+				</entityId>
+				<contextAttributeList>
+					<contextAttribute>
+						<name>sensorValue</name>
+						<contextValue>20</contextValue>
+					</contextAttribute>
+				</contextAttributeList>
+			</contextElement>
+			<statusCode>
+				<code>200</code>
+				<reasonPhrase>Ok</reasonPhrase>
+			</statusCode>
+		</contextElementResponse>
+	</contextResponseList>
+</queryContextResponse> 

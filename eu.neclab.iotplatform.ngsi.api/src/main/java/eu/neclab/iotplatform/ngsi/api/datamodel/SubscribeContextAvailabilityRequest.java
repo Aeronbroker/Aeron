@@ -51,6 +51,7 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.datatype.Duration;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
@@ -99,6 +100,7 @@ public class SubscribeContextAvailabilityRequest extends NgsiStructure {
 
 	}
 
+	@JsonIgnore
 	public List<EntityId> getEntityIdList() {
 		if (entityId == null) {
 			entityId = new ArrayList<EntityId>();
@@ -106,10 +108,12 @@ public class SubscribeContextAvailabilityRequest extends NgsiStructure {
 		return entityId;
 	}
 
+	@JsonIgnore
 	public void setEntityIdList(List<EntityId> entityId) {
 		this.entityId = entityId;
 	}
 
+	@JsonIgnore
 	public List<String> getAttributeList() {
 		if (attribute == null) {
 			attribute = new ArrayList<String>();
@@ -117,6 +121,7 @@ public class SubscribeContextAvailabilityRequest extends NgsiStructure {
 		return attribute;
 	}
 
+	@JsonIgnore
 	public void setAttributeList(List<String> attributeList) {
 		attribute = attributeList;
 	}

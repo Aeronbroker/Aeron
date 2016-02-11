@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<discoverContextAvailabilityResponse>
+	<contextRegistrationResponseList>
+		<contextRegistrationResponse>
+			<contextRegistration>
+				<entityIdList>
+					<entityId type="Room" isPattern="false">
+						<id>ConferenceRoom</id>
+					</entityId>
+				</entityIdList>
+				<contextRegistrationAttributeList>
+					<contextRegistrationAttribute>
+						<name>temperature</name>
+						<isDomain>false</isDomain>						
+					</contextRegistrationAttribute>
+					<contextRegistrationAttribute>
+						<name>humidity</name>
+						<isDomain>false</isDomain>						
+					</contextRegistrationAttribute>
+				</contextRegistrationAttributeList>
+				<providingApplication></providingApplication>
+				<registrationMetadata>
+					<contextMetadata>
+						<name>aggregationInfo</name>
+						<type>org.fiware.type.metadata.sourceinformation</type>
+						<value>
+							<sourceType>org.fiware.type.sourceinformation.aggregation</sourceType>
+							<sourceData>
+								<targetEntity type="Room" isPattern="false">
+									<id>ConferenceRoom</id>						
+								</targetEntity>
+								<sourceEntityList>
+									<entityId type="SensorBoard" isPattern="false">
+										<id>SensorBoard_A</id>						
+									</entityId>
+									<entityId type="TemperatureSensor" isPattern="false">
+										<id>TempSensor_B</id>						
+									</entityId>
+								</sourceEntityList>
+								<attributeAssociationList>
+									<attributeAssociation>
+										<sourceAttribute>tempValue</sourceAttribute>
+										<targetAttribute>temperature</targetAttribute>
+									</attributeAssociation>
+									<attributeAssociation>
+										<sourceAttribute>humValue</sourceAttribute>
+										<targetAttribute>humidity</targetAttribute>
+									</attributeAssociation>
+								</attributeAssociationList>
+								<aggregationType>AVG</aggregationType>
+							</sourceData>
+						</value>
+					</contextMetadata>
+				</registrationMetadata>
+			</contextRegistration>
+		</contextRegistrationResponse>
+	</contextRegistrationResponseList>
+</discoverContextAvailabilityResponse>

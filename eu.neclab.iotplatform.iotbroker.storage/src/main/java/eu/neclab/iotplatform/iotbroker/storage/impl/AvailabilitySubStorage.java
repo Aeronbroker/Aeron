@@ -72,7 +72,9 @@ public class AvailabilitySubStorage implements
 
 	private final static String NAME_DB = "linkDB";
 
-	private final static String URICONNECTION = "jdbc:hsqldb:hsql://localhost/";
+	private final String port = System.getProperty("hsqldb.port");
+	private final String URICONNECTION = "jdbc:hsqldb:hsql://localhost:" + port
+			+ "/";
 
 
 
@@ -93,7 +95,7 @@ public class AvailabilitySubStorage implements
 			stmt = c.prepareStatement("INSERT INTO SUBSCRIPTIONAV VALUES ( ? , ? , ?, ?  )");
 
 			stmt.setString(1, id);
-			stmt.setString(2, request.toString());
+			stmt.setString(2, request.toJsonString());
 			stmt.setString(3, "");
 			stmt.setString(4, "");
 			stmt.execute();
@@ -143,7 +145,7 @@ public class AvailabilitySubStorage implements
 
 			stmt = c.prepareStatement("UPDATE SUBSCRIPTIONAV SET NCA=?,ASSOC=? WHERE SUBAVid=? ");
 
-			stmt.setString(1, ncaReq.toString());
+			stmt.setString(1, ncaReq.toJsonString());
 			stmt.setString(2, transitiveList);
 			stmt.setString(3, id);
 			stmt.execute();
@@ -285,4 +287,40 @@ public class AvailabilitySubStorage implements
 		}
 		return listAssoc;
 	}
+
+
+	@Override
+	public void resetDB() {
+		Connection c = null;
+		PreparedStatement stmt = null;
+	
+		try {
+	
+			Class.forName("org.hsqldb.jdbc.JDBCDriver");
+	
+			c = DriverManager.getConnection(URICONNECTION + NAME_DB, username,
+					password);
+	
+			stmt = c.prepareStatement("DELETE FROM SUBSCRIPTIONAV");
+	
+			stmt.execute();
+	
+		} catch (SQLException e) {
+			logger.error(e.toString());
+		} catch (ClassNotFoundException e) {
+			logger.error(e.toString());
+		} finally {
+	
+			try {
+				if (stmt != null) {
+					stmt.close();
+				}
+			} catch (SQLException e) {
+				logger.info("SQL Exception", e);
+			}
+		}
+	
+	}
+	
+	
 }

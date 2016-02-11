@@ -13,11 +13,25 @@
 		interface="eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface" />
 		
 	<osgi:reference id="ResultFilterInterface"
-		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface" cardinality="0..1"></osgi:reference>
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface" 
+		cardinality="0..1" 
+		timeout="0"
+		>		
+		</osgi:reference>
+
+		<!-- cardinality="0..1" it is used for specify that the reference is optional -->
+<!-- 	<osgi:reference id="BigDataRepositoryInterface" -->
+<!-- 		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.BigDataRepository"  -->
+<!-- 		cardinality="0..1" -->
+<!-- 		timeout="0" -->
+<!-- 		></osgi:reference> -->
 
 		<!-- cardinality="0..1" it is used for specify that the reference is optional  -->
-	<osgi:reference id="BigDataRepositoryInterface"
-		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.BigDataRepository" cardinality="0..1"></osgi:reference>
+	<osgi:reference id="IoTAgentInterface"
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.IoTAgentInterface"
+		cardinality="0..1"
+		timeout="0"
+		></osgi:reference>
 
 
 	<osgi:reference id="Ngsi9Interface"
@@ -30,19 +44,17 @@
 	<osgi:reference id="AvailabilitySubStorage"
 		interface="eu.neclab.iotplatform.iotbroker.storage.AvailabilitySubscriptionInterface"></osgi:reference>
 
-	<osgi:reference id="IncomingSubStorage"
-		interface="eu.neclab.iotplatform.iotbroker.storage.IncomingSubscriptionInterface"></osgi:reference>
-
-	<osgi:reference id="LinkSubscriptionStorage"
-		interface="eu.neclab.iotplatform.iotbroker.storage.LinkSubscriptionInterface"></osgi:reference>
-
 	<osgi:reference id="LinkSubscriptionAvStorage"
 		interface="eu.neclab.iotplatform.iotbroker.storage.LinkSubscriptionAvailabilityInterface"></osgi:reference>
 
-	<osgi:reference id="OutgoingSubStorage"
-		interface="eu.neclab.iotplatform.iotbroker.storage.OutgoingSubscriptionInterface"></osgi:reference>
+	<osgi:reference id="SubscriptionStorage"
+		interface="eu.neclab.iotplatform.iotbroker.storage.SubscriptionStorageInterface"></osgi:reference>
 
-
+	<!-- For the list of query services--> 
+	<osgi:list id="QueryServices"
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.QueryService"
+		cardinality = "0..N"
+		></osgi:list>
 
 
 

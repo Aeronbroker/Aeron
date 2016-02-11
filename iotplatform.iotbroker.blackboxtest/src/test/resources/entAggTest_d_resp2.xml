@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<discoverContextAvailabilityResponse>
+	<contextRegistrationResponseList>
+		<contextRegistrationResponse>
+			<contextRegistration>
+				<entityIdList>
+					<entityId type="SensorBoard" isPattern="false">
+						<id>SensorBoard_A</id>
+					</entityId>
+				</entityIdList>
+				<contextRegistrationAttributeList>
+					<contextRegistrationAttribute>
+						<name>tempValue</name>
+						<isDomain>false</isDomain>						
+					</contextRegistrationAttribute>
+					<contextRegistrationAttribute>
+						<name>humValue</name>
+						<isDomain>false</isDomain>						
+					</contextRegistrationAttribute>
+				</contextRegistrationAttributeList>
+				<providingApplication>http://localhost:8031</providingApplication>
+			</contextRegistration>			
+		</contextRegistrationResponse>
+		<contextRegistrationResponse>
+			<contextRegistration>
+				<entityIdList>
+					<entityId type="TemperatureSensor" isPattern="false">
+						<id>TempSensor_B</id>
+					</entityId>
+				</entityIdList>
+				<contextRegistrationAttributeList>
+					<contextRegistrationAttribute>
+						<name>tempValue</name>
+						<isDomain>false</isDomain>						
+					</contextRegistrationAttribute>
+				</contextRegistrationAttributeList>
+				<providingApplication>http://localhost:8032</providingApplication>
+			</contextRegistration>
+		</contextRegistrationResponse>
+	</contextRegistrationResponseList>
+</discoverContextAvailabilityResponse>

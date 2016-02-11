@@ -61,9 +61,11 @@ public class EntityId extends NgsiStructure {
 
 	@XmlElement(name = "id", required = true)
 	private String id = null;
+	
 	@XmlAttribute(name = "type", required = false)
 	@XmlSchemaType(name = "anyURI")
 	private URI type = null;
+	
 	@XmlAttribute(name = "isPattern")
 	private boolean isPattern = false;
 

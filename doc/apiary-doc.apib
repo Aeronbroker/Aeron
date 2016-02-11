@@ -1,0 +1,1123 @@
+FORMAT: 1A
+HOST: http://polls.apiblueprint.org/
+
+# IoT Broker NGSI data Interface
+
+The information exchange between the IoT Broker and other components is
+based on the FIWARE NGSI standards. Therefore, for readers familiar with
+FIWARE NGSI, this manual does not contain a lot of new information.
+
+For the formal specification documents, please refer to 
+<a href=https://forge.fi-ware.eu/docman/view.php/7/3213/FI-WARE_NGSI_RESTful_binding_v1.0.zip>this archive</a>.
+
+## NGSI Context Management Information Model 
+
+### Entities
+The central aspect of the FIWARE NGSI information model is the concept
+of 'entities'. Entities are the virtual representation of all kinds
+of physical objects in the real world. Examples for physical entities
+are tables, rooms, or persons. Virtual entities have an identifier
+and a type. For example, a virtual entity representing a person
+named “John” could have the identifier “John” and the type “person”. 
+
+### Attributes
+Any information about physical entities is expressed in the 
+form of 'attributes' of virtual entities. Attributes have a name
+and a type as well. For example, the body temperature of John would 
+be represented as an attribute having the name “body_temperature” and
+the type “temperature”. Values of such attributes are contained by
+value containers. This kind of container does not only consist of 
+the actual attribute value, but also contains a set of metadata. 
+Metadata is data about data; in in our body temperature example this 
+metadata could represent the time of measurement, the measurement unit, 
+and other information about the attribute value.
+
+### Attribute Domains
+There also is a concept of 'attribute domains' in version 1.0 of
+FIWARE NGSI. An attribute domain logically groups together a set of 
+attributes. For example, the attribute domain "health_status"
+could comprise of the attributes "body_temperature" and 
+"blood_pressure".
+
+Please note that the attribute domains features is likely to become
+deprecated in future versions of FIWARE NGSI.
+
+### Context Elements
+
+The data structure used for exchanging information about entities is 
+'context element'. A context element contains information about multiple
+attributes of one entity.  The domain of these attributes can also be
+specified inside the context element; in this case all provided
+attribute values have to belong to that domain.
+
+Formally, a context element contains the following information:
+* an entity id and type
+* a list of triplets <attribute name, attribute type, attribute value> holding information about attributes of the entity
+* (optionally) the name of an attribute domain
+* (optionally) a list of triplets <metadata name, metadata type, metadata value> that apply to all attribute values of the given domain
+
+
+### NGSI Context Management Interfaces
+
+FIWARE NGSI defines two interfaces for exchanging information based 
+on the information model. The NGSI-10 is the 'data interface',
+used for exchanging information about entities and their attribute,
+i.e., attribute values and metadata. The NGSI-9 is the 'availability 
+interface'; used for
+'availability' information about entities and their attributes. 
+Here, instead of exchanging attribute values, information about
+which provider can provide which context information is exchanged.
+
+Please note that NGSI-9 and NGSI-10 represent different functionalities
+and are not different versions of the same interface. To avoid
+confusion, it is likely that in the future the names 'NGSI-10' and 'NGSI-10' 
+will be replaced by more meaningful names.
+
+### About this guide
+
+The IoT Broker GE, being a data broker, mainly uses NGSI 10. This
+interface is used both for exchanging data between data consumers
+and the IoT Broker, and for exchanging data between the IoT Broker and
+data providers. 
+
+The IoT Broker additionally uses NGSI 9 for 
+communicating with an instance of the IoT Discovery GE in order to
+get information about the addresses of data providers matching the
+requests of the data consumers. The NGSI-9 interface used in this
+communication is mainly specified in the documentation of the IoT 
+Discovery GE (http://docs.ngsi9.apiary.io/#).
+
+While this guide describes the message formats and service endpoints,
+please refer to the IoT Broker Open Specification 
+(https://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/FIWARE.OpenSpecification.IoT.Backend.IoTBroker) 
+for details about the IoT Broker data flows.
+
+# Data exchange via FIWARE NGSI-10 standard operations and convenience operation.
+
+FIWARE NGSI-10 supports a direct XML-representation of the NGSI-10
+operations that were defined in the OMA specification of NGSI-10. These operations
+can be invoked by issuing a POST request on HTTP resources that 
+correspond to the respective operation.Any possible interaction with the IoT Broker can be done using these
+six standard operations. 
+
+In addition, FIWARE NGSI defines also a set of 
+operations for simplified interaction with data providers. These operations 
+are called 'convenience operations'. They are redundant in the sense
+that the same results could be achieved as well by using only standard
+operations instead, so they only exist for the sake of convenience. For
+example, all information about a specific context entity can be 
+retrieved by a HTTP GET on a convenience resource representing
+that context entity, while with standard operations the user would
+have to fomulate a request message in the right format and 
+submit it to the generic query resource using HTTP POST.
+
+Below the standard operations defined by NGSI 10 are described, followed
+by the convenience operations.
+
+## Standard Context Query [/ngsi10/queryContext]
+
+Generic queries for context information. The expected request body 
+is an instance of queryContextRequest; the response body is an 
+instance of queryContextResponse.
+
+### Issue a context query [POST]
+
++ Request (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <queryContextRequest>
+            <entityIdList>
+                <entityId isPattern="false" type="Room">
+                    <id>ConferenceRoom</id>
+                </entityId>
+            </entityIdList>
+            <attributeList>
+                <attribute>temperature</attribute>
+            </attributeList>
+        </queryContextRequest>
+
++ Response 400 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <queryContextResponse>
+            <contextResponseList/>
+            <errorCode>
+                <code>404</code>
+                <reasonPhrase>CONTEXT ELEMENT NOT FOUND</reasonPhrase>
+            </errorCode>
+        </queryContextResponse>
+
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <queryContextResponse>
+            <contextResponseList>
+                <contextElementResponse>
+                    <contextElement>
+                        <entityId type="Room" isPattern="false">
+                            <id>ConferenceRoom</id>
+                        </entityId>
+                        <contextAttributeList>
+                            <contextAttribute>
+                                <name>indoorTemperature</name>
+                                <type>Room</type>
+                                <contextValue>6</contextValue>
+                                <metadata>
+                                    <contextMetadata>
+                                        <name>ID</name>
+                                        <type>string</type>
+                                        <value>1110</value>
+                                    </contextMetadata>
+                                </metadata>
+                            </contextAttribute>
+                        </contextAttributeList>
+                    </contextElement>
+                    <statusCode>
+                        <code>200</code>
+                        <reasonPhrase>Ok</reasonPhrase>
+                    </statusCode>
+                </contextElementResponse>
+            </contextResponseList>
+        </queryContextResponse> 
+
+## Standard Context Subscription [/ngsi10/subscribeContext]
+
+Generic subscriptions for context information. The expected 
+request body is an instance of subscribeContextRequest; the
+response body is an instance of subscribeContextResponse. 
+
+### Issue a context subscription [POST]
+
++ Request (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+            <subscribeContextRequest>
+                <entityIdList>
+                    <entityId type="Room" isPattern="false">
+                        <id>ConferenceRoom</id>
+                    </entityId>
+                </entityIdList>
+                <attributeList>
+                    <attribute>temperature</attribute>
+                </attributeList>
+            <reference>127.0.0.1</reference>
+            <duration>P5M</duration>
+            <restriction>
+                <attributeExpression>someXPATH</attributeExpression>
+                <scope>
+                    <operationScope>
+                        <scopeType>someScopeType</scopeType>
+                        <scopeValue>someScopeValue</scopeValue>
+                    </operationScope>
+                </scope>
+            </restriction>
+            <notifyConditions>
+                <notifyCondition>
+                    <type>ONCHANGE</type>
+                </notifyCondition>
+            <throttling>P5M</throttling>
+        </subscribeContextRequest>
+        
++ Response 400 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <subscribeContextResponse>
+            <subscribeError>
+                <subscriptionId></subscriptionId>
+                    <errorCode>
+                        <code>500</code>
+                        <reasonPhrase>Subscription Error</reasonPhrase>
+                        <details>Internal Error</details>
+                    </errorCode>
+            </subscribeError>
+        </subscribeContextResponse>
+
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <subscribeContextResponse>
+            <subscribeResponse>
+                <subscriptionId>12345</subscriptionId>
+                <duration>P5Y</duration>
+                <throttling>P5Y</throttling>
+            </subscribeResponse>
+        </subscribeContextResponse>
+
+## Standard Context Subscription Update [/ngsi10/updateContextSubscription]
+
+Generic update of context subscriptions. The expected request body 
+is an instance of updateContexSubscriptiontRequest; the response body 
+is an instance of updateContextSubscriptionResponse.
+
+### Issue a context subscription update [POST]
+
++ Request (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <updateContextSubscriptionRequest>
+            <duration>P5Y</duration>
+            <restriction>
+                <attributeExpression></attributeExpression>
+            <scope>
+            <operationScope>
+                <scopeType>myScopeType</scopeType>
+                <scopeValue>myScopeValue</scopeValue>
+            </operationScope>
+        </updateContextSubscriptionRequest>
+        
++ Response 400 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <updateContextSubscriptionResponse>
+            <subscribeError>
+                <subscriptionId>12345</subscriptionId>
+                    <errorCode>
+                        <code>404</code>
+                        <reasonPhrase>Subscription ID not found</reasonPhrase>
+                        <details>Internal Error</details>
+                    </errorCode>
+            </subscribeError>
+        </updateContextSubscriptionResponse>
+
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <updateContextSubscriptionResponse>
+            <subscribeResponse>
+                <subscriptionId>12345</subscriptionId>
+                <duration>P5Y</duration>
+                <throttling>P1D</throttling>
+            </subscribeResponse>
+        </updateContextSubscriptionResponse>
+
+## Standard Context Subscription Cancellation [/ngsi10/unsubscribeContext]
+
+Generic unsubscribe operations. The expected request body is an
+instance of unsubscribeContextRequest; the response body is an
+instance of unsubscribeContextResponse. 
+
+### Unsubscribe [POST]
+
++ Request (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <unsubscribeContextRequest>
+            <subscriptionId>1245</subscriptionId>
+        </unsubscribeContextRequest>
+        
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <unsubscribeContextResponse>
+            <subscriptionId>12345</subscriptionId>
+            <statusCode>
+                <code>200</code>
+                <reasonPhrase>OK</reasonPhrase>
+            </statusCode>
+        </unsubscribeContextResponse>
+        
+        
++ Response 400 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <unsubscribeContextResponse>
+            <subscriptionId>12345</subscriptionId>
+            <statusCode>
+                <code>404</code>
+                <reasonPhrase>Subscription ID not found</reasonPhrase>
+                <details>Internal Error</details>
+            </statusCode>
+        </unsubscribeContextResponse>
+
+## Standard Context Notification [/ngsi10/notifyContext]
+
+Notification operation to send context data matching a previous
+subscription. The expected request body is an instance of
+notifyContextRequest; the response body is an instance of
+notifyContextResponse.
+
+### Notify [POST]
+
++ Request (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <notifyContextRequest>
+            <subscriptionId>12345</subscriptionId>
+            <originator>http://localhost/test</originator>
+            <contextResponseList>
+                <contextElementResponse>
+                    <contextElement>
+                        <entityId type="Room" isPattern="false">
+                            <id>ConferenceRoom</id>
+                        </entityId>
+                        <contextAttributeList>
+                            <contextAttribute>
+                                <name>temperature</name>
+                                <type>Room</type>
+                                <contextValue>10</contextValue>
+                                <metadata>
+                                    <contextMetadata>
+                                        <name>ID</name>
+                                        <type>string</type>
+                                        <value>1110</value>
+                                    </contextMetadata>
+                                </metadata>
+                            </contextAttribute>
+                        </contextAttributeList>
+                    </contextElement>
+                    <statusCode>
+                        <code>200</code>
+                        <reasonPhrase>Ok</reasonPhrase>
+                    </statusCode>
+                </contextElementResponse>
+            </contextResponseList>
+        </notifyContextRequest>
+        
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <notifyContextResponse>
+            <responseCode>
+                <code>200</code>
+                <reasonPhrase>Ok</reasonPhrase>
+            </responseCode>
+        </notifyContextResponse>
+
+## Standard Context Data Push [/ngsi10/updateContext]
+
+Generic context updates. The expected request body is an instance of 
+updateContextRequest; the response body is an instance of 
+updateContextResponse. 
+
+### Update context data [POST]
+
++ Request (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <updateContextRequest>
+            <contextElementList>
+                <contextElement>
+                    <entityId type="Room" isPattern="false">
+                        <id>ConferenceRoom</id>
+                    </entityId>
+                    <contextAttributeList>
+                        <contextAttribute>
+                            <name>temperature</name>
+                            <type>degree</type>
+                            <contextValue>20</contextValue>
+                            <metadata>
+                                <contextMetadata>
+                                    <name>ID</name>
+                                    <type>long</type>
+                                    <value>1</value>
+                                </contextMetadata>
+                                <contextMetadata>
+                            </metadata>
+                        </contextAttribute>
+                    </contextAttributeList>
+                </contextElement>
+            </contextElementList>
+            <updateAction>UPDATE</updateAction>
+        </updateContextRequest>
+
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <updateContextResponse>
+            <contextResponseList>
+                <contextElementResponse>
+                    <contextElement>
+                        <entityId type="Room" isPattern="false">
+                            <id>ConferenceRoom</id>
+                        </entityId>
+                        <contextAttributeList>
+                            <contextAttribute>
+                                <name>temperature</name>
+                            </contextAttribute>
+                        </contextAttributeList>
+                    </contextElement>
+                    <statusCode>
+                        <code>200</code>
+                        <reasonPhrase>Ok</reasonPhrase>
+                    </statusCode>
+                </contextElementResponse>
+            </contextResponseList>
+        </updateContextResponse>
+        
+
+## Convenience Interaction with Individual Context Entity [/ngsi10/contextEntities/ConferenceRoom/]
+
+### Retrieve all entity information [GET]
+
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <contextElementResponse>
+            <contextElement>
+                <entityId type="Room" isPattern="false">
+                    <id>ConferenceRoom</id>
+                </entityId>
+                <contextAttributeList>
+                    <contextAttribute>
+                        <name>indoorTemperature</name>
+                        <type>Room</type>
+                        <contextValue>6</contextValue>
+                        <metadata>
+                            <contextMetadata>
+                                <name>ID</name>
+                                <type>string</type>
+                                <value>1110</value>
+                            </contextMetadata>
+                        </metadata>
+                    </contextAttribute>
+                </contextAttributeList>
+            </contextElement>
+            <statusCode>
+                <code>200</code>
+                <reasonPhrase>Ok</reasonPhrase>
+                <details>a</details>
+            </statusCode>
+        </contextElementResponse>
+        
+
+### Replace a number of attribute values  [PUT]
+
++ Request (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <updateContextElementRequest>
+            <contextAttributeList>
+                <contextAttribute>
+                    <name>temperature</name>
+                    <type>degree</type>
+                    <contextValue>10</contextValue>
+                    <metadata>
+                        <contextMetadata>
+                            <name>ID</name>
+                            <type>string</type>
+                            <value>1110</value>
+                        </contextMetadata>
+                    </metadata>
+                </contextAttribute>
+                <contextAttribute>
+                    <name>humidity</name>
+                    <type>percentage</type>
+                    <contextValue>70</contextValue>
+                    <metadata>
+                        <contextMetadata>
+                            <name>ID</name>
+                            <type>string</type>
+                            <value>2312</value>
+                        </contextMetadata>
+                    </metadata>
+                </contextAttribute>
+            </contextAttributeList>
+        </updateContextElementRequest>
+        
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <updateContextElementResponse>
+            <contextResponse>
+                <contextAttributeList>
+                    <contextAttribute>
+                        <name>temperature</name>
+                        <type>degree</type>
+                    </contextAttribute>
+                    <contextAttribute>
+                        <name>humidity</name>
+                        <type>percentage</type>
+                    </contextAttribute>                    
+                </contextAttributeList>
+                <statusCode>
+                    <code>200</code>
+                    <reasonPhrase>Ok</reasonPhrase>
+                </statusCode>
+            </contextResponse>
+        </updateContextElementResponse>
+        
++ Response 400 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <updateContextElementResponse>
+                <errorCode>
+                    <code>404</code>
+                    <reasonPhrase>Context Element not Found</reasonPhrase>
+                    <details>No Attribute with given value IDs found</details>
+                </errorCode>
+        </updateContextElementResponse>        
+
+### Append context attribute values [POST]
+
++ Request (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <appendContextElementRequest>
+            <contextAttributeList>
+                <contextAttribute>
+                    <name>temperature</name>
+                    <type>degree</type>
+                    <contextValue>10</contextValue>
+                    <metadata>
+                        <contextMetadata>
+                            <name>ID</name>
+                            <type>string</type>
+                            <value>1110</value>
+                        </contextMetadata>
+                    </metadata>
+                </contextAttribute>
+                <contextAttribute>
+                    <name>humidity</name>
+                    <type>percentage</type>
+                    <contextValue>70</contextValue>
+                    <metadata>
+                        <contextMetadata>
+                            <name>ID</name>
+                            <type>string</type>
+                            <value>2312</value>
+                        </contextMetadata>
+                    </metadata>
+                </contextAttribute>
+            </contextAttributeList>
+        </appendContextElementRequest>
+
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <appendContextElementResponse>
+            <contextResponse>
+                <contextAttributeList>
+                    <contextAttribute>
+                        <name>temperature</name>
+                        <type>degree</type>
+                        <contextValue>10</contextValue>
+                        <metadata>
+                            <contextMetadata>
+                                <name>ID</name>
+                                <type>string</type>
+                                <value>1110</value>
+                            </contextMetadata>
+                        </metadata>
+                    </contextAttribute>
+                    <contextAttribute>
+                        <name>humidity</name>
+                        <type>percentage</type>
+                        <contextValue>70</contextValue>
+                        <metadata>
+                            <contextMetadata>
+                                <name>ID</name>
+                                <type>string</type>
+                                <value>2312</value>
+                            </contextMetadata>
+                        </metadata>
+                    </contextAttribute>                    
+                </contextAttributeList>
+                <statusCode>
+                    <code>200</code>
+                    <reasonPhrase>Ok</reasonPhrase>
+                </statusCode>
+            </contextResponse>
+        </appendContextElementResponse>    
+
++ Response 400 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <appendContextElementResponse>
+                <errorCode>
+                    <code>500</code>
+                    <reasonPhrase>Internal Error</reasonPhrase>
+                </errorCode>
+        </appendContextElementResponse>  
+
+### Delete all entity information [DELETE]
+
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <statusCode>
+            <code>200</code>
+            <reasonPhrase>Ok</reasonPhrase>
+        </statusCode>
+        
++ Response 400 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <statusCode>
+            <code>404</code>
+            <reasonPhrase>Context Element not found</reasonPhrase>
+        </statusCode>
+
+## Convenience Interaction with an Individual Attribute of an Individual Entity [/ngsi10/contextEntities/ConferenceRoom/attributes/temperature]
+
+### Retrieve attribute values [GET]
+
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <contextAttributeResponse>
+            <contextAttributeList>
+                <contextAttribute>
+                    <name>temperature</name>
+                    <type>degree</type>
+                    <contextValue>10</contextValue>
+                    <metadata>
+                        <contextMetadata>
+                            <name>ID</name>
+                            <type>string</type>
+                            <value>1110</value>
+                        </contextMetadata>
+                    </metadata>
+                </contextAttribute>
+                <contextAttribute>
+                    <name>temperature</name>
+                    <type>degree</type>
+                    <contextValue>12</contextValue>
+                    <metadata>
+                        <contextMetadata>
+                            <name>ID</name>
+                            <type>string</type>
+                            <value>4837</value>
+                        </contextMetadata>
+                    </metadata>
+                </contextAttribute>
+            </contextAttributeList>  
+                <statusCode>
+                    <code>200</code>
+                    <reasonPhrase>OK</reasonPhrase>
+            </statusCode>
+        </contextAttributeResponse>
+
+### Append context attribute value [POST]
+
++ Request (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <updateContextAttributeRequest>
+            <type>degree</type>
+            <contextValue>10</contextValue>
+            <metadata>
+                <contextMetadata>
+                    <name>ID</name>
+                    <type>string</type>
+                    <value>1110</value>
+                </contextMetadata>
+            </metadata>            
+        </updateContextAttributeRequest>
+        
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <statusCode>
+            <code>200</code>
+            <reasonPhrase>Ok</reasonPhrase>
+        </statusCode>
+        
+
+### Delete all values of attribute [DELETE]
+
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <statusCode>
+            <code>200</code>
+            <reasonPhrase>Ok</reasonPhrase>
+        </statusCode>
+
+## Convenience Interaction with an Individual Attribute Value Instance of an Individual Entity [/ngsi10/contextEntities/ConferenceRoom/attributes/temperature/id77]
+
+### Retrieve attribute value and associated metadata [GET]
+
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <contextAttributeResponse>
+            <contextAttributeList>
+                <contextAttribute>
+                    <name>temperature</name>
+                    <type>degree</type>
+                </contextAttribute>
+            </contextAttributeList>  
+                <statusCode>
+                    <code>200</code>
+                    <reasonPhrase>OK</reasonPhrase>
+            </statusCode>
+        </contextAttributeResponse>
+        
++ Response 400 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <contextAttributeResponse>
+            <contextAttributeList>
+                <contextAttribute>
+                    <name>temperature</name>
+                </contextAttribute>
+            </contextAttributeList>  
+                <statusCode>
+                    <code>404</code>
+                    <reasonPhrase>Not Found</reasonPhrase>
+                    <details>Value ID id77 not found.</details>
+            </statusCode>
+        </contextAttributeResponse>
+
+### Replace context attribute value [PUT]
+
++ Request (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <updateContextAttributeRequest>
+            <type>degree</type>
+            <contextValue>10</contextValue>
+        </updateContextAttributeRequest>
+        
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <statusCode>
+            <code>200</code>
+            <reasonPhrase>Ok</reasonPhrase>
+        </statusCode>
+
+### Delete all value attribute [DELETE]
+
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <statusCode>
+            <code>200</code>
+            <reasonPhrase>Ok</reasonPhrase>
+        </statusCode>
+
+## Convenience Interaction with  Attribute Domain of Individual Entity [/ngsi10/contextEntities/ConferenceRoom/attributeDomain/roomInfo]
+
+### Retrieve all attribute information belonging to attribute domain [GET]
+
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <contextAttributeResponse>
+            <contextAttributeList>
+                <contextAttribute>
+                    <name>temperature</name>
+                    <type>degree</type>
+                    <contextValue>10</contextValue>
+                    <metadata>
+                        <contextMetadata>
+                            <name>ID</name>
+                            <type>string</type>
+                            <value>1110</value>
+                        </contextMetadata>
+                    </metadata>
+                </contextAttribute>
+                <contextAttribute>
+                    <name>humidity</name>
+                    <type>percentage</type>
+                    <contextValue>70</contextValue>
+                    <metadata>
+                        <contextMetadata>
+                            <name>ID</name>
+                            <type>string</type>
+                            <value>2312</value>
+                        </contextMetadata>
+                    </metadata>
+                </contextAttribute>                    
+            </contextAttributeList>
+            <statusCode>
+                <code>200</code>
+                <reasonPhrase>Ok</reasonPhrase>
+            </statusCode>
+        </contextAttributeResponse>
+
+## Convenience Interaction with Entity Type [/ngsi10/contextEntityTypes/Room]
+
+### Retrieve all context information about entities of specified type [GET]
+
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <queryContextResponse>
+            <contextResponseList>
+                <contextElementResponse>
+                    <contextElement>
+                        <entityId type="Room" isPattern="false">
+                            <id>ConferenceRoom</id>
+                        </entityId>
+                        <contextAttributeList>
+                            <contextAttribute>
+                                <name>indoorTemperature</name>
+                                <type>degree</type>
+                                <contextValue>6</contextValue>
+                                <metadata>
+                                    <contextMetadata>
+                                        <name>ID</name>
+                                        <type>string</type>
+                                        <value>1110</value>
+                                    </contextMetadata>
+                                </metadata>
+                            </contextAttribute>
+                        </contextAttributeList>
+                    </contextElement>
+                    <statusCode>
+                        <code>200</code>
+                        <reasonPhrase>Ok</reasonPhrase>
+                    </statusCode>
+                </contextElementResponse>
+                <contextElementResponse>
+                    <contextElement>
+                        <entityId type="Room" isPattern="false">
+                            <id>Office</id>
+                        </entityId>
+                        <contextAttributeList>
+                            <contextAttribute>
+                                <name>humidity</name>
+                                <type>percentage</type>
+                                <contextValue>70</contextValue>
+                            </contextAttribute>
+                        </contextAttributeList>
+                    </contextElement>
+                    <statusCode>
+                        <code>200</code>
+                        <reasonPhrase>Ok</reasonPhrase>
+                    </statusCode>
+                </contextElementResponse>
+            </contextResponseList>
+        </queryContextResponse> 
+
+
+## Convenience Interaction with Attribute of Entity Type [/ngsi10/contextEntityTypes/Room/attributes/indoorTemperature]
+
+### Retrieve all values of specified attribute of the context entities of the specific type [GET]
+
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <queryContextResponse>
+            <contextResponseList>
+                <contextElementResponse>
+                    <contextElement>
+                        <entityId type="Room" isPattern="false">
+                            <id>ConferenceRoom</id>
+                        </entityId>
+                        <contextAttributeList>
+                            <contextAttribute>
+                                <name>indoorTemperature</name>
+                                <type>degree</type>
+                                <contextValue>6</contextValue>
+                                <metadata>
+                                    <contextMetadata>
+                                        <name>ID</name>
+                                        <type>string</type>
+                                        <value>1110</value>
+                                    </contextMetadata>
+                                </metadata>
+                            </contextAttribute>
+                        </contextAttributeList>
+                    </contextElement>
+                    <statusCode>
+                        <code>200</code>
+                        <reasonPhrase>Ok</reasonPhrase>
+                    </statusCode>
+                </contextElementResponse>
+                <contextElementResponse>
+                    <contextElement>
+                        <entityId type="Room" isPattern="false">
+                            <id>Office</id>
+                        </entityId>
+                        <contextAttributeList>
+                            <contextAttribute>
+                                <name>indoorTemperature</name>
+                                <type>degree</type>
+                                <contextValue>13</contextValue>
+                            </contextAttribute>
+                        </contextAttributeList>
+                    </contextElement>
+                    <statusCode>
+                        <code>200</code>
+                        <reasonPhrase>Ok</reasonPhrase>
+                    </statusCode>
+                </contextElementResponse>
+            </contextResponseList>
+        </queryContextResponse> 
+
+
+## Convenience Interaction with Attribute Domain of Entity Type [/ngsi10/contextEntityTypes/Room/attributeDomains/roomInfo]
+
+### For all context entities of the specific type, retrieve the values of all attributes belonging to the attribute domain [GET]
+
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <queryContextResponse>
+            <contextResponseList>
+                <contextElementResponse>
+                    <contextElement>
+                        <entityId type="Room" isPattern="false">
+                            <id>ConferenceRoom</id>
+                        </entityId>
+                        <contextAttributeList>
+                            <contextAttribute>
+                                <name>indoorTemperature</name>
+                                <type>degree</type>
+                                <contextValue>6</contextValue>
+                                <metadata>
+                                    <contextMetadata>
+                                        <name>ID</name>
+                                        <type>string</type>
+                                        <value>1110</value>
+                                    </contextMetadata>
+                                </metadata>
+                            </contextAttribute>
+                            <contextAttribute>
+                                <name>humidity</name>
+                                <type>percentage</type>
+                                <contextValue>70</contextValue>
+                            </contextAttribute>
+                        </contextAttributeList>
+                    </contextElement>
+                    <statusCode>
+                        <code>200</code>
+                        <reasonPhrase>Ok</reasonPhrase>
+                    </statusCode>
+                </contextElementResponse>
+                <contextElementResponse>
+                    <contextElement>
+                        <entityId type="Room" isPattern="false">
+                            <id>Office</id>
+                        </entityId>
+                        <contextAttributeList>
+                            <contextAttribute>
+                                <name>indoorTemperature</name>
+                                <type>degree</type>
+                                <contextValue>13</contextValue>
+                            </contextAttribute>
+                        </contextAttributeList>
+                    </contextElement>
+                    <statusCode>
+                        <code>200</code>
+                        <reasonPhrase>Ok</reasonPhrase>
+                    </statusCode>
+                </contextElementResponse>
+            </contextResponseList>
+        </queryContextResponse> 
+
+## Convenience Subscription Container [/ngsi10/contextSubscriptions]
+
+### Create a new subscription [POST]
+
++ Request (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+            <subscribeContextRequest>
+                <entityIdList>
+                    <entityId type="Room" isPattern="false">
+                        <id>ConferenceRoom</id>
+                    </entityId>
+                </entityIdList>
+                <attributeList>
+                    <attribute>temperature</attribute>
+                </attributeList>
+            <reference>127.0.0.1</reference>
+            <duration>P5Y</duration>
+            <restriction>
+                <attributeExpression>someXPATH</attributeExpression>
+                <scope>
+                    <operationScope>
+                        <scopeType>someScopeType</scopeType>
+                        <scopeValue>someScopeValue</scopeValue>
+                    </operationScope>
+                </scope>
+            </restriction>
+            <notifyConditions>
+                <notifyCondition>
+                    <type>ONCHANGE</type>
+                </notifyCondition>
+            <throttling>P5Y</throttling>
+        </subscribeContextRequest>
+        
++ Response 400 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <subscribeContextResponse>
+            <subscribeError>
+                <subscriptionId></subscriptionId>
+                    <errorCode>
+                        <code>400</code>
+                        <reasonPhrase>Subscription Error</reasonPhrase>
+                        <details>Internal Error</details>
+                    </errorCode>
+            </subscribeError>
+        </subscribeContextResponse>
+
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <subscribeContextResponse>
+            <subscribeResponse>
+                <subscriptionId>123</subscriptionId>
+                <duration>P5Y</duration>
+                <throttling>P5Y</throttling>
+            </subscribeResponse>
+        </subscribeContextResponse>        
+
+## Convenience Interaction with individual subscription [/ngsi10/contextSubscriptions/12345]
+
+### Update subscription [PUT]
+
++ Request (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <updateContextSubscriptionRequest>
+            <duration>P5Y</duration>
+        </updateContextSubscriptionRequest>
+        
++ Response 400 (application/xml)        
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <updateContextSubscriptionResponse>
+            <subscribeError>
+                <subscriptionId>12345</subscriptionId>
+                <errorCode>
+                    <code>404</code>
+                    <reasonPhrase>Subscription ID not found</reasonPhrase>
+                </errorCode>
+            </subscribeError>
+        </updateContextSubscriptionResponse>
+
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <updateContextSubscriptionResponse>
+            <subscribeResponse>
+                <subscriptionId>12345</subscriptionId>
+                <duration>P5Y</duration>
+                <throttling>P1D</throttling>
+            </subscribeResponse>
+        </updateContextSubscriptionResponse>        
+
+### Cancel subscription [DELETE]
+
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <unsubscribeContextResponse>
+            <subscriptionId>12345</subscriptionId>
+            <statusCode>
+                <code>200</code>
+                <reasonPhrase>OK</reasonPhrase>
+            </statusCode>
+        </unsubscribeContextResponse>
+        
+        
++ Response 400 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <unsubscribeContextResponse>
+            <subscriptionId>12345</subscriptionId>
+            <statusCode>
+                <code>404</code>
+                <reasonPhrase>Subscription ID not found</reasonPhrase>
+                <details>Internal Error</details>
+            </statusCode>
+        </unsubscribeContextResponse>
+
+
+

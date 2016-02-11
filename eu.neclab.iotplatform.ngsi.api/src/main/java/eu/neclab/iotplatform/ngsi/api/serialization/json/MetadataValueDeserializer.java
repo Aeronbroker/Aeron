@@ -44,6 +44,7 @@ package eu.neclab.iotplatform.ngsi.api.serialization.json;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonProcessingException;
@@ -52,15 +53,19 @@ import org.codehaus.jackson.map.DeserializationContext;
 import org.codehaus.jackson.map.JsonDeserializer;
 
 import eu.neclab.iotplatform.ngsi.api.datamodel.Circle;
+import eu.neclab.iotplatform.ngsi.api.datamodel.PEPCredentials;
+import eu.neclab.iotplatform.ngsi.api.datamodel.Point;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Polygon;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Segment;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Vertex;
 
 /**
- *  Deserializer to obtain operation scopes from JSON objects.
+ * Deserializer to obtain operation scopes from JSON objects.
  */
 public class MetadataValueDeserializer extends JsonDeserializer<Object> {
-
+	
+	/** The logger. */
+	private static Logger logger = Logger.getLogger(MetadataValueDeserializer.class);
 	/*
 	 * "scopeValue" : { "vertices" : [ { "latitude" : 12312.0, "longitude" :
 	 * 23123.22 }, { "latitude" : 12313.0, "longitude" : 23124.22 }, {
@@ -70,7 +75,7 @@ public class MetadataValueDeserializer extends JsonDeserializer<Object> {
 	 * 312.0, "centerLongitude" : 564.0, "radius" : 8.0 } }, { "scopeType" :
 	 * "segment", "scopeValue" : { "height" : 234234.0, "nw_Corner" :
 	 * "312312.2", "se_Corner" : "423423.212" } (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * org.codehaus.jackson.map.JsonDeserializer#deserialize(org.codehaus.jackson
 	 * .JsonParser, org.codehaus.jackson.map.DeserializationContext)
@@ -79,33 +84,66 @@ public class MetadataValueDeserializer extends JsonDeserializer<Object> {
 	@Override
 	public Object deserialize(JsonParser jp, DeserializationContext ctxt)
 			throws IOException, JsonProcessingException {
+
 		JsonToken token = jp.getCurrentToken();
+
 		if (token.equals(JsonToken.START_OBJECT)) {
 			token = jp.nextToken();
 			if (token.equals(JsonToken.FIELD_NAME)) {
 				String name = jp.getCurrentName();
-				if (name.equals("vertices")) {
-					return getPolygon(jp);
-				} else if (name.equals("centerLatitude")
-						|| name.equals("centerLongitude")
-						|| name.equals("radius")) {
-					return getCircle(jp);
-				} else if (name.equals("height") || name.equals("nw_Corner")
-						|| name.equals("se_Corner")) {
-					return getSegment(jp);
-				} else {
-					throw new JsonParseException("unknow datatype for scope",
-							null);
+				try {
+					if (name.equals("vertices")) {
+						return getPolygon(jp);
+					} else if (name.equals("centerLatitude")
+							|| name.equals("centerLongitude")
+							|| name.equals("radius")) {
+						return getCircle(jp);
+					} else if (name.equals("height")
+							|| name.equals("nw_Corner")
+							|| name.equals("se_Corner")) {
+						return getSegment(jp);
+					} else if (name.equals("username")
+							|| name.equals("password")) {
+						return getPEPCredentials(jp);
+					} else if (name.equals("latitude")
+							|| name.equals("longitude")) {
+						return getPoint(jp);
+					} else {
+						return getAsJsonString(jp);
+					}
+				} catch (JsonProcessingException e) {
+					logger.info("Error on parsing metadata");
 				}
 			} else {
-				throw new JsonParseException("unknow datatype for scope", null);
+				return getAsJsonString(jp);
 			}
 
-		} else {
-
-			return null;
 		}
+		return jp.getText();
 
+	}
+
+	private Object getAsJsonString(JsonParser jp) throws JsonParseException,
+			IOException {
+		String asString = "";
+		JsonToken token = jp.getCurrentToken();
+
+		while (!token.equals(JsonToken.END_OBJECT)) {
+
+			String key = jp.getText();
+			token = jp.nextToken();
+			String value = jp.getText();
+			String.format("\"%s\" : \"%s\"", key, value);
+
+			if (asString.isEmpty()) {
+				asString += String.format("\"%s\" : \"%s\"", key, value);
+			} else {
+				asString += String.format(", \"%s\" : \"%s\"", key, value);
+			}
+			token = jp.nextToken();
+		}
+		asString = String.format("{%s}", asString);
+		return asString;
 	}
 
 	/*
@@ -113,7 +151,7 @@ public class MetadataValueDeserializer extends JsonDeserializer<Object> {
 	 * "se_Corner" : "423423.212" }
 	 */
 	private Object getSegment(JsonParser jp) throws JsonParseException,
-	IOException {
+			IOException {
 		JsonToken token = jp.getCurrentToken();
 
 		Segment result = new Segment();
@@ -134,11 +172,33 @@ public class MetadataValueDeserializer extends JsonDeserializer<Object> {
 		return result;
 	}
 
+	private Object getPEPCredentials(JsonParser jp) throws JsonParseException,
+			IOException {
+		JsonToken token = jp.getCurrentToken();
+
+		PEPCredentials result = new PEPCredentials();
+
+		while (!token.equals(JsonToken.END_OBJECT)) {
+			token = jp.nextToken();
+			if (jp.getCurrentName().equalsIgnoreCase("username")) {
+				result.setUsername(jp.getText());
+			} else if (jp.getCurrentName().equalsIgnoreCase("password")) {
+				result.setPassword(jp.getText());
+			} else {
+				throw new JsonParseException(
+						"unknown field for pepcredentials", null);
+			}
+			token = jp.nextToken();
+		}
+		return result;
+	}
+
 	/*
 	 * "scopeValue" : { "centerLatitude" : 312.0, "centerLongitude" : 564.0,
 	 * "radius" : 8.0 }
 	 */
-	private Object getCircle(JsonParser jp) throws JsonParseException, IOException {
+	private Object getCircle(JsonParser jp) throws JsonParseException,
+			IOException {
 		JsonToken token = jp.getCurrentToken();
 
 		Circle result = new Circle();
@@ -146,11 +206,54 @@ public class MetadataValueDeserializer extends JsonDeserializer<Object> {
 		while (!token.equals(JsonToken.END_OBJECT)) {
 			token = jp.nextToken();
 			if (jp.getCurrentName().equalsIgnoreCase("centerLatitude")) {
-				result.setCenterLatitude(jp.getFloatValue());
+				if (token.isNumeric()) {
+					result.setCenterLatitude(jp.getFloatValue());
+				} else {
+					result.setCenterLatitude(Float.parseFloat(jp.getText()));
+				}
 			} else if (jp.getCurrentName().equalsIgnoreCase("centerLongitude")) {
-				result.setCenterLongitude(jp.getFloatValue());
+				if (token.isNumeric()) {
+					result.setCenterLongitude(jp.getFloatValue());
+				} else {
+					result.setCenterLongitude(Float.parseFloat(jp.getText()));
+				}
 			} else if (jp.getCurrentName().equalsIgnoreCase("radius")) {
-				result.setRadius(jp.getFloatValue());
+				if (token.isNumeric()) {
+					result.setRadius(jp.getFloatValue());
+				} else {
+					result.setRadius(Float.parseFloat(jp.getText()));
+				}
+			} else {
+				throw new JsonParseException("unknown field for circle", null);
+			}
+			token = jp.nextToken();
+		}
+		return result;
+	}
+
+	/*
+	 * "scopeValue" : { "latitude" : 312.0, "longitude" : 564.0}
+	 */
+	private Object getPoint(JsonParser jp) throws JsonParseException,
+			IOException {
+		JsonToken token = jp.getCurrentToken();
+
+		Point result = new Point();
+
+		while (!token.equals(JsonToken.END_OBJECT)) {
+			token = jp.nextToken();
+			if (jp.getCurrentName().equalsIgnoreCase("latitude")) {
+				if (token.isNumeric()) {
+					result.setLatitude(jp.getFloatValue());
+				} else {
+					result.setLatitude(Float.parseFloat(jp.getText()));
+				}
+			} else if (jp.getCurrentName().equalsIgnoreCase("longitude")) {
+				if (token.isNumeric()) {
+					result.setLongitude(jp.getFloatValue());
+				} else {
+					result.setLongitude(Float.parseFloat(jp.getText()));
+				}
 			} else {
 				throw new JsonParseException("unknown field for circle", null);
 			}
@@ -165,26 +268,37 @@ public class MetadataValueDeserializer extends JsonDeserializer<Object> {
 	 * "longitude" : 23125.22 }, { "latitude" : 12315.0, "longitude" : 23126.22
 	 * }, { "latitude" : 12316.0, "longitude" : 23127.22 } ] }
 	 */
-	private Object getPolygon(JsonParser jp) throws JsonParseException, IOException {
+	private Object getPolygon(JsonParser jp) throws JsonParseException,
+			IOException {
 		JsonToken token = jp.nextToken();
 
-
-		if(!token.equals(JsonToken.START_ARRAY)){
+		if (!token.equals(JsonToken.START_ARRAY)) {
 			throw new JsonParseException("Vertices has to be an array", null);
 		}
 		token = jp.nextToken();
 		Polygon result = new Polygon();
 		ArrayList<Vertex> vertices = new ArrayList<Vertex>();
-		while(!token.equals(JsonToken.END_ARRAY)){
-			if(token.equals(JsonToken.START_OBJECT)){
+		while (!token.equals(JsonToken.END_ARRAY)) {
+			if (token.equals(JsonToken.START_OBJECT)) {
 				Vertex vertex = new Vertex();
-				while(!token.equals(JsonToken.END_OBJECT)){
-					if(token.equals(JsonToken.FIELD_NAME)){
+				while (!token.equals(JsonToken.END_OBJECT)) {
+					if (token.equals(JsonToken.FIELD_NAME)) {
 						token = jp.nextToken();
-						if(jp.getCurrentName().equalsIgnoreCase("latitude")){
-							vertex.setLatitude(jp.getFloatValue());
-						}else if(jp.getCurrentName().equalsIgnoreCase("longitude")){
-							vertex.setLongitude(jp.getFloatValue());
+						if (jp.getCurrentName().equalsIgnoreCase("latitude")) {
+							if (token.isNumeric()) {
+								vertex.setLatitude(jp.getFloatValue());
+							} else {
+								vertex.setLatitude(Float.parseFloat(jp
+										.getText()));
+							}
+						} else if (jp.getCurrentName().equalsIgnoreCase(
+								"longitude")) {
+							if (token.isNumeric()) {
+								vertex.setLongitude(jp.getFloatValue());
+							} else {
+								vertex.setLongitude(Float.parseFloat(jp
+										.getText()));
+							}
 						}
 					}
 					token = jp.nextToken();

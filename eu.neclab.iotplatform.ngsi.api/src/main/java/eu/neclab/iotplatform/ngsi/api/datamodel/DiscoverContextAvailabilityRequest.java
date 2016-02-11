@@ -65,10 +65,12 @@ public class DiscoverContextAvailabilityRequest extends NgsiStructure {
 	@XmlElement(name = "entityId", required = true)
 	@JsonProperty("entities")
 	private List<EntityId> entityId = null;
+	
 	@XmlElementWrapper(name = "attributeList")
 	@XmlElement(name = "attribute", nillable = true)
 	@JsonProperty("attributes")
 	private List<String> attribute;
+	
 	@XmlElement(name = "restriction")
 	private Restriction restriction = null;
 
@@ -82,6 +84,7 @@ public class DiscoverContextAvailabilityRequest extends NgsiStructure {
 		attribute = attributeNameList;
 		this.restriction = restriction;
 	}
+	
 	@JsonIgnore
 	public List<EntityId> getEntityIdList() {
 		if (entityId == null) {
@@ -89,10 +92,12 @@ public class DiscoverContextAvailabilityRequest extends NgsiStructure {
 		}
 		return entityId;
 	}
+	
 	@JsonIgnore
 	public void setEntityIdList(List<EntityId> entityId) {
 		this.entityId = entityId;
 	}
+	
 	@JsonIgnore
 	public List<String> getAttributeList() {
 		return attribute;

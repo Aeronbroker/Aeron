@@ -50,6 +50,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 
@@ -83,6 +84,7 @@ public class UpdateContextRequest extends NgsiStructure {
 
 	}
 
+	@JsonIgnore
 	public List<ContextElement> getContextElement() {
 		if (contextElement == null) {
 			contextElement = new ArrayList<ContextElement>();
@@ -90,6 +92,7 @@ public class UpdateContextRequest extends NgsiStructure {
 		return contextElement;
 	}
 
+	@JsonIgnore
 	public void setContextElement(List<ContextElement> contextElement) {
 		this.contextElement = contextElement;
 	}

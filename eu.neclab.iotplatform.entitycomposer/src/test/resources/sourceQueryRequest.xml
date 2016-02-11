@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<queryContextRequest>
+	<entityIdList>
+		<entityId type="TemperatureSensor" isPattern="false">
+			<id>Sensor_A</id>
+		</entityId>
+		<entityId type="TemperatureSensor" isPattern="false">
+			<id>Sensor_B</id>
+		</entityId>
+	</entityIdList>
+	<attributeList>
+		<attribute>sensorValue</attribute>
+	</attributeList>
+</queryContextRequest>

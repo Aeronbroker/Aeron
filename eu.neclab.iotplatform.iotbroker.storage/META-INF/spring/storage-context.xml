@@ -20,11 +20,9 @@
 	</bean> 
 	
 
-	<bean id="availabilityStorage" class="eu.neclab.iotplatform.iotbroker.storage.impl.AvailabilitySubStorage"></bean>
-	<bean id="incSubStorage" class="eu.neclab.iotplatform.iotbroker.storage.impl.IncomingSubStorage"></bean>
-	<bean id="outSubStorage" class="eu.neclab.iotplatform.iotbroker.storage.impl.OutgoingSubStorage"></bean>
-	<bean id="linkSubStorage" class="eu.neclab.iotplatform.iotbroker.storage.impl.LinkSubStorage"></bean>
-	<bean id="linkSubAvStorage" class="eu.neclab.iotplatform.iotbroker.storage.impl.LinkSubAvailabilityStorage"></bean>
+	<bean id="availabilityStorage" class="eu.neclab.iotplatform.iotbroker.storage.impl.AvailabilitySubStorage" depends-on="hsqldb"></bean>
+	<bean id="linkSubAvStorage" class="eu.neclab.iotplatform.iotbroker.storage.impl.LinkSubAvailabilityStorage" depends-on="hsqldb"></bean>
+	<bean id="subscriptionStorage" class="eu.neclab.iotplatform.iotbroker.storage.impl.SubscriptionStorage" depends-on="hsqldb"></bean>
 		
 	
 </beans>

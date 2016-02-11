@@ -44,8 +44,6 @@ package eu.neclab.iotplatform.iotbroker.commons.interfaces;
 import java.util.List;
 
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
-import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
-import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 
 /**
  *  Interface for connecting IoT Broker with a Big Data Repository
@@ -55,8 +53,5 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 public interface BigDataRepository {
 
 	void storeData(List<ContextElement> contextElementList);
-	
-	List<ContextElementResponse> getEntityLatestValues(EntityId entityId);
-
 
 }

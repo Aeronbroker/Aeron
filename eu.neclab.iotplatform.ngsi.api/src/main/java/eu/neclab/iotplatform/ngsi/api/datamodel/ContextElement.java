@@ -50,6 +50,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
@@ -62,12 +63,15 @@ public class ContextElement extends NgsiStructure {
 
 	@XmlElement(name = "entityId", required = true)
 	private EntityId entityId;
+	
 	@XmlElement(name = "attributeDomainName")
 	private String attributeDomainName;
+	
 	@XmlElementWrapper(name = "contextAttributeList")
 	@XmlElement(name = "contextAttribute")
 	@JsonProperty("attributes")
 	private List<ContextAttribute> contextAttributeList;
+	
 	@XmlElementWrapper(name = "domainMetadata")
 	@XmlElement(name = "contextMetadata")
 	private List<ContextMetadata> domainMetadata;
@@ -95,11 +99,13 @@ public class ContextElement extends NgsiStructure {
 		this.entityId = entityId;
 	}
 
+	@JsonIgnore
 	public List<ContextAttribute> getContextAttributeList() {
 		return contextAttributeList;
 
 	}
 
+	@JsonIgnore
 	public void setContextAttributeList(
 			List<ContextAttribute> attributeDomainName) {
 		contextAttributeList = attributeDomainName;

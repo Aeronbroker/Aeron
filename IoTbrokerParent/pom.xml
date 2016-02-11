@@ -1,27 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-<!-- 
-	<scm>		
-		<developerConnection>scm:svn:https://svn.office.hd/repos/csst-sw/trunk/sw/FI-WARE/IoTBroker_OpenSource/IoTbrokerParent/</developerConnection>
-	</scm>
- -->
- 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>eu.neclab.iotplatform</groupId>
 	<artifactId>IoTbrokerParent</artifactId>
 	<packaging>pom</packaging>
-	
-	<version>4.4.1</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-<!-- 		<iotbroker.version>4.3.3</iotbroker.version> -->
+		<iotbroker.version>5.2.3-SNAPSHOT</iotbroker.version>
 		<spring.version>3.2.3.RELEASE</spring.version>
 		<spring.osgi.version>2.0.0.M1</spring.osgi.version>
 		<equinox.version>3.7.0.v20110221</equinox.version>
 	</properties>
 
+	<version>5.2.3-SNAPSHOT</version>
 
 	<dependencies>
 
@@ -244,6 +237,9 @@
 			<version>2.5.0</version>
 		</dependency>
 
+		<!-- <dependency> <groupId>org.apache.httpcomponents</groupId> <artifactId>httpcore</artifactId> 
+			<version>4.2.0-osgi</version> </dependency> <dependency> <groupId>org.apache.httpcomponents</groupId> 
+			<artifactId>httpclient</artifactId> <version>4.2.0-osgi</version> </dependency> -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>com.springsource.org.apache.commons.codec</artifactId>
@@ -261,6 +257,12 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>com.springsource.org.apache.commons.el</artifactId>
 			<version>1.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>com.springsource.org.apache.commons.csv</artifactId>
+			<version>1.0.0.BUILD-20080106</version>
 		</dependency>
 
 
@@ -376,7 +378,6 @@
 				</configuration>
 			</plugin>
 
-<!-- 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-eclipse-plugin</artifactId>
@@ -397,7 +398,6 @@
 					<tagNameFormat>Fiware_IotBroker_Release-@{project.version}</tagNameFormat>
 				</configuration>
 			</plugin>
--->
 		</plugins>
 	</build>
 
@@ -438,15 +438,6 @@
 			<url>https://oss.sonatype.org/content/repositories/springsource-milestones</url>
 		</repository>
 
-<!-- 
-		<repository>
-			<id>nexus.office.hd</id>
-			<name>NEC Europe Labs Software 
-			and Services Maven Repository</name>
-			<url>http://nexus.office.hd/content/groups/public/</url>
-		</repository>
- -->
-
 	</repositories>
 
 	<dependencyManagement>
@@ -486,6 +477,11 @@
 				<artifactId>iotbroker.ext.resultfilter</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>eu.neclab.iotplatform</groupId>
+				<artifactId>iotbroker.embeddediotagent.storage</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 		</dependencies>
-	</dependencyManagement>	
+	</dependencyManagement>
 </project>

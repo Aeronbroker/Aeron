@@ -1,0 +1,15 @@
+# note: the purpose of this file is to generate the installation and
+# administration guide of the IoT Broker using the tool
+# https://github.com/FiwareULPGC/fiware-api-blueprint-renderer.
+
+site_name: FIWARE IoT Broker
+repo_url: https://github.com/Aeronbroker/Aeron.git
+site_description: IoT Broker Installation and Administration Guide
+docs_dir: doc
+site_dir: html
+markdown_extensions: [toc,fenced_code]
+use_directory_urls: false
+theme: readthedocs
+extra_css: ["http://fiware.org/style/monokai_sublime.css"]
+pages:
+  - Home: 'installadminguide.md'

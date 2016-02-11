@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>IoTbrokerParent</artifactId>
 		<groupId>eu.neclab.iotplatform</groupId>
-		<version>4.3.3-SNAPSHOT</version>
+		<version>5.2.3-SNAPSHOT</version>
 		<relativePath>../IoTbrokerParent</relativePath>
 	</parent>
 
@@ -36,6 +36,7 @@
 							org.codehaus.jackson;version="1.9.2",
 							org.codehaus.jackson.map;version="1.9.2",
 							eu.neclab.iotplatform.ngsi.api.datamodel;version="${project.version}",
+							eu.neclab.iotplatform.ngsi.api.ngsi10;version="${project.version}",
 							org.codehaus.jackson.map.annotate;version="1.9.2",
 							javax.xml.bind,
 							javax.xml.bind.util,
@@ -48,7 +49,9 @@
 							org.w3c.dom,
 							org.xml.sax,
 							org.apache.http,
-							org.apache.http.message</Import-Package>
+							org.apache.http.message,
+							org.osgi.framework;version="1.5",
+							com.google.common.collect;version="17.0.0"</Import-Package>
 						<Export-Package>eu.neclab.iotplatform.iotbroker.commons;version="${project.version}",
 							eu.neclab.iotplatform.iotbroker.commons.interfaces;version="${project.version}"</Export-Package>
 					</instructions>

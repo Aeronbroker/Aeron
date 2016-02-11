@@ -66,14 +66,14 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextSubscriptionRespons
 import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Requester;
 
 /**
- *  The North Bound Wrapper the component used by the IoT Broker to
- *  take care of incoming NGSI 10 operations related to subscriptions.
- *  These operations are SubscribeContext, UpdateContextSubscription,
- *  UnsubscribeContext, and NotifyContext.
- *
- *  In order to work properly, instances of this class need a pointer
- *  to a SubscriptionController instance and a NGSI10Requester instance.
- *
+ * The North Bound Wrapper the component used by the IoT Broker to take care of
+ * incoming NGSI 10 operations related to subscriptions. These operations are
+ * SubscribeContext, UpdateContextSubscription, UnsubscribeContext, and
+ * NotifyContext.
+ * 
+ * In order to work properly, instances of this class need a pointer to a
+ * SubscriptionController instance and a NGSI10Requester instance.
+ * 
  */
 public class NorthBoundWrapper {
 
@@ -85,9 +85,9 @@ public class NorthBoundWrapper {
 	private final AssociationsUtil associationUtil = new AssociationsUtil();
 
 	/**
-	 * Returns the NGSI 10 Requester, which is used for sending NGSI 10
-	 * messages to URLs.
-	 *
+	 * Returns the NGSI 10 Requester, which is used for sending NGSI 10 messages
+	 * to URLs.
+	 * 
 	 * @return The NGSI 10 Requester.
 	 */
 	public Ngsi10Requester getNgsi10Requestor() {
@@ -95,17 +95,18 @@ public class NorthBoundWrapper {
 	}
 
 	/**
-	 * Sets the NGSI 10 Requester, which is used for sending NGSI 10
-	 * messages to URLs.
-	 *
-	 * @param ngsi10Requestor The NGSI 10 Requester.
+	 * Sets the NGSI 10 Requester, which is used for sending NGSI 10 messages to
+	 * URLs.
+	 * 
+	 * @param ngsi10Requestor
+	 *            The NGSI 10 Requester.
 	 */
 	public void setNgsi10Requestor(Ngsi10Requester ngsi10Requestor) {
 		this.ngsi10Requestor = ngsi10Requestor;
 	}
 
 	/**
-	 *  Creates a new instance.
+	 * Creates a new instance.
 	 */
 	public NorthBoundWrapper(SubscriptionController subscriptionController) {
 
@@ -114,16 +115,16 @@ public class NorthBoundWrapper {
 	}
 
 	/**
-	 * Processes NGSI NotifyContext operations by sending the notification
-	 * to the respective applications.
-	 *
+	 * Processes NGSI NotifyContext operations by sending the notification to
+	 * the respective applications.
+	 * 
 	 * @param notifyContextRequest
-	 * @param popSubURI
+	 * @param pubSubURL
 	 * @return
 	 */
 	public NotifyContextResponse forwardNotification(
-			NotifyContextRequest notifyContextRequest, URI popSubURI) {
-		return ngsi10Requestor.notifyContext(notifyContextRequest, popSubURI);
+			NotifyContextRequest notifyContextRequest, URI pubSubURL) {
+		return ngsi10Requestor.notifyContext(notifyContextRequest, pubSubURL);
 	}
 
 	public SubscribeContextResponse receiveReqFrmSubscribeController(
@@ -132,57 +133,59 @@ public class NorthBoundWrapper {
 		return null;
 	}
 
-
 	/**
-	 *
-	 * This method processes an incoming subscription from an application.
-	 * It announces the subscription to the subscription controller and it
-	 * sets up the process of sending notifications.
-	 *
-	 * @param subscribeContextRequest The NGSI 10 SubscribeContextRequest \
-	 * received from an application.
+	 * 
+	 * This method processes an incoming subscription from an application. It
+	 * announces the subscription to the subscription controller and it sets up
+	 * the process of sending notifications.
+	 * 
+	 * @param subscribeContextRequest
+	 *            The NGSI 10 SubscribeContextRequest \ received from an
+	 *            application.
 	 * @return The NGSI 10 SubscribeContextResponse.
 	 */
 	public SubscribeContextResponse receiveReqFrmNorth(
 			SubscribeContextRequest subscribeContextRequest) {
 
-		/*Forward the subscribe request to the subscription controller
-		 * and receive a response*/
+		/*
+		 * Forward the subscribe request to the subscription controller and
+		 * receive a response
+		 */
 		SubscribeContextResponse sCRes = subscriptionController
 				.receiveReqFrmNorthBoundWrapper(subscribeContextRequest);
 
-
-		if (sCRes != null && sCRes.getSubscribeError() != null && sCRes.getSubscribeError().getStatusCode().getCode() == 200) {
-
+		if (sCRes != null && sCRes.getSubscribeError() != null
+				&& sCRes.getSubscribeError().getStatusCode().getCode() == 200) {
 
 			/*
-			 * Set up the notification process for this
-			 * subscription.
+			 * Set up the notification process for this subscription.
 			 */
 
 			/*
-			 * Get the subscription data from the subscription
-			 * controller.
-			 * */
+			 * Get the subscription data from the subscription controller.
+			 */
 			SubscriptionData sData = subscriptionController
 					.getSubscriptionStore().get(
 							sCRes.getSubscribeResponse().getSubscriptionId());
 
 			// create the notification queue for the subscription
 			List<ContextElementResponse> contextResponseQueue = new ArrayList<ContextElementResponse>();
-			//create the notification task for the subscription
+			// create the notification task for the subscription
 
 			ThrottlingTask taskThrottling = new ThrottlingTask(sCRes
 					.getSubscribeResponse().getSubscriptionId(),
 					subscriptionController);
-			logger.debug("Created Throttling task for"+sCRes.getSubscribeResponse().getSubscriptionId());
+			if (logger.isDebugEnabled()) {
+				logger.debug("Created Throttling task for"
+						+ sCRes.getSubscribeResponse().getSubscriptionId());
+			}
 			// store both in the subscription data
 			sData.setThrottlingTask(taskThrottling);
 			sData.setContextResponseQueue(contextResponseQueue);
 
 			/*
 			 * now finally deploy the notification task
-			 * */
+			 */
 			if (subscribeContextRequest.getThrottling() != null) {
 
 				timer.scheduleAtFixedRate(taskThrottling,
@@ -196,13 +199,6 @@ public class NorthBoundWrapper {
 						subscriptionController.getDefaultThrottling());
 
 			}
-
-			/* store the subscription data in the subscription
-			 * controller's subscription store.
-			 */
-
-			subscriptionController.getSubscriptionStore().put(
-					sCRes.getSubscribeResponse().getSubscriptionId(), sData);
 		}
 		return sCRes;
 
@@ -236,7 +232,7 @@ public class NorthBoundWrapper {
 							uCSreq.getThrottling().getTimeInMillis(
 									new GregorianCalendar()));
 				} catch (Exception e) {
-					logger.error("Timer Task Error",e);
+					logger.error("Timer Task Error", e);
 					return new UpdateContextSubscriptionResponse(null,
 							new SubscribeError(null, new StatusCode(
 									Code.INTERNALERROR_500.getCode(),
@@ -249,10 +245,11 @@ public class NorthBoundWrapper {
 							new Date(System.currentTimeMillis()),
 							subscriptionController.getDefaultThrottling());
 					uCSres.getSubscribeResponse().setThrottling(
-							associationUtil.convertToDuration(subscriptionController
+							associationUtil
+									.convertToDuration(subscriptionController
 											.getDefaultThrottling()));
 				} catch (Exception e) {
-					logger.error("Timer Task Error",e);
+					logger.error("Timer Task Error", e);
 					return new UpdateContextSubscriptionResponse(null,
 							new SubscribeError(null, new StatusCode(
 									Code.INTERNALERROR_500.getCode(),

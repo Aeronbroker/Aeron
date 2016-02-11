@@ -76,5 +76,7 @@ public interface LinkSubscriptionAvailabilityInterface {
 	 *
 	 */
 	List<String> getAvailIDs(String inID);
+	
+	void resetDB();
 
 }

@@ -42,15 +42,19 @@
 package eu.neclab.iotplatform.iotbroker.commons;
 
 import java.io.File;
+import java.io.IOException;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.util.JAXBSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
 import org.apache.log4j.Logger;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * A class for validating objects against XML schemas. Instances of this
@@ -100,11 +104,20 @@ public class XmlValidator {
 
 			docValid = true;
 
-		} catch (Exception e) {
+		} catch (SAXParseException e) {
 			// catching all validation exceptions
 			logger.info("XML document is not Valid! :"+e.getMessage());
-			logger.info("Exception: ", e);
+			logger.info("Validation exception: ", e.getCause());
 			docValid = false;
+		} catch (JAXBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 		return docValid;

@@ -79,6 +79,12 @@ public class OperationScope extends NgsiStructure {
 		this.scopeType = scopeType;
 		this.scopeValue = scopeValue;
 	}
+	
+	@JsonIgnore
+	public OperationScope(ScopeTypes scopeType, Object scopeValue) {
+		this.scopeType = scopeType.toString();
+		this.scopeValue = scopeValue;
+	}
 
 	public String getScopeType() {
 		return scopeType;

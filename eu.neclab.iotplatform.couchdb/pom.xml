@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>IoTbrokerParent</artifactId>
 		<groupId>eu.neclab.iotplatform</groupId>
-		<version>4.3.3</version>
+		<version>5.2.3-SNAPSHOT</version>
 		<relativePath>../IoTbrokerParent</relativePath>
 	</parent>
 
@@ -38,6 +38,7 @@
 							eu.neclab.iotplatform.iotbroker.commons;version="${project.version}",
 							eu.neclab.iotplatform.iotbroker.commons.interfaces;version="${project.version}",
 							eu.neclab.iotplatform.ngsi.api.datamodel;version="${project.version}",
+							eu.neclab.iotplatform.ngsi.api.ngsi10;version="${project.version}",
 							org.apache.commons.codec.binary;version="1.6.0",
 							org.apache.log4j;version="1.2.15",
 							org.json;version="1.0.0",
@@ -97,13 +98,13 @@
 		<dependency>
 			<groupId>eu.neclab.iotplatform</groupId>
 			<artifactId>ngsi.api</artifactId>
-
 		</dependency>
+
 		<dependency>
 			<groupId>eu.neclab.iotplatform</groupId>
 			<artifactId>iotbroker.client</artifactId>
-
 		</dependency>
+
 	</dependencies>
 
 </project>

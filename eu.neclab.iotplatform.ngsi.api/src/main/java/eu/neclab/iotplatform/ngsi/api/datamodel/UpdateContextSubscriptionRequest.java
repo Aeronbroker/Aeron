@@ -61,13 +61,17 @@ public class UpdateContextSubscriptionRequest extends NgsiStructure {
 
 	@XmlElement(name = "duration")
 	private Duration duration = null;
+	
 	@XmlElement(name = "restriction")
 	private Restriction restriction = null;
+	
 	@XmlElement(name = "subscriptionId")
 	private String subscriptionId = null;
+	
 	@XmlElementWrapper(name = "notifyConditions")
 	@XmlElement(name = "notifyCondition")
 	private List<NotifyCondition> notifyConditions;
+	
 	@XmlElement(name = "throttling")
 	private Duration throttling = null;
 

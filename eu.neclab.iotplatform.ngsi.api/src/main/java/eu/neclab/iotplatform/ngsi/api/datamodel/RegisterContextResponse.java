@@ -55,11 +55,13 @@ import javax.xml.datatype.Duration;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class RegisterContextResponse extends NgsiStructure {
 
-	@XmlElement(name = "duration", required = true)
+	@XmlElement(name = "duration", required = false)
 	private Duration duration = null;
+	
 	@XmlElement(name = "registrationId", required = false)
 	private String registrationId = null;
-	@XmlElement(name = "errorCode", required = true)
+	
+	@XmlElement(name = "errorCode", required = false)
 	private StatusCode errorCode = null;
 
 	public RegisterContextResponse() {

@@ -14,10 +14,8 @@
 
 	<bean id="brokercore" class="eu.neclab.iotplatform.iotbroker.core.IotBrokerCore">
 		<property name="availabilitySub" ref="AvailabilitySubStorage"></property>
-		<property name="incomingSub" ref="IncomingSubStorage"></property>
-		<property name="linkSub" ref="LinkSubscriptionStorage"></property>
 		<property name="linkAvSub" ref="LinkSubscriptionAvStorage"></property>
-		<property name="outgoingSub" ref="OutgoingSubStorage"></property>
+		<property name="subscriptionStorage" ref="SubscriptionStorage"></property>
 		<property name="ngsi9Impl" ref="Ngsi9Interface"></property>
 		<property name="ngsi10Requestor" ref="Ngsi10Requester"></property>
 		<property name="subscriptionController" ref="subController"></property>
@@ -25,7 +23,13 @@
 		<property name="confManWrapper" ref="confManWrap"></property>
 		<property name="agentWrapper" ref="agentWrapp"></property>
 		<property name="resultFilter" ref="ResultFilterInterface"></property>
-		<property name="bigDataRepository" ref="BigDataRepositoryInterface"></property>
+<!-- 		<property name="bigDataRepository" ref="BigDataRepositoryInterface"></property> -->
+		<property name="embeddedIoTAgent" ref="IoTAgentInterface"></property>
+
+		
+		<!-- for the list of query services--> 
+		<property name="queryServiceList" ref="QueryServices"></property>
+		
 	</bean>
 
 	<!-- <bean id="requestThread" class="eu.neclab.iotplatform.iotbroker.core.RequestThread">
@@ -40,10 +44,8 @@
 	<bean id="subController"
 		class="eu.neclab.iotplatform.iotbroker.core.subscription.SubscriptionController">
 		<property name="availabilitySub" ref="AvailabilitySubStorage"></property>
-		<property name="incomingSub" ref="IncomingSubStorage"></property>
-		<property name="linkSub" ref="LinkSubscriptionStorage"></property>
 		<property name="linkAvSub" ref="LinkSubscriptionAvStorage"></property>
-		<property name="outgoingSub" ref="OutgoingSubStorage"></property>
+		<property name="subscriptionStorage" ref="SubscriptionStorage"></property>
 		<property name="northBoundWrapper" ref="northBoundWrap"></property>
 		<property name="confManWrapper" ref="confManWrap"></property>
 		<property name="agentWrapper" ref="agentWrapp"></property>
@@ -60,10 +62,8 @@
 		<constructor-arg ref="subController" />
 		<property name="ngsi9Impl" ref="Ngsi9Interface"></property>
 		<property name="availabilitySub" ref="AvailabilitySubStorage"></property>
-		<property name="incomingSub" ref="IncomingSubStorage"></property>
-		<property name="linkSub" ref="LinkSubscriptionStorage"></property>
 		<property name="linkAvSub" ref="LinkSubscriptionAvStorage"></property>
-		<property name="outgoingSub" ref="OutgoingSubStorage"></property>
+		<property name="subscriptionStorage" ref="SubscriptionStorage"></property>
 	</bean>
 
 	<bean id="agentWrapp"

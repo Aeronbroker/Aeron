@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queryContextResponse>
+	<contextResponseList>
+		<contextElementResponse>
+			<contextElement>
+				<entityId type="Room" isPattern="false">
+					<id>ConferenceRoom</id>
+				</entityId>
+				<contextAttributeList>
+					<contextAttribute>
+						<name>temperature</name>
+						<contextValue>15.0</contextValue>
+					</contextAttribute>
+				</contextAttributeList>
+			</contextElement>
+		</contextElementResponse>
+	</contextResponseList>
+</queryContextResponse>

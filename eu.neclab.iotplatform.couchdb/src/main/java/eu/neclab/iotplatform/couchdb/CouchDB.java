@@ -43,13 +43,8 @@ package eu.neclab.iotplatform.couchdb;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
 
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.impl.auth.BasicScheme;
@@ -59,15 +54,9 @@ import org.json.XML;
 import org.springframework.beans.factory.annotation.Value;
 
 import eu.neclab.iotplatform.couchdb.http.Client;
-import eu.neclab.iotplatform.couchdb.http.HttpRequester;
-import eu.neclab.iotplatform.iotbroker.commons.FullHttpResponse;
 import eu.neclab.iotplatform.iotbroker.commons.GenerateUniqueID;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.BigDataRepository;
-import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
-import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
-import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
-import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 
 public class CouchDB implements BigDataRepository {
 
@@ -152,8 +141,8 @@ public class CouchDB implements BigDataRepository {
 	}
 
 	public void setCouchDB_ip() {
-		couchDB_ip = couchDB_PROTOCOL + "://" + couchDB_HOST + ":"
-				+ couchDB_PORT + "/";
+		couchDB_ip = couchDB_PROTOCOL + "://" + couchDB_HOST + ":" + couchDB_PORT
+				+ "/";
 		logger.info("CouchDB IP: " + couchDB_ip);
 	}
 
@@ -199,167 +188,23 @@ public class CouchDB implements BigDataRepository {
 		while (iter.hasNext()) {
 
 			ContextElement contextElement = iter.next();
+			JSONObject xmlJSONObj = XML.toJSONObject(contextElement.toString());
 
-			// Create a list of ContextElement where each ContextElement has
-			// only one ContextAttribute
-			List<ContextElement> isolatedContextElementList = this
-					.isolateAttributes(contextElement);
-
-			// Iterate over the list
-			for (ContextElement isolatedContextElement : isolatedContextElementList) {
-
-				// Extract the timestamp from the ContextAttribute
-				Date timestamp = extractTimestamp(isolatedContextElement
-						.getContextAttributeList().iterator().next());
-
-				// If no timestamp is found, take the actual one.
-				if (timestamp == null) {
-					timestamp = new Date();
-				}
-
-				// Generate the documentKey for historical data
-				String documentKey = this.generateKeyForHistoricalData(
-						contextElement.getEntityId(), contextElement
-								.getContextAttributeList().iterator().next()
-								.getName(), timestamp);
-
-				JSONObject xmlJSONObj = XML.toJSONObject(contextElement
-						.toString());
-
-				// Store the historical data
-				logger.debug("JSON Object to store:" + xmlJSONObj.toString(2));
-				try {
-					Client.sendRequest(new URL(getCouchDB_ip() + couchDB_NAME
-							+ "/" + documentKey), "PUT", xmlJSONObj.toString(),
-							"application/json", authentication);
-				} catch (MalformedURLException e) {
-					logger.info("Impossible to store information into CouchDB",
-							e);
-				}
-
-				// TODO update latest
-				// update latest
-
+			logger.debug("JSON Object to store:" + xmlJSONObj.toString(2));
+			try {
+				Client.sendRequest(
+						new URL(getCouchDB_ip()
+								+ couchDB_NAME
+								+ "/"
+								+ new GenerateUniqueID().getNextUniqueId()
+								.replaceAll("\\-", "")), "PUT",
+								xmlJSONObj.toString(), "application/json",
+								authentication);
+			} catch (MalformedURLException e) {
+				logger.info("Impossible to store information into CouchDB", e);
 			}
 
 		}
-
-	}
-
-	private String generateKeyForHistoricalData(EntityId entityId,
-			String attributeName, Date timestamp) {
-
-		// example: obs_urn:x-iot:smartsantander:1:3301|2015-05-08 16:36:22
-
-		SimpleDateFormat dateFormat = new SimpleDateFormat(
-				"yyyy-MM-dd%20HH:mm:ss");
-
-		String key = new String(String.format("obs_%s:%s|%s", entityId.getId(),
-				attributeName, dateFormat.format(timestamp)));
-
-		return key;
-
-	}
-
-	/**
-	 * This method create a list of ContextElement, one for each
-	 * ContextAttribute in the original ContextElement. The new
-	 * ContextAttributes will have duplicated DomainMetadata and EntityID. This
-	 * is necessary in order to store historical data and make historical query
-	 * of a specified attribute.
-	 * 
-	 * @param contextElement
-	 * @return
-	 */
-	private List<ContextElement> isolateAttributes(ContextElement contextElement) {
-
-		List<ContextElement> contextElementList = new ArrayList<ContextElement>();
-
-		if (contextElement.getContextAttributeList().size() > 1) {
-			contextElementList.add(contextElement);
-		} else {
-
-			for (ContextAttribute contextAttribute : contextElement
-					.getContextAttributeList()) {
-				List<ContextAttribute> contextAttributeList = new ArrayList<ContextAttribute>();
-				contextAttributeList.add(contextAttribute);
-				contextElementList.add(new ContextElement(contextElement
-						.getEntityId(),
-						contextElement.getAttributeDomainName(),
-						contextAttributeList, contextElement
-								.getDomainMetadata()));
-			}
-		}
-
-		return contextElementList;
-
-	}
-
-	private Date extractTimestamp(ContextAttribute contextAttribute) {
-
-		Date timestamp = null;
-
-		for (ContextMetadata contextMetadata : contextAttribute.getMetadata()) {
-
-			if (contextMetadata.getName().equalsIgnoreCase("creation_time")) {
-
-				/*
-				 * This contextMetadata is set by the leafengine connector
-				 */
-
-				// example timestamp "2015.05.29 19:24:28:769 +0000"
-				// "yyyy.MM.dd HH:mm:ss:SSS Z"
-
-				SimpleDateFormat parserSDF = new SimpleDateFormat(
-						"yyyy.MM.dd HH:mm:ss:SSS Z");
-				timestamp = parserSDF.parse(
-						(String) contextMetadata.getValue(), new ParsePosition(
-								0));
-				break;
-			}
-
-		}
-
-		return timestamp;
-	}
-
-	public static void main(String[] args) {
-		String date = "2015.05.29 19:24:28:769 +0000";
-		SimpleDateFormat parserSDF = new SimpleDateFormat(
-				"yyyy.MM.dd HH:mm:ss:SSS Z");
-		Date timestamp = parserSDF.parse(date, new ParsePosition(0));
-		System.out.println(timestamp);
-	}
-
-	@Override
-	public List<ContextElementResponse> getEntityLatestValues(EntityId entityId) {
-
-		// TODO Auto-generated method stub
-
-		FullHttpResponse dbResponse = queryDB(entityId);
-
-		return null;
-	}
-
-	/**
-	 * It returns result of a view in couchDB
-	 * 
-	 * @param queryName
-	 * @param documentType
-	 * @return
-	 */
-	private FullHttpResponse queryDB(EntityId entityId) {
-		FullHttpResponse response = null;
-		try {
-			response = HttpRequester.sendGet(new URL(couchDB_HOST + "/"
-					+ couchDB_NAME + "entity-" + entityId.getId()));
-		} catch (MalformedURLException e) {
-			logger.error("Error: ", e);
-		} catch (Exception e) {
-			logger.error("Error: ", e);
-		}
-
-		return response;
 
 	}
 

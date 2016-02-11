@@ -54,6 +54,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import eu.neclab.iotplatform.iotbroker.commons.GenerateMetadata;
 import eu.neclab.iotplatform.iotbroker.commons.JsonFactory;
@@ -62,6 +63,7 @@ import eu.neclab.iotplatform.iotbroker.commons.XmlFactory;
 import eu.neclab.iotplatform.iotbroker.commons.XmlValidator;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityResponse;
@@ -107,6 +109,7 @@ import eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface;
  * modifying the private constant CONTENT_TYPE.
  *
  */
+@Component
 public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/** The logger. */
@@ -129,6 +132,10 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	/** The ngsi9url address of NGSI 9 component */
 	@Value("${ngsi9Uri}")
 	private String ngsi9url;
+
+	/** The remote ngsi9 component to be contacted for registration */
+	@Value("${ngsi9RemoteUrl:null}")
+	private String ngsi9RemoteUrl;
 
 	/** The ngsi9root path. */
 	@Value("${pathPreFix_ngsi9:ngsi9}")
@@ -195,6 +202,10 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 		}
 
+		if (!status){
+			logger.info("Invalid incoming request. Reference schema is: "+schema);
+		}
+		
 		logger.info("Incoming request Valid:" + status);
 
 		return status;
@@ -1053,8 +1064,134 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	public RegisterContextResponse registerContext(
 			RegisterContextRequest request) {
 
-		return null;
+		/*
+		 * This is implemented analogously to queryContext. See the comments
+		 * there for clarification.
+		 */
 
+		RegisterContextResponse output = new RegisterContextResponse();
+
+		try {
+
+			// get address of local host
+			InetAddress thisIp = InetAddress.getLocalHost();
+
+			if (ngsi9RemoteUrl == null) {
+				ngsi9RemoteUrl = ngsi9url;
+			}
+
+			// initialize http connection
+			URL url = new URL(ngsi9RemoteUrl);
+			HttpConnectionClient connection = new HttpConnectionClient();
+
+			for (ContextRegistration contextRegistration : request
+					.getContextRegistrationList()) {
+				contextRegistration.setProvidingApplication(new URI("http://"
+						+ thisIp.getHostAddress() + ":" + tomcatPort
+						+ "/ngsi10/"));
+			}
+
+			String resource;
+			if (url.toString().matches(".*/")) {
+				resource = "registerContext";
+			} else {
+				resource = "/registerContext";
+			}
+
+			String respObj = connection.initializeConnection(url, "/"
+					+ ngsi9rootPath + "/" + resource, "POST", request,
+					CONTENT_TYPE, xAuthToken);
+
+			if (respObj.equals("415")) {
+
+				respObj = tryDifferentContentType(request, resource, "POST",
+						connection, url);
+
+				if (respObj.equals("415")) {
+
+					output = new RegisterContextResponse(null, null,
+							new StatusCode(Code.INTERNALERROR_500.getCode(),
+									ReasonPhrase.RECEIVERINTERNALERROR_500
+											.toString(),
+									"Content Type is not supported!"));
+
+					return output;
+
+				}
+
+			}
+
+			if (respObj != null && CONTENT_TYPE.equals("application/xml")
+					&& "500".matches(respObj.substring(0, 3))) {
+
+				output = new RegisterContextResponse(null, null,
+						new StatusCode(Code.INTERNALERROR_500.getCode(),
+								ReasonPhrase.RECEIVERINTERNALERROR_500
+										.toString(),
+								ReasonPhrase.RECEIVERINTERNALERROR_500
+										.toString()));
+				return output;
+
+			}
+
+			if (respObj != null
+					&& validateMessageBody(respObj, CONTENT_TYPE,
+							RegisterContextResponse.class, ngsi9schema)) {
+
+				if (CONTENT_TYPE.equals("application/xml")) {
+
+					output = (RegisterContextResponse) xmlFactory
+							.convertStringToXml(respObj,
+									RegisterContextResponse.class);
+
+				} else {
+
+					output = (RegisterContextResponse) jsonFactory
+							.convertStringToJsonObject(respObj,
+									RegisterContextResponse.class);
+
+				}
+
+				return output;
+
+			} else {
+				// If the response is null or invalid then send an error message
+				output = new RegisterContextResponse(null, null,
+						new StatusCode(Code.INTERNALERROR_500.getCode(),
+								ReasonPhrase.RECEIVERINTERNALERROR_500
+										.toString(),
+								ReasonPhrase.RECEIVERINTERNALERROR_500
+										.toString()));
+				return output;
+
+			}
+
+		} catch (MalformedURLException e) {
+			if (logger.isDebugEnabled())
+				logger.debug("Malformed URI", e);
+
+			output = new RegisterContextResponse(null, null, new StatusCode(
+					Code.INTERNALERROR_500.getCode(),
+					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
+					ReasonPhrase.RECEIVERINTERNALERROR_500.toString()));
+
+		} catch (IOException e) {
+			if (logger.isDebugEnabled())
+				logger.debug("I/O Exception", e);
+
+			output = new RegisterContextResponse(null, null, new StatusCode(
+					Code.INTERNALERROR_500.getCode(),
+					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
+					ReasonPhrase.RECEIVERINTERNALERROR_500.toString()));
+
+		} catch (URISyntaxException e) {
+			if (logger.isDebugEnabled())
+				logger.debug("URISyntaxException", e);
+
+			return null;
+		}
+
+		return output;
 	}
 
 	/**

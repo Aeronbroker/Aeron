@@ -48,6 +48,7 @@ import java.io.StringWriter;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -60,6 +61,8 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
+
+import eu.neclab.iotplatform.ngsi.api.datamodel.NgsiStructure;
 
 /**
  * Represents a generic client for NGSI via HTTP.
@@ -165,8 +168,11 @@ public class HttpConnectionClient {
 			// resource and the method.
 			connection = createConnection(url, resource, method, contentType, xAuthToken);
 
-			if(contentType.equals("application/xml")){
-				//connect using XML message body
+			// get the OutputStram form the connection
+			os = connection.getOutputStream();
+
+			if (contentType.equals("application/xml")) {
+				// connect using XML message body
 
 				logger.info("URL" + url + resource);
 
@@ -174,19 +180,23 @@ public class HttpConnectionClient {
 
 				logger.info("Send the QUERY!");
 
-				// create a context from the request class
-				JAXBContext requestContext = JAXBContext.newInstance(request
-						.getClass());
+				if (request instanceof NgsiStructure) {
+					String string = ((NgsiStructure) request).toString();
+					os.write(string.getBytes(Charset.forName("UTF-8")));
+				} else {
 
-				// Create a Marshaller from the context
-				Marshaller m = requestContext.createMarshaller();
+					// create a context from the request class
+					JAXBContext requestContext = JAXBContext
+							.newInstance(request.getClass());
 
-				// get the OutputStram form the connection
-				os = connection.getOutputStream();
+					// Create a Marshaller from the context
+					Marshaller m = requestContext.createMarshaller();
 
-				// Ask the marshaller to marshall the request for you
-				logger.info("Request Class: " + request.getClass().toString());
-				m.marshal(request, os);
+					// Ask the marshaller to marshall the request for you
+					logger.info("Request Class: "
+							+ request.getClass().toString());
+					m.marshal(request, os);
+				}
 
 			}else{
 				//connect using JSON message body
@@ -194,20 +204,28 @@ public class HttpConnectionClient {
 				// get the OutputStram form the connection
 				os = connection.getOutputStream();
 
-				ObjectMapper mapper = new ObjectMapper();
-				SerializationConfig config = mapper.getSerializationConfig();
-				config.setSerializationInclusion(Inclusion.NON_NULL);
-				//			m.setProperty(Marshaller.JAXB_ENCODING, "Unicode");
+				if (request instanceof NgsiStructure) {
+					String string = ((NgsiStructure) request).toJsonString();
+					os.write(string.getBytes(Charset.forName("UTF-8")));
+				} else {
 
-				try {
-					mapper.writeValue(os,request);
-					logger.info("----------------->"+mapper.writeValueAsString(request));
-				} catch (JsonGenerationException e) {
-					logger.debug("JsonGenerationException", e);
-				} catch (JsonMappingException e) {
-					logger.debug("JsonMappingException", e);
-				} catch (IOException e) {
-					logger.debug("IOException", e);
+					ObjectMapper mapper = new ObjectMapper();
+					SerializationConfig config = mapper
+							.getSerializationConfig();
+					config.setSerializationInclusion(Inclusion.NON_NULL);
+					// m.setProperty(Marshaller.JAXB_ENCODING, "Unicode");
+
+					try {
+						logger.info("----------------->"
+								+ mapper.writeValueAsString(request));
+						mapper.writeValue(os, request);
+					} catch (JsonGenerationException e) {
+						logger.debug("JsonGenerationException", e);
+					} catch (JsonMappingException e) {
+						logger.debug("JsonMappingException", e);
+					} catch (IOException e) {
+						logger.debug("IOException", e);
+					}
 				}
 
 			}
@@ -245,8 +263,11 @@ public class HttpConnectionClient {
 
 		} catch (ConnectException e) {
 
-			logger.info("Connection Error: Impossible to contact: "+ url);
-			logger.debug("ConnectException",e);
+			logger.info("IOException: Impossible to establish a connection with "
+					+ url + ":" + e.getMessage());
+			if (logger.isDebugEnabled()) {
+				logger.debug("ConnectException", e);
+			}
 
 			return "500 - Connection Error - the URL: "+ url+" cannot be reached!";
 
@@ -267,11 +288,14 @@ public class HttpConnectionClient {
 
 				}
 			} catch (IOException e1) {
-				logger.info("IOException",e);
+				if (logger.isDebugEnabled()) {
+					logger.debug("IOException", e);
+				}
 			}
 
 			logger.info("500 - Error I/O with: " + url);
-			logger.info("IOException",e);
+			logger.info("IOException: Impossible to establish a connection with "
+					+ url + ":" + e.getMessage());
 
 			return "500 - Error I/O with: " + url;
 

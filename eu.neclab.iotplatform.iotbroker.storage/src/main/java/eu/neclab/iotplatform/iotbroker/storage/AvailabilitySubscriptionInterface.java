@@ -97,4 +97,7 @@ public interface AvailabilitySubscriptionInterface {
 	 * Retrieves Associations stored under the given id.
 	 */
 	List<String> getListOfAssociations(String id);
+	
+	void resetDB();
+
 }

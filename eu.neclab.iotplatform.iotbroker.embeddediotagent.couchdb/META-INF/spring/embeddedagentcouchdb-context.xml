@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<context:component-scan base-package="eu.neclab.iotplatform.iotbroker.embeddediotagent.couchdb" />
+
+	<bean id="couchDB" class="eu.neclab.iotplatform.iotbroker.embeddediotagent.couchdb.CouchDB">
+	</bean>
+
+	<context:property-placeholder
+		location="file:///${dir.config}/iotbrokerconfig/embeddedAgent/couchdb.xml"  order="1" ignore-unresolvable="true" />
+
+	<context:property-placeholder
+		location="file:///${dir.config}/iotbrokerconfig/iotBroker/config/config.xml"  order="2" ignore-unresolvable="true" />
+
+</beans>
