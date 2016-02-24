@@ -116,11 +116,11 @@ public final class ContextAttribute extends NgsiStructure {
 		this.type = type;
 	}
 
-	public Object getcontextValue() {
+	public String getContextValue() {
 		return contextValue;
 	}
 
-	public void setcontextValue(String contextValue) {
+	public void setContextValue(String contextValue) {
 		this.contextValue = contextValue;
 	}
 

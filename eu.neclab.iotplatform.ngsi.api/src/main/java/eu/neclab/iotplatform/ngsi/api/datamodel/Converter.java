@@ -219,7 +219,7 @@ public class Converter {
 		// create an contextAttribute
 		ContextAttribute ca = createContextAttribute(attributeName);
 		// set its value and metadata list
-		ca.setcontextValue(request.getContextValue());
+		ca.setContextValue(request.getContextValue());
 		ca.setMetaData(request.getMetadata());
 
 		// put ca into a list
