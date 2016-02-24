@@ -41,7 +41,10 @@
  ******************************************************************************/
 package eu.neclab.iotplatform.iotbroker.commons;
 
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -53,32 +56,85 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
+import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
 
 /**
- *  This class contains a static method for applying restrictions
- *  to QueryContextResponse instances.
+ * This class contains a static method for applying restrictions to
+ * QueryContextResponse instances.
  */
 public class Restriction {
 
-
 	private static Logger logger = Logger.getLogger(Restriction.class);
 	private static final XmlFactory xmlFactory = new XmlFactory();
-	
-	/**
-	 * Modifies a QueryContextResponse instance by applying a restriction
-	 * to it, eliminating all parts of the response that do not match the
-	 * restriction.
-	 * 
-	 * @param attributeExpr The attribute expression representing the restriction
-	 * @param response The QueryContextResponse where the restriction is to be
-	 * applied to.
-	 * 
-	 * 
-	 */
-	public static void applyRestriction(String attributeExpr,
-			QueryContextResponse response) {
+
+	// /**
+	// * Modifies a QueryContextResponse instance by applying a restriction to
+	// it,
+	// * eliminating all parts of the response that do not match the
+	// restriction.
+	// *
+	// * @param attributeExpr
+	// * The attribute expression representing the restriction
+	// * @param response
+	// * The QueryContextResponse where the restriction is to be
+	// * applied to.
+	// *
+	// *
+	// */
+	// public static void applyRestriction(String attributeExpr,
+	// QueryContextResponse response) {
+	//
+	// // Apply the Restriction
+	// XPath xpath = XPathFactory.newInstance().newXPath();
+	//
+	// try {
+	// XPathExpression expr = xpath.compile(attributeExpr);
+	//
+	// Document doc = xmlFactory.stringToDocument(response.toString());
+	// Object result = expr.evaluate(doc, XPathConstants.NODESET);
+	//
+	// NodeList nodes = (NodeList) result;
+	//
+	// Iterator<ContextElementResponse> i = response
+	// .getListContextElementResponse().iterator();
+	//
+	// while (i.hasNext()) {
+	//
+	// ContextElementResponse contextElresp = i.next();
+	// boolean doesNotAppear = true;
+	//
+	// for (int j = 0; j < nodes.getLength(); j++) {
+	// if (contextElresp.getContextElement().getEntityId().getId()
+	// .equals(nodes.item(j).getTextContent())) {
+	//
+	// doesNotAppear = false;
+	// break;
+	// }
+	// }
+	//
+	// if (doesNotAppear) {
+	// i.remove(); // to be tested
+	// }
+	// }
+	//
+	// } catch (XPathExpressionException e) {
+	// logger.debug("XPathExpressionException", e);
+	// }
+	//
+	// }
+
+	public static List<ContextElementResponse> applyRestriction(
+			String attributeExpr,
+			List<ContextElementResponse> contextElementResponseList) {
+
+		List<ContextElementResponse> filteredContextElementResponseList = new ArrayList<ContextElementResponse>();
+
+		QueryContextResponse dummyQueryContextResponse = new QueryContextResponse(
+				contextElementResponseList, null);
 
 		// Apply the Restriction
 		XPath xpath = XPathFactory.newInstance().newXPath();
@@ -86,37 +142,235 @@ public class Restriction {
 		try {
 			XPathExpression expr = xpath.compile(attributeExpr);
 
-			Document doc = xmlFactory.stringToDocument(response.toString());
+			Document doc = xmlFactory
+					.stringToDocument(dummyQueryContextResponse.toString());
 			Object result = expr.evaluate(doc, XPathConstants.NODESET);
 
 			NodeList nodes = (NodeList) result;
 
-
-			Iterator<ContextElementResponse> i = response
-					.getListContextElementResponse().iterator();
-
-			while (i.hasNext()) {
-
-				ContextElementResponse contextElresp = i.next();
-				boolean doesNotAppear = true;
+			for (ContextElementResponse contextElementResponse : contextElementResponseList) {
+				boolean appear = false;
 
 				for (int j = 0; j < nodes.getLength(); j++) {
-					if (contextElresp.getContextElement().getEntityId().getId()
+					if (contextElementResponse.getContextElement()
+							.getEntityId().getId()
 							.equals(nodes.item(j).getTextContent())) {
 
-						doesNotAppear = false;
+						appear = true;
 						break;
 					}
 				}
 
-				if (doesNotAppear) {
-					i.remove(); // to be tested
+				if (appear) {
+					filteredContextElementResponseList
+							.add(contextElementResponse);
 				}
 			}
 
 		} catch (XPathExpressionException e) {
-			logger.debug("XPathExpressionException",e);
+			logger.debug("XPathExpressionException", e);
 		}
+
+		return filteredContextElementResponseList;
+
+	}
+
+	/**
+	 * It returns a new QueryContextResponse modified the input one by applying
+	 * a restriction to it, eliminating all parts of the response that do not
+	 * match the restriction.
+	 * 
+	 * @param attributeExpr
+	 *            The attribute expression representing the restriction
+	 * @param queryContextResponse
+	 *            The input QueryContextResponse (it will be not changed).
+	 * @return
+	 */
+	public static QueryContextResponse applyRestriction(String attributeExpr,
+			QueryContextResponse queryContextResponse) {
+
+		QueryContextResponse filteredQueryContextResponse = new QueryContextResponse(
+				null, queryContextResponse.getErrorCode());
+
+		List<ContextElementResponse> filteredContextElementResponse = applyRestriction(
+				attributeExpr,
+				queryContextResponse.getListContextElementResponse());
+
+		filteredQueryContextResponse
+				.setContextResponseList(filteredContextElementResponse);
+
+		return filteredQueryContextResponse;
+
+	}
+
+	/**
+	 * It returns a new NotifyContextRequest modifying the input one by applying
+	 * a restriction to it, eliminating all parts of the response that do not
+	 * match the restriction.
+	 * 
+	 * @param entityIdAttributeExpr
+	 *            Restriction on the entityId
+	 * @param onValueAttributeExpr
+	 *            Restriction on the attributes (given in the ONVALUE
+	 *            NotifyCondition Restriction)
+	 * @param notifyContextRequest
+	 * @return
+	 */
+	public static NotifyContextRequest applyRestriction(
+			String entityIdAttributeExpr, String onValueAttributeExpr,
+			NotifyContextRequest notifyContextRequest) {
+
+		NotifyContextRequest filteredNotifyContextRequest = new NotifyContextRequest(
+				notifyContextRequest.getSubscriptionId(),
+				notifyContextRequest.getOriginator(), null);
+
+		List<ContextElementResponse> filteredContextElementResponseList = new ArrayList<ContextElementResponse>();
+
+		// First filter against the entityIdAttributeExpr
+		if (entityIdAttributeExpr != null && !entityIdAttributeExpr.isEmpty()) {
+			filteredContextElementResponseList = applyRestriction(
+					entityIdAttributeExpr,
+					notifyContextRequest.getContextElementResponseList());
+		} else {
+			filteredContextElementResponseList.addAll(notifyContextRequest
+					.getContextElementResponseList());
+		}
+
+		// Then filter against the onValueAttributeExpr
+		if (onValueAttributeExpr != null && !onValueAttributeExpr.isEmpty()) {
+			filteredContextElementResponseList = applyRestriction(
+					onValueAttributeExpr, filteredContextElementResponseList);
+		}
+
+		// Finally set the filteredContextElementResponse in the
+		// notifyContextRequest to be returned
+		filteredNotifyContextRequest
+				.setContextResponseList(filteredContextElementResponseList);
+
+		return filteredNotifyContextRequest;
+	}
+
+	public static List<ContextElementResponse> applyOnValueRestriction(
+			List<ContextElementResponse> contextElementResponseList,
+			String onValueAttributeExpr) {
+		List<ContextElementResponse> filteredContextElementResponseList = new ArrayList<ContextElementResponse>();
+
+		for (ContextElementResponse contextElementResponse : contextElementResponseList) {
+
+			ContextElementResponse filteredContextElementResponse = Restriction
+					.applyOnValueRestriction(contextElementResponse,
+							onValueAttributeExpr);
+
+			filteredContextElementResponseList
+					.add(filteredContextElementResponse);
+
+		}
+
+		return filteredContextElementResponseList;
+
+	}
+
+	public static ContextElementResponse applyOnValueRestriction(
+			ContextElementResponse contextElementResponse,
+			String onValueAttributeExpr) {
+
+		/*
+		 * Creating the new ContextElementResponse that will contain the
+		 * filtered ContextAttribute. The other fields will remain unchanged.
+		 */
+		ContextElementResponse filteredContextElementResponse = new ContextElementResponse(
+				new ContextElement(contextElementResponse.getContextElement()
+						.getEntityId(), contextElementResponse
+						.getContextElement().getAttributeDomainName(), null,
+						contextElementResponse.getContextElement()
+								.getDomainMetadata()),
+				contextElementResponse.getStatusCode());
+
+		// Filter out context attributes
+		List<ContextAttribute> filteredContextAttributeList = Restriction
+				.applyOnValueRestriction(onValueAttributeExpr,
+						contextElementResponse.getContextElement()
+								.getContextAttributeList());
+
+		// Set the new context attribute
+		filteredContextElementResponse.getContextElement()
+				.setContextAttributeList(filteredContextAttributeList);
+
+		return filteredContextElementResponse;
+
+	}
+
+	public static List<ContextAttribute> applyOnValueRestriction(
+			String onValueAttributeExpr,
+			List<ContextAttribute> contextAttributeList) {
+
+		List<ContextAttribute> filteredContextAttributeList = new ArrayList<ContextAttribute>();
+
+		/*
+		 * Here we create a dummy ContextElement meant to contain the
+		 * ContextAttributeList. With this approach we need to apply the XPATH
+		 * only once for the full list of contextAttribute
+		 */
+		ContextElement contextElement = new ContextElement();
+		contextElement.setContextAttributeList(contextAttributeList);
+
+		// Apply the Restriction
+		XPath xpath = XPathFactory.newInstance().newXPath();
+
+		try {
+			XPathExpression expr = xpath.compile(onValueAttributeExpr);
+
+			Document doc = xmlFactory.stringToDocument(contextElement
+					.toString());
+			NodeList nodes = (NodeList) expr.evaluate(doc,
+					XPathConstants.NODESET);
+
+			Set<String> selectedAttributes = new HashSet<String>();
+
+			for (int j = 0; j < nodes.getLength(); j++) {
+
+				NodeList childNodes = nodes.item(j).getChildNodes();
+
+				String attributeName = null;
+				String attributeValue = null;
+
+				for (int i = 0; i < childNodes.getLength(); i++) {
+					if ("name".equalsIgnoreCase(childNodes.item(i)
+							.getNodeName())) {
+
+						attributeName = childNodes.item(i).getTextContent();
+
+					} else if ("contextValue".equalsIgnoreCase(childNodes.item(
+							i).getNodeName())) {
+
+						attributeValue = childNodes.item(i).getTextContent();
+
+					}
+
+					if (attributeName != null && attributeValue != null) {
+						selectedAttributes.add(attributeName + "-"
+								+ attributeValue);
+						break;
+					}
+				}
+
+			}
+
+			for (ContextAttribute contextAttribute : contextElement
+					.getContextAttributeList()) {
+
+				if (selectedAttributes.contains(contextAttribute.getName()
+						+ "-" + contextAttribute.getContextValue())) {
+					filteredContextAttributeList.add(contextAttribute);
+				}
+
+			}
+
+		} catch (XPathExpressionException e) {
+			logger.debug("XPathExpressionException", e);
+		}
+
+		return filteredContextAttributeList;
 
 	}
 }
