@@ -1521,60 +1521,64 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 	private void notifySubscribers(UpdateContextRequest updateContextRequest) {
 
-		/*
-		 * Here we check the subscriptions matching this update
-		 */
-		Multimap<String, ContextElementResponse> contextElementToNotifyMap = HashMultimap
-				.create();
+		if (BundleUtils.isServiceRegistered(this, subscriptionStorage)) {
 
-		for (ContextElement contextElement : updateContextRequest
-				.getContextElement()) {
+			/*
+			 * Here we check the subscriptions matching this update
+			 */
+			Multimap<String, ContextElementResponse> contextElementToNotifyMap = HashMultimap
+					.create();
 
-			for (SubscriptionWithInfo subscriptionWithInfo : subscriptionStorage
-					.checkContextElement(contextElement)) {
-				contextElementToNotifyMap.put(subscriptionWithInfo.getId(),
-						new ContextElementResponse(contextElement,
-								new StatusCode(Code.OK_200.getCode(),
-										ReasonPhrase.OK_200.toString(),
-										"New ContextElement")));
+			for (ContextElement contextElement : updateContextRequest
+					.getContextElement()) {
+
+				for (SubscriptionWithInfo subscriptionWithInfo : subscriptionStorage
+						.checkContextElement(contextElement)) {
+					contextElementToNotifyMap.put(subscriptionWithInfo.getId(),
+							new ContextElementResponse(contextElement,
+									new StatusCode(Code.OK_200.getCode(),
+											ReasonPhrase.OK_200.toString(),
+											"New ContextElement")));
+				}
+
 			}
 
-		}
+			ExecutorService taskExecutor = Executors.newCachedThreadPool();
+			List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
 
-		ExecutorService taskExecutor = Executors.newCachedThreadPool();
-		List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
+			/*
+			 * Here we create the Notifications
+			 */
+			for (String subscriptionId : contextElementToNotifyMap.keySet()) {
 
-		/*
-		 * Here we create the Notifications
-		 */
-		for (String subscriptionId : contextElementToNotifyMap.keySet()) {
+				// TODO modify the originator with the TraceOriginator that
+				// seems to
+				// got lost
+				final NotifyContextRequest notifyContextRequest = new NotifyContextRequest(
+						subscriptionId, this.toString(),
+						new ArrayList<ContextElementResponse>(
+								contextElementToNotifyMap.get(subscriptionId)));
 
-			// TODO modify the originator with the TraceOriginator that seems to
-			// got lost
-			final NotifyContextRequest notifyContextRequest = new NotifyContextRequest(
-					subscriptionId, this.toString(),
-					new ArrayList<ContextElementResponse>(
-							contextElementToNotifyMap.get(subscriptionId)));
+				tasks.add(Executors.callable(new Runnable() {
 
-			tasks.add(Executors.callable(new Runnable() {
+					@Override
+					public void run() {
+						notifyContext(notifyContextRequest);
 
-				@Override
-				public void run() {
-					notifyContext(notifyContextRequest);
+					}
+				}));
 
+			}
+
+			try {
+
+				taskExecutor.invokeAll(tasks);
+
+			} catch (InterruptedException e) {
+
+				if (logger.isDebugEnabled()) {
+					logger.debug("Thread Error", e);
 				}
-			}));
-
-		}
-
-		try {
-
-			taskExecutor.invokeAll(tasks);
-
-		} catch (InterruptedException e) {
-
-			if (logger.isDebugEnabled()) {
-				logger.debug("Thread Error", e);
 			}
 		}
 
