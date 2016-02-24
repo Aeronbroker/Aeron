@@ -194,7 +194,6 @@ public class SubscriptionController {
 	 */
 	protected AgentWrapper agentWrapper;
 
-
 	/*
 	 * Used for storage of subscription-related information.
 	 */
@@ -276,7 +275,6 @@ public class SubscriptionController {
 		return subscriptionStore;
 	}
 
-
 	/**
 	 * @return Pointer to the availability subscription storage.
 	 */
@@ -291,7 +289,6 @@ public class SubscriptionController {
 			AvailabilitySubscriptionInterface availabilitySub) {
 		this.availabilitySub = availabilitySub;
 	}
-
 
 	/**
 	 * @return Pointer to the storage for links between incoming subscriptions
@@ -384,7 +381,7 @@ public class SubscriptionController {
 					 * reference must be the full path (comprehensive of the
 					 * notifyContextAvailability resource)
 					 */
-					 + "/ngsi9/notifyContextAvailability";
+					+ "/ngsi9/notifyContextAvailability";
 
 		} catch (UnknownHostException e) {
 			logger.error("Unknown Host", e);
@@ -590,11 +587,12 @@ public class SubscriptionController {
 
 				if (ScopeTypes.SubscriptionOriginator.toString().toLowerCase()
 						.equals(operationScope.getScopeType().toLowerCase())) {
-					String originator = operationScope.getScopeValue().toString();
-					if (originator.matches("http://.*")){
+					String originator = operationScope.getScopeValue()
+							.toString();
+					if (originator.matches("http://.*")) {
 						return originator;
 					} else {
-						return "http://"+originator;
+						return "http://" + originator;
 					}
 				}
 			}
@@ -1171,34 +1169,48 @@ public class SubscriptionController {
 
 					logger.debug("SubscriptionController: found resultFilter implementation.");
 
-					/*
-					 * As the resultfilter is defined for queries, we have to
-					 * convert the subscription request to a query request
-					 */
+//					/*
+//					 * As the resultfilter is defined for queries, we have to
+//					 * convert the subscription request to a query request
+//					 */
+//
+//					List<QueryContextRequest> lqcReq_forfilter = new ArrayList<QueryContextRequest>();
+//					QueryContextRequest tmp_request = new QueryContextRequest(
+//							inSubReq.getEntityIdList(),
+//							inSubReq.getAttributeList(),
+//							inSubReq.getRestriction());
+//					lqcReq_forfilter.add(tmp_request);
+//
+//					if (logger.isDebugEnabled()) {
+//						logger.debug("SubscriptionController: calling the resultfilter");
+//					}
+//
+//					List<QueryContextResponse> lqcRes_fromfilter = resultFilter
+//							.filterResult(lCERes, lqcReq_forfilter);
+//
+//					List<QueryContextResponse> lqcRes_fromfilter = resultFilter
+//							.filterResult(lCERes, inSubReq);
+//					// TODO make the filterResult accepting SubscribeRequest
 
-					List<QueryContextRequest> lqcReq_forfilter = new ArrayList<QueryContextRequest>();
-					QueryContextRequest tmp_request = new QueryContextRequest(
-							inSubReq.getEntityIdList(),
-							inSubReq.getAttributeList(),
-							inSubReq.getRestriction());
-					lqcReq_forfilter.add(tmp_request);
-
-					logger.debug("SubscriptionController: calling the resultfilter");
-
-					List<QueryContextResponse> lqcRes_fromfilter = resultFilter
-							.filterResult(lCERes, lqcReq_forfilter);
-
+					
 					/*
 					 * We receive back a query context response from which we
 					 * take out the context element responses
 					 */
-					lCERes = lqcRes_fromfilter.get(0)
-							.getListContextElementResponse();
-					logger.debug("SubscriptionController: filtered result: "
-							+ lCERes.toString());
+//					lCERes = lqcRes_fromfilter.get(0)
+//							.getListContextElementResponse();
+					
+					lCERes = resultFilter.filterNotification(lCERes, inSubReq);
+					
+					if (logger.isDebugEnabled()) {
+						logger.debug("SubscriptionController: filtered result: "
+								+ lCERes.toString());
+					}
 
 				} else {
-					logger.debug("SubscriptionController: found no result filter; using the unfiltered result.");
+					if (logger.isDebugEnabled()) {
+						logger.debug("SubscriptionController: found no result filter; using the unfiltered result.");
+					}
 				}
 
 				/*
@@ -1246,14 +1258,15 @@ public class SubscriptionController {
 				 * originally issued the subscription.
 				 */
 
-				for (int i = 0; i < qCRes_forMerger
-						.getListContextElementResponse().size(); i++) {
-					logger.info("###########################################");
-					logger.info(qCRes_forMerger.getListContextElementResponse()
-							.get(i));
+				for (ContextElementResponse contextElementResponse : qCRes_forMerger
+						.getListContextElementResponse()) {
 
-					ContextElementResponse contextElementResponse = qCRes_forMerger
-							.getListContextElementResponse().get(i);
+					logger.info("###########################################");
+					logger.info(contextElementResponse);
+
+					// ContextElementResponse contextElementResponse =
+					// qCRes_forMerger
+					// .getListContextElementResponse().get(i);
 
 					/*
 					 * Here we insert PEP credentials if the incoming
@@ -1279,8 +1292,7 @@ public class SubscriptionController {
 						}
 					}
 
-					notificationQueue.add(qCRes_forMerger
-							.getListContextElementResponse().get(i));
+					notificationQueue.add(contextElementResponse);
 				}
 
 				/*
@@ -2052,7 +2064,8 @@ public class SubscriptionController {
 			UpdateContextSubscriptionRequest updateRequest, String originalID) {
 
 		// TODO check here if it is correct. I'm afraid that here it sending
-		// directly subscription update to IoT Agent without checking against the
+		// directly subscription update to IoT Agent without checking against
+		// the
 		// IoT discovery if the IoT Agent are anymore compliant with the
 		// subscription parameter
 
@@ -2229,8 +2242,6 @@ public class SubscriptionController {
 			return "ContextUniqueIdentifier [entityIdList=" + entityIdList
 					+ ", providingApplication=" + providingApplication + "]";
 		}
-		
-		
 
 	}
 

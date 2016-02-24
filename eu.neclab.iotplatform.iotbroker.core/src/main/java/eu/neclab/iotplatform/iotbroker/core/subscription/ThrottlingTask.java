@@ -151,7 +151,7 @@ public class ThrottlingTask extends TimerTask {
 					&& request.getRestriction().getAttributeExpression() != null
 					&& !request.getRestriction().getAttributeExpression()
 							.isEmpty()) {
-				Restriction.applyRestriction(request.getRestriction()
+				qcr = Restriction.applyRestriction(request.getRestriction()
 						.getAttributeExpression(), qcr);
 			}
 
