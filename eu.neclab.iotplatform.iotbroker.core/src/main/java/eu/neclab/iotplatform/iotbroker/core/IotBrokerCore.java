@@ -64,9 +64,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 import eu.neclab.iotplatform.iotbroker.commons.BundleUtils;
 import eu.neclab.iotplatform.iotbroker.commons.Pair;
+import eu.neclab.iotplatform.iotbroker.commons.SubscriptionWithInfo;
 import eu.neclab.iotplatform.iotbroker.commons.TraceKeeper;
 import eu.neclab.iotplatform.iotbroker.commons.XmlFactory;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.BigDataRepository;
@@ -218,13 +221,13 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	 * A pointer to the embedded agent.
 	 */
 	private IoTAgentInterface embeddedIoTAgent;
-	
+
 	/**
 	 * A pointer to a Big Data repository. (This functionality is currently
 	 * disabled.)
 	 */
 	private BigDataRepository bigDataRepository;
-	
+
 	public BigDataRepository getBigDataRepository() {
 		return bigDataRepository;
 	}
@@ -373,7 +376,6 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			AvailabilitySubscriptionInterface availabilitySub) {
 		this.availabilitySub = availabilitySub;
 	}
-
 
 	/**
 	 * Returns the interface for maintaining links between incoming
@@ -579,9 +581,9 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		DiscoverContextAvailabilityRequest discoveryRequest = new DiscoverContextAvailabilityRequest(
 				request.getEntityIdList(), request.getAttributeList(),
 				restriction);
-		if (logger.isDebugEnabled()){
+		if (logger.isDebugEnabled()) {
 			logger.debug("DiscoverContextAvailabilityRequest:"
-				+ discoveryRequest.toString());
+					+ discoveryRequest.toString());
 		}
 
 		/* Get the NGSI 9 DiscoverContextAvailabilityResponse */
@@ -685,9 +687,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		try {
 			if (BundleUtils.isServiceRegistered(this, embeddedIoTAgent)) {
 
-				tasks.add(Executors
-						.callable(new EmbeddedIoTAgentRequestThread(
-								embeddedIoTAgent, request, merger)));
+				tasks.add(Executors.callable(new EmbeddedIoTAgentRequestThread(
+						embeddedIoTAgent, request, merger)));
 			}
 		} catch (org.springframework.osgi.service.ServiceUnavailableException e) {
 			logger.warn("Not possible to store in the Big Data Repository: osgi service not registered");
@@ -883,37 +884,39 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			}
 
 		}
-		
-//		/**
-//		 * The code snippet below is for dumping the data in a Big Data
-//		 * repository in addition. This feature is currently disabled.
-//		 */
-//		if (bigDataRepository != null) {
-//
-//			new Thread() {
-//				@Override
-//				public void run() {
-//
-//					List<ContextElement> contextElementList = new ArrayList<ContextElement>();
-//
-//					Iterator<ContextElementResponse> iter = queryContextRespLIstAfterMerge
-//							.getListContextElementResponse().iterator();
-//
-//					while (iter.hasNext()) {
-//
-//						ContextElementResponse contextElementResp = iter
-//								.next();
-//
-//						contextElementList.add(contextElementResp
-//								.getContextElement());
-//
-//					}
-//
-//					bigDataRepository.storeData(contextElementList);
-//
-//				}
-//			}.start();
-//		}
+
+		// /**
+		// * The code snippet below is for dumping the data in a Big Data
+		// * repository in addition. This feature is currently disabled.
+		// */
+		// if (bigDataRepository != null) {
+		//
+		// new Thread() {
+		// @Override
+		// public void run() {
+		//
+		// List<ContextElement> contextElementList = new
+		// ArrayList<ContextElement>();
+		//
+		// Iterator<ContextElementResponse> iter =
+		// queryContextRespLIstAfterMerge
+		// .getListContextElementResponse().iterator();
+		//
+		// while (iter.hasNext()) {
+		//
+		// ContextElementResponse contextElementResp = iter
+		// .next();
+		//
+		// contextElementList.add(contextElementResp
+		// .getContextElement());
+		//
+		// }
+		//
+		// bigDataRepository.storeData(contextElementList);
+		//
+		// }
+		// }.start();
+		// }
 
 		/*
 		 * Now, having the nicely merged (and maybe even filtered) query result,
@@ -1417,7 +1420,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 										.getName() : entityAttribute1
 										.getEntityAttribute(),
 								contextAttribute.getType(), contextAttribute
-										.getcontextValue().toString(),
+										.getContextValue().toString(),
 								contextAttribute.getMetadata());
 						lcaRes.add(contextAttribute1);
 
@@ -1457,10 +1460,13 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			}.start();
 
 		}
-		
-//		/**
-//		 * Dump data in Big Data Repository if present.
-//		 */
+
+		/* Here we notify subscribers whose subscription matchs this update */
+		notifySubscribers(updateContextRequest);
+
+		// /**
+		// * Dump data in Big Data Repository if present.
+		// */
 		// if (bigDataRepository != null) {
 		//
 		// new Thread() {
@@ -1510,6 +1516,67 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		}
 
 		return response;
+
+	}
+
+	private void notifySubscribers(UpdateContextRequest updateContextRequest) {
+
+		/*
+		 * Here we check the subscriptions matching this update
+		 */
+		Multimap<String, ContextElementResponse> contextElementToNotifyMap = HashMultimap
+				.create();
+
+		for (ContextElement contextElement : updateContextRequest
+				.getContextElement()) {
+
+			for (SubscriptionWithInfo subscriptionWithInfo : subscriptionStorage
+					.checkContextElement(contextElement)) {
+				contextElementToNotifyMap.put(subscriptionWithInfo.getId(),
+						new ContextElementResponse(contextElement,
+								new StatusCode(Code.OK_200.getCode(),
+										ReasonPhrase.OK_200.toString(),
+										"New ContextElement")));
+			}
+
+		}
+
+		ExecutorService taskExecutor = Executors.newCachedThreadPool();
+		List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
+
+		/*
+		 * Here we create the Notifications
+		 */
+		for (String subscriptionId : contextElementToNotifyMap.keySet()) {
+
+			// TODO modify the originator with the TraceOriginator that seems to
+			// got lost
+			final NotifyContextRequest notifyContextRequest = new NotifyContextRequest(
+					subscriptionId, this.toString(),
+					new ArrayList<ContextElementResponse>(
+							contextElementToNotifyMap.get(subscriptionId)));
+
+			tasks.add(Executors.callable(new Runnable() {
+
+				@Override
+				public void run() {
+					notifyContext(notifyContextRequest);
+
+				}
+			}));
+
+		}
+
+		try {
+
+			taskExecutor.invokeAll(tasks);
+
+		} catch (InterruptedException e) {
+
+			if (logger.isDebugEnabled()) {
+				logger.debug("Thread Error", e);
+			}
+		}
 
 	}
 
@@ -1575,34 +1642,35 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			}
 
 		}
-		
-//		/**
-//		 * The code snippet below is for dumping the data in a Big Data
-//		 * repository in addition. This feature is currently disabled.
-//		 */
-//		if (bigDataRepository != null) {
-//			new Thread() {
-//
-//				@Override
-//				public void run() {
-//
-//					List<ContextElement> contextElementList = new ArrayList<ContextElement>();
-//
-//					Iterator<ContextElementResponse> iter = request
-//							.getContextElementResponseList().iterator();
-//					while (iter.hasNext()) {
-//
-//						ContextElementResponse contextElementresp = iter.next();
-//						contextElementList.add(contextElementresp
-//								.getContextElement());
-//
-//					}
-//
-//					bigDataRepository.storeData(contextElementList);
-//
-//				}
-//			}.start();
-//		}
+
+		// /**
+		// * The code snippet below is for dumping the data in a Big Data
+		// * repository in addition. This feature is currently disabled.
+		// */
+		// if (bigDataRepository != null) {
+		// new Thread() {
+		//
+		// @Override
+		// public void run() {
+		//
+		// List<ContextElement> contextElementList = new
+		// ArrayList<ContextElement>();
+		//
+		// Iterator<ContextElementResponse> iter = request
+		// .getContextElementResponseList().iterator();
+		// while (iter.hasNext()) {
+		//
+		// ContextElementResponse contextElementresp = iter.next();
+		// contextElementList.add(contextElementresp
+		// .getContextElement());
+		//
+		// }
+		//
+		// bigDataRepository.storeData(contextElementList);
+		//
+		// }
+		// }.start();
+		// }
 
 		NotifyContextResponse notifyContextResponse;
 
