@@ -46,6 +46,7 @@ import java.util.List;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
+import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextRequest;
 
 /**
  * Interface for query result filters. Query result filters are functions 
@@ -68,4 +69,8 @@ public interface ResultFilterInterface {
 	List<QueryContextResponse> filterResult(
 			List<ContextElementResponse> contextElementResponseList,
 			List<QueryContextRequest> requestList);
+	
+	List<ContextElementResponse> filterNotification(
+			List<ContextElementResponse> contextElementResponseToFilterList,
+			SubscribeContextRequest subscribeContextRequestFilter);
 }
