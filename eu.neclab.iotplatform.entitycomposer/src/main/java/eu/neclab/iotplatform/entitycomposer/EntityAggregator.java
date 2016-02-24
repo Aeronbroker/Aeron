@@ -246,7 +246,7 @@ public class EntityAggregator {
 				
 				logger.info("now processing attribute:/n"+attrib.toString());
 				
-				Object attrVal = attrib.getcontextValue();
+				Object attrVal = attrib.getContextValue();
 				
 				
 				
