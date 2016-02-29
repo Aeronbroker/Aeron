@@ -10,11 +10,13 @@
 		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.IoTAgentInterface" />
 
 	<osgi:reference id="EmbeddedAgentRegistry"
-		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.EmbeddedAgentRegistryInterface"></osgi:reference>
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.EmbeddedAgentRegistryInterface"
+		cardinality="0..1" timeout="0"></osgi:reference>
 
 	<osgi:reference id="EmbeddedAgentStorage"
 		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.EmbeddedAgentStorageInterface"></osgi:reference>
 
 	<osgi:reference id="EmbeddedAgentSubscriptionHandler"
-		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.EmbeddedAgentSubscriptionHandlerInterface"></osgi:reference>
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.EmbeddedAgentSubscriptionHandlerInterface"
+		cardinality="0..1" timeout="0"></osgi:reference>
 </beans>

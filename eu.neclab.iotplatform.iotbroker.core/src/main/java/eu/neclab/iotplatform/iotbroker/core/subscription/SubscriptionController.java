@@ -1032,7 +1032,7 @@ public class SubscriptionController {
 		 * the northbound wrapper
 		 */
 
-		new NotifyContextRequest();
+		// new NotifyContextRequest();
 
 		/*
 		 * Retrieves the list of incoming subscription ids that are relevant for
@@ -1043,6 +1043,12 @@ public class SubscriptionController {
 		String inID = subscriptionStorage.getInID(ncReq.getSubscriptionId());
 
 		/*
+		 * We also retrieve the original incoming subscription message from the
+		 * storage.
+		 */
+		SubscribeContextRequest inSubReq = null;
+
+		/*
 		 * It is expected that exactly one incoming subscription id will be
 		 * found. If this is not the case, then the function is aborted and an
 		 * error is returned.
@@ -1050,263 +1056,268 @@ public class SubscriptionController {
 		 * Otherwise, the function continues.
 		 */
 		if (inID == null) {
+
+			//Lets try if the id is an incoming subscription
+			inSubReq = subscriptionStorage.getIncomingSubscription(ncReq
+					.getSubscriptionId());
+
 			if (logger.isDebugEnabled()) {
 				logger.debug("SubscriptionController: Aborting, because did not find the incoming"
 						+ "subscription");
 			}
+
+		} else {
+			inSubReq = subscriptionStorage.getIncomingSubscription(inID);
+		}
+
+		if (inSubReq == null) {
+			logger.error("Incoming subscription id found, but no incoming subscription found. Aborting "
+					+ "the notification process.");
 			return new NotifyContextResponse(new StatusCode(470,
 					ReasonPhrase.SUBSCRIPTIONIDNOTFOUND_470.toString(), null));
-		} else {
-			if (logger.isDebugEnabled()) {
-				logger.debug("SubscriptionController: found incoming subscription ID: "
-						+ inID);
-			}
+		}
 
-			/*
-			 * We also retrieve the original incoming subscription message from
-			 * the storage.
-			 */
-			SubscribeContextRequest inSubReq = subscriptionStorage
-					.getIncomingSubscription(inID);
-
-			if (inSubReq == null) {
-				logger.error("Incoming subscription id found, but no incoming subscription found. Aborting "
-						+ "the notification process.");
-				return null;
-			}
+		if (logger.isDebugEnabled()) {
+			logger.debug("SubscriptionController: found incoming subscription ID: "
+					+ inID);
 
 			logger.debug("SubscriptionController: Identified the original incoming "
 					+ "subscription request: " + inSubReq.toString());
+		}
+
+		/*
+		 * Initialize the list of associations to apply later, and initialize
+		 * the list of ContextElementResponses to return then.
+		 */
+		List<String> listAssoc = null;
+		List<ContextElementResponse> lCERes = null;
+
+		/*
+		 * Now we retrieve the availability subscription id. This is the
+		 * availability subscription that was made on behalf of the identified
+		 * incoming subscription.
+		 */
+
+		List<String> availId = linkAvSub.getAvailIDs(inID);
+
+		/*
+		 * It is again assumed that exactly one availability subscription id is
+		 * has been found. If not, then the function aborts and returns nothing.
+		 * 
+		 * Otherwise the list of associations that have been stored with this
+		 * availability subscription is retrieved. These are the associations
+		 * that are potentially applicable for this notification.
+		 */
+
+		if (availId.size() == 1) {
+			logger.debug("SubscriptionController: found the following availability subscr ID:"
+					+ availId.get(0));
+			listAssoc = availabilitySub.getListOfAssociations(availId.get(0));
+
+		} else if (!ignoreIoTDiscoveryFailure) {
+			logger.error("SubscriptionController: found wrong number of availability subscriptions, aborting.");
+			return null;
+		}
+
+		/*
+		 * Now the associations are applied if there are any. Applying the
+		 * associations is done by the modifyEntityAttributeBasedAssociation
+		 * function. If there are no associations, the contextelementresponse
+		 * from the notification are taken as they are.
+		 */
+
+		if (listAssoc != null && !listAssoc.isEmpty()) {
+			logger.debug("SubscriptionController: Applying associations");
+
+			lCERes = modifyEntityAttributeBasedAssociation(
+					associationUtil.convertToAssociationDS(listAssoc.get(0)),
+					ncReq.getContextElementResponseList());
 
 			/*
-			 * Initialize the list of associations to apply later, and
-			 * initialize the list of ContextElementResponses to return then.
+			 * We merge the results from the associations with the original
+			 * context element reponse list
 			 */
-			List<String> listAssoc = null;
-			List<ContextElementResponse> lCERes = null;
+
+			lCERes.addAll(ncReq.getContextElementResponseList());
+
+			logger.debug("SubscriptionController: Context Element Responses after applying assoc: "
+					+ lCERes.toString());
+
+		} else {
+			lCERes = ncReq.getContextElementResponseList();
+			logger.debug("SusbcriptionController: Found no associations");
+		}
+
+		if (lCERes != null) {
+			// this can actually never be null!
 
 			/*
-			 * Now we retrieve the availability subscription id. This is the
-			 * availability subscription that was made on behalf of the
-			 * identified incoming subscription.
+			 * Now, after having applied the associations, it is time to apply
+			 * the result filter in order to remove everything from the
+			 * notification that has not been queried.
 			 */
-
-			List<String> availId = linkAvSub.getAvailIDs(inID);
 
 			/*
-			 * It is again assumed that exactly one availability subscription id
-			 * is has been found. If not, then the function aborts and returns
-			 * nothing.
-			 * 
-			 * Otherwise the list of associations that have been stored with
-			 * this availability subscription is retrieved. These are the
-			 * associations that are potentially applicable for this
-			 * notification.
+			 * If a result filter is available, we apply it to the notification.
 			 */
 
-			if (availId.size() == 1) {
-				logger.debug("SubscriptionController: found the following availability subscr ID:"
-						+ availId.get(0));
-				listAssoc = availabilitySub.getListOfAssociations(availId
-						.get(0));
+			// BundleContext bc =
+			// FrameworkUtil.getBundle(ResultFilterInterface.class).getBundleContext();
+			// ServiceReference ref =
+			// bc.getServiceReference(ResultFilterInterface.class.getName());
 
-			} else if (!ignoreIoTDiscoveryFailure) {
-				logger.error("SubscriptionController: found wrong number of availability subscriptions, aborting.");
-				return null;
-			}
+			if (resultFilter != null) {
 
-			/*
-			 * Now the associations are applied if there are any. Applying the
-			 * associations is done by the modifyEntityAttributeBasedAssociation
-			 * function. If there are no associations, the
-			 * contextelementresponse from the notification are taken as they
-			 * are.
-			 */
+				logger.debug("SubscriptionController: found resultFilter implementation.");
 
-			if (listAssoc != null && !listAssoc.isEmpty()) {
-				logger.debug("SubscriptionController: Applying associations");
-
-				lCERes = modifyEntityAttributeBasedAssociation(
-						associationUtil
-								.convertToAssociationDS(listAssoc.get(0)),
-						ncReq.getContextElementResponseList());
+				// /*
+				// * As the resultfilter is defined for queries, we have to
+				// * convert the subscription request to a query request
+				// */
+				//
+				// List<QueryContextRequest> lqcReq_forfilter = new
+				// ArrayList<QueryContextRequest>();
+				// QueryContextRequest tmp_request = new
+				// QueryContextRequest(
+				// inSubReq.getEntityIdList(),
+				// inSubReq.getAttributeList(),
+				// inSubReq.getRestriction());
+				// lqcReq_forfilter.add(tmp_request);
+				//
+				// if (logger.isDebugEnabled()) {
+				// logger.debug("SubscriptionController: calling the resultfilter");
+				// }
+				//
+				// List<QueryContextResponse> lqcRes_fromfilter =
+				// resultFilter
+				// .filterResult(lCERes, lqcReq_forfilter);
+				//
+				// List<QueryContextResponse> lqcRes_fromfilter =
+				// resultFilter
+				// .filterResult(lCERes, inSubReq);
+				// // TODO make the filterResult accepting SubscribeRequest
 
 				/*
-				 * We merge the results from the associations with the original
-				 * context element reponse list
+				 * We receive back a query context response from which we take
+				 * out the context element responses
 				 */
+				// lCERes = lqcRes_fromfilter.get(0)
+				// .getListContextElementResponse();
 
-				lCERes.addAll(ncReq.getContextElementResponseList());
+				lCERes = resultFilter.filterNotification(lCERes, inSubReq);
 
-				logger.debug("SubscriptionController: Context Element Responses after applying assoc: "
-						+ lCERes.toString());
+				if (lCERes == null || lCERes.isEmpty()) {
 
-			} else {
-				lCERes = ncReq.getContextElementResponseList();
-				logger.debug("SusbcriptionController: Found no associations");
-			}
+					logger.info("All the ContextElementResponse have been filter, no notifications will be issued to subscriber");
 
-			if (lCERes != null) {
-				// this can actually never be null!
+					return new NotifyContextResponse(new StatusCode(200,
+							ReasonPhrase.OK_200.toString(), null));
 
-				/*
-				 * Now, after having applied the associations, it is time to
-				 * apply the result filter in order to remove everything from
-				 * the notification that has not been queried.
-				 */
-
-				/*
-				 * If a result filter is available, we apply it to the
-				 * notification.
-				 */
-
-				// BundleContext bc =
-				// FrameworkUtil.getBundle(ResultFilterInterface.class).getBundleContext();
-				// ServiceReference ref =
-				// bc.getServiceReference(ResultFilterInterface.class.getName());
-
-				if (resultFilter != null) {
-
-					logger.debug("SubscriptionController: found resultFilter implementation.");
-
-//					/*
-//					 * As the resultfilter is defined for queries, we have to
-//					 * convert the subscription request to a query request
-//					 */
-//
-//					List<QueryContextRequest> lqcReq_forfilter = new ArrayList<QueryContextRequest>();
-//					QueryContextRequest tmp_request = new QueryContextRequest(
-//							inSubReq.getEntityIdList(),
-//							inSubReq.getAttributeList(),
-//							inSubReq.getRestriction());
-//					lqcReq_forfilter.add(tmp_request);
-//
-//					if (logger.isDebugEnabled()) {
-//						logger.debug("SubscriptionController: calling the resultfilter");
-//					}
-//
-//					List<QueryContextResponse> lqcRes_fromfilter = resultFilter
-//							.filterResult(lCERes, lqcReq_forfilter);
-//
-//					List<QueryContextResponse> lqcRes_fromfilter = resultFilter
-//							.filterResult(lCERes, inSubReq);
-//					// TODO make the filterResult accepting SubscribeRequest
-
-					
-					/*
-					 * We receive back a query context response from which we
-					 * take out the context element responses
-					 */
-//					lCERes = lqcRes_fromfilter.get(0)
-//							.getListContextElementResponse();
-					
-					lCERes = resultFilter.filterNotification(lCERes, inSubReq);
-					
-					if (logger.isDebugEnabled()) {
-						logger.debug("SubscriptionController: filtered result: "
-								+ lCERes.toString());
-					}
-
-				} else {
-					if (logger.isDebugEnabled()) {
-						logger.debug("SubscriptionController: found no result filter; using the unfiltered result.");
-					}
 				}
 
-				/*
-				 * Now we create a queryContextResponse with our list of context
-				 * element responses. We use the QueryResponseMerger to format
-				 * the response in a nicer way (eliminating duplicate entities
-				 * with the same attributedomain).
-				 */
+				if (logger.isDebugEnabled()) {
+					logger.debug("SubscriptionController: filtered result: "
+							+ lCERes.toString());
+				}
 
-				QueryContextResponse qCRes_forMerger = new QueryContextResponse();
-				qCRes_forMerger.setContextResponseList(lCERes);
-				QueryResponseMerger qRM = new QueryResponseMerger(null);
-				qRM.put(qCRes_forMerger);
-				qCRes_forMerger = qRM.get();
+			} else {
+				if (logger.isDebugEnabled()) {
+					logger.debug("SubscriptionController: found no result filter; using the unfiltered result.");
+				}
+			}
 
+			/*
+			 * Now we create a queryContextResponse with our list of context
+			 * element responses. We use the QueryResponseMerger to format the
+			 * response in a nicer way (eliminating duplicate entities with the
+			 * same attributedomain).
+			 */
+
+			QueryContextResponse qCRes_forMerger = new QueryContextResponse();
+			qCRes_forMerger.setContextResponseList(lCERes);
+			QueryResponseMerger qRM = new QueryResponseMerger(null);
+			qRM.put(qCRes_forMerger);
+			qCRes_forMerger = qRM.get();
+
+			if (logger.isDebugEnabled()) {
 				logger.debug("SubscriptionController: Response list after applying merger:"
 						+ qCRes_forMerger.getListContextElementResponse()
 								.toString());
-
-				/*
-				 * We retrieve the subscriptionData for the incoming
-				 * subscription of this notification.
-				 */
-
-				SubscriptionData subscriptionData = subscriptionStore.get(inID);
-
-				List<ContextElementResponse> notificationQueue;
-
-				/*
-				 * This subscription data contains a queue of unsent
-				 * notifications (or otherwise we create it here)
-				 */
-
-				if (subscriptionData.getContextResponseQueue() != null) {
-					notificationQueue = subscriptionData
-							.getContextResponseQueue();
-				} else {
-					notificationQueue = new ArrayList<ContextElementResponse>();
-				}
-
-				/*
-				 * The context element responses that we have extracted from the
-				 * notification are added now to the notification queue, so that
-				 * they will later be sent to the application that has
-				 * originally issued the subscription.
-				 */
-
-				for (ContextElementResponse contextElementResponse : qCRes_forMerger
-						.getListContextElementResponse()) {
-
-					logger.info("###########################################");
-					logger.info(contextElementResponse);
-
-					// ContextElementResponse contextElementResponse =
-					// qCRes_forMerger
-					// .getListContextElementResponse().get(i);
-
-					/*
-					 * Here we insert PEP credentials if the incoming
-					 * Subscription has one in his operation scope list
-					 */
-					if (PEPCredentialsEnabled) {
-						this.addPEPCredentialsToContextElementResponse(
-								inSubReq, contextElementResponse);
-					}
-
-					/*
-					 * If it is enabled the notification proxy, we insert as a
-					 * metadata the final NotificationHandler, who should
-					 * actually receive the notification
-					 */
-					if (notificationProxyEnabled) {
-						try {
-							this.addNotificationHandler(
-									inSubReq.getReference(),
-									contextElementResponse);
-						} catch (URISyntaxException e) {
-							logger.info("URISyntaxException", e);
-						}
-					}
-
-					notificationQueue.add(contextElementResponse);
-				}
-
-				/*
-				 * After that, the notification queue is put back into the
-				 * subscription data, which is then put back into the storage.
-				 */
-				subscriptionData.setContextResponseQueue(notificationQueue);
-				subscriptionStore.put(inID, subscriptionData);
-				if (logger.isDebugEnabled()) {
-					logger.debug("Adding to subdata subid:" + inID + " : "
-							+ subscriptionData);
-				}
 			}
 
+			/*
+			 * We retrieve the subscriptionData for the incoming subscription of
+			 * this notification.
+			 */
+
+			SubscriptionData subscriptionData = subscriptionStore.get(inID);
+
+			List<ContextElementResponse> notificationQueue;
+
+			/*
+			 * This subscription data contains a queue of unsent notifications
+			 * (or otherwise we create it here)
+			 */
+
+			if (subscriptionData.getContextResponseQueue() != null) {
+				notificationQueue = subscriptionData.getContextResponseQueue();
+			} else {
+				notificationQueue = new ArrayList<ContextElementResponse>();
+			}
+
+			/*
+			 * The context element responses that we have extracted from the
+			 * notification are added now to the notification queue, so that
+			 * they will later be sent to the application that has originally
+			 * issued the subscription.
+			 */
+
+			for (ContextElementResponse contextElementResponse : qCRes_forMerger
+					.getListContextElementResponse()) {
+
+				logger.info("###########################################");
+				logger.info(contextElementResponse);
+
+				// ContextElementResponse contextElementResponse =
+				// qCRes_forMerger
+				// .getListContextElementResponse().get(i);
+
+				/*
+				 * Here we insert PEP credentials if the incoming Subscription
+				 * has one in his operation scope list
+				 */
+				if (PEPCredentialsEnabled) {
+					this.addPEPCredentialsToContextElementResponse(inSubReq,
+							contextElementResponse);
+				}
+
+				/*
+				 * If it is enabled the notification proxy, we insert as a
+				 * metadata the final NotificationHandler, who should actually
+				 * receive the notification
+				 */
+				if (notificationProxyEnabled) {
+					try {
+						this.addNotificationHandler(inSubReq.getReference(),
+								contextElementResponse);
+					} catch (URISyntaxException e) {
+						logger.info("URISyntaxException", e);
+					}
+				}
+
+				notificationQueue.add(contextElementResponse);
+			}
+
+			/*
+			 * After that, the notification queue is put back into the
+			 * subscription data, which is then put back into the storage.
+			 */
+			subscriptionData.setContextResponseQueue(notificationQueue);
+			subscriptionStore.put(inID, subscriptionData);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Adding to subdata subid:" + inID + " : "
+						+ subscriptionData);
+			}
 		}
 
 		/*

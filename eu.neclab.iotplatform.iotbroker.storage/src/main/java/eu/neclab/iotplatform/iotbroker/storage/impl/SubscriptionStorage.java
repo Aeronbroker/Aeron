@@ -88,19 +88,19 @@ public class SubscriptionStorage implements SubscriptionStorageInterface {
 	private final String URICONNECTION = "jdbc:hsqldb:hsql://localhost:" + port
 			+ "/";
 
-//	public SubscriptionStorage() {
-//		if (Boolean.parseBoolean(System.getProperty("iotbroker.reset"))) {
-//			deleteAll();
-//		}
-//	}
+	// public SubscriptionStorage() {
+	// if (Boolean.parseBoolean(System.getProperty("iotbroker.reset"))) {
+	// deleteAll();
+	// }
+	// }
 
-	 @PostConstruct
-	 public void postConstruct() {
-	
-		 if (Boolean.parseBoolean(System.getProperty("iotbroker.reset"))) {
-				deleteAll();
-			}
-	 }
+	@PostConstruct
+	public void postConstruct() {
+
+		if (Boolean.parseBoolean(System.getProperty("iotbroker.reset"))) {
+			deleteAll();
+		}
+	}
 
 	private void insertSubscription(Connection c, String subscriptionId,
 			SubscribeContextRequest request, URI agentURI,
@@ -474,6 +474,12 @@ public class SubscriptionStorage implements SubscriptionStorageInterface {
 			stmt.setString(1, subscriptionId);
 			result = stmt.executeQuery();
 
+			if (result.next()) {
+				result.beforeFirst();
+			} else {
+				return null;
+			}
+
 			while (result.next()) {
 
 				subscription.setReference(result.getString("reference"));
@@ -741,10 +747,13 @@ public class SubscriptionStorage implements SubscriptionStorageInterface {
 					password);
 
 			request = getSubscription(c, subscriptionId);
-			request.setEntityIdList(getEntityIdList(c, subscriptionId));
-			request.setAttributeList(getAttributeNameList(c, subscriptionId));
-			request.setRestriction(getRestriction(c, subscriptionId));
-			request.setNotifyCondition(getNotifyConditionList(c, subscriptionId));
+			if (request != null){
+				request.setEntityIdList(getEntityIdList(c, subscriptionId));
+				request.setAttributeList(getAttributeNameList(c, subscriptionId));
+				request.setRestriction(getRestriction(c, subscriptionId));
+				request.setNotifyCondition(getNotifyConditionList(c, subscriptionId));
+			}
+
 
 		} catch (SQLException e) {
 			logger.info("SQLException", e);
@@ -1256,21 +1265,24 @@ public class SubscriptionStorage implements SubscriptionStorageInterface {
 
 			while (result.next()) {
 
-				SubscriptionWithInfo subscriptionWithInfo;
+				SubscriptionWithInfo subscriptionWithInfo = null;
 
 				String id = result.getString(1);
 
-				subscriptionWithInfo = new SubscriptionWithInfo(
-						getSubscription(c, id));
-				subscriptionWithInfo.setEntityIdList(getEntityIdList(c, id));
-				subscriptionWithInfo.setAttributeList(getAttributeNameList(c,
-						id));
-				subscriptionWithInfo.setRestriction(getRestriction(c, id));
-				subscriptionWithInfo.setNotifyCondition(getNotifyConditionList(
-						c, id));
-				subscriptionWithInfo.setId(id);
+				SubscribeContextRequest request = getSubscription(c, id);
+				if (request != null){
+					subscriptionWithInfo = new SubscriptionWithInfo(
+							request);
+					subscriptionWithInfo.setEntityIdList(getEntityIdList(c, id));
+					subscriptionWithInfo.setAttributeList(getAttributeNameList(c,
+							id));
+					subscriptionWithInfo.setRestriction(getRestriction(c, id));
+					subscriptionWithInfo.setNotifyCondition(getNotifyConditionList(
+							c, id));
+					subscriptionWithInfo.setId(id);
 
-				subscriptionWithInfoList.add(subscriptionWithInfo);
+					subscriptionWithInfoList.add(subscriptionWithInfo);
+				}
 
 			}
 
@@ -1411,11 +1423,12 @@ public class SubscriptionStorage implements SubscriptionStorageInterface {
 					 */
 
 					// @formatter:off
-					stmt = c.prepareStatement(
-							"( SELECT subscriptionId FROM entityId WHERE (entityId = ? OR REGEXP_MATCHES(?, entityIdPattern)) AND ( (type IS NULL) OR (type = ?) ) )"
+					stmt = c.prepareStatement("( SELECT subscriptionId FROM entityId WHERE (entityId = ? OR REGEXP_MATCHES(?, entityIdPattern)) AND ( (type IS NULL) OR (type = ?) ) )"
 							+ "INTERSECT "
 							+ "("
-							+ "( SELECT subscriptionId FROM attribute WHERE attribute IN (" + questionMarkList.toString() + ") )"
+							+ "( SELECT subscriptionId FROM attribute WHERE attribute IN ("
+							+ questionMarkList.toString()
+							+ ") )"
 							+ "UNION"
 							+ "( (SELECT subscriptionId FROM subscription) EXCEPT (SELECT subscriptionid FROM attribute) )"
 							+ ")");
@@ -1432,11 +1445,12 @@ public class SubscriptionStorage implements SubscriptionStorageInterface {
 					 */
 
 					// @formatter:off
-					stmt = c.prepareStatement(
-							  "( SELECT subscriptionId FROM entityId WHERE (? like entityId OR REGEXP_MATCHES(?, entityIdPattern) OR REGEXP_MATCHES(entityIdPattern,?)) AND ( (type IS NULL) OR (type = ?) ) )"
+					stmt = c.prepareStatement("( SELECT subscriptionId FROM entityId WHERE (? like entityId OR REGEXP_MATCHES(?, entityIdPattern) OR REGEXP_MATCHES(entityIdPattern,?)) AND ( (type IS NULL) OR (type = ?) ) )"
 							+ "INTERSECT "
 							+ "("
-							+ "( SELECT subscriptionId FROM attribute WHERE attribute IN (" + questionMarkList.toString() + ") )"
+							+ "( SELECT subscriptionId FROM attribute WHERE attribute IN ("
+							+ questionMarkList.toString()
+							+ ") )"
 							+ "UNION"
 							+ "( (SELECT subscriptionId FROM subscription) EXCEPT (SELECT subscriptionid FROM attribute) )"
 							+ ")");

@@ -1278,6 +1278,100 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			final UpdateContextRequest request) {
 
 		UpdateContextResponse response = null;
+
+		/*
+		 * Here we apply associations
+		 */
+		final UpdateContextRequest updateContextRequest = applyAssociation(request);
+
+		
+		/*
+		 * Dump data in Big Data Repository if present.
+		 */
+		if (BundleUtils.isServiceRegistered(this, embeddedIoTAgent)) {
+
+			new Thread() {
+
+				@Override
+				public void run() {
+					try {
+						embeddedIoTAgent.storeData(updateContextRequest
+								.getContextElement());
+					} catch (org.springframework.osgi.service.ServiceUnavailableException e) {
+						logger.warn("Not possible to store in the Big Data Repository: osgi service not registered");
+					}
+
+				}
+			}.start();
+
+		}
+
+		/*
+		 * Here we notify subscribers whose subscription matches this update
+		 */
+		notifySubscribers(updateContextRequest);
+
+		// /**
+		// * Dump data in Big Data Repository if present.
+		// */
+		// if (bigDataRepository != null) {
+		//
+		// new Thread() {
+		//
+		// @Override
+		// public void run() {
+		//
+		// bigDataRepository.storeData(lContextElements);
+		//
+		// }
+		// }.start();
+		//
+		// }
+		//
+
+		//
+		// if (subscriptionStorage != null) {
+		// for (ContextElement contextElement : request.getContextElement()) {
+		// System.out.println(subscriptionStorage
+		// .checkContextElement(contextElement));
+		// }
+		// }
+
+		try {
+
+			if (pubSubUrlList != null) {
+				for (String url : pubSubUrlList) {
+					logger.info("Started Contact pub/sub broker..");
+
+					response = ngsi10Requester.updateContext(
+							updateContextRequest, new URI(url));
+					// TODO here the only the last response is taken into
+					// consideration as updateCotnextResponse. It would be
+					// necessary to have some rule (for example, ALL,
+					// ATLEASTONE, MOST, NOONE fault tolerant)
+				}
+			} else if (pubSubUrl != null) {
+				logger.info("Started Contact pub/sub broker..");
+
+				response = ngsi10Requester.updateContext(updateContextRequest,
+						new URI(pubSubUrl));
+			}
+		} catch (URISyntaxException e) {
+			logger.debug("URI Syntax Error", e);
+		}
+
+		if (ignorePubSubFailure) {
+			response = new UpdateContextResponse(new StatusCode(
+					Code.OK_200.getCode(), ReasonPhrase.OK_200.toString(), ""),
+					null);
+		}
+
+		return response;
+
+	}
+
+	private UpdateContextRequest applyAssociation(UpdateContextRequest request) {
+
 		List<AssociationDS> listAssociationDS = new LinkedList<AssociationDS>();
 		final List<ContextElement> lContextElements = request
 				.getContextElement();
@@ -1438,85 +1532,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		updateContextRequest = new UpdateContextRequest(listContextElement,
 				request.getUpdateAction());
 
-		logger.info("Started Contact pub/sub broker..");
-
-		/**
-		 * Dump data in Big Data Repository if present.
-		 */
-
-		if (BundleUtils.isServiceRegistered(this, embeddedIoTAgent)) {
-
-			new Thread() {
-
-				@Override
-				public void run() {
-					try {
-						embeddedIoTAgent.storeData(listContextElement);
-					} catch (org.springframework.osgi.service.ServiceUnavailableException e) {
-						logger.warn("Not possible to store in the Big Data Repository: osgi service not registered");
-					}
-
-				}
-			}.start();
-
-		}
-
-		/* Here we notify subscribers whose subscription matchs this update */
-		notifySubscribers(updateContextRequest);
-
-		// /**
-		// * Dump data in Big Data Repository if present.
-		// */
-		// if (bigDataRepository != null) {
-		//
-		// new Thread() {
-		//
-		// @Override
-		// public void run() {
-		//
-		// bigDataRepository.storeData(lContextElements);
-		//
-		// }
-		// }.start();
-		//
-		// }
-		//
-
-		//
-		// if (subscriptionStorage != null) {
-		// for (ContextElement contextElement : request.getContextElement()) {
-		// System.out.println(subscriptionStorage
-		// .checkContextElement(contextElement));
-		// }
-		// }
-
-		try {
-
-			if (pubSubUrlList != null) {
-				for (String url : pubSubUrlList) {
-					response = ngsi10Requester.updateContext(
-							updateContextRequest, new URI(url));
-					// TODO here the only the last response is taken into
-					// consideration as updateCotnextResponse. It would be
-					// necessary to have some rule (for example, ALL,
-					// ATLEASTONE, MOST, NOONE fault tolerant)
-				}
-			} else if (pubSubUrl != null) {
-				response = ngsi10Requester.updateContext(updateContextRequest,
-						new URI(pubSubUrl));
-			}
-		} catch (URISyntaxException e) {
-			logger.debug("URI Syntax Error", e);
-		}
-
-		if (ignorePubSubFailure) {
-			response = new UpdateContextResponse(new StatusCode(
-					Code.OK_200.getCode(), ReasonPhrase.OK_200.toString(), ""),
-					null);
-		}
-
-		return response;
-
+		return updateContextRequest;
 	}
 
 	private void notifySubscribers(UpdateContextRequest updateContextRequest) {
