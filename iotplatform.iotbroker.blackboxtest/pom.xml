@@ -6,6 +6,10 @@
 	<artifactId>iotplatform.iotbroker.blackboxtest</artifactId>
 	<version>5.2.3-SNAPSHOT</version>
 	<packaging>jar</packaging>
+	
+	<properties>
+		<iotbroker.version>5.2.3-SNAPSHOT</iotbroker.version>
+	</properties>
 
 	<name>iotplatform.iotbroker.blackboxtest</name>
 
@@ -28,12 +32,12 @@
 		<dependency>
 			<groupId>eu.neclab.iotplatform</groupId>
 			<artifactId>ngsi.api</artifactId>
-			<version>4.4.3</version>
+			<version>${iotbroker.version}</version>
 		</dependency>
 				<dependency>
 			<groupId>eu.neclab.iotplatform</groupId>
 			<artifactId>iotbroker.commons</artifactId>
-			<version>4.4.3</version>
+			<version>${iotbroker.version}</version>
 		</dependency>
 	</dependencies>
 	
