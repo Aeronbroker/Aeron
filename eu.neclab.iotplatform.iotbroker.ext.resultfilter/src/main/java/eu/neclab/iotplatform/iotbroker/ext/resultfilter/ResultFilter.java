@@ -139,9 +139,9 @@ public class ResultFilter implements ResultFilterInterface {
 							queryContextRequest.getEntityIdList(),
 							queryContextRequest.getAttributeList());
 
-					if (filtereContextElementResponse != null){
-						queryContextResponse.getListContextElementResponse().add(
-								filtereContextElementResponse);
+					if (filtereContextElementResponse != null) {
+						queryContextResponse.getListContextElementResponse()
+								.add(filtereContextElementResponse);
 					}
 
 				}
@@ -230,11 +230,12 @@ public class ResultFilter implements ResultFilterInterface {
 			 */
 			if (EntityIDMatcher.matcher(contextElementResponseToFilter
 					.getContextElement().getEntityId(), entityID)) {
-
-				logger.debug("Response EntityId: "
-						+ contextElementResponseToFilter.getContextElement()
-								.getEntityId());
-				logger.debug("Request EntityId : " + entityID);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Response EntityId: "
+							+ contextElementResponseToFilter
+									.getContextElement().getEntityId());
+					logger.debug("Request EntityId : " + entityID);
+				}
 
 				entityMatchFound = true;
 				break;
@@ -272,8 +273,7 @@ public class ResultFilter implements ResultFilterInterface {
 		 * For checking if all attributes can be taken, we first look whether
 		 * there is no attribute list or an empty one in the query
 		 */
-		if (attributesRequested == null
-				|| attributesRequested.isEmpty()) {
+		if (attributesRequested == null || attributesRequested.isEmpty()) {
 			takeAllAttributes = true;
 		}
 		/*
@@ -316,8 +316,7 @@ public class ResultFilter implements ResultFilterInterface {
 			 * attribute list in the query.
 			 */
 
-			Set<String> queryAttrSet = new HashSet<String>(
-					attributesRequested);
+			Set<String> queryAttrSet = new HashSet<String>(attributesRequested);
 
 			for (ContextAttribute conAtt : contextElementResponseToFilter
 					.getContextElement().getContextAttributeList()) {
@@ -450,7 +449,7 @@ public class ResultFilter implements ResultFilterInterface {
 			}
 
 		}
-
+		
 		return filteredContextElementResponseList;
 
 	}

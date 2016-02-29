@@ -260,9 +260,11 @@ public class Restriction {
 			ContextElementResponse filteredContextElementResponse = Restriction
 					.applyOnValueRestriction(contextElementResponse,
 							onValueAttributeExpr);
-
-			filteredContextElementResponseList
-					.add(filteredContextElementResponse);
+			
+			if (filteredContextElementResponse != null){
+				filteredContextElementResponseList
+				.add(filteredContextElementResponse);
+			}
 
 		}
 
@@ -292,6 +294,10 @@ public class Restriction {
 						contextElementResponse.getContextElement()
 								.getContextAttributeList());
 
+		if (filteredContextAttributeList == null || filteredContextAttributeList.isEmpty()){
+			return null;
+		}
+		
 		// Set the new context attribute
 		filteredContextElementResponse.getContextElement()
 				.setContextAttributeList(filteredContextAttributeList);
