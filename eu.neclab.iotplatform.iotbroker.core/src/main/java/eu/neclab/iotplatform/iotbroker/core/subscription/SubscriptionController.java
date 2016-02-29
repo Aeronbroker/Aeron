@@ -1028,13 +1028,6 @@ public class SubscriptionController {
 				+ ncReq.getSubscriptionId());
 
 		/*
-		 * Initialize the resulting notification request that will be passed to
-		 * the northbound wrapper
-		 */
-
-		// new NotifyContextRequest();
-
-		/*
 		 * Retrieves the list of incoming subscription ids that are relevant for
 		 * the received notification (note that the notification is the result
 		 * of an outgoing subscription).
@@ -1057,13 +1050,12 @@ public class SubscriptionController {
 		 */
 		if (inID == null) {
 
-			//Lets try if the id is an incoming subscription
+			// Lets try if the id is an incoming subscription
 			inSubReq = subscriptionStorage.getIncomingSubscription(ncReq
 					.getSubscriptionId());
-
-			if (logger.isDebugEnabled()) {
-				logger.debug("SubscriptionController: Aborting, because did not find the incoming"
-						+ "subscription");
+			
+			if (inSubReq != null){
+				inID = ncReq.getSubscriptionId();
 			}
 
 		} else {
@@ -1076,6 +1068,7 @@ public class SubscriptionController {
 			return new NotifyContextResponse(new StatusCode(470,
 					ReasonPhrase.SUBSCRIPTIONIDNOTFOUND_470.toString(), null));
 		}
+		
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("SubscriptionController: found incoming subscription ID: "
@@ -1168,7 +1161,9 @@ public class SubscriptionController {
 
 			if (resultFilter != null) {
 
-				logger.debug("SubscriptionController: found resultFilter implementation.");
+				if (logger.isDebugEnabled()) {
+					logger.debug("SubscriptionController: found resultFilter implementation.");
+				}
 
 				// /*
 				// * As the resultfilter is defined for queries, we have to

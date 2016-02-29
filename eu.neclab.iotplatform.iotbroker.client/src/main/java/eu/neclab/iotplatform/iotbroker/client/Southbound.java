@@ -1457,7 +1457,6 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 		try {
 
 			HttpConnectionClient connection = new HttpConnectionClient();
-			logger.debug("Starting http thread");
 
 			String response = connection.initializeConnection(uri.toURL(), "",
 					"POST", request, CONTENT_TYPE, xAuthToken);

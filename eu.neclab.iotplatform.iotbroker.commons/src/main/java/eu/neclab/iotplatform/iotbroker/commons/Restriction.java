@@ -318,6 +318,7 @@ public class Restriction {
 		 * only once for the full list of contextAttribute
 		 */
 		ContextElement contextElement = new ContextElement();
+		
 		contextElement.setContextAttributeList(contextAttributeList);
 
 		// Apply the Restriction
@@ -354,7 +355,7 @@ public class Restriction {
 					}
 
 					if (attributeName != null && attributeValue != null) {
-						selectedAttributes.add(attributeName + "-"
+						selectedAttributes.add(attributeName + ":::::"
 								+ attributeValue);
 						break;
 					}
@@ -366,7 +367,7 @@ public class Restriction {
 					.getContextAttributeList()) {
 
 				if (selectedAttributes.contains(contextAttribute.getName()
-						+ "-" + contextAttribute.getContextValue())) {
+						+ ":::::" + contextAttribute.getContextValue())) {
 					filteredContextAttributeList.add(contextAttribute);
 				}
 
