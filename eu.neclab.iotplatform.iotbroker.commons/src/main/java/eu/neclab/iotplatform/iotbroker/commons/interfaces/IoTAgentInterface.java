@@ -74,6 +74,8 @@ public interface IoTAgentInterface {
 	List<ContextElement> getHistoricalValues(List<EntityId> entityIdList,
 			Date startDate, Date endDate);
 
+	boolean isSubscriptionEnabled();
+	
 	void subscribe(String subscriptionId,
 			SubscribeContextRequest subscription);
 	

@@ -474,12 +474,6 @@ public class SubscriptionStorage implements SubscriptionStorageInterface {
 			stmt.setString(1, subscriptionId);
 			result = stmt.executeQuery();
 
-			if (result.next()) {
-				result.beforeFirst();
-			} else {
-				return null;
-			}
-
 			while (result.next()) {
 
 				subscription.setReference(result.getString("reference"));
@@ -520,6 +514,12 @@ public class SubscriptionStorage implements SubscriptionStorageInterface {
 			}
 
 		}
+
+		// If there was anything in the database, return null
+		if (subscription.getReference() == null) {
+			return null;
+		}
+
 		return subscription;
 	}
 
@@ -747,13 +747,13 @@ public class SubscriptionStorage implements SubscriptionStorageInterface {
 					password);
 
 			request = getSubscription(c, subscriptionId);
-			if (request != null){
+			if (request != null) {
 				request.setEntityIdList(getEntityIdList(c, subscriptionId));
 				request.setAttributeList(getAttributeNameList(c, subscriptionId));
 				request.setRestriction(getRestriction(c, subscriptionId));
-				request.setNotifyCondition(getNotifyConditionList(c, subscriptionId));
+				request.setNotifyCondition(getNotifyConditionList(c,
+						subscriptionId));
 			}
-
 
 		} catch (SQLException e) {
 			logger.info("SQLException", e);
@@ -1270,15 +1270,15 @@ public class SubscriptionStorage implements SubscriptionStorageInterface {
 				String id = result.getString(1);
 
 				SubscribeContextRequest request = getSubscription(c, id);
-				if (request != null){
-					subscriptionWithInfo = new SubscriptionWithInfo(
-							request);
-					subscriptionWithInfo.setEntityIdList(getEntityIdList(c, id));
-					subscriptionWithInfo.setAttributeList(getAttributeNameList(c,
-							id));
-					subscriptionWithInfo.setRestriction(getRestriction(c, id));
-					subscriptionWithInfo.setNotifyCondition(getNotifyConditionList(
+				if (request != null) {
+					subscriptionWithInfo = new SubscriptionWithInfo(request);
+					subscriptionWithInfo
+							.setEntityIdList(getEntityIdList(c, id));
+					subscriptionWithInfo.setAttributeList(getAttributeNameList(
 							c, id));
+					subscriptionWithInfo.setRestriction(getRestriction(c, id));
+					subscriptionWithInfo
+							.setNotifyCondition(getNotifyConditionList(c, id));
 					subscriptionWithInfo.setId(id);
 
 					subscriptionWithInfoList.add(subscriptionWithInfo);
