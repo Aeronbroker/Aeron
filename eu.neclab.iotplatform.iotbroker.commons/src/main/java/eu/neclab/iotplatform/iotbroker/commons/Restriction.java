@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -260,10 +262,10 @@ public class Restriction {
 			ContextElementResponse filteredContextElementResponse = Restriction
 					.applyOnValueRestriction(contextElementResponse,
 							onValueAttributeExpr);
-			
-			if (filteredContextElementResponse != null){
+
+			if (filteredContextElementResponse != null) {
 				filteredContextElementResponseList
-				.add(filteredContextElementResponse);
+						.add(filteredContextElementResponse);
 			}
 
 		}
@@ -294,10 +296,11 @@ public class Restriction {
 						contextElementResponse.getContextElement()
 								.getContextAttributeList());
 
-		if (filteredContextAttributeList == null || filteredContextAttributeList.isEmpty()){
+		if (filteredContextAttributeList == null
+				|| filteredContextAttributeList.isEmpty()) {
 			return null;
 		}
-		
+
 		// Set the new context attribute
 		filteredContextElementResponse.getContextElement()
 				.setContextAttributeList(filteredContextAttributeList);
@@ -318,13 +321,29 @@ public class Restriction {
 		 * only once for the full list of contextAttribute
 		 */
 		ContextElement contextElement = new ContextElement();
-		
+
 		contextElement.setContextAttributeList(contextAttributeList);
 
 		// Apply the Restriction
 		XPath xpath = XPathFactory.newInstance().newXPath();
 
 		try {
+
+			/*
+			 * Here we extract which attributes need to be extract from the
+			 * attributeExpression
+			 */
+			Set<String> attributeToFilterSet = new HashSet<String>();
+			Pattern pattern = Pattern
+					.compile("name=[',\",\\\"](.*?)[',\",\\\"]");
+			Matcher matcher = pattern.matcher(onValueAttributeExpr);
+			while (matcher.find()) {
+				attributeToFilterSet.add(matcher.group(1));
+			}
+
+			/*
+			 * Now we apply the XPATH
+			 */
 			XPathExpression expr = xpath.compile(onValueAttributeExpr);
 
 			Document doc = xmlFactory.stringToDocument(contextElement
@@ -366,8 +385,16 @@ public class Restriction {
 			for (ContextAttribute contextAttribute : contextElement
 					.getContextAttributeList()) {
 
-				if (selectedAttributes.contains(contextAttribute.getName()
-						+ ":::::" + contextAttribute.getContextValue())) {
+				/*
+				 * If the ContextAttribute is not in the attribute set to be
+				 * filtered add it. If it is in the attribute set to be filtered
+				 * then check if it is one of the selected ones
+				 */
+				if (!attributeToFilterSet.contains(contextAttribute.getName())
+						|| selectedAttributes.contains(contextAttribute
+								.getName()
+								+ ":::::"
+								+ contextAttribute.getContextValue())) {
 					filteredContextAttributeList.add(contextAttribute);
 				}
 
@@ -378,6 +405,17 @@ public class Restriction {
 		}
 
 		return filteredContextAttributeList;
+
+	}
+
+	public static void main(String[] args) {
+		String mydata = "//contextAttribute[name='noise'][contextValue>68]|//contextAttribute[name=\"temperature\"][contextValue>68]";
+		Pattern pattern = Pattern.compile("name=[',\",\\\"](.*?)[',\",\\\"]");
+		Matcher matcher = pattern.matcher(mydata);
+		while (matcher.find()) {
+			System.out.println(matcher.group(1));
+
+		}
 
 	}
 }

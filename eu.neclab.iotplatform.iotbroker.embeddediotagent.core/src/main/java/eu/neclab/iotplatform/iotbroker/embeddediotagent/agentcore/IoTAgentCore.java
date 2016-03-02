@@ -227,7 +227,6 @@ public class IoTAgentCore implements IoTAgentInterface {
 		}
 	}
 
-
 	@Override
 	public ContextElement getHistoricalValues(String id, URI type,
 			String attributeName, Date startDate, Date endDate) {
@@ -236,7 +235,6 @@ public class IoTAgentCore implements IoTAgentInterface {
 				startDate, endDate);
 
 	}
-
 
 	@Override
 	public List<ContextElement> getLatestValues(List<EntityId> entityIdList) {
@@ -301,6 +299,11 @@ public class IoTAgentCore implements IoTAgentInterface {
 		if (BundleUtils.isServiceRegistered(this, subscriptionHandler)) {
 			subscriptionHandler.setNgsi10Callback(ngsi10Callback);
 		}
+	}
+
+	@Override
+	public boolean isSubscriptionEnabled() {
+		return BundleUtils.isServiceRegistered(this, subscriptionHandler);
 	}
 
 }

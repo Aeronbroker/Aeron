@@ -1284,7 +1284,6 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 */
 		final UpdateContextRequest updateContextRequest = applyAssociation(request);
 
-		
 		/*
 		 * Dump data in Big Data Repository if present.
 		 */
@@ -1307,9 +1306,16 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		}
 
 		/*
-		 * Here we notify subscribers whose subscription matches this update
+		 * Here we notify subscribers whose subscription matches this update.
+		 * Since the Embedded Agent may have its own subscription system, here
+		 * we check if it is enabled.
 		 */
-		notifySubscribers(updateContextRequest);
+		if (!BundleUtils.isServiceRegistered(this, embeddedIoTAgent)
+				|| !embeddedIoTAgent.isSubscriptionEnabled()) {
+			notifySubscribers(updateContextRequest);
+		} else {
+			logger.info("EmbeddedAgent has its own Subscription system therefore SmartUpdateHandler will not be applied");
+		}
 
 		// /**
 		// * Dump data in Big Data Repository if present.
