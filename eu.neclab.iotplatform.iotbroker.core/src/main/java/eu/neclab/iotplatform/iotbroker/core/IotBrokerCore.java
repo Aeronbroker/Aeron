@@ -1171,10 +1171,13 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	@Override
 	public SubscribeContextResponse subscribeContext(
 			final SubscribeContextRequest request) {
+		
 		SubscribeContextResponse response;
+		
 		if (logger.isDebugEnabled()) {
 			logger.debug("Receive Request: " + request);
 		}
+		
 		response = northBoundWrapper.receiveReqFrmNorth(request);
 
 		/*
@@ -1207,8 +1210,11 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 							.linkSubscriptions(subscriptionId, subscriptionId);
 
 					embeddedIoTAgent.subscribe(subscriptionId, request);
+					
 				} catch (org.springframework.osgi.service.ServiceUnavailableException e) {
+					
 					logger.warn("Not possible to store in the Big Data Repository: osgi service not registered");
+					
 				}
 
 			}
@@ -1823,6 +1829,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	@Override
 	public UpdateContextSubscriptionResponse updateContextSubscription(
 			UpdateContextSubscriptionRequest request) {
+		
 		UpdateContextSubscriptionResponse response = northBoundWrapper
 				.receiveFrmNorth(request);
 

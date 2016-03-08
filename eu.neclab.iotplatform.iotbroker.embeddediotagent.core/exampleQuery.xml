@@ -531,3 +531,30 @@ http://localhost:8070/ngsi10/subscribeContext
 
 /********************
 /********************
+
+/********************
+/********************
+/********************
+// Example TESTS: UpdateContext vs SubscribeContext with NotifyCondition.ONCHANGE
+/********************
+/********************
+{
+    "entities": [{
+        "isPattern": true,
+        "id": ".*"
+    }],
+    "attributes": ["noise", "temperature"],
+    "reference": "http://localhost:8004/ngsi10/notify",
+    "notifyCondition": [{
+        "restriction": {
+            "attributeExpression": "//contextAttribute[name=noise][contextValue>68]"
+        },
+        "type": "ONVALUE"
+    }, {
+        "type": "ONCHANGE",
+        "condValues": ["temperature"]
+    }]
+}
+
+/********************
+/********************

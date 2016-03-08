@@ -202,9 +202,19 @@ public class CouchDB implements KeyValueStoreInterface {
 						new URL(getCouchDB_ip() + couchDB_NAME + "/" + key),
 						messageBody, "application/json");
 
-				// Parse the revision of the document and update it
-				revision = CouchDBUtil
-						.parseRevisionFromCouchdbResponse(respFromCouchDB);
+				if (respFromCouchDB.getStatusLine().getStatusCode() > 299) {
+					
+					logger.warn("CouchDB did not updated correctly the value. Reason: "
+							+ respFromCouchDB.getStatusLine());
+					
+				} else {
+
+					// Parse the revision of the document and update it
+					revision = CouchDBUtil
+							.parseRevisionFromCouchdbResponse(respFromCouchDB);
+					// Put in cache
+					cachedRevisionByKey.put(key, revision);
+				}
 
 			}
 		} catch (MalformedURLException e) {
@@ -216,8 +226,8 @@ public class CouchDB implements KeyValueStoreInterface {
 		}
 
 	}
-	
-	private void checkDB(){
+
+	private void checkDB() {
 		/*
 		 * Checking Database connection issues
 		 */
@@ -272,7 +282,7 @@ public class CouchDB implements KeyValueStoreInterface {
 	}
 
 	private void cacheRevisionById() {
-		
+
 		this.checkDB();
 
 		// ÿ is the last character of the UTF-8 character table
@@ -305,9 +315,8 @@ public class CouchDB implements KeyValueStoreInterface {
 
 						String rev = row.getAsJsonObject("value").get("rev")
 								.getAsString();
-						
-						String key = row.get("key")
-								.getAsString();
+
+						String key = row.get("key").getAsString();
 
 						cachedRevisionByKey.put(key, rev);
 
@@ -328,7 +337,7 @@ public class CouchDB implements KeyValueStoreInterface {
 		// CouchDBUtil.LATEST_VALUE_PREFIX);
 
 		this.checkDB();
-		
+
 		String url = String.format(
 				"%s%s/_all_docs?startkey=%%22%s%%22&endkey=%%22%s%%22",
 				getCouchDB_ip(), couchDB_NAME, startKey, endKey);
@@ -370,7 +379,7 @@ public class CouchDB implements KeyValueStoreInterface {
 
 	public Multimap<String, String> getIdsByType() {
 		Multimap<String, String> idsByType = HashMultimap.create();
-		
+
 		this.checkDB();
 
 		String url = String.format("%s%s/%s", getCouchDB_ip(), couchDB_NAME,
@@ -453,7 +462,7 @@ public class CouchDB implements KeyValueStoreInterface {
 
 	public ContextElement getValues(String startKey, String endKey) {
 		ContextElement historicalContextElement = null;
-		
+
 		this.checkDB();
 
 		// If here, an historical range is wanted
