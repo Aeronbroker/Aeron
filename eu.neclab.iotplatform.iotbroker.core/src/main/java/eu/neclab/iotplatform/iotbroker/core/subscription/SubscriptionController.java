@@ -192,7 +192,7 @@ public class SubscriptionController {
 	 * Pointer to the component responsible to communicate with IoT Agents via
 	 * NGSI 10.
 	 */
-	protected AgentWrapper agentWrapper;
+	protected IoTAgentWrapperInterface agentWrapper;
 
 	/*
 	 * Used for storage of subscription-related information.
@@ -340,7 +340,7 @@ public class SubscriptionController {
 	/**
 	 * Sets the pointer to the component for communication with IoT Agents
 	 */
-	public void setAgentWrapper(AgentWrapper agentWrapper) {
+	public void setAgentWrapper(IoTAgentWrapperInterface agentWrapper) {
 		this.agentWrapper = agentWrapper;
 	}
 
@@ -381,7 +381,7 @@ public class SubscriptionController {
 					 * reference must be the full path (comprehensive of the
 					 * notifyContextAvailability resource)
 					 */
-					+ "/ngsi9/notifyContextAvailability";
+					 + "/ngsi9/notifyContextAvailability";
 
 		} catch (UnknownHostException e) {
 			logger.error("Unknown Host", e);
@@ -587,12 +587,11 @@ public class SubscriptionController {
 
 				if (ScopeTypes.SubscriptionOriginator.toString().toLowerCase()
 						.equals(operationScope.getScopeType().toLowerCase())) {
-					String originator = operationScope.getScopeValue()
-							.toString();
-					if (originator.matches("http://.*")) {
+					String originator = operationScope.getScopeValue().toString();
+					if (originator.matches("http://.*")){
 						return originator;
 					} else {
-						return "http://" + originator;
+						return "http://"+originator;
 					}
 				}
 			}
@@ -1042,6 +1041,7 @@ public class SubscriptionController {
 		SubscribeContextRequest inSubReq = null;
 
 		/*
+		/*
 		 * It is expected that exactly one incoming subscription id will be
 		 * found. If this is not the case, then the function is aborted and an
 		 * error is returned.
@@ -1072,9 +1072,7 @@ public class SubscriptionController {
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("SubscriptionController: found incoming subscription ID: "
-					+ inID);
-
-			logger.debug("SubscriptionController: Identified the original incoming "
+					+ inID + System.getProperty("line.separator") + "SubscriptionController: Identified the original incoming "
 					+ "subscription request: " + inSubReq.toString());
 		}
 
@@ -1102,28 +1100,36 @@ public class SubscriptionController {
 		 * that are potentially applicable for this notification.
 		 */
 
-		if (availId.size() == 1) {
-			logger.debug("SubscriptionController: found the following availability subscr ID:"
-					+ availId.get(0));
-			listAssoc = availabilitySub.getListOfAssociations(availId.get(0));
+			if (availId.size() == 1) {
+				if (logger.isDebugEnabled()){
+					logger.debug("SubscriptionController: found the following availability subscr ID:"
+						+ availId.get(0));
+				}
+				listAssoc = availabilitySub.getListOfAssociations(availId
+						.get(0));
 
 		} else if (!ignoreIoTDiscoveryFailure) {
 			logger.error("SubscriptionController: found wrong number of availability subscriptions, aborting.");
-			return null;
+			return new NotifyContextResponse(new StatusCode(500,
+					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(), "found wrong number of availability subscription. Expected 1"));
+			
 		}
 
-		/*
+			/*
 		 * Now the associations are applied if there are any. Applying the
 		 * associations is done by the modifyEntityAttributeBasedAssociation
-		 * function. If there are no associations, the contextelementresponse
-		 * from the notification are taken as they are.
+		 * function. If there are no associations, the
+		 * contextelementresponse from the notification are taken as they
+		 * are.
 		 */
 
 		if (listAssoc != null && !listAssoc.isEmpty()) {
-			logger.debug("SubscriptionController: Applying associations");
+			if (logger.isDebugEnabled())
+				logger.debug("SubscriptionController: Applying associations");
 
 			lCERes = modifyEntityAttributeBasedAssociation(
-					associationUtil.convertToAssociationDS(listAssoc.get(0)),
+					associationUtil
+							.convertToAssociationDS(listAssoc.get(0)),
 					ncReq.getContextElementResponseList());
 
 			/*
@@ -1132,13 +1138,16 @@ public class SubscriptionController {
 			 */
 
 			lCERes.addAll(ncReq.getContextElementResponseList());
-
-			logger.debug("SubscriptionController: Context Element Responses after applying assoc: "
-					+ lCERes.toString());
+			
+			if (logger.isDebugEnabled())
+				logger.debug("SubscriptionController: Context Element Responses after applying assoc: "
+						+ lCERes.toString());
 
 		} else {
 			lCERes = ncReq.getContextElementResponseList();
-			logger.debug("SusbcriptionController: Found no associations");
+			
+			if (logger.isDebugEnabled())
+				logger.debug("SusbcriptionController: Found no associations");
 		}
 
 		if (lCERes != null) {
@@ -1228,11 +1237,11 @@ public class SubscriptionController {
 			 * same attributedomain).
 			 */
 
-			QueryContextResponse qCRes_forMerger = new QueryContextResponse();
-			qCRes_forMerger.setContextResponseList(lCERes);
-			QueryResponseMerger qRM = new QueryResponseMerger(null);
-			qRM.put(qCRes_forMerger);
-			qCRes_forMerger = qRM.get();
+				QueryContextResponse qCRes_forMerger = new QueryContextResponse();
+				qCRes_forMerger.setContextResponseList(lCERes);
+				QueryResponseMerger qRM = new QueryResponseMerger(null);
+				qRM.put(qCRes_forMerger);
+				qCRes_forMerger = qRM.get();
 
 			if (logger.isDebugEnabled()) {
 				logger.debug("SubscriptionController: Response list after applying merger:"
@@ -2070,8 +2079,7 @@ public class SubscriptionController {
 			UpdateContextSubscriptionRequest updateRequest, String originalID) {
 
 		// TODO check here if it is correct. I'm afraid that here it sending
-		// directly subscription update to IoT Agent without checking against
-		// the
+		// directly subscription update to IoT Agent without checking against the
 		// IoT discovery if the IoT Agent are anymore compliant with the
 		// subscription parameter
 
@@ -2248,6 +2256,8 @@ public class SubscriptionController {
 			return "ContextUniqueIdentifier [entityIdList=" + entityIdList
 					+ ", providingApplication=" + providingApplication + "]";
 		}
+		
+		
 
 	}
 

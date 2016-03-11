@@ -45,6 +45,7 @@ import java.net.URI;
 
 import org.apache.log4j.Logger;
 
+import eu.neclab.iotplatform.iotbroker.commons.interfaces.IoTAgentWrapperInterface;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.StatusCode;
@@ -62,7 +63,7 @@ import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Requester;
  * controller.
  *
  */
-public class AgentWrapper {
+public class AgentWrapper implements IoTAgentWrapperInterface {
 	private static Logger logger = Logger.getLogger(AgentWrapper.class);
 	private final SubscriptionController subscriptionController;
 	public Ngsi10Requester ngsi10Requestor;
@@ -92,14 +93,13 @@ public class AgentWrapper {
 		this.ngsi10Requestor = ngsi10Requestor;
 	}
 
-	/**
-	 * Executes a subscription request.
-	 * @param scReq
-	 * The NGSI 10 SubscribeContextRequest.
-	 * @param uri The address of the NGSI 10 server where the request is to 
-	 * be issued. 
-	 * @return
+	/* (non-Javadoc)
+	 * @see eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface#receiveReqFrmSubscriptionController(eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextRequest, java.net.URI)
 	 */
+	/* (non-Javadoc)
+	 * @see eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface#receiveReqFrmSubscriptionController(eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextRequest, java.net.URI)
+	 */
+	@Override
 	public SubscribeContextResponse receiveReqFrmSubscriptionController(
 			SubscribeContextRequest scReq, URI uri) {
 		logger.debug("Sending Request:" + scReq.toString() + " : "
@@ -110,14 +110,10 @@ public class AgentWrapper {
 		return scRes;
 	}
 
-	/**
-	 * Processes NGSI 10 notifications.
-	 * 
-	 * @param ncReq
-	 * The NGSI 10 NotifyContextRequest.
-	 * @return
-	 * The NGSI 10 NotifyContextResponse.
+	/* (non-Javadoc)
+	 * @see eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface#receiveFrmAgents(eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest)
 	 */
+	@Override
 	public NotifyContextResponse receiveFrmAgents(NotifyContextRequest notifyContextRequest) {
 		
 		/*
@@ -139,15 +135,13 @@ public class AgentWrapper {
 		}
 	}
 
-	/**
-	 * Executes a subscription cancellation request.
-	 * @param uCReq
-	 * The NGSI 10 {@link UnsubscribeContextRequest}.
-	 * @param uri
-	 * The address of the NGSI 10 server to send the unsubscribe operation to. 
-	 * @return
-	 * The NGSI 10 {@link UnsubscribeContextResponse}.
+	/* (non-Javadoc)
+	 * @see eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface#receiveReqFrmSubscriptionController(eu.neclab.iotplatform.ngsi.api.datamodel.UnsubscribeContextRequest, java.net.URI)
 	 */
+	/* (non-Javadoc)
+	 * @see eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface#receiveReqFrmSubscriptionController(eu.neclab.iotplatform.ngsi.api.datamodel.UnsubscribeContextRequest, java.net.URI)
+	 */
+	@Override
 	public UnsubscribeContextResponse receiveReqFrmSubscriptionController(
 			UnsubscribeContextRequest uCReq, URI uri) {
 		logger.debug("Sending Request:" + uCReq.toString() + " : "
@@ -158,14 +152,13 @@ public class AgentWrapper {
 		return uCRes;
 	}
 	
-	/**
-	 * Executes a request to update a subscription.
-	 * @param uCReq
-	 * The NGSI 10 {@link UpdateContextSubscriptionRequest}.
-	 * @param uri
-	 * The address of the NGSI 10 server to send the update operation to. 
-	 * @return The NGSI 10 {@link UpdateContextSubscriptionResponse}.
+	/* (non-Javadoc)
+	 * @see eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface#receiveReqFrmSubscriptionController(eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextSubscriptionRequest, java.net.URI)
 	 */
+	/* (non-Javadoc)
+	 * @see eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface#receiveReqFrmSubscriptionController(eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextSubscriptionRequest, java.net.URI)
+	 */
+	@Override
 	public UpdateContextSubscriptionResponse receiveReqFrmSubscriptionController(
 			UpdateContextSubscriptionRequest uCReq, URI uri) {
 		UpdateContextSubscriptionResponse a =new UpdateContextSubscriptionResponse();
