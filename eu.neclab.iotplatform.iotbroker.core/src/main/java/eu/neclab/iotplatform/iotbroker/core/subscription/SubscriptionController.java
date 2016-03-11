@@ -70,6 +70,7 @@ import eu.neclab.iotplatform.iotbroker.commons.GenerateUniqueID;
 import eu.neclab.iotplatform.iotbroker.commons.OutgoingSubscriptionWithInfo;
 import eu.neclab.iotplatform.iotbroker.commons.Pair;
 import eu.neclab.iotplatform.iotbroker.commons.TraceKeeper;
+import eu.neclab.iotplatform.iotbroker.commons.interfaces.IoTAgentWrapperInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface;
 import eu.neclab.iotplatform.iotbroker.core.IotBrokerCore;
 import eu.neclab.iotplatform.iotbroker.core.QueryResponseMerger;
@@ -192,7 +193,7 @@ public class SubscriptionController {
 	 * Pointer to the component responsible to communicate with IoT Agents via
 	 * NGSI 10.
 	 */
-	protected AgentWrapper agentWrapper;
+	protected IoTAgentWrapperInterface agentWrapper;
 
 	/*
 	 * Used for storage of subscription-related information.
@@ -340,7 +341,7 @@ public class SubscriptionController {
 	/**
 	 * Sets the pointer to the component for communication with IoT Agents
 	 */
-	public void setAgentWrapper(AgentWrapper agentWrapper) {
+	public void setAgentWrapper(IoTAgentWrapperInterface agentWrapper) {
 		this.agentWrapper = agentWrapper;
 	}
 
