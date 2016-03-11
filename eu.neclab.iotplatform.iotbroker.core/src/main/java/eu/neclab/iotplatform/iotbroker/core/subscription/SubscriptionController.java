@@ -70,6 +70,7 @@ import eu.neclab.iotplatform.iotbroker.commons.GenerateUniqueID;
 import eu.neclab.iotplatform.iotbroker.commons.OutgoingSubscriptionWithInfo;
 import eu.neclab.iotplatform.iotbroker.commons.Pair;
 import eu.neclab.iotplatform.iotbroker.commons.TraceKeeper;
+import eu.neclab.iotplatform.iotbroker.commons.interfaces.IoTAgentWrapperInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface;
 import eu.neclab.iotplatform.iotbroker.core.IotBrokerCore;
 import eu.neclab.iotplatform.iotbroker.core.QueryResponseMerger;
@@ -192,8 +193,7 @@ public class SubscriptionController {
 	 * Pointer to the component responsible to communicate with IoT Agents via
 	 * NGSI 10.
 	 */
-	protected AgentWrapper agentWrapper;
-
+	protected IoTAgentWrapperInterface agentWrapper;
 
 	/*
 	 * Used for storage of subscription-related information.
@@ -276,7 +276,6 @@ public class SubscriptionController {
 		return subscriptionStore;
 	}
 
-
 	/**
 	 * @return Pointer to the availability subscription storage.
 	 */
@@ -291,7 +290,6 @@ public class SubscriptionController {
 			AvailabilitySubscriptionInterface availabilitySub) {
 		this.availabilitySub = availabilitySub;
 	}
-
 
 	/**
 	 * @return Pointer to the storage for links between incoming subscriptions
@@ -343,7 +341,7 @@ public class SubscriptionController {
 	/**
 	 * Sets the pointer to the component for communication with IoT Agents
 	 */
-	public void setAgentWrapper(AgentWrapper agentWrapper) {
+	public void setAgentWrapper(IoTAgentWrapperInterface agentWrapper) {
 		this.agentWrapper = agentWrapper;
 	}
 
@@ -384,7 +382,7 @@ public class SubscriptionController {
 					 * reference must be the full path (comprehensive of the
 					 * notifyContextAvailability resource)
 					 */
-					 + "/ngsi9/notifyContextAvailability";
+					+ "/ngsi9/notifyContextAvailability";
 
 		} catch (UnknownHostException e) {
 			logger.error("Unknown Host", e);
@@ -590,11 +588,12 @@ public class SubscriptionController {
 
 				if (ScopeTypes.SubscriptionOriginator.toString().toLowerCase()
 						.equals(operationScope.getScopeType().toLowerCase())) {
-					String originator = operationScope.getScopeValue().toString();
-					if (originator.matches("http://.*")){
+					String originator = operationScope.getScopeValue()
+							.toString();
+					if (originator.matches("http://.*")) {
 						return originator;
 					} else {
-						return "http://"+originator;
+						return "http://" + originator;
 					}
 				}
 			}
@@ -1074,7 +1073,8 @@ public class SubscriptionController {
 			if (inSubReq == null) {
 				logger.error("Incoming subscription id found, but no incoming subscription found. Aborting "
 						+ "the notification process.");
-				return null;
+				return new NotifyContextResponse(new StatusCode(470,
+						ReasonPhrase.SUBSCRIPTIONIDNOTFOUND_470.toString(), null));
 			}
 
 			logger.debug("SubscriptionController: Identified the original incoming "
@@ -1107,14 +1107,18 @@ public class SubscriptionController {
 			 */
 
 			if (availId.size() == 1) {
-				logger.debug("SubscriptionController: found the following availability subscr ID:"
+				if (logger.isDebugEnabled()){
+					logger.debug("SubscriptionController: found the following availability subscr ID:"
 						+ availId.get(0));
+				}
 				listAssoc = availabilitySub.getListOfAssociations(availId
 						.get(0));
 
 			} else if (!ignoreIoTDiscoveryFailure) {
 				logger.error("SubscriptionController: found wrong number of availability subscriptions, aborting.");
-				return null;
+				return new NotifyContextResponse(new StatusCode(500,
+						ReasonPhrase.RECEIVERINTERNALERROR_500.toString(), "found wrong number of availability subscription"));
+				
 			}
 
 			/*
@@ -1126,7 +1130,8 @@ public class SubscriptionController {
 			 */
 
 			if (listAssoc != null && !listAssoc.isEmpty()) {
-				logger.debug("SubscriptionController: Applying associations");
+				if (logger.isDebugEnabled())
+					logger.debug("SubscriptionController: Applying associations");
 
 				lCERes = modifyEntityAttributeBasedAssociation(
 						associationUtil
@@ -1139,13 +1144,16 @@ public class SubscriptionController {
 				 */
 
 				lCERes.addAll(ncReq.getContextElementResponseList());
-
-				logger.debug("SubscriptionController: Context Element Responses after applying assoc: "
+				
+				if (logger.isDebugEnabled())
+					logger.debug("SubscriptionController: Context Element Responses after applying assoc: "
 						+ lCERes.toString());
 
 			} else {
 				lCERes = ncReq.getContextElementResponseList();
-				logger.debug("SusbcriptionController: Found no associations");
+				
+				if (logger.isDebugEnabled())
+					logger.debug("SusbcriptionController: Found no associations");
 			}
 
 			if (lCERes != null) {
@@ -1169,7 +1177,9 @@ public class SubscriptionController {
 
 				if (resultFilter != null) {
 
-					logger.debug("SubscriptionController: found resultFilter implementation.");
+					if (logger.isDebugEnabled()){
+						logger.debug("SubscriptionController: found resultFilter implementation.");
+					}
 
 					/*
 					 * As the resultfilter is defined for queries, we have to
@@ -1183,7 +1193,8 @@ public class SubscriptionController {
 							inSubReq.getRestriction());
 					lqcReq_forfilter.add(tmp_request);
 
-					logger.debug("SubscriptionController: calling the resultfilter");
+					if (logger.isDebugEnabled())
+						logger.debug("SubscriptionController: calling the resultfilter");
 
 					List<QueryContextResponse> lqcRes_fromfilter = resultFilter
 							.filterResult(lCERes, lqcReq_forfilter);
@@ -1194,11 +1205,14 @@ public class SubscriptionController {
 					 */
 					lCERes = lqcRes_fromfilter.get(0)
 							.getListContextElementResponse();
-					logger.debug("SubscriptionController: filtered result: "
+					
+					if (logger.isDebugEnabled())
+						logger.debug("SubscriptionController: filtered result: "
 							+ lCERes.toString());
 
 				} else {
-					logger.debug("SubscriptionController: found no result filter; using the unfiltered result.");
+					if (logger.isDebugEnabled())
+						logger.debug("SubscriptionController: found no result filter; using the unfiltered result.");
 				}
 
 				/*
@@ -1214,7 +1228,8 @@ public class SubscriptionController {
 				qRM.put(qCRes_forMerger);
 				qCRes_forMerger = qRM.get();
 
-				logger.debug("SubscriptionController: Response list after applying merger:"
+				if (logger.isDebugEnabled())
+					logger.debug("SubscriptionController: Response list after applying merger:"
 						+ qCRes_forMerger.getListContextElementResponse()
 								.toString());
 
@@ -2052,7 +2067,8 @@ public class SubscriptionController {
 			UpdateContextSubscriptionRequest updateRequest, String originalID) {
 
 		// TODO check here if it is correct. I'm afraid that here it sending
-		// directly subscription update to IoT Agent without checking against the
+		// directly subscription update to IoT Agent without checking against
+		// the
 		// IoT discovery if the IoT Agent are anymore compliant with the
 		// subscription parameter
 
@@ -2229,8 +2245,6 @@ public class SubscriptionController {
 			return "ContextUniqueIdentifier [entityIdList=" + entityIdList
 					+ ", providingApplication=" + providingApplication + "]";
 		}
-		
-		
 
 	}
 

@@ -74,7 +74,9 @@ import eu.neclab.iotplatform.iotbroker.commons.TraceKeeper;
 import eu.neclab.iotplatform.iotbroker.commons.XmlFactory;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.BigDataRepository;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.IoTAgentInterface;
+import eu.neclab.iotplatform.iotbroker.commons.interfaces.IoTAgentWrapperInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.NgsiHierarchyInterface;
+import eu.neclab.iotplatform.iotbroker.commons.interfaces.OnTimeIntervalHandlerInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.QueryService;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface;
 import eu.neclab.iotplatform.iotbroker.core.subscription.AgentWrapper;
@@ -210,7 +212,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	 * Wrapper for IoT agents, that is, components offering data via an NGSI-10
 	 * interface.
 	 */
-	private AgentWrapper agentWrapper;
+	private IoTAgentWrapperInterface agentWrapper;
 
 	/** The subscription controller. */
 	private SubscriptionController subscriptionController;
@@ -228,6 +230,26 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	 */
 	private BigDataRepository bigDataRepository;
 
+	/**
+	 * ONTIMEINTERVAL notifyCondition handler
+	 */
+	private OnTimeIntervalHandlerInterface onTimeIntervalHandler;
+
+	/**
+	 * Interface for hierarchies of IoT Broker instances; extra bundle not
+	 * included in this release needed.
+	 */
+	private NgsiHierarchyInterface ngsiHierarchyExtension;
+
+	public OnTimeIntervalHandlerInterface getOnTimeIntervalHandler() {
+		return onTimeIntervalHandler;
+	}
+
+	public void setOnTimeIntervalHandler(
+			OnTimeIntervalHandlerInterface onTimeIntervalHandler) {
+		this.onTimeIntervalHandler = onTimeIntervalHandler;
+	}
+
 	public BigDataRepository getBigDataRepository() {
 		return bigDataRepository;
 	}
@@ -235,12 +257,6 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	public void setBigDataRepository(BigDataRepository bigDataRepository) {
 		this.bigDataRepository = bigDataRepository;
 	}
-
-	/**
-	 * Interface for hierarchies of IoT Broker instances; extra bundle not
-	 * included in this release needed.
-	 */
-	private NgsiHierarchyInterface ngsiHierarchyExtension;
 
 	public NgsiHierarchyInterface getNgsiHierarchyExtension() {
 		return ngsiHierarchyExtension;
@@ -321,7 +337,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	 * 
 	 * @return the agent wrapper
 	 */
-	public AgentWrapper getAgentWrapper() {
+	public IoTAgentWrapperInterface getAgentWrapper() {
 		return agentWrapper;
 	}
 
@@ -331,7 +347,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	 * @param agentWrapper
 	 *            the new agent wrapper
 	 */
-	public void setAgentWrapper(AgentWrapper agentWrapper) {
+	public void setAgentWrapper(IoTAgentWrapperInterface agentWrapper) {
 		this.agentWrapper = agentWrapper;
 	}
 
@@ -1213,6 +1229,23 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 			}
 
+			if (BundleUtils.isServiceRegistered(this, onTimeIntervalHandler)) {
+
+				try {
+
+					String subscriptionId = response.getSubscribeResponse()
+							.getSubscriptionId();
+
+					onTimeIntervalHandler
+							.pushSubscription(new SubscriptionWithInfo(
+									subscriptionId, request));
+
+				} catch (org.springframework.osgi.service.ServiceUnavailableException e) {
+					logger.warn("Not possible use the onTimeIntervalHandler: osgi service not registered");
+				}
+
+			}
+
 		}
 
 		logger.info("Subscription Response:\n" + response.toString());
@@ -1678,14 +1711,35 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		NotifyContextResponse notifyContextResponse;
 
+		boolean underOnTimeIntervalCondition = false;
+		if (BundleUtils.isServiceRegistered(this, onTimeIntervalHandler)) {
+
+			try {
+
+				underOnTimeIntervalCondition = onTimeIntervalHandler.notifyContext(request);
+
+			} catch (org.springframework.osgi.service.ServiceUnavailableException e) {
+				logger.warn("Not possible use the onTimeIntervalHandler: osgi service not registered");
+			}
+
+		}
+
 		// if (this.toString().equals(request.getOriginator())) {
 		// notifyContextResponse = agentWrapper
 		// .receiveFrmBigDataRepository(request);
 		//
 		// } else {
-		notifyContextResponse = agentWrapper.receiveFrmAgents(request);
+		//notifyContextResponse = agentWrapper.receiveFrmAgents(request);
 		// }
 
+		if (underOnTimeIntervalCondition){
+			notifyContextResponse = new NotifyContextResponse(new StatusCode(200,
+					ReasonPhrase.OK_200.toString(), null));
+		} else {
+			notifyContextResponse = agentWrapper.receiveFrmAgents(request);
+
+		}
+		
 		logger.info("NotifyContextResponse : " + notifyContextResponse);
 
 		if (notifyContextResponse == null
