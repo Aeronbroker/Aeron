@@ -253,7 +253,8 @@ public class ResultFilter implements ResultFilterInterface {
 			return null;
 		}
 
-		logger.debug("Match for entity ID found in the query");
+		if (logger.isDebugEnabled())
+			logger.debug("Match for entity ID found in the query");
 
 		/*
 		 * 
