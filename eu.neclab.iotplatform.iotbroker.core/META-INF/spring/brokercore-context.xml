@@ -23,22 +23,22 @@
 		<property name="confManWrapper" ref="confManWrap"></property>
 		<property name="agentWrapper" ref="agentWrapp"></property>
 		<property name="resultFilter" ref="ResultFilterInterface"></property>
-<!-- 		<property name="bigDataRepository" ref="BigDataRepositoryInterface"></property> -->
+		<!-- <property name="bigDataRepository" ref="BigDataRepositoryInterface"></property> -->
 		<property name="embeddedIoTAgent" ref="IoTAgentInterface"></property>
+		<property name="onTimeIntervalHandler" ref="OnTimeIntervalHandler"></property>
 
-		
-		<!-- for the list of query services--> 
+
+		<!-- for the list of query services -->
 		<property name="queryServiceList" ref="QueryServices"></property>
-		
+
 	</bean>
 
-	<!-- <bean id="requestThread" class="eu.neclab.iotplatform.iotbroker.core.RequestThread">
-		<property name="ngsi10Requester" ref="Ngsi10Requester"></property>
-		<property name="resultFilter" ref="ResultFilterInterface"></property>
-	</bean> -->
-	
+	<!-- <bean id="requestThread" class="eu.neclab.iotplatform.iotbroker.core.RequestThread"> 
+		<property name="ngsi10Requester" ref="Ngsi10Requester"></property> <property 
+		name="resultFilter" ref="ResultFilterInterface"></property> </bean> -->
+
 	<bean id="updateThread" class="eu.neclab.iotplatform.iotbroker.core.UpdateThread">
-		<property name="ngsi10Requester" ref="Ngsi10Requester"></property>		
+		<property name="ngsi10Requester" ref="Ngsi10Requester"></property>
 	</bean>
 
 	<bean id="subController"
@@ -71,7 +71,6 @@
 		<constructor-arg ref="subController" />
 		<property name="ngsi10Requestor" ref="Ngsi10Requester"></property>
 	</bean>
-
 
 </beans>
 

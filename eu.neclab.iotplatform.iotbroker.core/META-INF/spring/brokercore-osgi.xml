@@ -11,34 +11,39 @@
 
 	<osgi:service id="iotConsumerNgsi9core" ref="brokercore"
 		interface="eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface" />
-		
+
+	<osgi:service id="iotAgentWrapper" ref="agentWrapp"
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.IoTAgentWrapperInterface" />
+
 	<osgi:reference id="ResultFilterInterface"
-		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface" 
-		cardinality="0..1" 
-		timeout="0"
-		>		
-		</osgi:reference>
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface"
+		cardinality="0..1" timeout="0">
+	</osgi:reference>
 
-		<!-- cardinality="0..1" it is used for specify that the reference is optional -->
-<!-- 	<osgi:reference id="BigDataRepositoryInterface" -->
-<!-- 		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.BigDataRepository"  -->
-<!-- 		cardinality="0..1" -->
-<!-- 		timeout="0" -->
-<!-- 		></osgi:reference> -->
+	<!-- cardinality="0..1" it is used for specify that the reference is optional -->
+	<!-- <osgi:reference id="BigDataRepositoryInterface" -->
+	<!-- interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.BigDataRepository" -->
+	<!-- cardinality="0..1" -->
+	<!-- timeout="0" -->
+	<!-- ></osgi:reference> -->
 
-		<!-- cardinality="0..1" it is used for specify that the reference is optional  -->
+	<!-- cardinality="0..1" it is used for specify that the reference is optional -->
 	<osgi:reference id="IoTAgentInterface"
 		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.IoTAgentInterface"
-		cardinality="0..1"
-		timeout="0"
-		></osgi:reference>
+		cardinality="0..1" timeout="0"></osgi:reference>
+
+	<osgi:reference id="OnTimeIntervalHandler"
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.OnTimeIntervalHandlerInterface"
+		cardinality="0..1" timeout="0"></osgi:reference>
 
 
 	<osgi:reference id="Ngsi9Interface"
-		interface="eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface" bean-name="connector"></osgi:reference>
+		interface="eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface"
+		bean-name="connector"></osgi:reference>
 
 	<osgi:reference id="Ngsi10Requester"
-		interface="eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Requester" bean-name="connector"></osgi:reference>
+		interface="eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Requester"
+		bean-name="connector"></osgi:reference>
 
 
 	<osgi:reference id="AvailabilitySubStorage"
@@ -50,11 +55,10 @@
 	<osgi:reference id="SubscriptionStorage"
 		interface="eu.neclab.iotplatform.iotbroker.storage.SubscriptionStorageInterface"></osgi:reference>
 
-	<!-- For the list of query services--> 
+	<!-- For the list of query services -->
 	<osgi:list id="QueryServices"
 		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.QueryService"
-		cardinality = "0..N"
-		></osgi:list>
+		cardinality="0..N"></osgi:list>
 
 
 

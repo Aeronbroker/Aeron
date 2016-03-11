@@ -9,6 +9,18 @@ public class SubscriptionWithInfo extends SubscribeContextRequest {
 	public SubscriptionWithInfo() {
 		super();
 	}
+	
+	public SubscriptionWithInfo(String id, SubscribeContextRequest subscribeContextRequest) {
+		super();
+		this.id = id;
+		this.setAttributeList(subscribeContextRequest.getAttributeList());
+		this.setDuration(subscribeContextRequest.getDuration());
+		this.setEntityIdList(subscribeContextRequest.getEntityIdList());
+		this.setNotifyCondition(subscribeContextRequest.getNotifyCondition());
+		this.setReference(subscribeContextRequest.getReference());
+		this.setRestriction(subscribeContextRequest.getRestriction());
+		this.setThrottling(subscribeContextRequest.getThrottling());
+	}
 
 	public SubscriptionWithInfo(SubscribeContextRequest subscribeContextRequest) {
 		super();
