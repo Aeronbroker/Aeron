@@ -26,6 +26,7 @@
 		<!-- <property name="bigDataRepository" ref="BigDataRepositoryInterface"></property> -->
 		<property name="embeddedIoTAgent" ref="IoTAgentInterface"></property>
 		<property name="onTimeIntervalHandler" ref="OnTimeIntervalHandler"></property>
+		<property name="onChangeHandler" ref="OnChangeHandler"></property>
 
 
 		<!-- for the list of query services -->

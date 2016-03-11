@@ -76,6 +76,7 @@ import eu.neclab.iotplatform.iotbroker.commons.interfaces.BigDataRepository;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.IoTAgentInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.IoTAgentWrapperInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.NgsiHierarchyInterface;
+import eu.neclab.iotplatform.iotbroker.commons.interfaces.OnChangeHandlerInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.OnTimeIntervalHandlerInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.QueryService;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface;
@@ -231,6 +232,11 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	private BigDataRepository bigDataRepository;
 
 	/**
+	 * ONCHANGE notifyCondition handler
+	 */
+	private OnChangeHandlerInterface onChangeHandler;
+
+	/**
 	 * ONTIMEINTERVAL notifyCondition handler
 	 */
 	private OnTimeIntervalHandlerInterface onTimeIntervalHandler;
@@ -241,6 +247,14 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	 */
 	private NgsiHierarchyInterface ngsiHierarchyExtension;
 
+	public OnChangeHandlerInterface getOnChangeHandler() {
+		return onChangeHandler;
+	}
+
+	public void setOnChangeHandler(OnChangeHandlerInterface onChangeHandler) {
+		this.onChangeHandler = onChangeHandler;
+	}
+	
 	public OnTimeIntervalHandlerInterface getOnTimeIntervalHandler() {
 		return onTimeIntervalHandler;
 	}
@@ -1187,13 +1201,13 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	@Override
 	public SubscribeContextResponse subscribeContext(
 			final SubscribeContextRequest request) {
-		
+
 		SubscribeContextResponse response;
-		
+
 		if (logger.isDebugEnabled()) {
 			logger.debug("Receive Request: " + request);
 		}
-		
+
 		response = northBoundWrapper.receiveReqFrmNorth(request);
 
 		/*
@@ -1226,11 +1240,11 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 							.linkSubscriptions(subscriptionId, subscriptionId);
 
 					embeddedIoTAgent.subscribe(subscriptionId, request);
-					
+
 				} catch (org.springframework.osgi.service.ServiceUnavailableException e) {
-					
+
 					logger.warn("Not possible to store in the Big Data Repository: osgi service not registered");
-					
+
 				}
 
 			}
@@ -1740,11 +1754,46 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		NotifyContextResponse notifyContextResponse;
 
 		boolean underOnTimeIntervalCondition = false;
+		NotifyContextRequest notificationFilteredByNotifyConditions = null;
 		if (BundleUtils.isServiceRegistered(this, onTimeIntervalHandler)) {
 
 			try {
+				List<ContextElementResponse> filteredContextElementResponse = new ArrayList<ContextElementResponse>();
+				notificationFilteredByNotifyConditions = new NotifyContextRequest(
+						request.getSubscriptionId(),
+						request.getSubscriptionId(),
+						filteredContextElementResponse);
 
-				underOnTimeIntervalCondition = onTimeIntervalHandler.notifyContext(request);
+				SubscriptionWithInfo subscriptionWithInfo = new SubscriptionWithInfo(request
+						.getSubscriptionId(),
+						subscriptionStorage.getOutgoingSubscription(request
+								.getSubscriptionId()));
+
+				/*
+				 * Check the onChange notifyCondition
+				 */
+				for (ContextElementResponse contextElementResponse : request
+						.getContextElementResponseList()) {
+
+					ContextElement contextElementFiltered = onChangeHandler
+							.applyOnChangeNotifyCondition(
+									contextElementResponse.getContextElement(),
+									subscriptionWithInfo);
+
+					if (contextElementFiltered != null) {
+						filteredContextElementResponse
+								.add(new ContextElementResponse(
+										contextElementFiltered,
+										contextElementResponse.getStatusCode()));
+					}
+
+				}
+
+				/*
+				 * Check the onTimeInterval notifyCondition
+				 */
+				underOnTimeIntervalCondition = onTimeIntervalHandler
+						.notifyContext(notificationFilteredByNotifyConditions);
 
 			} catch (org.springframework.osgi.service.ServiceUnavailableException e) {
 				logger.warn("Not possible use the onTimeIntervalHandler: osgi service not registered");
@@ -1757,17 +1806,27 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		// .receiveFrmBigDataRepository(request);
 		//
 		// } else {
-		//notifyContextResponse = agentWrapper.receiveFrmAgents(request);
+		// notifyContextResponse = agentWrapper.receiveFrmAgents(request);
 		// }
 
-		if (underOnTimeIntervalCondition){
-			notifyContextResponse = new NotifyContextResponse(new StatusCode(200,
-					ReasonPhrase.OK_200.toString(), null));
+		if (underOnTimeIntervalCondition) {
+			notifyContextResponse = new NotifyContextResponse(new StatusCode(
+					200, ReasonPhrase.OK_200.toString(), null));
 		} else {
-			notifyContextResponse = agentWrapper.receiveFrmAgents(request);
+
+			if (notificationFilteredByNotifyConditions != null) {
+
+				notifyContextResponse = agentWrapper
+						.receiveFrmAgents(notificationFilteredByNotifyConditions);
+
+			} else {
+
+				notifyContextResponse = agentWrapper.receiveFrmAgents(request);
+
+			}
 
 		}
-		
+
 		logger.info("NotifyContextResponse : " + notifyContextResponse);
 
 		if (notifyContextResponse == null
@@ -1883,7 +1942,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	@Override
 	public UpdateContextSubscriptionResponse updateContextSubscription(
 			UpdateContextSubscriptionRequest request) {
-		
+
 		UpdateContextSubscriptionResponse response = northBoundWrapper
 				.receiveFrmNorth(request);
 
