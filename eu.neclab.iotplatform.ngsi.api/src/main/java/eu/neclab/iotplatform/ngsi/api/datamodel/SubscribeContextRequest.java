@@ -41,8 +41,6 @@
  ******************************************************************************/
 package eu.neclab.iotplatform.ngsi.api.datamodel;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,8 +49,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
