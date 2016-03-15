@@ -52,6 +52,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
+import javax.naming.NoInitialContextException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -78,6 +79,7 @@ import eu.neclab.iotplatform.iotbroker.commons.interfaces.IoTAgentWrapperInterfa
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.NgsiHierarchyInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.OnChangeHandlerInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.OnTimeIntervalHandlerInterface;
+import eu.neclab.iotplatform.iotbroker.commons.interfaces.OnValueHandlerInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.QueryService;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface;
 import eu.neclab.iotplatform.iotbroker.core.subscription.AgentWrapper;
@@ -232,6 +234,11 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	private BigDataRepository bigDataRepository;
 
 	/**
+	 * ONVALUE notifyCondition handler
+	 */
+	private OnValueHandlerInterface onValueHandler;
+
+	/**
 	 * ONCHANGE notifyCondition handler
 	 */
 	private OnChangeHandlerInterface onChangeHandler;
@@ -247,6 +254,14 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	 */
 	private NgsiHierarchyInterface ngsiHierarchyExtension;
 
+	public OnValueHandlerInterface getOnValueHandler() {
+		return onValueHandler;
+	}
+
+	public void setOnValueHandler(OnValueHandlerInterface onValueHandler) {
+		this.onValueHandler = onValueHandler;
+	}
+
 	public OnChangeHandlerInterface getOnChangeHandler() {
 		return onChangeHandler;
 	}
@@ -254,7 +269,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	public void setOnChangeHandler(OnChangeHandlerInterface onChangeHandler) {
 		this.onChangeHandler = onChangeHandler;
 	}
-	
+
 	public OnTimeIntervalHandlerInterface getOnTimeIntervalHandler() {
 		return onTimeIntervalHandler;
 	}
@@ -1751,29 +1766,207 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		// }.start();
 		// }
 
-		NotifyContextResponse notifyContextResponse;
+		NotifyContextResponse notifyContextResponse = null;
 
-		boolean underOnTimeIntervalCondition = false;
+		// boolean underOnTimeIntervalCondition = false;
+		// NotifyContextRequest notificationFilteredByNotifyConditions = null;
+		// if (BundleUtils.isServiceRegistered(this, onTimeIntervalHandler)) {
+		//
+		// try {
+		// List<ContextElementResponse> filteredContextElementResponse = new
+		// ArrayList<ContextElementResponse>();
+		// notificationFilteredByNotifyConditions = new NotifyContextRequest(
+		// request.getSubscriptionId(),
+		// request.getSubscriptionId(),
+		// filteredContextElementResponse);
+		//
+		// SubscriptionWithInfo subscriptionWithInfo = new SubscriptionWithInfo(
+		// request.getSubscriptionId(),
+		// subscriptionStorage.getOutgoingSubscription(request
+		// .getSubscriptionId()));
+		//
+		// /*
+		// * Check the onChange notifyCondition
+		// */
+		// for (ContextElementResponse contextElementResponse : request
+		// .getContextElementResponseList()) {
+		//
+		// ContextElement contextElementFiltered = onChangeHandler
+		// .applyOnChangeNotifyCondition(
+		// contextElementResponse.getContextElement(),
+		// subscriptionWithInfo);
+		//
+		// if (contextElementFiltered != null) {
+		// filteredContextElementResponse
+		// .add(new ContextElementResponse(
+		// contextElementFiltered,
+		// contextElementResponse.getStatusCode()));
+		// }
+		//
+		// }
+		//
+		// /*
+		// * Check the onTimeInterval notifyCondition
+		// */
+		// underOnTimeIntervalCondition = onTimeIntervalHandler
+		// .notifyContext(notificationFilteredByNotifyConditions);
+		//
+		// } catch (org.springframework.osgi.service.ServiceUnavailableException
+		// e) {
+		// logger.warn("Not possible use the onTimeIntervalHandler: osgi service not registered");
+		// }
+		//
+		// }
+		//
+		// // if (this.toString().equals(request.getOriginator())) {
+		// // notifyContextResponse = agentWrapper
+		// // .receiveFrmBigDataRepository(request);
+		// //
+		// // } else {
+		// // notifyContextResponse = agentWrapper.receiveFrmAgents(request);
+		// // }
+		//
+		// if (underOnTimeIntervalCondition) {
+		// notifyContextResponse = new NotifyContextResponse(new StatusCode(
+		// 200, ReasonPhrase.OK_200.toString(), null));
+		// } else {
+		//
+		// if (notificationFilteredByNotifyConditions != null) {
+		//
+		// notifyContextResponse = agentWrapper
+		// .receiveFrmAgents(notificationFilteredByNotifyConditions);
+		//
+		// } else {
+		//
+		// notifyContextResponse = agentWrapper.receiveFrmAgents(request);
+		//
+		// }
+		//
+		// }
+
+		/*
+		 * Apply NotifyConditions
+		 */
+		NotifyContextRequest notificationFilteredByNotifyConditions = applyNotifyConditions(request);
+
+		if (notificationFilteredByNotifyConditions != null) {
+			notifyContextResponse = agentWrapper
+					.receiveFrmAgents(notificationFilteredByNotifyConditions);
+			
+			notifyContextResponse = new NotifyContextResponse(new StatusCode(
+					200, ReasonPhrase.OK_200.toString(), null));
+			
+		}
+
+		if (notifyContextResponse == null
+				|| notifyContextResponse.getResponseCode() != null
+				&& notifyContextResponse.getResponseCode().getCode() != Code.OK_200
+						.getCode()) {
+			return new NotifyContextResponse(new StatusCode(
+					Code.INTERNALERROR_500.getCode(),
+					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(), null));
+		} else {
+			return notifyContextResponse;
+		}
+
+	}
+
+	private NotifyContextRequest applyNotifyConditions(
+			NotifyContextRequest request) {
+
 		NotifyContextRequest notificationFilteredByNotifyConditions = null;
-		if (BundleUtils.isServiceRegistered(this, onTimeIntervalHandler)) {
+
+		List<ContextElementResponse> filteredContextElementResponse;
+
+		if (!BundleUtils.isServiceRegistered(this, onValueHandler)
+				&& !BundleUtils.isServiceRegistered(this, onChangeHandler)
+				&& !BundleUtils.isServiceRegistered(this, onTimeIntervalHandler)) {
+
+			return request;
+
+		}
+
+		SubscriptionWithInfo subscriptionWithInfo = new SubscriptionWithInfo(
+				request.getSubscriptionId(),
+				subscriptionStorage.getOutgoingSubscription(request
+						.getSubscriptionId()));
+
+		/*
+		 * OnValue notifyCondition
+		 */
+		filteredContextElementResponse = applyOnValueNotifyCondition(
+				request.getContextElementResponseList(),
+				subscriptionWithInfo);
+
+		/*
+		 * OnChange notifyCondition
+		 */
+		filteredContextElementResponse = applyOnChangeNotifyCondition(
+				filteredContextElementResponse,
+				subscriptionWithInfo);
+
+
+		// Create the new notification
+		notificationFilteredByNotifyConditions = new NotifyContextRequest(
+				request.getSubscriptionId(), request.getSubscriptionId(),
+				filteredContextElementResponse);
+		
+		/*
+		 * OnTimeInterval notifyCondition
+		 */
+		if (putOnTimeIntervalConditionControl(notificationFilteredByNotifyConditions)) {
+			return null;
+		} else {
+			return notificationFilteredByNotifyConditions;
+		}
+
+	}
+
+	private List<ContextElementResponse> applyOnValueNotifyCondition(
+			List<ContextElementResponse> contexElementResponseListToFilter,
+			SubscribeContextRequest subscription) {
+
+		List<ContextElementResponse> filteredContextElementResponse = new ArrayList<ContextElementResponse>();
+
+		if (BundleUtils.isServiceRegistered(this, onValueHandler)) {
 
 			try {
-				List<ContextElementResponse> filteredContextElementResponse = new ArrayList<ContextElementResponse>();
-				notificationFilteredByNotifyConditions = new NotifyContextRequest(
-						request.getSubscriptionId(),
-						request.getSubscriptionId(),
-						filteredContextElementResponse);
 
-				SubscriptionWithInfo subscriptionWithInfo = new SubscriptionWithInfo(request
-						.getSubscriptionId(),
-						subscriptionStorage.getOutgoingSubscription(request
-								.getSubscriptionId()));
+				filteredContextElementResponse = onValueHandler.applyOnValue(
+						contexElementResponseListToFilter, subscription);
+
+			} catch (org.springframework.osgi.service.ServiceUnavailableException e) {
+
+				logger.warn("Not possible use the onValueHandler: osgi service not registered");
+				filteredContextElementResponse
+						.addAll(contexElementResponseListToFilter);
+
+			}
+		} else {
+
+			filteredContextElementResponse
+					.addAll(contexElementResponseListToFilter);
+
+		}
+
+		return filteredContextElementResponse;
+
+	}
+
+	private List<ContextElementResponse> applyOnChangeNotifyCondition(
+			List<ContextElementResponse> contexElementResponseListToFilter,
+			SubscriptionWithInfo subscriptionWithInfo) {
+
+		List<ContextElementResponse> filteredContextElementResponse = new ArrayList<ContextElementResponse>();
+
+		if (BundleUtils.isServiceRegistered(this, onChangeHandler)) {
+
+			try {
 
 				/*
 				 * Check the onChange notifyCondition
 				 */
-				for (ContextElementResponse contextElementResponse : request
-						.getContextElementResponseList()) {
+				for (ContextElementResponse contextElementResponse : contexElementResponseListToFilter) {
 
 					ContextElement contextElementFiltered = onChangeHandler
 							.applyOnChangeNotifyCondition(
@@ -1788,57 +1981,50 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 					}
 
 				}
+			} catch (org.springframework.osgi.service.ServiceUnavailableException e) {
+
+				logger.warn("Not possible use the onChangeHandler: osgi service not registered");
+				filteredContextElementResponse
+						.addAll(contexElementResponseListToFilter);
+
+			}
+		} else {
+
+			filteredContextElementResponse
+					.addAll(contexElementResponseListToFilter);
+
+		}
+
+		return filteredContextElementResponse;
+
+	}
+
+	/**
+	 * 
+	 * @param notification
+	 * @return true if it is under onTimeInterval notifyCondition control
+	 */
+	private boolean putOnTimeIntervalConditionControl(
+			NotifyContextRequest notification) {
+
+		boolean underOnTimeIntervalCondition = false;
+
+		if (BundleUtils.isServiceRegistered(this, onTimeIntervalHandler)) {
+
+			try {
 
 				/*
 				 * Check the onTimeInterval notifyCondition
 				 */
 				underOnTimeIntervalCondition = onTimeIntervalHandler
-						.notifyContext(notificationFilteredByNotifyConditions);
+						.notifyContext(notification);
 
 			} catch (org.springframework.osgi.service.ServiceUnavailableException e) {
 				logger.warn("Not possible use the onTimeIntervalHandler: osgi service not registered");
 			}
-
 		}
 
-		// if (this.toString().equals(request.getOriginator())) {
-		// notifyContextResponse = agentWrapper
-		// .receiveFrmBigDataRepository(request);
-		//
-		// } else {
-		// notifyContextResponse = agentWrapper.receiveFrmAgents(request);
-		// }
-
-		if (underOnTimeIntervalCondition) {
-			notifyContextResponse = new NotifyContextResponse(new StatusCode(
-					200, ReasonPhrase.OK_200.toString(), null));
-		} else {
-
-			if (notificationFilteredByNotifyConditions != null) {
-
-				notifyContextResponse = agentWrapper
-						.receiveFrmAgents(notificationFilteredByNotifyConditions);
-
-			} else {
-
-				notifyContextResponse = agentWrapper.receiveFrmAgents(request);
-
-			}
-
-		}
-
-		logger.info("NotifyContextResponse : " + notifyContextResponse);
-
-		if (notifyContextResponse == null
-				|| notifyContextResponse.getResponseCode() != null
-				&& notifyContextResponse.getResponseCode().getCode() != Code.OK_200
-						.getCode()) {
-			return new NotifyContextResponse(new StatusCode(
-					Code.INTERNALERROR_500.getCode(),
-					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(), null));
-		} else {
-			return notifyContextResponse;
-		}
+		return underOnTimeIntervalCondition;
 
 	}
 
