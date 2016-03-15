@@ -42,8 +42,10 @@
 package eu.neclab.iotplatform.iotbroker.restcontroller;
 
 import java.io.BufferedReader;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,6 +67,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import eu.neclab.iotplatform.iotbroker.commons.GenerateMetadata;
+import eu.neclab.iotplatform.iotbroker.commons.HttpRequester;
 import eu.neclab.iotplatform.iotbroker.commons.JsonValidator;
 import eu.neclab.iotplatform.iotbroker.commons.XmlValidator;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.LeafengineInterface;
@@ -78,8 +81,6 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Converter;
-import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
-import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityResponse;
@@ -126,6 +127,10 @@ public class RestProviderController {
 
 	/** String representing xml content type. */
 	private final String CONTENT_TYPE_XML = "application/xml";
+	
+	/** The ngsi9url address of NGSI 9 component */
+	@Value("${ngsi9Uri}")
+	private String ngsi9url;
 
 	/** The component for receiving Leafengine requests. */
 	@Autowired
@@ -301,8 +306,6 @@ public class RestProviderController {
 
 	}
 
-
-	
 	/**
 	 * Executes a syntax check of incoming messages. Currently supported formats
 	 * are XML and JSON.
@@ -1447,30 +1450,141 @@ public class RestProviderController {
 				HttpStatus.OK);
 
 	}
+
+
+	@RequestMapping(value = "/ngsi9/discoverContextAvailability", method = RequestMethod.POST, consumes = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
+	public ResponseEntity<String> forwardDiscoverContextAvailability(HttpServletRequest requester,
+			@RequestBody String request) {
+
+		// logger.info("Forwarding a DiscoverContextAvailabilityRequest to the IoT Discovery"
+		// + request);
+		logger.info("Forwarding a DiscoverContextAvailabilityRequest to the IoT Discovery");
+
+		// model.addAttribute("attribute", "forwardWithForwardPrefix");
+		// return new
+		// ModelAndView("forward://localhost:8061/ngsi9/discoverContextAvailability",
+		// model);
+
+		// return new
+		// ResponseEntity<DiscoverContextAvailabilityResponse>("redirect:http://localhost:8061/ngsi9/discoverContextAvailability",
+		// HttpStatus.OK);
+
+		String response = "";
+		
+		try {
+			response = HttpRequester.sendGenericRequestwithResponse(
+					new URL(ngsi9url+"/ngsi9/discoverContextAvailability"),
+					"POST", request, requester.getHeader("Content-Type"));
+			response = response.split("\\|")[1];
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return new ResponseEntity<String>(response,
+				HttpStatus.OK);
+
+	}
 	
-//	/**
-//	 * Executes the convenience method for processing an NGSI9 notification.
-//	 * 
-//	 * @param request
-//	 *            The notification request body.
-//	 * 
-//	 * @return The response body.
-//	 */
-//	@RequestMapping(value = "/ngsi9/discoverContextAvailability", method = RequestMethod.POST, consumes = {
-//			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
-//			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-//	public ResponseEntity<DiscoverContextAvailabilityResponse> discoverContextAvailability(
-//			HttpServletRequest requester,
-//			@RequestBody DiscoverContextAvailabilityRequest request) {
-//
-//		logger.info("Forwarding a DiscoverContextAvailabilityRequest to the IoT Discovery"
-//				+ request);
-//		
-//		
-//
-//	
-//
-//	}
+
+	@RequestMapping(value = "/ngsi9/registerContext", method = RequestMethod.POST, headers = "Accept=*/*")
+	public ResponseEntity<String> forwardRegisterContext(
+			HttpServletRequest requester,
+			@RequestBody String request) {
+
+		logger.info("Forwarding a RegisterRequest to the IoT Discovery");
+
+		String response = "";
+		
+		try {
+			response = HttpRequester.sendGenericRequestwithResponse(
+					new URL(ngsi9url+"/ngsi9/registerContext"),
+					"POST", request, requester.getHeader("Content-Type"));
+			response = response.split("\\|")[1];
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return new ResponseEntity<String>(response,
+				HttpStatus.OK);
+
+	}
+	
+	@RequestMapping(value = "/ngsi9/subscribeContextAvailability", method = RequestMethod.POST, headers = "Accept=*/*")
+	public ResponseEntity<String> forwardSubscribeContextAvailability(
+			HttpServletRequest requester,
+			@RequestBody String request) {
+
+		logger.info("Forwarding a SubscribeContextAvailability to the IoT Discovery");
+
+		String response = "";
+		
+		try {
+			response = HttpRequester.sendGenericRequestwithResponse(
+					new URL(ngsi9url+"/ngsi9/subscribeContextAvailability"),
+					"POST", request, requester.getHeader("Content-Type"));
+			response = response.split("\\|")[1];
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return new ResponseEntity<String>(response,
+				HttpStatus.OK);
+
+	}
+	
+	@RequestMapping(value = "/ngsi9/updateContextAvailabilitySubscription", method = RequestMethod.POST, headers = "Accept=*/*")
+	public @ResponseBody
+	ResponseEntity<String> forwardUpdateContextAvailabilitySubscription(HttpServletRequest requester,
+			@RequestBody String request) {
+
+		logger.info("Forwarding a UpdateContextAvailabilitySubscription to the IoT Discovery");
+
+		String response = "";
+		
+		try {
+			response = HttpRequester.sendGenericRequestwithResponse(
+					new URL(ngsi9url+"/ngsi9/updateContextAvailabilitySubscription"),
+					"POST", request, requester.getHeader("Content-Type"));
+			response = response.split("\\|")[1];
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return new ResponseEntity<String>(response,
+				HttpStatus.OK);
+
+	}
+	
+	@RequestMapping(value = "/ngsi9/unsubscribeContextAvailability", method = RequestMethod.POST, headers = "Accept=*/*")
+	public @ResponseBody
+	ResponseEntity<String> forwardUnsubscribeContextAvailability(HttpServletRequest requester,
+			@RequestBody String request) {
+		
+		logger.info("Forwarding a UnsubscribeContextAvailability to the IoT Discovery");
+
+		String response = "";
+		
+		try {
+			response = HttpRequester.sendGenericRequestwithResponse(
+					new URL(ngsi9url+"/ngsi9/unsubscribeContextAvailability"),
+					"POST", request, requester.getHeader("Content-Type"));
+			response = response.split("\\|")[1];
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return new ResponseEntity<String>(response,
+				HttpStatus.OK);
+
+	}
+	
 
 	/**
 	 * Executes the convenience method for processing a notification.
