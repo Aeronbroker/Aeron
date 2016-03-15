@@ -42,7 +42,6 @@
 package eu.neclab.iotplatform.iotbroker.restcontroller;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -79,6 +78,8 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Converter;
+import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
+import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityResponse;
@@ -300,6 +301,8 @@ public class RestProviderController {
 
 	}
 
+
+	
 	/**
 	 * Executes a syntax check of incoming messages. Currently supported formats
 	 * are XML and JSON.
@@ -1444,6 +1447,30 @@ public class RestProviderController {
 				HttpStatus.OK);
 
 	}
+	
+//	/**
+//	 * Executes the convenience method for processing an NGSI9 notification.
+//	 * 
+//	 * @param request
+//	 *            The notification request body.
+//	 * 
+//	 * @return The response body.
+//	 */
+//	@RequestMapping(value = "/ngsi9/discoverContextAvailability", method = RequestMethod.POST, consumes = {
+//			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
+//			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
+//	public ResponseEntity<DiscoverContextAvailabilityResponse> discoverContextAvailability(
+//			HttpServletRequest requester,
+//			@RequestBody DiscoverContextAvailabilityRequest request) {
+//
+//		logger.info("Forwarding a DiscoverContextAvailabilityRequest to the IoT Discovery"
+//				+ request);
+//		
+//		
+//
+//	
+//
+//	}
 
 	/**
 	 * Executes the convenience method for processing a notification.

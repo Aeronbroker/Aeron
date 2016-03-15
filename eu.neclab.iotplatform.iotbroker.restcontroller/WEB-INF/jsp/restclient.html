@@ -1,0 +1,425 @@
+<!doctype html>
+
+
+<html class="no-js" lang="en">
+<!--<![endif]-->
+<!-- the "no-js" class is for Modernizr. -->
+
+<head>
+<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+<title>IoT Broker GE</title>
+<script type="text/javascript" src="resources/js/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="resources/js/menu.js"></script>
+<script type="text/javascript" src="resources/js/slideshow.js"></script>
+<script type="text/javascript" src="resources/js/cufon-yui.js"></script>
+<script type="text/javascript" src="resources/js/Arial.font.js"></script>
+<script type="text/javascript" src="resources/js/jquery.formautofill.js"></script>
+<script type="text/javascript" src="resources/js/jquery.steps.min.js"></script>
+<script type="text/javascript"
+	src="resources/js/vkbeautify.0.99.00.beta.js"></script>
+<link rel="stylesheet" href="resources/css/main.css" type="text/css" />
+<link rel="stylesheet" href="resources/css/bootstrap.min.css"
+	type="text/css" />
+<link href="resources/css/jquery.steps.css" rel="stylesheet"
+	type="text/css">
+<script>
+$(document).ready(function() {
+		$("#wizard").steps({
+			headerTag : "h2",
+			bodyTag : "section",
+			transitionEffect : "slideLeft"
+		});
+	});
+</script>
+<script type="text/javascript">
+	$(document).ready(
+			function sendHttpReq() {
+
+				$("#send_req").click(
+						function() {
+
+							var httpurl = $("#http_url").val();
+							var type = $('input[name=content]:checked').val();
+
+							var method = $('input[name=Method]:checked').val();
+							var body = $("#mess_body").val();
+
+							var datatype;
+
+							if (type == "application/xml") {
+								datatype = "xml";
+							} else {
+								datatype = "json";
+							}
+
+							$.ajax({
+								url : httpurl,//'http://localhost:8090/ngsi10/contextEntities/test',
+								// dataType: "jsonp",
+								//data: '{"data": "TEST"}',
+								//datatype : 'xml',
+								//contentType: 'application/json',
+								//dataType : 'json',
+								contentType : type + '; charset=utf-8',
+								dataType : datatype,
+								type : method,
+								data : body,
+								//jsonpCallback: 'callback', // this is not relevant to the POST anymore
+								success : function(data) {
+									if (type == "application/xml") {
+										console.log(data);
+										var xmlString = (new XMLSerializer())
+												.serializeToString(data);
+										var xml_pp = vkbeautify.xml(xmlString);
+										$("#result").text(xml_pp, 4);
+										console.log(xmlString);
+									} else {
+										console.log(data);
+										//var  xmlString = $.parseXML(data);
+										//var xmlString = (new XMLSerializer()).serializeToString(data);
+										//var xml_pp = vkbeautify.xml(xmlString);
+										var json_string = JSON.stringify(data);
+										var xml_pp = vkbeautify
+												.json(json_string);
+										$("#result").text(xml_pp, 4);
+										//document.getElementById("result").innerHTML = xmlString;
+
+										//  var ret = jQuery.parseJSON(data);
+										//  $('#lblResponse').html(ret.msg);
+										//   console.log('Success: ')
+									}
+								},
+								error : function(data) {
+
+									if (type == "application/xml") {
+										console.log(data);
+										var xmlString = (new XMLSerializer())
+												.serializeToString(data);
+										var xml_pp = vkbeautify.xml(xmlString);
+										$("#result").text(xml_pp, 4);
+										console.log(xmlString);
+									} else {
+										console.log(data);
+										//var  xmlString = $.parseXML(data);
+										//var xmlString = (new XMLSerializer()).serializeToString(data);
+										//var xml_pp = vkbeautify.xml(xmlString);
+										var json_string = JSON.stringify(data);
+										var xml_pp = vkbeautify
+												.json(json_string);
+										$("#result").text(xml_pp, 4);
+										//document.getElementById("result").innerHTML = xmlString;
+
+										//  var ret = jQuery.parseJSON(data);
+										//  $('#lblResponse').html(ret.msg);
+										//   console.log('Success: ')
+									}
+								},
+							});
+						});
+
+			});
+</script>
+
+
+
+<script type="text/javascript">
+	$(document)
+			.ready(
+					function() {
+
+						$('#f_try .clickaction')
+								.bind(
+										'click',
+										function() {
+											
+											var ipIoTbroker = "130.206.82.65";
+											var entityId = $("#entityId").val();
+											var entityType = $("#enititytype")
+													.val();
+											var att1 = $("#atrribute1").val();
+											var att2 = $("#atrribute2").val();
+											var att3 = $("#atrribute3").val();
+											var attribute = null;
+
+											if (att1.length != 0) {
+												attribute = att1;
+											}
+											if (att2.length != 0) {
+												if (attribute == null) {
+													attribute = att2;
+												} else {
+													attribute = attribute + ","
+															+ att2;
+												}
+											}
+											if (att3.length != 0) {
+												if (attribute == null) {
+													attribute = att3;
+												} else {
+													attribute = attribute + ","
+															+ att3;
+												}
+											}
+
+											if (attribute != null) {
+
+												var body = "{\"entities\": [{ \"type\": \""
+														+ $("#entityType")
+																.val()
+														+ "\", \"isPattern\": \"false\",\"id\": \""
+														+ $("#entityId").val()
+														+ "\"}],\"attributes\":[\""
+														+ attribute + "\"]}";
+											} else {
+												var body = "{\"entities\": [{ \"type\": \""
+														+ $("#entityType")
+																.val()
+														+ "\", \"isPattern\": \"false\",\"id\": \""
+														+ $("#entityId").val()
+														+ "\"}]}";
+
+											}
+
+											console.log(body);
+
+											$('#f_try')
+													.autofill(
+															{
+																"url" : "http://"+ipIoTbroker+"/ngsi10/queryContext",
+																"Method" : "POST",
+																"content" : "application/json",
+																"body" : vkbeautify
+																		.json(body)
+															});
+										});
+
+					});
+</script>
+</head>
+<body>
+	<div id="bg">
+		<div class="wrap">
+
+			<!-- logo -->
+			<h1>
+				<a href="index.html">NEC IoT Broker GE</a>
+			</h1>
+			<!-- /logo -->
+
+			<!-- menu -->
+			<div id="mainmenu">
+				<ul id="menu">
+					<li><a class="home" href="index.html">Home</a></li>
+
+					<li><a class="httpclient" href="restclient.html">Http
+							Client</a></li>
+
+
+				</ul>
+			</div>
+			<!-- /menu -->
+
+			<!-- pitch -->
+			<div id="pitch">
+				<div id="slideshow">
+
+					<!-- 1st frame -->
+					<div class="active">
+						<img src="resources/images/pitch1.jpg" alt="" />
+						<div class="overlay transparent">
+							<h2>Collecting Data From Sensors</h2>
+							<p>Serving as a management repository that maintains the
+								availability information about a huge number of real-world
+								Things and Devices.</p>
+						</div>
+						<p class="arrow">
+							<a href="#"></a>
+						</p>
+					</div>
+					<!-- /1st frame -->
+
+					<!-- 2nd frame -->
+					<div>
+						<img src="resources/images/pitch2.jpg" alt="" />
+						<div class="overlay transparent">
+							<h2>Scalable and Distributed System</h2>
+							<p>Collecting and aggregating information about thousands of
+								real-world objects on behalf of the user.</p>
+						</div>
+						<p class="arrow">
+							<a href="#"></a>
+						</p>
+					</div>
+					<!-- /2nd frame -->
+
+					<!-- 3rd frame -->
+					<div>
+						<img src="resources/images/pitch3.jpg" alt="" />
+						<div class="overlay transparent">
+							<h2>NGSI 10 REST Interface for easy access to the Sensors
+								Information</h2>
+							<p>Offering a single point of contact to the user, hiding the
+								complexity of the multi-provider nature of the Internet of
+								Things</p>
+						</div>
+						<p class="arrow">
+							<a href="#"></a>
+						</p>
+					</div>
+					<!-- 3rd frame -->
+
+				</div>
+			</div>
+			<!-- /pitch -->
+
+
+
+		</div>
+
+		<!-- main -->
+		<div id="main2">
+
+
+
+			<div class="left">
+				<h1>Http Client</h1>
+
+
+				<div id="wizard">
+					<h2>First Step</h2>
+
+					<section>
+
+						<fieldset>
+							<legend>Entity Id</legend>
+							<input id="entityId" type="text" class="required" />
+						</fieldset>
+						<fieldset>
+							<legend>Enitity Type</legend>
+							<input id="enititytype" type="text" class="required" />
+						</fieldset>
+						<fieldset>
+							<legend>Attribute 1</legend>
+							<input id="atrribute1" type="text" />
+						</fieldset>
+						<fieldset>
+							<legend>Attribute 2</legend>
+							<input id="atrribute2" type="text" />
+						</fieldset>
+						<fieldset>
+							<legend>Attribute 3</legend>
+							<input id="atrribute3" type="text" />
+						</fieldset>
+
+
+
+					</section>
+
+					<h2>Second Step</h2>
+					<section>
+
+						<div id="client">
+							<!-- <h2 class="inner">Http client</h2> -->
+
+							<form class="keepFormData" id="f_try"
+								data-keep-form-data-clear-on-submit="yes">
+								<fieldset>
+									<legend>HTTP URL</legend>
+									<input id="http_url" type="text" name="url">
+								</fieldset>
+
+								<fieldset>
+									<legend>Content-type</legend>
+									<p>
+										<label> <input type="radio" name="content"
+											id="content_type_xml" value="application/xml">
+											application/xml
+										</label>
+									</p>
+									<p>
+										<label> <input type="radio" name="content"
+											id="content_type_json" value="application/json">
+											application/json
+										</label>
+									</p>
+								</fieldset>
+
+								<fieldset>
+									<legend>HTTP Method</legend>
+									<p>
+										<label> <input type="radio" name="Method" value="GET"
+											id="method_get"> GET
+										</label>
+									</p>
+									<p>
+										<label> <input type="radio" name="Method" value="POST"
+											id="method_post"> POST
+										</label>
+									</p>
+
+								</fieldset>
+
+								<fieldset>
+									<legend>Message Body</legend>
+									<textarea name="body" id="mess_body"></textarea>
+								</fieldset>
+
+
+								<input type="button" class="btn btn-info clickaction"
+									value="Autofill with dummy data">
+
+							</form>
+							<input type="submit" class="btn btn-info clickaction"
+								value="Send http request" id="send_req" />
+
+							<div class="clear"></div>
+
+						</div>
+					</section>
+
+				</div>
+
+
+			</div>
+
+			<div class="right">
+				<div id="result"></div>
+			</div>
+
+
+		</div>
+		<!-- /main -->
+
+
+
+
+		<!-- footer -->
+		<div id="footer">
+			<div id="footerbg">
+				<div class="wrap">
+
+					<!-- footer links -->
+					<p id="footer_menu">
+						<a href="http://uk.nec.com/en_GB/emea/about/neclab_eu/">NEC
+							Europe Ltd.</a>
+						<!--<a href="#">Press Releases</a>-->
+						<a href="#">Terms and Conditions</a>
+
+						<!-- credit link -->
+						<a href="http://www.solucija.com" title="Free CSS Templates">Template
+							by Solucija</a>
+					</p>
+					<!-- /footer links -->
+
+					<p id="copy">
+						Copyright <span> NEC Europe Ltd 2013. All Rights Reserved</span>
+					</p>
+
+					<div class="clear"></div>
+				</div>
+			</div>
+		</div>
+		<!-- /footer -->
+
+	</div>
+</body>
+</html>

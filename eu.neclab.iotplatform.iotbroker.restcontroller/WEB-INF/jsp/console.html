@@ -1,0 +1,24 @@
+<html>
+<script type="text/javascript" src="resources/js/jquery-1.4.1.min.js"></script>
+
+<head>
+<title>Reading from text files</title>
+
+<script type="text/javascript">
+$.get('resources/test.txt', function(data) {
+    //var fileDom = $(data);
+
+    var lines = data.split("\n");
+
+    $.each(lines, function(n, elem) {
+        $('#myContainer').append('<div>' + elem + '</div>');
+    });
+});
+</script>
+</head>
+<body>
+
+	<div id="myContainer"></div>
+
+</body>
+</html>

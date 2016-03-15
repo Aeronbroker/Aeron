@@ -54,8 +54,6 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
-import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyCondition;
-import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyConditionEnum;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Restriction;
@@ -427,29 +425,29 @@ public class ResultFilter implements ResultFilterInterface {
 							filteredContextElementResponseList);
 
 		}
-
-		// And now we apply the ONVALUE notifyCondition if present
-		List<NotifyCondition> notifyConditionsRequested = subscribeContextRequestFilter
-				.getNotifyCondition();
-		if (notifyConditionsRequested != null) {
-
-			for (NotifyCondition notifyCondition : notifyConditionsRequested) {
-
-				if (notifyCondition.getType() == NotifyConditionEnum.ONVALUE) {
-
-					filteredContextElementResponseList = eu.neclab.iotplatform.iotbroker.commons.Restriction
-							.applyOnValueRestriction(
-									filteredContextElementResponseList,
-									notifyCondition.getRestriction()
-											.getAttributeExpression());
-
-					break;
-
-				}
-
-			}
-
-		}
+//
+//		// And now we apply the ONVALUE notifyCondition if present
+//		List<NotifyCondition> notifyConditionsRequested = subscribeContextRequestFilter
+//				.getNotifyCondition();
+//		if (notifyConditionsRequested != null) {
+//
+//			for (NotifyCondition notifyCondition : notifyConditionsRequested) {
+//
+//				if (notifyCondition.getType() == NotifyConditionEnum.ONVALUE) {
+//
+//					filteredContextElementResponseList = eu.neclab.iotplatform.iotbroker.commons.Restriction
+//							.applyOnValueRestriction(
+//									filteredContextElementResponseList,
+//									notifyCondition.getRestriction()
+//											.getAttributeExpression());
+//
+//					break;
+//
+//				}
+//
+//			}
+//
+//		}
 		
 		return filteredContextElementResponseList;
 

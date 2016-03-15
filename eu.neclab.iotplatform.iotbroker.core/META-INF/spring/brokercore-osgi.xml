@@ -40,6 +40,10 @@
 		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.OnChangeHandlerInterface"
 		cardinality="0..1" timeout="0"></osgi:reference>
 
+	<osgi:reference id="OnValueHandler"
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.OnValueHandlerInterface"
+		cardinality="0..1" timeout="0"></osgi:reference>
+
 
 	<osgi:reference id="Ngsi9Interface"
 		interface="eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface"
