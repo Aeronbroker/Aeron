@@ -1,5 +1,10 @@
 This project is part of [FIWARE](https://www.fiware.org/).
 
+[![License badge](https://img.shields.io/badge/licence-NEC-blue.svg)](https://github.com/Aeronbroker/Aeron/blob/master/LICENSE.md)
+[![Documentation badge](https://readthedocs.org/projects/fiware-orion/badge/?version=latest)](http://fiware-iot-broker.readthedocs.org/en/latest/)
+[![Docker badge](https://img.shields.io/docker/pulls/fiware/orion.svg)](https://hub.docker.com/r/fiware/iotbroker/)
+[![Support badge]( https://img.shields.io/badge/support-sof-yellowgreen.svg)](https://github.com/Aeronbroker/Aeron/issues)
+
 IoT Broker
 ===========
 
