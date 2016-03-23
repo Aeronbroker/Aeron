@@ -1478,6 +1478,7 @@ public class RestProviderController {
 			response = HttpRequester.sendGenericRequestwithResponse(new URL(
 					ngsi9url + "/ngsi9/discoverContextAvailability"), "POST",
 					request, requester.getHeader("Content-Type"));
+			response = response.split("\\|")[1];
 
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
