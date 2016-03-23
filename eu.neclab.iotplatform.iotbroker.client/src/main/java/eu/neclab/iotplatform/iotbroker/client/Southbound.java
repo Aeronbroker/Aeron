@@ -103,11 +103,11 @@ import eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface;
  * that it can initiate communication with an NGSI-9 server. However, unlike for
  * NGSI-10 communication, the address of the NGSI-9 server is fixed by a
  * configuration parameter.
- *
+ * 
  * The supported content types for response bodies are application/xml and
- * application./json. The content type for outgoing message bodies is can be set by
- * modifying the private constant CONTENT_TYPE.
- *
+ * application./json. The content type for outgoing message bodies is can be set
+ * by modifying the private constant CONTENT_TYPE.
+ * 
  */
 @Component
 public class Southbound implements Ngsi10Requester, Ngsi9Interface {
@@ -152,33 +152,39 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	@Value("${default_content_type:application/xml}")
 	private String CONTENT_TYPE;
 
+	/** Adapt UpdateContextRequest to Orion Standard */
+	@Value("${adaptUpdatesToOrionStandard:false}")
+	private boolean adaptUpdatesToOrionStandard;
 
 	/**
-	 * Validate if a message body is syntactically correct. Returns true if
-	 * body is correct.
-	 * @param body The message body string
-	 * @param contentType String representing the content type of the
-	 * message body. Supported content types are "application/xml"
-	 * and "application/json". In case of "application/json" it is only
-	 * checked whether the body is syntactically correct json; it is not
-	 * checked against a json schema language. Unsupported content types
-	 * always result in "incorrect".
-	 * @param classType The expected type of object represented by the
-	 * message body
-	 * @param schema The xml schema the message body is evaluated against.
-	 *
+	 * Validate if a message body is syntactically correct. Returns true if body
+	 * is correct.
+	 * 
+	 * @param body
+	 *            The message body string
+	 * @param contentType
+	 *            String representing the content type of the message body.
+	 *            Supported content types are "application/xml" and
+	 *            "application/json". In case of "application/json" it is only
+	 *            checked whether the body is syntactically correct json; it is
+	 *            not checked against a json schema language. Unsupported
+	 *            content types always result in "incorrect".
+	 * @param classType
+	 *            The expected type of object represented by the message body
+	 * @param schema
+	 *            The xml schema the message body is evaluated against.
+	 * 
 	 */
 	private boolean validateMessageBody(String body, String contentType,
 			Class<?> classType, String schema) {
 
-
 		boolean status = false;
 		/*
-		 * status=false  means incorrect syntax
+		 * status=false means incorrect syntax
 		 */
 
 		if (contentType.equals("application/xml")) {
-			//make xml check against xml schema
+			// make xml check against xml schema
 
 			XmlValidator validator = new XmlValidator();
 
@@ -186,46 +192,47 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			try {
 				obj = classType.newInstance();
 			} catch (InstantiationException e) {
-				logger.info("InstantiationException" , e);
+				logger.info("InstantiationException", e);
 			} catch (IllegalAccessException e) {
-				logger.info("InstantiationException" , e);
+				logger.info("InstantiationException", e);
 			}
 			obj = xmlFactory.convertStringToXml(body, classType);
 
 			status = validator.xmlValidation(obj, schema);
 
 		} else if (contentType.equals("application/json")) {
-			//make json syntax check
+			// make json syntax check
 
 			JsonValidator validator = new JsonValidator();
 			status = validator.isValidJSON(body);
 
 		}
 
-		if (!status){
-			logger.info("Invalid incoming request. Reference schema is: "+schema);
+		if (!status) {
+			logger.info("Invalid incoming request. Reference schema is: "
+					+ schema);
 		}
-		
+
 		logger.info("Incoming request Valid:" + status);
 
 		return status;
 
 	}
 
-	private String tryDifferentContentType(Object request, String path, String method, HttpConnectionClient connection, URL url){
+	private String tryDifferentContentType(Object request, String path,
+			String method, HttpConnectionClient connection, URL url) {
 
 		String response = null;
 
-		if(CONTENT_TYPE.equals("application/xml")){
+		if (CONTENT_TYPE.equals("application/xml")) {
 
-			response = connection.initializeConnection(url,
-					path, method, request, "application/json", xAuthToken);
+			response = connection.initializeConnection(url, path, method,
+					request, "application/json", xAuthToken);
 
-		}else if(CONTENT_TYPE.equals("application/json")){
+		} else if (CONTENT_TYPE.equals("application/json")) {
 
-			response = connection.initializeConnection(url,
-					path, method, request, "application/xml", xAuthToken);
-
+			response = connection.initializeConnection(url, path, method,
+					request, "application/xml", xAuthToken);
 
 		}
 		return response;
@@ -234,13 +241,13 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/**
 	 * Calls the QueryContext method on an NGSI-10 server.
-	 *
+	 * 
 	 * @param request
 	 *            The request message.
 	 * @param uri
 	 *            The address of the NGSI-10 server.
 	 * @return The response message.
-	 *
+	 * 
 	 */
 	@Override
 	public QueryContextResponse queryContext(QueryContextRequest request,
@@ -259,15 +266,16 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 			logger.debug("Starting Http Thread");
 
-			//initialize the connection
+			// initialize the connection
 			String respObj = connection.initializeConnection(url,
 					"/queryContext", "POST", request, CONTENT_TYPE, xAuthToken);
 
-			if(respObj.equals("415")){
+			if (respObj.equals("415")) {
 
-				respObj = tryDifferentContentType(request,"/queryContext", "POST",connection,url);
+				respObj = tryDifferentContentType(request, "/queryContext",
+						"POST", connection, url);
 
-				if(respObj.equals("415")){
+				if (respObj.equals("415")) {
 
 					output = new QueryContextResponse(null, new StatusCode(
 							Code.INTERNALERROR_500.getCode(),
@@ -277,13 +285,13 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 				}
 
-
 			}
 
-
-			//check whether connection returned with error, and react accordingly if that
-			//is the case
-			if (respObj!= null && CONTENT_TYPE.equals("application/xml") && "500".matches(respObj.substring(0, 3))) {
+			// check whether connection returned with error, and react
+			// accordingly if that
+			// is the case
+			if (respObj != null && CONTENT_TYPE.equals("application/xml")
+					&& "500".matches(respObj.substring(0, 3))) {
 
 				output = new QueryContextResponse(null, new StatusCode(
 						Code.INTERNALERROR_500.getCode(),
@@ -294,15 +302,16 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			}
 
 			/*
-			 *  Otherwise the response did not return an error. Now we
-			 *  additionally figure out whether the format of the
-			 *  response body is correct XML or JSON. If yes, we transform it
-			 *  to a QueryContextResponse object, otherwise we create an error
-			 *  QueryContextResponse object.
+			 * Otherwise the response did not return an error. Now we
+			 * additionally figure out whether the format of the response body
+			 * is correct XML or JSON. If yes, we transform it to a
+			 * QueryContextResponse object, otherwise we create an error
+			 * QueryContextResponse object.
 			 */
 
-			if (respObj!= null && validateMessageBody(respObj, CONTENT_TYPE,
-					QueryContextResponse.class, ngsi10schema)) {
+			if (respObj != null
+					&& validateMessageBody(respObj, CONTENT_TYPE,
+							QueryContextResponse.class, ngsi10schema)) {
 
 				if (CONTENT_TYPE.equals("application/xml")) {
 
@@ -329,21 +338,22 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 						.size(); i++) {
 
 					output.getListContextElementResponse().get(i)
-					.getContextElement().getDomainMetadata()
-					.add(GenerateMetadata.createSourceIPMetadata(uri));
+							.getContextElement().getDomainMetadata()
+							.add(GenerateMetadata.createSourceIPMetadata(uri));
 
 					output.getListContextElementResponse()
-					.get(i)
-					.getContextElement()
-					.getDomainMetadata()
-					.add(GenerateMetadata
-							.createDomainTimestampMetadata());
+							.get(i)
+							.getContextElement()
+							.getDomainMetadata()
+							.add(GenerateMetadata
+									.createDomainTimestampMetadata());
 
 				}
 
 			} else {
 				/*
-				 * We end up here if the response body is syntactically incorrect.
+				 * We end up here if the response body is syntactically
+				 * incorrect.
 				 */
 
 				output = new QueryContextResponse();
@@ -377,21 +387,21 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/**
 	 * Calls the SubscribeContext method on an NGSI-10 server.
-	 *
+	 * 
 	 * @param request
 	 *            The request message.
 	 * @param uri
 	 *            The address of the NGSI-10 server.
 	 * @return The response message.
-	 *
+	 * 
 	 */
 	@Override
 	public SubscribeContextResponse subscribeContext(
 			SubscribeContextRequest request, URI uri) {
 
 		/*
-		 *  This is implemented analogously to queryContext. See the comments there
-		 *  for clarification.
+		 * This is implemented analogously to queryContext. See the comments
+		 * there for clarification.
 		 */
 
 		SubscribeContextResponse output = new SubscribeContextResponse();
@@ -411,46 +421,48 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 					+ tomcatPort + "/ngsi10/notify");
 
 			String resource;
-			if (url.toString().matches(".*/")){
+			if (url.toString().matches(".*/")) {
 				resource = "subscribeContext";
 			} else {
 				resource = "/subscribeContext";
 			}
 
-			String respObj = connection.initializeConnection(url,
-					resource, "POST", request, CONTENT_TYPE,
-					xAuthToken);
+			String respObj = connection.initializeConnection(url, resource,
+					"POST", request, CONTENT_TYPE, xAuthToken);
 
-			if(respObj.equals("415")){
+			if (respObj.equals("415")) {
 
-				respObj = tryDifferentContentType(request,resource, "POST",connection,url);
+				respObj = tryDifferentContentType(request, resource, "POST",
+						connection, url);
 
-				if(respObj.equals("415")){
+				if (respObj.equals("415")) {
 
-					output = new SubscribeContextResponse(null, new SubscribeError(
-							null, new StatusCode(Code.INTERNALERROR_500.getCode(),
+					output = new SubscribeContextResponse(null,
+							new SubscribeError(null, new StatusCode(
+									Code.INTERNALERROR_500.getCode(),
 									ReasonPhrase.RECEIVERINTERNALERROR_500
-									.toString(), "Content Type is not supported!")));
+											.toString(),
+									"Content Type is not supported!")));
 					return output;
-
-
 
 				}
 
 			}
 
-			if (respObj!=null && CONTENT_TYPE.equals("application/xml") && "500".matches(respObj.substring(0, 3))) {
+			if (respObj != null && CONTENT_TYPE.equals("application/xml")
+					&& "500".matches(respObj.substring(0, 3))) {
 
 				output = new SubscribeContextResponse(null, new SubscribeError(
 						null, new StatusCode(Code.INTERNALERROR_500.getCode(),
 								ReasonPhrase.RECEIVERINTERNALERROR_500
-								.toString(), respObj.substring(5))));
+										.toString(), respObj.substring(5))));
 				return output;
 
 			}
 
-			if (respObj!=null && validateMessageBody(respObj, CONTENT_TYPE,
-					SubscribeContextResponse.class, ngsi10schema)) {
+			if (respObj != null
+					&& validateMessageBody(respObj, CONTENT_TYPE,
+							SubscribeContextResponse.class, ngsi10schema)) {
 
 				if (CONTENT_TYPE.equals("application/xml")) {
 
@@ -473,7 +485,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 				output = new SubscribeContextResponse(null, new SubscribeError(
 						null, new StatusCode(Code.INTERNALERROR_500.getCode(),
 								ReasonPhrase.RECEIVERINTERNALERROR_500
-								.toString(), null)));
+										.toString(), null)));
 				return output;
 
 			}
@@ -502,21 +514,21 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/**
 	 * Calls the UpdateContextSubscription method on an NGSI-10 server.
-	 *
+	 * 
 	 * @param request
 	 *            The request message.
 	 * @param uri
 	 *            The address of the NGSI-10 server.
 	 * @return The response message.
-	 *
+	 * 
 	 */
 	@Override
 	public UpdateContextSubscriptionResponse updateContextSubscription(
 			UpdateContextSubscriptionRequest request, URI uri) {
 
 		/*
-		 *  This is implemented analogously to queryContext. See the comments there
-		 *  for clarification.
+		 * This is implemented analogously to queryContext. See the comments
+		 * there for clarification.
 		 */
 
 		UpdateContextSubscriptionResponse output = new UpdateContextSubscriptionResponse();
@@ -531,36 +543,40 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 					"/updateContextSubscription", "POST", request,
 					CONTENT_TYPE, xAuthToken);
 
-			if(respObj.equals("415")){
+			if (respObj.equals("415")) {
 
-				respObj = tryDifferentContentType(request,"/updateContextSubscription", "POST",connection,url);
+				respObj = tryDifferentContentType(request,
+						"/updateContextSubscription", "POST", connection, url);
 
-				if(respObj.equals("415")){
+				if (respObj.equals("415")) {
 
 					output = new UpdateContextSubscriptionResponse(null,
 							new SubscribeError(null, new StatusCode(
 									Code.INTERNALERROR_500.getCode(),
 									ReasonPhrase.RECEIVERINTERNALERROR_500
-									.toString(), "Content Type is not supported!")));
+											.toString(),
+									"Content Type is not supported!")));
 					return output;
-
 
 				}
 
 			}
 
-			if (respObj != null && CONTENT_TYPE.equals("application/xml") && "500".matches(respObj.substring(0, 3))) {
+			if (respObj != null && CONTENT_TYPE.equals("application/xml")
+					&& "500".matches(respObj.substring(0, 3))) {
 
 				output = new UpdateContextSubscriptionResponse(null,
 						new SubscribeError(null, new StatusCode(
 								Code.INTERNALERROR_500.getCode(),
 								ReasonPhrase.RECEIVERINTERNALERROR_500
-								.toString(), respObj.substring(5))));
+										.toString(), respObj.substring(5))));
 				return output;
 
 			}
-			if (respObj != null &&validateMessageBody(respObj, CONTENT_TYPE,
-					UpdateContextSubscriptionResponse.class, ngsi10schema)) {
+			if (respObj != null
+					&& validateMessageBody(respObj, CONTENT_TYPE,
+							UpdateContextSubscriptionResponse.class,
+							ngsi10schema)) {
 
 				if (CONTENT_TYPE.equals("application/xml")) {
 
@@ -584,7 +600,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 						new SubscribeError(null, new StatusCode(
 								Code.INTERNALERROR_500.getCode(),
 								ReasonPhrase.RECEIVERINTERNALERROR_500
-								.toString(), null)));
+										.toString(), null)));
 				return output;
 
 			}
@@ -604,23 +620,22 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/**
 	 * Calls the UnsubscribeContext method on an NGSI-10 server.
-	 *
+	 * 
 	 * @param request
 	 *            The request message.
 	 * @param uri
 	 *            The address of the NGSI-10 server.
 	 * @return The response message.
-	 *
+	 * 
 	 */
 	@Override
 	public UnsubscribeContextResponse unsubscribeContext(
 			UnsubscribeContextRequest request, URI uri) {
 
 		/*
-		 *  This is implemented analogously to queryContext. See the comments there
-		 *  for clarification.
+		 * This is implemented analogously to queryContext. See the comments
+		 * there for clarification.
 		 */
-
 
 		UnsubscribeContextResponse output = new UnsubscribeContextResponse();
 
@@ -636,23 +651,26 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 					"/unsubscribeContext", "POST", request, CONTENT_TYPE,
 					xAuthToken);
 
-			if(respObj.equals("415")){
+			if (respObj.equals("415")) {
 
-				respObj = tryDifferentContentType(request,"/unsubscribeContext", "POST",connection,url);
+				respObj = tryDifferentContentType(request,
+						"/unsubscribeContext", "POST", connection, url);
 
-				if(respObj.equals("415")){
+				if (respObj.equals("415")) {
 
-					output = new UnsubscribeContextResponse(null, new StatusCode(
-							Code.INTERNALERROR_500.getCode(),
-							ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
-							"Content Type is not supported!"));
+					output = new UnsubscribeContextResponse(null,
+							new StatusCode(Code.INTERNALERROR_500.getCode(),
+									ReasonPhrase.RECEIVERINTERNALERROR_500
+											.toString(),
+									"Content Type is not supported!"));
 					return output;
 
 				}
 
 			}
 
-			if (respObj != null && CONTENT_TYPE.equals("application/xml") && "500".matches(respObj.substring(0, 3))) {
+			if (respObj != null && CONTENT_TYPE.equals("application/xml")
+					&& "500".matches(respObj.substring(0, 3))) {
 
 				output = new UnsubscribeContextResponse(null, new StatusCode(
 						Code.INTERNALERROR_500.getCode(),
@@ -662,8 +680,9 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 			}
 			// response valid and not null
-			if (respObj != null && validateMessageBody(respObj, CONTENT_TYPE,
-					UnsubscribeContextResponse.class, ngsi10schema)) {
+			if (respObj != null
+					&& validateMessageBody(respObj, CONTENT_TYPE,
+							UnsubscribeContextResponse.class, ngsi10schema)) {
 
 				if (validateMessageBody(respObj, CONTENT_TYPE,
 						UnsubscribeContextResponse.class, ngsi10schema)) {
@@ -689,7 +708,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 					output = new UnsubscribeContextResponse(null,
 							new StatusCode(Code.INTERNALERROR_500.getCode(),
 									ReasonPhrase.RECEIVERINTERNALERROR_500
-									.toString(), null));
+											.toString(), null));
 
 					return output;
 
@@ -710,21 +729,21 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/**
 	 * Calls the UpdateContext method on an NGSI-10 server.
-	 *
+	 * 
 	 * @param request
 	 *            The request message.
 	 * @param uri
 	 *            The address of the NGSI-10 server
 	 * @return The response message.
-	 *
+	 * 
 	 */
 	@Override
 	public UpdateContextResponse updateContext(UpdateContextRequest request,
 			URI uri) {
 
 		/*
-		 *  This is implemented analogously to queryContext. See the comments there
-		 *  for clarification.
+		 * This is implemented analogously to queryContext. See the comments
+		 * there for clarification.
 		 */
 
 		UpdateContextResponse output = new UpdateContextResponse();
@@ -735,15 +754,26 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			HttpConnectionClient connection = new HttpConnectionClient();
 			logger.debug("Starting Http Thread ");
 
-			String respObj = connection
-					.initializeConnection(url, "/updateContext", "POST",
-							request, CONTENT_TYPE, xAuthToken);
+			String respObj;
+			if (adaptUpdatesToOrionStandard) {
+				logger.info("Adapting updateContext to Orion Standards");
+				respObj = connection
+						.initializeUpdateContextConnectionToOrion(url,
+								"/updateContext", request, CONTENT_TYPE,
+								xAuthToken);
+			} else {
 
-			if(respObj.equals("415")){
+				respObj = connection.initializeConnection(url,
+						"/updateContext", "POST", request, CONTENT_TYPE,
+						xAuthToken);
+			}
+			
+			if (respObj.equals("415")) {
 
-				respObj = tryDifferentContentType(request,"/updateContext", "POST",connection,url);
+				respObj = tryDifferentContentType(request, "/updateContext",
+						"POST", connection, url);
 
-				if(respObj.equals("415")){
+				if (respObj.equals("415")) {
 
 					output = new UpdateContextResponse(new StatusCode(
 							Code.INTERNALERROR_500.getCode(),
@@ -753,10 +783,10 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 				}
 
-
 			}
 
-			if (respObj != null && CONTENT_TYPE.equals("application/xml") && "500".matches(respObj.substring(0, 3))) {
+			if (respObj != null && CONTENT_TYPE.equals("application/xml")
+					&& "500".matches(respObj.substring(0, 3))) {
 
 				output = new UpdateContextResponse(new StatusCode(
 						Code.INTERNALERROR_500.getCode(),
@@ -766,8 +796,9 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 			}
 
-			if (respObj != null && validateMessageBody(respObj, CONTENT_TYPE,
-					UpdateContextResponse.class, ngsi10schema)) {
+			if (respObj != null
+					&& validateMessageBody(respObj, CONTENT_TYPE,
+							UpdateContextResponse.class, ngsi10schema)) {
 
 				if (CONTENT_TYPE.equals("application/xml")) {
 
@@ -802,7 +833,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/**
 	 * Calls the DiscoverContextAvailability method on the NGSI-9 server.
-	 *
+	 * 
 	 * @param request
 	 *            The request message.
 	 * @return The response message.
@@ -826,18 +857,20 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 					+ ngsi9rootPath + "/discoverContextAvailability", "POST",
 					request, "application/xml", xAuthToken);
 
-			if(response.equals("415")){
+			if (response.equals("415")) {
 
-				response = tryDifferentContentType(request,"/"+ ngsi9rootPath +"/discoverContextAvailability", "POST",connection,ngsi9);
+				response = tryDifferentContentType(request, "/" + ngsi9rootPath
+						+ "/discoverContextAvailability", "POST", connection,
+						ngsi9);
 
-				if(response.equals("415")){
+				if (response.equals("415")) {
 
 					output = new DiscoverContextAvailabilityResponse(null,
 							new StatusCode(Code.INTERNALERROR_500.getCode(),
 									ReasonPhrase.RECEIVERINTERNALERROR_500
-									.toString(), "Content Type is not supported!"));
+											.toString(),
+									"Content Type is not supported!"));
 					return output;
-
 
 				}
 
@@ -850,11 +883,13 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 					output = new DiscoverContextAvailabilityResponse(null,
 							new StatusCode(Code.INTERNALERROR_500.getCode(),
 									ReasonPhrase.RECEIVERINTERNALERROR_500
-									.toString(), response.substring(5)));
+											.toString(), response.substring(5)));
 					return output;
 
-				} else if (response != null && validateMessageBody(response, CONTENT_TYPE,
-						DiscoverContextAvailabilityResponse.class, ngsi9schema)) {
+				} else if (response != null
+						&& validateMessageBody(response, CONTENT_TYPE,
+								DiscoverContextAvailabilityResponse.class,
+								ngsi9schema)) {
 
 					List<String> lstValue = getAssociationDataFromRegistrationMetaData(response);
 
@@ -872,11 +907,13 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 									DiscoverContextAvailabilityResponse.class);
 
 					/*
-					 * The xmlFactory, as currently used, is not able to transform associations
-					 * automatically. Therefore the association information is extracted from
-					 * the response string and then re-inserted into the transformed object
-					 * using the method addingAssociationDataToDiscContextAvailabilityRes.
-					 *
+					 * The xmlFactory, as currently used, is not able to
+					 * transform associations automatically. Therefore the
+					 * association information is extracted from the response
+					 * string and then re-inserted into the transformed object
+					 * using the method
+					 * addingAssociationDataToDiscContextAvailabilityRes.
+					 * 
 					 * TODO: this can potentially be done in a more elegant way.
 					 */
 
@@ -889,7 +926,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 					output = new DiscoverContextAvailabilityResponse(null,
 							new StatusCode(Code.INTERNALERROR_500.getCode(),
 									ReasonPhrase.RECEIVERINTERNALERROR_500
-									.toString(),
+											.toString(),
 									"XML Response not Valid!"));
 					return output;
 				}
@@ -901,11 +938,13 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 					output = new DiscoverContextAvailabilityResponse(null,
 							new StatusCode(Code.INTERNALERROR_500.getCode(),
 									ReasonPhrase.RECEIVERINTERNALERROR_500
-									.toString(), response.substring(5)));
+											.toString(), response.substring(5)));
 					return output;
 
-				} else if (response != null && validateMessageBody(response, CONTENT_TYPE,
-						DiscoverContextAvailabilityResponse.class, ngsi9schema)) {
+				} else if (response != null
+						&& validateMessageBody(response, CONTENT_TYPE,
+								DiscoverContextAvailabilityResponse.class,
+								ngsi9schema)) {
 
 					List<String> lstValue = getAssociationDataFromRegistrationMetaData(response);
 
@@ -925,11 +964,13 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 					logger.debug("Associations: " + lstValue);
 
 					/*
-					 * The xmlFactory, as currently used, is not able to transform associations
-					 * automatically. Therefore the association information is extracted from
-					 * the response string and then re-inserted into the transformed object
-					 * using the method addingAssociationDataToDiscContextAvailabilityRes.
-					 *
+					 * The xmlFactory, as currently used, is not able to
+					 * transform associations automatically. Therefore the
+					 * association information is extracted from the response
+					 * string and then re-inserted into the transformed object
+					 * using the method
+					 * addingAssociationDataToDiscContextAvailabilityRes.
+					 * 
 					 * TODO: this can potentially be done in a more elegant way.
 					 */
 
@@ -940,7 +981,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 					output = new DiscoverContextAvailabilityResponse(null,
 							new StatusCode(Code.INTERNALERROR_500.getCode(),
 									ReasonPhrase.RECEIVERINTERNALERROR_500
-									.toString(),
+											.toString(),
 									"JSON Response not Valid!"));
 					return output;
 				}
@@ -953,7 +994,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			output.setErrorCode(new StatusCode(
 					Code.INTERNALERROR_500.getCode(),
 					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(), e
-					.getMessage()));
+							.getMessage()));
 
 		}
 
@@ -961,14 +1002,13 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	}
 
 	/**
-	 *  This static method extracts associations from context registrations.
+	 * This static method extracts associations from context registrations.
 	 */
 	private static List<String> getAssociationDataFromRegistrationMetaData(
 			String response) {
 
 		LinkedList<String> lstValue = null;
 		lstValue = new LinkedList<String>();
-
 
 		int counter = 0;
 		int length = response.length();
@@ -1007,12 +1047,14 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	}
 
 	/**
-	 *  This method adds to a {@link DiscoverContextAvailabilityResponse} message body the associations
-	 *  specified as the second function parameter. The latter associations are inserted into the response
-	 *  as context metadata values at the places where context metadata with type "association" is found.
-	 *
-	 *  The purpose of this method is to reinsert association information where the xml parser as it is used
-	 *  is not able to generate it automatically.
+	 * This method adds to a {@link DiscoverContextAvailabilityResponse} message
+	 * body the associations specified as the second function parameter. The
+	 * latter associations are inserted into the response as context metadata
+	 * values at the places where context metadata with type "association" is
+	 * found.
+	 * 
+	 * The purpose of this method is to reinsert association information where
+	 * the xml parser as it is used is not able to generate it automatically.
 	 */
 	private DiscoverContextAvailabilityResponse addingAssociationDataToDiscContextAvailabilityRes(
 			DiscoverContextAvailabilityResponse resp, List<String> lstValue) {
@@ -1055,7 +1097,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	 * Calls the RegisterContext method on the NGSI-9 server. <br>
 	 * Note: Unlike specified below, this method is currently not implemented
 	 * and returns null.
-	 *
+	 * 
 	 * @param request
 	 *            The request message.
 	 * @return The response message.
@@ -1196,7 +1238,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/**
 	 * Calls the SubscribeContextAvailability method on the NGSI-9 server.
-	 *
+	 * 
 	 * @param request
 	 *            The request message.
 	 * @return The response message.
@@ -1219,21 +1261,22 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 					+ ngsi9rootPath + "/subscribeContextAvailability", "POST",
 					request, CONTENT_TYPE, xAuthToken);
 
-			if(response.equals("415")){
+			if (response.equals("415")) {
 
-				response = tryDifferentContentType(request,"/"
-						+ ngsi9rootPath + "/subscribeContextAvailability", "POST",connection,ngsi9);
+				response = tryDifferentContentType(request, "/" + ngsi9rootPath
+						+ "/subscribeContextAvailability", "POST", connection,
+						ngsi9);
 
-				if(response.equals("415")){
+				if (response.equals("415")) {
 
 					output = new SubscribeContextAvailabilityResponse(null,
 							null, new StatusCode(
 									Code.INTERNALERROR_500.getCode(),
 									ReasonPhrase.RECEIVERINTERNALERROR_500
-									.toString(), "Content Type is not supported!"));
+											.toString(),
+									"Content Type is not supported!"));
 
 					return output;
-
 
 				}
 
@@ -1247,11 +1290,13 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 							null, new StatusCode(
 									Code.INTERNALERROR_500.getCode(),
 									ReasonPhrase.RECEIVERINTERNALERROR_500
-									.toString(), response.substring(5)));
+											.toString(), response.substring(5)));
 					return output;
 
-				} else if ( response != null && validateMessageBody(response, CONTENT_TYPE,
-						SubscribeContextAvailabilityResponse.class, ngsi9schema)) {
+				} else if (response != null
+						&& validateMessageBody(response, CONTENT_TYPE,
+								SubscribeContextAvailabilityResponse.class,
+								ngsi9schema)) {
 
 					output = (SubscribeContextAvailabilityResponse) xmlFactory
 							.convertStringToXml(response,
@@ -1263,7 +1308,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 							null, new StatusCode(
 									Code.INTERNALERROR_500.getCode(),
 									ReasonPhrase.RECEIVERINTERNALERROR_500
-									.toString(),
+											.toString(),
 									"XML Response not Valid!"));
 					return output;
 
@@ -1276,11 +1321,13 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 							null, new StatusCode(
 									Code.INTERNALERROR_500.getCode(),
 									ReasonPhrase.RECEIVERINTERNALERROR_500
-									.toString(), response.substring(5)));
+											.toString(), response.substring(5)));
 					return output;
 
-				} else if (response != null && validateMessageBody(response, CONTENT_TYPE,
-						SubscribeContextAvailabilityResponse.class, ngsi9schema)) {
+				} else if (response != null
+						&& validateMessageBody(response, CONTENT_TYPE,
+								SubscribeContextAvailabilityResponse.class,
+								ngsi9schema)) {
 
 					output = (SubscribeContextAvailabilityResponse) jsonFactory
 							.convertStringToJsonObject(response,
@@ -1291,7 +1338,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 							null, new StatusCode(
 									Code.INTERNALERROR_500.getCode(),
 									ReasonPhrase.RECEIVERINTERNALERROR_500
-									.toString(),
+											.toString(),
 									"JSON Response not Valid!"));
 					return output;
 				}
@@ -1315,7 +1362,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/**
 	 * Calls the UnsubscribeContextAvailability method on the NGSI-9 server.
-	 *
+	 * 
 	 * @param request
 	 *            The request message.
 	 * @return The response message.
@@ -1336,37 +1383,40 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 					+ ngsi9rootPath + "/unsubscribeContextAvailability",
 					"POST", request, CONTENT_TYPE, xAuthToken);
 
-			if(response.equals("415")){
+			if (response.equals("415")) {
 
-				response = tryDifferentContentType(request,"/"
-						+ ngsi9rootPath + "/unsubscribeContextAvailability", "POST",connection,ngsi9);
+				response = tryDifferentContentType(request, "/" + ngsi9rootPath
+						+ "/unsubscribeContextAvailability", "POST",
+						connection, ngsi9);
 
-				if(response.equals("415")){
+				if (response.equals("415")) {
 
 					output = new UnsubscribeContextAvailabilityResponse(null,
 							new StatusCode(Code.INTERNALERROR_500.getCode(),
 									ReasonPhrase.RECEIVERINTERNALERROR_500
-									.toString(), "Content Type is not supported!"));
+											.toString(),
+									"Content Type is not supported!"));
 
 					return output;
-
 
 				}
 
 			}
 
-			if (response!= null && CONTENT_TYPE.equals("application/xml")) {
+			if (response != null && CONTENT_TYPE.equals("application/xml")) {
 
 				if ("500".equals(response.substring(0, 3))) {
 
 					output = new UnsubscribeContextAvailabilityResponse(null,
 							new StatusCode(Code.INTERNALERROR_500.getCode(),
 									ReasonPhrase.RECEIVERINTERNALERROR_500
-									.toString(), response.substring(5)));
+											.toString(), response.substring(5)));
 					return output;
 
-				} else if (response!= null && validateMessageBody(response, CONTENT_TYPE,
-						SubscribeContextAvailabilityResponse.class, ngsi9schema)) {
+				} else if (response != null
+						&& validateMessageBody(response, CONTENT_TYPE,
+								SubscribeContextAvailabilityResponse.class,
+								ngsi9schema)) {
 
 					output = (UnsubscribeContextAvailabilityResponse) xmlFactory
 							.convertStringToXml(
@@ -1377,21 +1427,23 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 					output = new UnsubscribeContextAvailabilityResponse(null,
 							new StatusCode(Code.INTERNALERROR_500.getCode(),
 									ReasonPhrase.RECEIVERINTERNALERROR_500
-									.toString(),
+											.toString(),
 									"XML Response not Valid!"));
 					return output;
 
 				}
 			} else {
 
-				if (response!= null &&  response.contains("500")) {
+				if (response != null && response.contains("500")) {
 					output = new UnsubscribeContextAvailabilityResponse(null,
 							new StatusCode(Code.INTERNALERROR_500.getCode(),
 									ReasonPhrase.RECEIVERINTERNALERROR_500
-									.toString(), response.substring(5)));
+											.toString(), response.substring(5)));
 					return output;
-				} else if (response!= null &&  validateMessageBody(response, CONTENT_TYPE,
-						SubscribeContextAvailabilityResponse.class, ngsi9schema)) {
+				} else if (response != null
+						&& validateMessageBody(response, CONTENT_TYPE,
+								SubscribeContextAvailabilityResponse.class,
+								ngsi9schema)) {
 
 					output = (UnsubscribeContextAvailabilityResponse) jsonFactory
 							.convertStringToJsonObject(
@@ -1401,7 +1453,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 					output = new UnsubscribeContextAvailabilityResponse(null,
 							new StatusCode(Code.INTERNALERROR_500.getCode(),
 									ReasonPhrase.RECEIVERINTERNALERROR_500
-									.toString(),
+											.toString(),
 									"JSON Response not Valid!"));
 					return output;
 
@@ -1426,7 +1478,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	 * server. <br>
 	 * Note: Unlike specified below, this method is currently not implemented
 	 * and returns null.
-	 *
+	 * 
 	 * @param request
 	 *            The request message.
 	 * @return The response message.
@@ -1440,13 +1492,13 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/**
 	 * Calls the NotifyContext method on an NGSI-10 server.
-	 *
+	 * 
 	 * @param request
 	 *            The request message.
 	 * @param uri
 	 *            The address of the NGSI-10 server.
 	 * @return The response message.
-	 *
+	 * 
 	 */
 	@Override
 	public NotifyContextResponse notifyContext(NotifyContextRequest request,
@@ -1461,27 +1513,25 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			String response = connection.initializeConnection(uri.toURL(), "",
 					"POST", request, CONTENT_TYPE, xAuthToken);
 
-			if(response.equals("415")){
+			if (response.equals("415")) {
 
-				response = tryDifferentContentType(request,"", "POST",connection,uri.toURL());
+				response = tryDifferentContentType(request, "", "POST",
+						connection, uri.toURL());
 
-				if(response.equals("415")){
+				if (response.equals("415")) {
 
 					output = new NotifyContextResponse(new StatusCode(
 							Code.INTERNALERROR_500.getCode(),
 							ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
 							"Content Type is not supported!"));
 
-
 					return output;
-
 
 				}
 
-
 			}
 
-			if (response!= null && CONTENT_TYPE.equals("application/xml")) {
+			if (response != null && CONTENT_TYPE.equals("application/xml")) {
 
 				if ("500".equals(response.substring(0, 3))) {
 
@@ -1491,9 +1541,9 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 							response.substring(5)));
 					return output;
 
-				} else if (response!= null && validateMessageBody(response, CONTENT_TYPE,
-						NotifyContextResponse.class,
-						ngsi10schema)) {
+				} else if (response != null
+						&& validateMessageBody(response, CONTENT_TYPE,
+								NotifyContextResponse.class, ngsi10schema)) {
 
 					output = (NotifyContextResponse) xmlFactory
 							.convertStringToXml(response,
@@ -1508,15 +1558,16 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 				}
 			} else {
 
-				if (response!= null && response.contains("500")) {
+				if (response != null && response.contains("500")) {
 					output = new NotifyContextResponse(new StatusCode(
 							Code.INTERNALERROR_500.getCode(),
 							ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
 							response.substring(5)));
 					return output;
-				} else if (response!= null && validateMessageBody(response, CONTENT_TYPE,
-						SubscribeContextAvailabilityResponse.class,
-						ngsi10schema)) {
+				} else if (response != null
+						&& validateMessageBody(response, CONTENT_TYPE,
+								SubscribeContextAvailabilityResponse.class,
+								ngsi10schema)) {
 					output = (NotifyContextResponse) jsonFactory
 							.convertStringToJsonObject(response,
 									NotifyContextResponse.class);
@@ -1544,10 +1595,10 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	}
 
 	/**
-	 * Calls the NotifyContextAvailability method on the NGSI-9 server.
-	 * Note: Unlike specified below, this method is currently not implemented
-	 * and returns null.
-	 *
+	 * Calls the NotifyContextAvailability method on the NGSI-9 server. Note:
+	 * Unlike specified below, this method is currently not implemented and
+	 * returns null.
+	 * 
 	 * @param request
 	 *            The request message.
 	 * @return The response message.

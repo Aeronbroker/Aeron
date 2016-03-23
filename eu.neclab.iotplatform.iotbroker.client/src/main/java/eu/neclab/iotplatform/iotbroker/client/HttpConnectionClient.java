@@ -49,6 +49,10 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -62,7 +66,10 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NgsiStructure;
+import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextRequest;
 
 /**
  * Represents a generic client for NGSI via HTTP.
@@ -75,26 +82,26 @@ public class HttpConnectionClient {
 	/* The Constant connectionTimeout. */
 	private final static int CONNECTION_TIMEOUT = 3000;
 
-
 	/*
 	 * Creates an Http Connection from a url, a resource pathname and an HTTP
 	 * method.
-	 *
-	 * @param url
-	 *            The URL of the server to connect to.
-	 * @param resource
-	 *            The name of resource on the server.
-	 * @param method
-	 *            The name of the HTTP method. Expected to be "GET", "PUT",
-	 *            "POST", or "DELETE".
-	 * @param contentType
-	 *            the content type
+	 * 
+	 * @param url The URL of the server to connect to.
+	 * 
+	 * @param resource The name of resource on the server.
+	 * 
+	 * @param method The name of the HTTP method. Expected to be "GET", "PUT",
+	 * "POST", or "DELETE".
+	 * 
+	 * @param contentType the content type
+	 * 
 	 * @return Returns the connection.
-	 * @throws IOException
-	 *             Signals that an I/O exception has occurred.
+	 * 
+	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	private static HttpURLConnection createConnection(URL url, String resource,
-			String method, String contentType, String xAuthToken) throws IOException {
+			String method, String contentType, String xAuthToken)
+			throws IOException {
 
 		// initialize the URL of the connection as the concatenation of
 		// parameters url and resource.
@@ -113,9 +120,8 @@ public class HttpConnectionClient {
 		// configure other things
 		connection.setInstanceFollowRedirects(false);
 		connection.setRequestProperty("Content-Type", contentType);
-		connection.setRequestProperty("Accept",contentType);
+		connection.setRequestProperty("Accept", contentType);
 		connection.setRequestProperty("X-Auth-Token", xAuthToken);
-
 
 		// set connection timeout
 		connection.setConnectTimeout(CONNECTION_TIMEOUT);
@@ -128,10 +134,9 @@ public class HttpConnectionClient {
 
 	}
 
-
 	/**
 	 * Makes an HTTP connection to a server.
-	 *
+	 * 
 	 * @param url
 	 *            The URL of the server to connect to.
 	 * @param resource
@@ -140,21 +145,21 @@ public class HttpConnectionClient {
 	 *            The name of the HTTP method. Expected to be "GET", "PUT",
 	 *            "POST", or "DELETE".
 	 * @param request
-	 *            The message body of the request to send. The object is expected
-	 *            to be an instance of an NGSI 9 or 10 message body.
+	 *            The message body of the request to send. The object is
+	 *            expected to be an instance of an NGSI 9 or 10 message body.
 	 * @param contentType
-	 *            The content type that is announced in the request header. The request object
-	 *            in the message body will be sent in XML format for contentType
-	 *            "application/xml" and JSON format otherwise.
+	 *            The content type that is announced in the request header. The
+	 *            request object in the message body will be sent in XML format
+	 *            for contentType "application/xml" and JSON format otherwise.
 	 * @param xAuthToken
-	 * 			  The security token used by this connection in order to connect to
-	 * 			  a component secured by the FIWARE security mechanisms.
-	 *
-	 * @return Either returns the response body returned by the server (as a String) or an
-	 * error message.
+	 *            The security token used by this connection in order to connect
+	 *            to a component secured by the FIWARE security mechanisms.
+	 * 
+	 * @return Either returns the response body returned by the server (as a
+	 *         String) or an error message.
 	 */
 	public String initializeConnection(URL url, String resource, String method,
-			Object request, String contentType,  String xAuthToken) {
+			Object request, String contentType, String xAuthToken) {
 
 		// initialize variables
 		HttpURLConnection connection = null;
@@ -166,7 +171,8 @@ public class HttpConnectionClient {
 
 			// use the above setConnection method to get a connection from url,
 			// resource and the method.
-			connection = createConnection(url, resource, method, contentType, xAuthToken);
+			connection = createConnection(url, resource, method, contentType,
+					xAuthToken);
 
 			// get the OutputStram form the connection
 			os = connection.getOutputStream();
@@ -198,8 +204,8 @@ public class HttpConnectionClient {
 					m.marshal(request, os);
 				}
 
-			}else{
-				//connect using JSON message body
+			} else {
+				// connect using JSON message body
 
 				// get the OutputStram form the connection
 				os = connection.getOutputStream();
@@ -236,8 +242,6 @@ public class HttpConnectionClient {
 			// close connection again
 			os.close();
 
-
-
 			// now it is time to receive the response
 			// get input stream from the connection
 			is = connection.getInputStream();
@@ -248,14 +252,13 @@ public class HttpConnectionClient {
 
 			is.close();
 
-			logger.info("------------->Response = "+resp);
+			logger.info("------------->Response = " + resp);
 
-			if(connection.getResponseCode() == 415){
+			if (connection.getResponseCode() == 415) {
 
-				logger.info("Connection Error: Format not supported by "+ url);
+				logger.info("Connection Error: Format not supported by " + url);
 
 				return "415";
-
 
 			}
 
@@ -269,22 +272,23 @@ public class HttpConnectionClient {
 				logger.debug("ConnectException", e);
 			}
 
-			return "500 - Connection Error - the URL: "+ url+" cannot be reached!";
+			return "500 - Connection Error - the URL: " + url
+					+ " cannot be reached!";
 
 		} catch (JAXBException e) {
-			logger.info("XML Parse Error!",e);
-			logger.debug("JAXBException",e);
+			logger.info("XML Parse Error!", e);
+			logger.debug("JAXBException", e);
 			return "500 - XML Parse Error! Response from: " + url
 					+ " is not correct!";
 		} catch (IOException e) {
 
 			try {
-				if(connection != null && connection.getResponseCode() == 415){
+				if (connection != null && connection.getResponseCode() == 415) {
 
-					logger.info("Connection Error: Format not supported by "+ url);
+					logger.info("Connection Error: Format not supported by "
+							+ url);
 
 					return "415";
-
 
 				}
 			} catch (IOException e1) {
@@ -308,5 +312,176 @@ public class HttpConnectionClient {
 			logger.info("Connection Closed!");
 		}
 
+	}
+
+	public String initializeUpdateContextConnectionToOrion(URL url,
+			String resource, UpdateContextRequest request,
+			String contentType, String xAuthToken) {
+
+		// initialize variables
+		HttpURLConnection connection = null;
+		InputStream is = null;
+		OutputStream os = null;
+		String resp = null;
+
+		// Orion is accepting a non-NGSI standard updateContext e.g.
+		/*
+		 * { "contextElements": [ { "type": "Room", "isPattern": "false", "id":
+		 * "Room1", "attributes": [ { "name": "temperature", "type": "float",
+		 * "value": "23" }, { "name": "pressure", "type": "integer", "value":
+		 * "720" } ] } ], "updateAction": "APPEND" }
+		 */
+
+		List<ContextElement> contextElementsForOrion = new ArrayList<ContextElement>();
+		for (ContextElement contextElement : request.getContextElement()) {
+
+			List<ContextAttribute> contextAttributesForOrion = new ArrayList<ContextAttribute>();
+			for (ContextAttribute contextAttribute : contextElement
+					.getContextAttributeList()) {
+
+				ContextAttribute contextAttributeForOrion = new ContextAttribute(
+						contextAttribute.getName(), contextAttribute.getType(),
+						contextAttribute.getContextValue());
+				contextAttributesForOrion.add(contextAttributeForOrion);
+
+			}
+
+			ContextElement contextElementForOrion = new ContextElement(
+					contextElement.getEntityId(), null,
+					contextAttributesForOrion, null);
+			contextElementsForOrion.add(contextElementForOrion);
+		}
+		UpdateContextRequest orionUpdateContextRequest = new UpdateContextRequest(
+				contextElementsForOrion, request.getUpdateAction());
+
+		try {
+
+			// use the above setConnection method to get a connection from url,
+			// resource and the method.
+			connection = createConnection(url, resource, "POST", contentType,
+					xAuthToken);
+
+			// get the OutputStram form the connection
+			os = connection.getOutputStream();
+
+			// connect using JSON message body
+
+			// get the OutputStram form the connection
+			os = connection.getOutputStream();
+
+			String string = ((NgsiStructure) orionUpdateContextRequest).toJsonString();
+
+			string.replaceAll("contextValue", "value");
+			string = this.levelUpEntityId(string);
+
+			os.write(string.getBytes(Charset.forName("UTF-8")));
+
+			logger.info("Output Stream: " + os.toString());
+
+			// send Message
+			os.flush();
+			// close connection again
+			os.close();
+
+			// now it is time to receive the response
+			// get input stream from the connection
+			is = connection.getInputStream();
+
+			StringWriter writer = new StringWriter();
+			IOUtils.copy(is, writer, "UTF-8");
+			resp = writer.toString();
+
+			is.close();
+
+			logger.info("------------->Response = " + resp);
+
+			if (connection.getResponseCode() == 415) {
+
+				logger.info("Connection Error: Format not supported by " + url);
+
+				return "415";
+
+			}
+
+			return resp;
+
+		} catch (ConnectException e) {
+
+			logger.info("IOException: Impossible to establish a connection with "
+					+ url + ":" + e.getMessage());
+			if (logger.isDebugEnabled()) {
+				logger.debug("ConnectException", e);
+			}
+
+			return "500 - Connection Error - the URL: " + url
+					+ " cannot be reached!";
+
+		} catch (IOException e) {
+
+			try {
+				if (connection != null && connection.getResponseCode() == 415) {
+
+					logger.info("Connection Error: Format not supported by "
+							+ url);
+
+					return "415";
+
+				}
+			} catch (IOException e1) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("IOException", e);
+				}
+			}
+
+			logger.info("500 - Error I/O with: " + url);
+			logger.info("IOException: Impossible to establish a connection with "
+					+ url + ":" + e.getMessage());
+
+			return "500 - Error I/O with: " + url;
+
+		} finally {
+
+			if (connection != null) {
+
+				connection.disconnect();
+			}
+			logger.info("Connection Closed!");
+		}
+
+	}
+
+//	public static void main(String[] args) {
+//		String string = "{ \"updateAction\": \"UPDATE\", \"contextElements\": [{ \"entityId\": { \"id\": \"test\", \"isPattern\": false }, \"attributes\": [{ \"name\": \"temp\", \"type\": \"temp\", \"contextValue\": \"43\" }] }], \"contextElements\": [{ \"entityId\": { \"id\": \"test\", \"isPattern\": false }, \"attributes\": [{ \"name\": \"temp\", \"type\": \"temp\", \"contextValue\": \"43\" }] }] }";
+//
+//		System.out.println(HttpConnectionClient.levelUpEntityId(string));
+//	}
+
+	private String levelUpEntityId(String requestAsJsonString) {
+
+		String entityIdRegex = "\\\"entityId\\\":(.+?)\\}";
+
+		Pattern pattern = Pattern.compile(entityIdRegex);
+
+		String entityRegex = "\\{(.+?)\\}";
+
+		Pattern entityPattern = Pattern.compile(entityRegex);
+
+		Matcher matcher = pattern.matcher(requestAsJsonString);
+		String entityId = null;
+		String entity = requestAsJsonString;
+		String newRequest = requestAsJsonString;
+		while (matcher.find()) {
+			entityId = matcher.group(0);
+
+			Matcher entityMatcher = entityPattern.matcher(entityId);
+			if (entityMatcher.find()) {
+				entity = entityMatcher.group(1);
+			}
+
+			newRequest = newRequest.replace(entityId, entity);
+
+		}
+
+		return newRequest;
 	}
 }
