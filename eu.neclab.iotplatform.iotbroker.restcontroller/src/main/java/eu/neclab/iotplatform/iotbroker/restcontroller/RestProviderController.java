@@ -66,6 +66,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import eu.neclab.iotplatform.iotbroker.commons.FullHttpRequester;
+import eu.neclab.iotplatform.iotbroker.commons.FullHttpResponse;
 import eu.neclab.iotplatform.iotbroker.commons.GenerateMetadata;
 import eu.neclab.iotplatform.iotbroker.commons.HttpRequester;
 import eu.neclab.iotplatform.iotbroker.commons.JsonValidator;
@@ -127,7 +129,7 @@ public class RestProviderController {
 
 	/** String representing xml content type. */
 	private final String CONTENT_TYPE_XML = "application/xml";
-	
+
 	/** The ngsi9url address of NGSI 9 component */
 	@Value("${ngsi9Uri}")
 	private String ngsi9url;
@@ -1451,12 +1453,11 @@ public class RestProviderController {
 
 	}
 
-
 	@RequestMapping(value = "/ngsi9/discoverContextAvailability", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-	public ResponseEntity<String> forwardDiscoverContextAvailability(HttpServletRequest requester,
-			@RequestBody String request) {
+	public ResponseEntity<String> forwardDiscoverContextAvailability(
+			HttpServletRequest requester, @RequestBody String request) {
 
 		// logger.info("Forwarding a DiscoverContextAvailabilityRequest to the IoT Discovery"
 		// + request);
@@ -1472,119 +1473,110 @@ public class RestProviderController {
 		// HttpStatus.OK);
 
 		String response = "";
-		
+
 		try {
-			response = HttpRequester.sendGenericRequestwithResponse(
-					new URL(ngsi9url+"/ngsi9/discoverContextAvailability"),
-					"POST", request, requester.getHeader("Content-Type"));
-			response = response.split("\\|")[1];
+			response = HttpRequester.sendGenericRequestwithResponse(new URL(
+					ngsi9url + "/ngsi9/discoverContextAvailability"), "POST",
+					request, requester.getHeader("Content-Type"));
+
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		return new ResponseEntity<String>(response,
-				HttpStatus.OK);
+
+		return new ResponseEntity<String>(response, HttpStatus.OK);
 
 	}
-	
 
 	@RequestMapping(value = "/ngsi9/registerContext", method = RequestMethod.POST, headers = "Accept=*/*")
 	public ResponseEntity<String> forwardRegisterContext(
-			HttpServletRequest requester,
-			@RequestBody String request) {
+			HttpServletRequest requester, @RequestBody String request) {
 
 		logger.info("Forwarding a RegisterRequest to the IoT Discovery");
 
 		String response = "";
-		
+
 		try {
-			response = HttpRequester.sendGenericRequestwithResponse(
-					new URL(ngsi9url+"/ngsi9/registerContext"),
-					"POST", request, requester.getHeader("Content-Type"));
+			response = HttpRequester.sendGenericRequestwithResponse(new URL(
+					ngsi9url + "/ngsi9/registerContext"), "POST", request,
+					requester.getHeader("Content-Type"));
 			response = response.split("\\|")[1];
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		return new ResponseEntity<String>(response,
-				HttpStatus.OK);
+
+		return new ResponseEntity<String>(response, HttpStatus.OK);
 
 	}
-	
+
 	@RequestMapping(value = "/ngsi9/subscribeContextAvailability", method = RequestMethod.POST, headers = "Accept=*/*")
 	public ResponseEntity<String> forwardSubscribeContextAvailability(
-			HttpServletRequest requester,
-			@RequestBody String request) {
+			HttpServletRequest requester, @RequestBody String request) {
 
 		logger.info("Forwarding a SubscribeContextAvailability to the IoT Discovery");
 
 		String response = "";
-		
+
 		try {
-			response = HttpRequester.sendGenericRequestwithResponse(
-					new URL(ngsi9url+"/ngsi9/subscribeContextAvailability"),
-					"POST", request, requester.getHeader("Content-Type"));
+			response = HttpRequester.sendGenericRequestwithResponse(new URL(
+					ngsi9url + "/ngsi9/subscribeContextAvailability"), "POST",
+					request, requester.getHeader("Content-Type"));
 			response = response.split("\\|")[1];
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		return new ResponseEntity<String>(response,
-				HttpStatus.OK);
+
+		return new ResponseEntity<String>(response, HttpStatus.OK);
 
 	}
-	
+
 	@RequestMapping(value = "/ngsi9/updateContextAvailabilitySubscription", method = RequestMethod.POST, headers = "Accept=*/*")
 	public @ResponseBody
-	ResponseEntity<String> forwardUpdateContextAvailabilitySubscription(HttpServletRequest requester,
-			@RequestBody String request) {
+	ResponseEntity<String> forwardUpdateContextAvailabilitySubscription(
+			HttpServletRequest requester, @RequestBody String request) {
 
 		logger.info("Forwarding a UpdateContextAvailabilitySubscription to the IoT Discovery");
 
 		String response = "";
-		
+
 		try {
-			response = HttpRequester.sendGenericRequestwithResponse(
-					new URL(ngsi9url+"/ngsi9/updateContextAvailabilitySubscription"),
+			response = HttpRequester.sendGenericRequestwithResponse(new URL(
+					ngsi9url + "/ngsi9/updateContextAvailabilitySubscription"),
 					"POST", request, requester.getHeader("Content-Type"));
 			response = response.split("\\|")[1];
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		return new ResponseEntity<String>(response,
-				HttpStatus.OK);
+
+		return new ResponseEntity<String>(response, HttpStatus.OK);
 
 	}
-	
+
 	@RequestMapping(value = "/ngsi9/unsubscribeContextAvailability", method = RequestMethod.POST, headers = "Accept=*/*")
 	public @ResponseBody
-	ResponseEntity<String> forwardUnsubscribeContextAvailability(HttpServletRequest requester,
-			@RequestBody String request) {
-		
+	ResponseEntity<String> forwardUnsubscribeContextAvailability(
+			HttpServletRequest requester, @RequestBody String request) {
+
 		logger.info("Forwarding a UnsubscribeContextAvailability to the IoT Discovery");
 
 		String response = "";
-		
+
 		try {
-			response = HttpRequester.sendGenericRequestwithResponse(
-					new URL(ngsi9url+"/ngsi9/unsubscribeContextAvailability"),
+			response = HttpRequester.sendGenericRequestwithResponse(new URL(
+					ngsi9url + "/ngsi9/unsubscribeContextAvailability"),
 					"POST", request, requester.getHeader("Content-Type"));
 			response = response.split("\\|")[1];
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		return new ResponseEntity<String>(response,
-				HttpStatus.OK);
+
+		return new ResponseEntity<String>(response, HttpStatus.OK);
 
 	}
-	
 
 	/**
 	 * Executes the convenience method for processing a notification.
