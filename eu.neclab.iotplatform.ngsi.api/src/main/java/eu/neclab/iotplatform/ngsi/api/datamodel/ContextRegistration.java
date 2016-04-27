@@ -75,6 +75,7 @@ public class ContextRegistration extends NgsiStructure {
 
 	@XmlElementWrapper(name = "registrationMetadata")
 	@XmlElement(name = "contextMetadata")
+	@JsonProperty("contextMetadata")
 	private List<ContextMetadata> contextMetadata = null;
 
 	@XmlElement(name = "providingApplication",required = true)
@@ -121,14 +122,16 @@ public class ContextRegistration extends NgsiStructure {
 		this.contextRegistrationAttribute = contextRegistrationAttribute;
 
 	}
-
+	
+	@JsonIgnore
 	public List<ContextMetadata> getListContextMetadata() {
 		if (contextMetadata == null) {
 			contextMetadata = new ArrayList<ContextMetadata>();
 		}
 		return contextMetadata;
 	}
-
+	
+	@JsonIgnore
 	public void setListContextMetadata(List<ContextMetadata> contextMetadata) {
 		this.contextMetadata = contextMetadata;
 

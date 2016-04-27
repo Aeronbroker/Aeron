@@ -47,6 +47,7 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -66,10 +67,11 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 
-import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NgsiStructure;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextRequest;
+import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextRequest_OrionCustomization;
+import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextResponse_OrionCustomization;
 
 /**
  * Represents a generic client for NGSI via HTTP.
@@ -99,13 +101,13 @@ public class HttpConnectionClient {
 	 * 
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	private static HttpURLConnection createConnection(URL url, String resource,
+	private HttpURLConnection createConnection(URL url, String resource,
 			String method, String contentType, String xAuthToken)
 			throws IOException {
 
 		// initialize the URL of the connection as the concatenation of
 		// parameters url and resource.
-		URL connectionURL = new URL(url + resource);
+		URL connectionURL = composeUrl(url.toString(), resource);
 
 		logger.debug("Connecting to: " + connectionURL.toString());
 
@@ -132,6 +134,30 @@ public class HttpConnectionClient {
 		// finally return the nicely configured connection
 		return connection;
 
+	}
+
+	private URL composeUrl(String url, String resource) {
+
+		try {
+			if (url.endsWith("/")) {
+				if (resource.startsWith("/")) {
+					return new URL(url + resource.substring(1));
+				} else {
+					return new URL(url + resource);
+				}
+			} else {
+				if (resource.startsWith("/")) {
+					return new URL(url + resource);
+				} else {
+					return new URL(url + "/" + resource);
+				}
+			}
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return null;
 	}
 
 	/**
@@ -316,7 +342,7 @@ public class HttpConnectionClient {
 
 	public String initializeUpdateContextConnectionToOrion(URL url,
 			String resource, UpdateContextRequest request,
-			String contentType, String xAuthToken) {
+			String xAuthToken) {
 
 		// initialize variables
 		HttpURLConnection connection = null;
@@ -332,33 +358,42 @@ public class HttpConnectionClient {
 		 * "720" } ] } ], "updateAction": "APPEND" }
 		 */
 
-		List<ContextElement> contextElementsForOrion = new ArrayList<ContextElement>();
-		for (ContextElement contextElement : request.getContextElement()) {
+		// List<ContextElement> contextElementsForOrion = new
+		// ArrayList<ContextElement>();
+		// for (ContextElement contextElement : request.getContextElement()) {
+		//
+		// // List<ContextAttribute> contextAttributesForOrion = new
+		// // ArrayList<ContextAttribute>();
+		// // for (ContextAttribute contextAttribute : contextElement
+		// // .getContextAttributeList()) {
+		// //
+		// // ContextAttribute contextAttributeForOrion = new ContextAttribute(
+		// // contextAttribute.getName(), contextAttribute.getType(),
+		// // contextAttribute.getContextValue());
+		// // contextAttributesForOrion.add(contextAttributeForOrion);
+		// //
+		// // }
+		//
+		// ContextElement contextElementForOrion = new ContextElement(
+		// contextElement.getEntityId(), null,
+		// contextElement.getContextAttributeList(), null);
+		// contextElementsForOrion.add(contextElementForOrion);
+		// }
+		// UpdateContextRequest orionUpdateContextRequest = new
+		// UpdateContextRequest(
+		// contextElementsForOrion, request.getUpdateAction());
 
-			List<ContextAttribute> contextAttributesForOrion = new ArrayList<ContextAttribute>();
-			for (ContextAttribute contextAttribute : contextElement
-					.getContextAttributeList()) {
-
-				ContextAttribute contextAttributeForOrion = new ContextAttribute(
-						contextAttribute.getName(), contextAttribute.getType(),
-						contextAttribute.getContextValue());
-				contextAttributesForOrion.add(contextAttributeForOrion);
-
-			}
-
-			ContextElement contextElementForOrion = new ContextElement(
-					contextElement.getEntityId(), null,
-					contextAttributesForOrion, null);
-			contextElementsForOrion.add(contextElementForOrion);
-		}
-		UpdateContextRequest orionUpdateContextRequest = new UpdateContextRequest(
-				contextElementsForOrion, request.getUpdateAction());
+		UpdateContextRequest_OrionCustomization orionUpdateContextRequest = new UpdateContextRequest_OrionCustomization(
+				request);
+		logger.info("Translating UpdateContextRequest :"
+				+ request.toJsonString() + " to the Orion Customization:"
+				+ orionUpdateContextRequest.toJsonString());
 
 		try {
 
 			// use the above setConnection method to get a connection from url,
 			// resource and the method.
-			connection = createConnection(url, resource, "POST", contentType,
+			connection = createConnection(url, resource, "POST", "application/json",
 					xAuthToken);
 
 			// get the OutputStram form the connection
@@ -369,14 +404,39 @@ public class HttpConnectionClient {
 			// get the OutputStram form the connection
 			os = connection.getOutputStream();
 
-			String string = ((NgsiStructure) orionUpdateContextRequest).toJsonString();
+			String string = ((NgsiStructure) orionUpdateContextRequest)
+					.toJsonString();
 
-			string.replaceAll("contextValue", "value");
-			string = this.levelUpEntityId(string);
+			// string = string.replaceAll("contextValue", "value");
+
+			// // The first is for deleting if it is followed by a comma (other
+			// // fields next to it)
+			// string = string.replaceAll(".attributeDomainName.:\\[.*?\\],",
+			// "");
+			// // The second is for deleting if it is followed by the bracket
+			// (end
+			// // of the structure)
+			// string = string.replaceAll(".attributeDomainName.:\\[.*?\\]}",
+			// "}");
+			//
+			// // The first is for deleting if it is followed by a comma (other
+			// // fields next to it)
+			// string = string.replaceAll(".domainMetadata.:\\[.*?\\],", "");
+			// // The second is for deleting if it is followed by the bracket
+			// (end
+			// // of the structure)
+			// string = string.replaceAll(".domainMetadata.:\\[.*?\\]}", "}");
+			//
+			// // The first is for deleting if it is followed by a comma (other
+			// // fields next to it)
+			// string = string.replaceAll("\"metadata\"", "\"metadatas\"");
+			//
+			// string = this.levelUpEntityId(string);
 
 			os.write(string.getBytes(Charset.forName("UTF-8")));
 
-			logger.info("Output Stream: " + os.toString());
+			logger.info("Output Stream to " + url + resource + " : "
+					+ os.toString());
 
 			// send Message
 			os.flush();
@@ -393,7 +453,7 @@ public class HttpConnectionClient {
 
 			is.close();
 
-			logger.info("------------->Response = " + resp);
+			logger.info("Response from " + url + resource + " : " + resp);
 
 			if (connection.getResponseCode() == 415) {
 
@@ -403,7 +463,12 @@ public class HttpConnectionClient {
 
 			}
 
-			return resp;
+			UpdateContextResponse_OrionCustomization updateContextResponse_OrionCustomization = (UpdateContextResponse_OrionCustomization) NgsiStructure
+					.parseStringToJson(resp,
+							UpdateContextResponse_OrionCustomization.class);
+
+			return updateContextResponse_OrionCustomization
+					.toUpdateContextResponse().toJsonString();
 
 		} catch (ConnectException e) {
 
@@ -450,11 +515,36 @@ public class HttpConnectionClient {
 
 	}
 
-//	public static void main(String[] args) {
-//		String string = "{ \"updateAction\": \"UPDATE\", \"contextElements\": [{ \"entityId\": { \"id\": \"test\", \"isPattern\": false }, \"attributes\": [{ \"name\": \"temp\", \"type\": \"temp\", \"contextValue\": \"43\" }] }], \"contextElements\": [{ \"entityId\": { \"id\": \"test\", \"isPattern\": false }, \"attributes\": [{ \"name\": \"temp\", \"type\": \"temp\", \"contextValue\": \"43\" }] }] }";
-//
-//		System.out.println(HttpConnectionClient.levelUpEntityId(string));
-//	}
+	// public static void main(String[] args) {
+	// // String string =
+	// "{ \"updateAction\": \"UPDATE\", \"contextElements\": [{ \"entityId\": { \"id\": \"test\", \"isPattern\": false }, \"attributes\": [{ \"name\": \"temp\", \"type\": \"temp\", \"contextValue\": \"43\" }] }], \"contextElements\": [{ \"entityId\": { \"id\": \"test\", \"isPattern\": false }, \"attributes\": [{ \"name\": \"temp\", \"type\": \"temp\", \"contextValue\": \"43\" }] }] }";
+	// String string =
+	// "{\"updateAction\":\"UPDATE\",\"contextElements\":[{\"id\":\"urn:x-iot:smartsantander:1:478\",\"isPattern\":false,\"domainMetadata\":[],\"attributes\":[{\"name\":\"temperature\",\"type\":\"temperature\",\"contextValue\":\"63.51\"}]}]}";
+	//
+	// string = string.replaceAll("contextValue", "value");
+	// System.out.println(string);
+	//
+	//
+	// // The first is for deleting if it is followed by a comma (other fields
+	// next to it)
+	// string = string.replaceAll(".attributeDomainName.:\\[.*?\\],","");
+	// // The second is for deleting if it is followed by the bracket (end of
+	// the structure)
+	// string = string.replaceAll(".attributeDomainName.:\\[.*?\\]}","}");
+	//
+	// // The first is for deleting if it is followed by a comma (other fields
+	// next to it)
+	// string = string.replaceAll(".domainMetadata.:\\[.*?\\],","");
+	// // The second is for deleting if it is followed by the bracket (end of
+	// the structure)
+	// string = string.replaceAll(".domainMetadata.:\\[.*?\\]}","}");
+	//
+	// System.out.println(string);
+	//
+	// // System.out.println(HttpConnectionClient.levelUpEntityId(string));
+	//
+	//
+	// }
 
 	private String levelUpEntityId(String requestAsJsonString) {
 

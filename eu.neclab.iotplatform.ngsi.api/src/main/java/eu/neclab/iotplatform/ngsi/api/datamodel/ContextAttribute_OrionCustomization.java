@@ -51,13 +51,16 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
- * Implements context attributes
- * as defined in OMA NGSI 9/10 approved version 1.0.
+ * Implements context attributes as defined in OMA NGSI 9/10 approved version
+ * 1.0.
  */
 @XmlRootElement(name = "contextAttribute")
 @XmlAccessorType(XmlAccessType.FIELD)
-public final class ContextAttribute extends NgsiStructure {
+public final class ContextAttribute_OrionCustomization extends NgsiStructure {
 
 	/** The name of the attribute represented by this ContextAttribute. */
 	@XmlElement(required = true)
@@ -68,23 +71,33 @@ public final class ContextAttribute extends NgsiStructure {
 	private URI type = null;
 
 	@XmlElement(required = true)
+	@JsonProperty("value")
 	private String contextValue = null;
 
 	@XmlElementWrapper(name = "metadata")
 	@XmlElement(name = "contextMetadata")
+	@JsonProperty("metadatas")
 	private List<ContextMetadata> metadata;
 
 	/**
 	 * Creates a new ContextAttribute object.
 	 */
-	public ContextAttribute() {
+	public ContextAttribute_OrionCustomization() {
 
+	}
+
+	public ContextAttribute_OrionCustomization(ContextAttribute contextAttribute) {
+		this.name = contextAttribute.getName();
+		this.type = contextAttribute.getType();
+		this.contextValue = contextAttribute.getContextValue();
+		this.metadata = contextAttribute.getMetadata();
 	}
 
 	/**
 	 * Creates a new Context attribute object with no meta data.
 	 */
-	public ContextAttribute(String name, URI type, String value) {
+	public ContextAttribute_OrionCustomization(String name, URI type,
+			String value) {
 		this.name = name;
 		this.type = type;
 		contextValue = value;
@@ -94,8 +107,8 @@ public final class ContextAttribute extends NgsiStructure {
 	 * Creates a new Context attribute object with meta data.
 	 */
 
-	public ContextAttribute(String name, URI type, String value,
-			List<ContextMetadata> metadata) {
+	public ContextAttribute_OrionCustomization(String name, URI type,
+			String value, List<ContextMetadata> metadata) {
 		this(name, type, value);
 		this.metadata = metadata;
 	}
@@ -116,28 +129,35 @@ public final class ContextAttribute extends NgsiStructure {
 		this.type = type;
 	}
 
+	@JsonIgnore
 	public String getContextValue() {
 		return contextValue;
 	}
 
+	@JsonIgnore
 	public void setContextValue(String contextValue) {
 		this.contextValue = contextValue;
 	}
 
+	@JsonIgnore
 	public List<ContextMetadata> getMetadata() {
 		return metadata;
 	}
 
+	@JsonIgnore
 	public void setMetadata(List<ContextMetadata> metadata) {
 		this.metadata = metadata;
+	}
+
+	public ContextAttribute toContextAttribute() {
+		return new ContextAttribute(name, type, contextValue, metadata);
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ (metadata == null ? 0 : metadata.hashCode());
+		result = prime * result + (metadata == null ? 0 : metadata.hashCode());
 		result = prime * result
 				+ (contextValue == null ? 0 : contextValue.hashCode());
 		result = prime * result + (name == null ? 0 : name.hashCode());
@@ -156,7 +176,7 @@ public final class ContextAttribute extends NgsiStructure {
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		ContextAttribute other = (ContextAttribute) obj;
+		ContextAttribute_OrionCustomization other = (ContextAttribute_OrionCustomization) obj;
 		if (metadata == null) {
 			if (other.metadata != null) {
 				return false;

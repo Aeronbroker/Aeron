@@ -41,95 +41,56 @@
  ******************************************************************************/
 package eu.neclab.iotplatform.ngsi.api.datamodel;
 
-import java.net.URI;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSchemaType;
 
 /**
- * Implements context attributes
+ * Implements ContextElementResponse
  * as defined in OMA NGSI 9/10 approved version 1.0.
  */
-@XmlRootElement(name = "contextAttribute")
+@XmlRootElement(name = "contextElementResponse")
 @XmlAccessorType(XmlAccessType.FIELD)
-public final class ContextAttribute extends NgsiStructure {
+public class ContextElementResponse_OrionCustomization extends NgsiStructure {
 
-	/** The name of the attribute represented by this ContextAttribute. */
-	@XmlElement(required = true)
-	private String name = null;
+	@XmlElement(name = "contextElement", required = true)
+	private ContextElement_OrionCustomization contextElement = null;
 
-	/** A string representing the type of the value. */
-	@XmlSchemaType(name = "anyURI")
-	private URI type = null;
+	@XmlElement(name = "statusCode", required = true)
+	private StatusCode statusCode = null;
 
-	@XmlElement(required = true)
-	private String contextValue = null;
-
-	@XmlElementWrapper(name = "metadata")
-	@XmlElement(name = "contextMetadata")
-	private List<ContextMetadata> metadata;
-
-	/**
-	 * Creates a new ContextAttribute object.
-	 */
-	public ContextAttribute() {
+	public ContextElementResponse_OrionCustomization() {
 
 	}
 
-	/**
-	 * Creates a new Context attribute object with no meta data.
-	 */
-	public ContextAttribute(String name, URI type, String value) {
-		this.name = name;
-		this.type = type;
-		contextValue = value;
+	public ContextElementResponse_OrionCustomization(ContextElement_OrionCustomization contextElement,
+			StatusCode statusCode) {
+		this.contextElement = contextElement;
+		this.statusCode = statusCode;
+
 	}
 
-	/**
-	 * Creates a new Context attribute object with meta data.
-	 */
-
-	public ContextAttribute(String name, URI type, String value,
-			List<ContextMetadata> metadata) {
-		this(name, type, value);
-		this.metadata = metadata;
+	public ContextElement_OrionCustomization getContextElement() {
+		return contextElement;
 	}
 
-	public String getName() {
-		return name;
+	public void setContextElement(ContextElement_OrionCustomization contextElement) {
+		this.contextElement = contextElement;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public StatusCode getStatusCode() {
+		return statusCode;
 	}
 
-	public URI getType() {
-		return type;
+	public void setStatusCode(StatusCode statusCode) {
+		this.statusCode = statusCode;
 	}
-
-	public void setType(URI type) {
-		this.type = type;
-	}
-
-	public String getContextValue() {
-		return contextValue;
-	}
-
-	public void setContextValue(String contextValue) {
-		this.contextValue = contextValue;
-	}
-
-	public List<ContextMetadata> getMetadata() {
-		return metadata;
-	}
-
-	public void setMetadata(List<ContextMetadata> metadata) {
-		this.metadata = metadata;
+	
+	public ContextElementResponse toContextElementResponse(){
+		
+		return new ContextElementResponse(contextElement.toContextElement(), statusCode);
+	
 	}
 
 	@Override
@@ -137,11 +98,9 @@ public final class ContextAttribute extends NgsiStructure {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-				+ (metadata == null ? 0 : metadata.hashCode());
+				+ (contextElement == null ? 0 : contextElement.hashCode());
 		result = prime * result
-				+ (contextValue == null ? 0 : contextValue.hashCode());
-		result = prime * result + (name == null ? 0 : name.hashCode());
-		result = prime * result + (type == null ? 0 : type.hashCode());
+				+ (statusCode == null ? 0 : statusCode.hashCode());
 		return result;
 	}
 
@@ -156,33 +115,19 @@ public final class ContextAttribute extends NgsiStructure {
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		ContextAttribute other = (ContextAttribute) obj;
-		if (metadata == null) {
-			if (other.metadata != null) {
+		ContextElementResponse_OrionCustomization other = (ContextElementResponse_OrionCustomization) obj;
+		if (contextElement == null) {
+			if (other.contextElement != null) {
 				return false;
 			}
-		} else if (!metadata.equals(other.metadata)) {
+		} else if (!contextElement.equals(other.contextElement)) {
 			return false;
 		}
-		if (contextValue == null) {
-			if (other.contextValue != null) {
+		if (statusCode == null) {
+			if (other.statusCode != null) {
 				return false;
 			}
-		} else if (!contextValue.equals(other.contextValue)) {
-			return false;
-		}
-		if (name == null) {
-			if (other.name != null) {
-				return false;
-			}
-		} else if (!name.equals(other.name)) {
-			return false;
-		}
-		if (type == null) {
-			if (other.type != null) {
-				return false;
-			}
-		} else if (!type.equals(other.type)) {
+		} else if (!statusCode.equals(other.statusCode)) {
 			return false;
 		}
 		return true;
