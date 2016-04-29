@@ -154,6 +154,8 @@ Two scripts are provided for an easy installation, you can find them in the *IoT
 * iotbroker.conf: containing all the configurations variables to be set
 * setup.sh: setup script to be run in a linux shell (three paths need to be set at the very beginning of this script: iotbroker_configini, iotbroker_configxml and iotbroker_embeddedagent_couchdbxml)
 
+After running the setup.sh, the IoT Broker can be started with the provided scripts in *IoTBroker-runner* folder.
+
 Configure the IoT Broker manually
 ---
 
