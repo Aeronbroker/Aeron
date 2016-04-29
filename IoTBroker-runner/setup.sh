@@ -53,9 +53,9 @@ function setPropertyIntoProperties {
 }
 
 # Escape characters
-sed -e 's/[]\/$*.^|[]/\\&/g' ./platform.conf > ./.platform.conf.escaped
-chmod +x .platform.conf.escaped
-. ./.platform.conf.escaped
+sed -e 's/[]\/$*.^|[]/\\&/g' ./iotbroker.conf > ./.iotbroker.conf.escaped
+chmod +x .iotbroker.conf.escaped
+. ./.iotbroker.conf.escaped
 
 
 ## START OF AUTOMATIC SCRIPT
