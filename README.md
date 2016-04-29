@@ -147,7 +147,14 @@ ngsi.api-4.4.3.jar
 tomcat-configuration-fragment-4.4.3.jar
 ```
 
-How to Use the IoT Broker Bundles in general
+Configure the IoT Broker with setup scripts
+---
+Two scripts are provided for an easy installation, you can find them in the *IoTBroker-runner* folder:
+
+* iotbroker.conf: containing all the configurations variables to be set
+* setup.sh: setup script to be run in a linux shell (three paths need to be set at the very beginning of this script: iotbroker_configini, iotbroker_configxml and iotbroker_embeddedagent_couchdbxml)
+
+Configure the IoT Broker manually
 ---
 
 The Iot Broker bundles are OSGI based and can be used with arbitrary OSGI frameworks like EQUINOX, FELIX, etc.
