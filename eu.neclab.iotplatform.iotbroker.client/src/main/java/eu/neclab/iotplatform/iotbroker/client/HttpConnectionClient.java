@@ -299,7 +299,7 @@ public class HttpConnectionClient {
 
 			logger.info("500 - Error I/O with: " + url);
 			logger.info("IOException: Impossible to establish a connection with "
-					+ url + ":" + e.getMessage());
+					+ url + ": " + e.getMessage());
 
 			return "500 - Error I/O with: " + url;
 
