@@ -199,6 +199,9 @@ mvn test
 
 The IoT Broker instance should be already running at the time of compilation. Please note that a deployment of IoT Broker including at least all bundles loaded by the pre-configured OSGi environment ('IoTBroker-runner' folder) is necessary for the tests to run successfully.
 
+To let the blackboxtest start, first it is necessary to install on the local Maven repository the IoT Broker components. For doing so please run a 'mvn install' in the eu.neclab.iotplatform.iotbroker.builder folder.
+
+
 Minimum System Requirements
 ---
 
