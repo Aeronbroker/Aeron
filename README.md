@@ -216,4 +216,4 @@ Minimum System Requirements:
 
 Bugs & Questions
 ---
-Please contact salvatore.longo@neclab.eu or tobias.jacobs@neclab.eu.
+Please contact flavio.cirillo@neclab.eu or stefan.gessler@neclab.eu.
