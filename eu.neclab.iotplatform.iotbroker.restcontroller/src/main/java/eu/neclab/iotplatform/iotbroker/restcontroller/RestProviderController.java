@@ -378,11 +378,6 @@ public class RestProviderController {
 
 			QueryContextResponse response = ngsiCore.queryContext(request);
 
-			if (logger.isDebugEnabled()) {
-				logger.debug("Entity TYPE = "
-						+ request.getEntityIdList().get(0).getType());
-			}
-
 			return new ResponseEntity<QueryContextResponse>(response,
 					HttpStatus.OK);
 		} else {

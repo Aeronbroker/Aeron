@@ -1,5 +1,10 @@
 This project is part of [FIWARE](https://www.fiware.org/).
 
+[![License badge](https://img.shields.io/badge/licence-NEC-blue.svg)](https://github.com/Aeronbroker/Aeron/blob/master/LICENSE.md)
+[![Documentation badge](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](http://fiware-iot-broker.readthedocs.org/en/latest/)
+[![Docker badge](https://img.shields.io/docker/pulls/fiware/iotbroker.svg)](https://hub.docker.com/r/fiware/iotbroker/)
+[![Support badge](https://img.shields.io/badge/support-issues-yellowgreen.svg)](https://github.com/Aeronbroker/Aeron/issues)
+
 IoT Broker
 ===========
 
@@ -142,7 +147,16 @@ ngsi.api-4.4.3.jar
 tomcat-configuration-fragment-4.4.3.jar
 ```
 
-How to Use the IoT Broker Bundles in general
+Configure the IoT Broker with setup scripts
+---
+Two scripts are provided for an easy installation, you can find them in the *IoTBroker-runner* folder:
+
+* iotbroker.conf: containing all the configurations variables to be set
+* setup.sh: setup script to be run in a linux shell (three paths need to be set at the very beginning of this script: iotbroker_configini, iotbroker_configxml and iotbroker_embeddedagent_couchdbxml)
+
+After running the setup.sh, the IoT Broker can be started with the provided scripts in *IoTBroker-runner* folder.
+
+Configure the IoT Broker manually
 ---
 
 The Iot Broker bundles are OSGI based and can be used with arbitrary OSGI frameworks like EQUINOX, FELIX, etc.
@@ -184,6 +198,9 @@ mvn test
 '''
 
 The IoT Broker instance should be already running at the time of compilation. Please note that a deployment of IoT Broker including at least all bundles loaded by the pre-configured OSGi environment ('IoTBroker-runner' folder) is necessary for the tests to run successfully.
+
+To let the blackboxtest start, first it is necessary to install on the local Maven repository the IoT Broker components. For doing so please run a 'mvn install' in the eu.neclab.iotplatform.iotbroker.builder folder.
+
 
 Minimum System Requirements
 ---
