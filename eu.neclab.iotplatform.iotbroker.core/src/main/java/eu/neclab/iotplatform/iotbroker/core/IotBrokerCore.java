@@ -996,6 +996,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 						+ discoveryResponse.getErrorCode().getReasonPhrase()
 						+ " (details: "
 						+ discoveryResponse.getErrorCode().getDetails() + ")";
+			
+			//TODO improve the logging here, the details are not really picking the important informations
 
 			logger.debug("No query results to return! Discovery response:"
 					+ discoveryResponse.toString());

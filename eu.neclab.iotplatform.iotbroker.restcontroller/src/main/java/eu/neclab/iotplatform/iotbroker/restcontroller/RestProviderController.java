@@ -66,8 +66,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import eu.neclab.iotplatform.iotbroker.commons.FullHttpRequester;
-import eu.neclab.iotplatform.iotbroker.commons.FullHttpResponse;
 import eu.neclab.iotplatform.iotbroker.commons.GenerateMetadata;
 import eu.neclab.iotplatform.iotbroker.commons.HttpRequester;
 import eu.neclab.iotplatform.iotbroker.commons.JsonValidator;
@@ -377,11 +375,6 @@ public class RestProviderController {
 		if (validateMessageBody(requester, request, sNgsi10schema)) {
 
 			QueryContextResponse response = ngsiCore.queryContext(request);
-
-			if (logger.isDebugEnabled()) {
-				logger.debug("Entity TYPE = "
-						+ request.getEntityIdList().get(0).getType());
-			}
 
 			return new ResponseEntity<QueryContextResponse>(response,
 					HttpStatus.OK);
