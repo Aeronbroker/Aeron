@@ -1042,7 +1042,6 @@ public class SubscriptionController {
 		SubscribeContextRequest inSubReq = null;
 
 		/*
-		/*
 		 * It is expected that exactly one incoming subscription id will be
 		 * found. If this is not the case, then the function is aborted and an
 		 * error is returned.

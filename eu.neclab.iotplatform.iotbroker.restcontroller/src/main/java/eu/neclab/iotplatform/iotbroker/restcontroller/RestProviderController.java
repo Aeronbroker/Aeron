@@ -66,8 +66,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import eu.neclab.iotplatform.iotbroker.commons.FullHttpRequester;
-import eu.neclab.iotplatform.iotbroker.commons.FullHttpResponse;
 import eu.neclab.iotplatform.iotbroker.commons.GenerateMetadata;
 import eu.neclab.iotplatform.iotbroker.commons.HttpRequester;
 import eu.neclab.iotplatform.iotbroker.commons.JsonValidator;
