@@ -8,6 +8,27 @@ iotbroker_configxml='/opt/Aeron/fiwareRelease/iotbrokerconfig/iotBroker/config/c
 iotbroker_embeddedagent_couchdbxml='/opt/Aeron/fiwareRelease/iotbrokerconfig/embeddedAgent/couchdb.xml'
 
 
+AUTOSETUP='false'
+PROPAGATEAUTO='false'
+
+while [[ $# > 0 ]]
+do
+key="$1"
+case $key in
+    --auto)
+    AUTOSETUP=true
+    ;;
+    --propagateauto)
+    PROPAGATEAUTO=true
+    ;;
+    *)
+            # unknown option
+    ;;
+esac
+shift # past argument or value
+done
+
+
 # Functions
 function setPropertyIntoXML {
 	if grep -q "<entry key=\"$1\">.*<\/entry>" "$3"; then
@@ -52,18 +73,72 @@ function setPropertyIntoProperties {
 	fi
 }
 
-# Escape characters
-sed -e 's/[]\/$*.^|[]/\\&/g' ./iotbroker.conf > ./.iotbroker.conf.escaped
-chmod +x .iotbroker.conf.escaped
-. ./.iotbroker.conf.escaped
+function setConfiguration {
+	
+	key=$1
+	key=${key//\./\\\.}
+	key=${key//\//\\/}
+	
+	value=$2
+	value=${value//\./\\\.}
+	value=${value//\//\\/}
 
+	
+	sed -i "s/$key=.*/$key=\'$value\'/g" "$3"
+
+}
+
+# Escape characters
+sed -e 's/[]\/$*.^|[]/\\&/g' ./iotbroker.conf.local > ./.iotbroker.conf.local.escaped
+chmod +x .iotbroker.conf.local.escaped
+. ./.iotbroker.conf.local.escaped
+
+
+if [ "$AUTOSETUP" = true ]; 
+then
+	iotbrokerdir="$(dirname `pwd`)"
+	
+	iotbroker_configini="$iotbrokerdir/IoTBroker-runner/configuration/config.ini"
+	iotbroker_configxml="$iotbrokerdir/fiwareRelease/iotbrokerconfig/iotBroker/config/config.xml"
+	iotbroker_embeddedagent_couchdbxml="$iotbrokerdir/fiwareRelease/iotbrokerconfig/embeddedAgent/couchdb.xml"
+
+	iotbroker_dir_doubleslash=${iotbrokerdir//\///\/}
+	iotbroker_hsqldbdirectory="$iotbroker_dir_doubleslash//SQL_database//database//linkDB"
+	
+	iotbroker_dirconfig="$iotbrokerdir/fiwareRelease"
+	iotbroker_bundlesconfigurationlocation="$iotbrokerdir/fiwareRelease/bundleConfigurations"
+	
+	if [ "$PROPAGATEAUTO" = true ];
+	then
+	
+		setConfiguration "iotbroker_dirconfig" "$iotbroker_dirconfig" "iotbroker.conf.local"
+		setConfiguration "iotbroker_bundlesconfigurationlocation" "$iotbroker_bundlesconfigurationlocation" "iotbroker.conf.local"
+		setConfiguration "iotbroker_hsqldbdirectory" "$iotbroker_hsqldbdirectory" "iotbroker.conf.local"
+		
+		setConfiguration "iotbroker_configini" "$iotbroker_configini" "setup.sh"
+		setConfiguration "iotbroker_configxml" "$iotbroker_configxml" "setup.sh"
+		setConfiguration "iotbroker_embeddedagent_couchdbxml" "$iotbroker_embeddedagent_couchdbxml" "setup.sh"
+
+	fi
+	
+	iotbroker_dirconfig=${iotbroker_dirconfig//\./\\\.}
+	iotbroker_dirconfig=${iotbroker_dirconfig//\//\\/}
+	
+	iotbroker_bundlesconfigurationlocation=${iotbroker_bundlesconfigurationlocation//\./\\\.}
+	iotbroker_bundlesconfigurationlocation=${iotbroker_bundlesconfigurationlocation//\//\\/}
+	
+	iotbroker_hsqldbdirectory=${iotbroker_hsqldbdirectory//\./\\\.}
+	iotbroker_hsqldbdirectory=${iotbroker_hsqldbdirectory//\//\\/}
+
+fi
 
 ## START OF AUTOMATIC SCRIPT
 #IoTBroker setup
 setPropertyIntoIni "tomcat.init.port" "$iotbroker_tomcatinitport" "$iotbroker_configini"
-setPropertyIntoIni "tomcat.init.httpsport" "$iotbroker_tomcatinithttpsport" "$iotbroker_configini"
+setPropertyIntoIni "tomcat.init.port.ssl" "$iotbroker_tomcatinithttpsport" "$iotbroker_configini"
 setPropertyIntoIni "bundles.configuration.location" "$iotbroker_bundlesconfigurationlocation" "$iotbroker_configini"
 setPropertyIntoIni "dir.config" "$iotbroker_dirconfig" "$iotbroker_configini"
+setPropertyIntoIni "hsqldb.url" "$iotbroker_hsqldburl" "$iotbroker_configini"
 setPropertyIntoIni "hsqldb.port" "$iotbroker_hsqldbport" "$iotbroker_configini"
 setPropertyIntoIni "hsqldb.silent" "$iotbroker_hsqldbsilent" "$iotbroker_configini"
 setPropertyIntoIni "hsqldb.directory" "$iotbroker_hsqldbdirectory" "$iotbroker_configini"

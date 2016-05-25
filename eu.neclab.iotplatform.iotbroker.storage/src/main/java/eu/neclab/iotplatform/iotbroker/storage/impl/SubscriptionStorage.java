@@ -84,8 +84,9 @@ public class SubscriptionStorage implements SubscriptionStorageInterface {
 
 	private final String NAME_DB = "linkDB";
 
+	private final String url = System.getProperty("hsqldb.url","localhost");
 	private final String port = System.getProperty("hsqldb.port");
-	private final String URICONNECTION = "jdbc:hsqldb:hsql://localhost:" + port
+	private final String URICONNECTION = "jdbc:hsqldb:hsql://" + url + ":" + port
 			+ "/";
 
 	// public SubscriptionStorage() {

@@ -1,10 +1,14 @@
 package eu.neclab.iotplatform.iotbroker.commons;
 
+import org.apache.log4j.Logger;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
 
 public class BundleUtils {
+	
+	/** The logger. */
+	private static Logger logger = Logger.getLogger(BundleUtils.class);
 
 	/**
 	 * This method return true if a service is registered to the interfaceObject
@@ -36,15 +40,14 @@ public class BundleUtils {
 		/* Getting the ServiceReference of the interface, if any */
 		ServiceReference service = bundleContext.getServiceReference(clazzes[0]
 				.getName());
-
+		
 //		 if (interfaceObject instanceof com.sun.Proxy) {
 		/* Getting the bundleContext of the clazz */
-		if (!interfaceObject.getClass().toString().matches("com.sun.proxy.*")) {
+		if (!interfaceObject.getClass().toString().matches(".*com.sun.proxy.*")) {
 			return true;
 		}
 		
 		/* It is returned if there is a service registered to such reference */
 		return (service != null);
 	}
-
 }

@@ -1380,9 +1380,15 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 * Since the Embedded Agent may have its own subscription system, here
 		 * we check if it is enabled.
 		 */
+		
+		logger.info("embeddedIoTAgent is registered? : " + BundleUtils.isServiceRegistered(this, embeddedIoTAgent));
+		
 		if (!BundleUtils.isServiceRegistered(this, embeddedIoTAgent)
 				|| !embeddedIoTAgent.isSubscriptionEnabled()) {
-			notifySubscribers(updateContextRequest);
+			
+				notifySubscribers(updateContextRequest);
+			
+			
 		} else {
 			logger.info("EmbeddedAgent has its own Subscription system therefore SmartUpdateHandler will not be applied");
 		}
