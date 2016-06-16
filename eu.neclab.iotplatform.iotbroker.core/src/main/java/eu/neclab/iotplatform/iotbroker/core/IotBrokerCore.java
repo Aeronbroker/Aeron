@@ -52,7 +52,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
-import javax.naming.NoInitialContextException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -82,7 +81,6 @@ import eu.neclab.iotplatform.iotbroker.commons.interfaces.OnTimeIntervalHandlerI
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.OnValueHandlerInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.QueryService;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface;
-import eu.neclab.iotplatform.iotbroker.core.subscription.AgentWrapper;
 import eu.neclab.iotplatform.iotbroker.core.subscription.AssociationsUtil;
 import eu.neclab.iotplatform.iotbroker.core.subscription.ConfManWrapper;
 import eu.neclab.iotplatform.iotbroker.core.subscription.NorthBoundWrapper;
@@ -181,7 +179,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	@Value("${storeQueryResponseAndNotifications:false}")
 	private boolean storeQueryResponseAndNotifications;
 
-	private final String CONFMAN_REG_URL = System.getProperty("confman.ip");
+//	private final String CONFMAN_REG_URL = System.getProperty("confman.ip");
 
 	/** Executor for asynchronous tasks */
 	private final ExecutorService taskExecutor = Executors
@@ -930,38 +928,35 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		}
 
-		// /**
-		// * The code snippet below is for dumping the data in a Big Data
-		// * repository in addition. This feature is currently disabled.
-		// */
-		// if (bigDataRepository != null) {
-		//
-		// new Thread() {
-		// @Override
-		// public void run() {
-		//
-		// List<ContextElement> contextElementList = new
-		// ArrayList<ContextElement>();
-		//
-		// Iterator<ContextElementResponse> iter =
-		// queryContextRespLIstAfterMerge
-		// .getListContextElementResponse().iterator();
-		//
-		// while (iter.hasNext()) {
-		//
-		// ContextElementResponse contextElementResp = iter
-		// .next();
-		//
-		// contextElementList.add(contextElementResp
-		// .getContextElement());
-		//
-		// }
-		//
-		// bigDataRepository.storeData(contextElementList);
-		//
-		// }
-		// }.start();
-		// }
+		/**
+		 * The code snippet below is for dumping the data in a Big Data
+		 * repository in addition. This feature is currently disabled.
+		 */
+		if (BundleUtils.isServiceRegistered(this, bigDataRepository)) {
+
+			new Thread() {
+				@Override
+				public void run() {
+
+					List<ContextElement> contextElementList = new ArrayList<ContextElement>();
+
+					Iterator<ContextElementResponse> iter = queryContextRespListAfterMerge
+							.getListContextElementResponse().iterator();
+
+					while (iter.hasNext()) {
+
+						ContextElementResponse contextElementResp = iter.next();
+
+						contextElementList.add(contextElementResp
+								.getContextElement());
+
+					}
+
+					bigDataRepository.storeData(contextElementList);
+
+				}
+			}.start();
+		}
 
 		/*
 		 * Now, having the nicely merged (and maybe even filtered) query result,
@@ -1393,23 +1388,22 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			logger.info("EmbeddedAgent has its own Subscription system therefore SmartUpdateHandler will not be applied");
 		}
 
-		// /**
-		// * Dump data in Big Data Repository if present.
-		// */
-		// if (bigDataRepository != null) {
-		//
-		// new Thread() {
-		//
-		// @Override
-		// public void run() {
-		//
-		// bigDataRepository.storeData(lContextElements);
-		//
-		// }
-		// }.start();
-		//
-		// }
-		//
+		/**
+		 * Dump data in Big Data Repository if present.
+		 */
+		if (BundleUtils.isServiceRegistered(this, bigDataRepository)) {
+
+			new Thread() {
+
+				@Override
+				public void run() {
+
+					bigDataRepository.storeData(updateContextRequest.getContextElement());
+
+				}
+			}.start();
+
+		}
 
 		//
 		// if (subscriptionStorage != null) {
@@ -1745,34 +1739,33 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		}
 
-		// /**
-		// * The code snippet below is for dumping the data in a Big Data
-		// * repository in addition. This feature is currently disabled.
-		// */
-		// if (bigDataRepository != null) {
-		// new Thread() {
-		//
-		// @Override
-		// public void run() {
-		//
-		// List<ContextElement> contextElementList = new
-		// ArrayList<ContextElement>();
-		//
-		// Iterator<ContextElementResponse> iter = request
-		// .getContextElementResponseList().iterator();
-		// while (iter.hasNext()) {
-		//
-		// ContextElementResponse contextElementresp = iter.next();
-		// contextElementList.add(contextElementresp
-		// .getContextElement());
-		//
-		// }
-		//
-		// bigDataRepository.storeData(contextElementList);
-		//
-		// }
-		// }.start();
-		// }
+		/**
+		 * The code snippet below is for dumping the data in a Big Data
+		 * repository in addition. This feature is currently disabled.
+		 */
+		if (BundleUtils.isServiceRegistered(this, bigDataRepository)) {
+			new Thread() {
+
+				@Override
+				public void run() {
+
+					List<ContextElement> contextElementList = new ArrayList<ContextElement>();
+
+					Iterator<ContextElementResponse> iter = request
+							.getContextElementResponseList().iterator();
+					while (iter.hasNext()) {
+
+						ContextElementResponse contextElementresp = iter.next();
+						contextElementList.add(contextElementresp
+								.getContextElement());
+
+					}
+
+					bigDataRepository.storeData(contextElementList);
+
+				}
+			}.start();
+		}
 
 		NotifyContextResponse notifyContextResponse = null;
 
