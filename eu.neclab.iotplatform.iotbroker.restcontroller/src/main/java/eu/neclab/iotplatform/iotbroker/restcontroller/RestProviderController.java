@@ -364,7 +364,7 @@ public class RestProviderController {
 	@RequestMapping(value = "/ngsi10/queryContext", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-	public ResponseEntity<QueryContextResponse> complexQuery(
+	public ResponseEntity<QueryContextResponse> queryContext(
 			HttpServletRequest requester,
 			@RequestBody QueryContextRequest request) {
 
@@ -405,7 +405,7 @@ public class RestProviderController {
 	@RequestMapping(value = "/ngsi10/subscribeContext", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-	public ResponseEntity<SubscribeContextResponse> subscription(
+	public ResponseEntity<SubscribeContextResponse> subscribeContext(
 			HttpServletRequest requester,
 			@RequestBody SubscribeContextRequest request) {
 
@@ -518,7 +518,7 @@ public class RestProviderController {
 	@RequestMapping(value = "/ngsi10/updateContext", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-	public ResponseEntity<UpdateContextResponse> updateContextResponse(
+	public ResponseEntity<UpdateContextResponse> updateContext(
 			HttpServletRequest requester,
 			@RequestBody UpdateContextRequest request) {
 
