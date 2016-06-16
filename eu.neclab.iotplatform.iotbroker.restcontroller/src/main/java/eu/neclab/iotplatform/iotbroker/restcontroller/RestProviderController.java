@@ -136,20 +136,21 @@ public class RestProviderController {
 	@Autowired
 	private LeafengineInterface leafengine;
 
-	public LeafengineInterface getLeafengine() {
-		return leafengine;
-	}
-
-	public void setLeafengine(LeafengineInterface leafengine) {
-		this.leafengine = leafengine;
-	}
-
 	/** The component for receiving NGSI9 requests. */
 	@Autowired
 	private Ngsi9Interface ngsi9Core;
 
 	/** The component for receiving NGSI 10 requests. */
 	private Ngsi10Interface ngsiCore;
+	
+	/** String representing the xml schema for NGSI 10. */
+	private @Value("${schema_ngsi10_operation}")
+	String sNgsi10schema;
+
+	/** String representing the xml schema for NGSI 9. */
+	private @Value("${schema_ngsi9_operation}")
+	String sNgsi9schema;
+
 
 	/**
 	 * Returns a pointer to the component which receives NGSI 10 requests
@@ -170,6 +171,15 @@ public class RestProviderController {
 	 */
 	public void setNgsiCore(Ngsi10Interface ngsiCore) {
 		this.ngsiCore = ngsiCore;
+	}
+	
+
+	public LeafengineInterface getLeafengine() {
+		return leafengine;
+	}
+
+	public void setLeafengine(LeafengineInterface leafengine) {
+		this.leafengine = leafengine;
 	}
 
 	/**
@@ -192,14 +202,6 @@ public class RestProviderController {
 	public void setNgsi9Core(Ngsi9Interface ngsi9Core) {
 		this.ngsi9Core = ngsi9Core;
 	}
-
-	/** String representing the xml schema for NGSI 10. */
-	private @Value("${schema_ngsi10_operation}")
-	String sNgsi10schema;
-
-	/** String representing the xml schema for NGSI 9. */
-	private @Value("${schema_ngsi9_operation}")
-	String sNgsi9schema;
 
 	/**
 	 * Instantiates a new controller object.
