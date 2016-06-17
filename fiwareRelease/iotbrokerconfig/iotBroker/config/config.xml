@@ -21,5 +21,7 @@
 <entry key="ignoreIoTDiscoveryFailure">true</entry>
 <entry key="ignorePubSubFailure">true</entry>
 
+<entry key="isMaster">true</entry>
+
 
 </properties>
