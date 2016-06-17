@@ -41,6 +41,7 @@
  ******************************************************************************/
 package eu.neclab.iotplatform.iotbroker.core.subscription;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
@@ -59,7 +60,7 @@ public class SubscriptionData {
 	private final Lock lock = new ReentrantLock();
 	private Date startTime;
 
-	private List<ContextElementResponse> contextResponseQueue;
+	private List<ContextElementResponse> contextResponseQueue = new ArrayList<ContextElementResponse>();
 
 	public SubscriptionData(String notificationHandler) {
 		this.notificationHandler = notificationHandler;

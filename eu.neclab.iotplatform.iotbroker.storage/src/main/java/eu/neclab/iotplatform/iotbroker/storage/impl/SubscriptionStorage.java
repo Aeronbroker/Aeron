@@ -53,11 +53,15 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.Duration;
+import javax.xml.datatype.DatatypeConstants.Field;
 
 import org.apache.log4j.Logger;
 import org.hsqldb.types.Types;
+import org.junit.runner.Computer;
 import org.springframework.beans.factory.annotation.Value;
 
+import eu.neclab.iotplatform.iotbroker.commons.DurationUtils;
 import eu.neclab.iotplatform.iotbroker.commons.OutgoingSubscriptionWithInfo;
 import eu.neclab.iotplatform.iotbroker.commons.SubscriptionWithInfo;
 import eu.neclab.iotplatform.iotbroker.storage.SubscriptionStorageInterface;
@@ -82,12 +86,17 @@ public class SubscriptionStorage implements SubscriptionStorageInterface {
 	@Value("${hsqldb.password}")
 	private String password;
 
+	private @Value("${default_throttling}")
+	long defaultThrottling;
+	private @Value("${default_duration}")
+	long defaultDuration;
+
 	private final String NAME_DB = "linkDB";
 
-	private final String url = System.getProperty("hsqldb.url","localhost");
+	private final String url = System.getProperty("hsqldb.url", "localhost");
 	private final String port = System.getProperty("hsqldb.port");
-	private final String URICONNECTION = "jdbc:hsqldb:hsql://" + url + ":" + port
-			+ "/";
+	private final String URICONNECTION = "jdbc:hsqldb:hsql://" + url + ":"
+			+ port + "/";
 
 	// public SubscriptionStorage() {
 	// if (Boolean.parseBoolean(System.getProperty("iotbroker.reset"))) {
@@ -105,11 +114,11 @@ public class SubscriptionStorage implements SubscriptionStorageInterface {
 
 	private void insertSubscription(Connection c, String subscriptionId,
 			SubscribeContextRequest request, URI agentURI,
-			String incomingSubscriptionId) {
+			String incomingSubscriptionId, long timestamp) {
 		PreparedStatement stmt = null;
 
 		try {
-			stmt = c.prepareStatement("INSERT INTO subscription (subscriptionid, reference, duration, throttling, linkToIncomingSubscription, agentUri) VALUES(?,?,?,?,?,?)");
+			stmt = c.prepareStatement("INSERT INTO subscription (subscriptionid, reference, duration, throttling, linkToIncomingSubscription, agentUri, timestamp) VALUES(?,?,?,?,?,?,?)");
 
 			stmt.setString(1, subscriptionId);
 
@@ -143,6 +152,14 @@ public class SubscriptionStorage implements SubscriptionStorageInterface {
 				stmt.setNull(6, Types.VARCHAR);
 			} else {
 				stmt.setString(6, agentURI.toString());
+			}
+
+			// TODO when using JAVA 1.8 change getTimeInMillis with a more
+			// efficient get()
+			if (timestamp == 0) {
+				stmt.setNull(7, Types.BIGINT);
+			} else {
+				stmt.setLong(7, timestamp);
 			}
 
 			stmt.execute();
@@ -319,7 +336,7 @@ public class SubscriptionStorage implements SubscriptionStorageInterface {
 					password);
 
 			insertSubscription(c, subscriptionId, request, agentURI,
-					linkToIncomingSubscriptionId);
+					linkToIncomingSubscriptionId, timestamp);
 
 			for (EntityId entityId : request.getEntityIdList()) {
 				insertEntityId(c, subscriptionId, entityId);
@@ -880,9 +897,168 @@ public class SubscriptionStorage implements SubscriptionStorageInterface {
 	}
 
 	@Override
+	public List<SubscriptionWithInfo> getAllIncomingSubscription() {
+
+		List<SubscriptionWithInfo> subscriptionWithInfoList = new ArrayList<SubscriptionWithInfo>();
+
+		Connection c = null;
+		PreparedStatement stmt = null;
+		ResultSet result = null;
+
+		try {
+
+			Class.forName("org.hsqldb.jdbc.JDBCDriver");
+
+			c = DriverManager.getConnection(URICONNECTION + NAME_DB, username,
+					password);
+
+			stmt = c.prepareStatement("SELECT subscriptionid, reference, duration, throttling, timestamp FROM subscription");
+
+			result = stmt.executeQuery();
+
+			while (result.next()) {
+
+				SubscriptionWithInfo subscriptionWithInfo = new SubscriptionWithInfo();
+
+				subscriptionWithInfo.setId(result.getString("subscriptionid"));
+				subscriptionWithInfo
+						.setReference(result.getString("reference"));
+
+				Long originalDuration = result.getLong("duration");
+				if (result.wasNull()) {
+					originalDuration = null;
+				}
+				Long timestamp = result.getLong("timestamp");
+				if (result.wasNull()) {
+					timestamp = null;
+				}
+
+				long duration = computeDuration(originalDuration, timestamp);
+				if (duration <= 0) {
+
+					logger.info("Subscription expired found in the HSQLDB. It is going to be deleted. Subscriptionid: "
+							+ subscriptionWithInfo.getId());
+
+					this.deleteIncomingSubscription(subscriptionWithInfo
+							.getId());
+					continue;
+
+				} else {
+					subscriptionWithInfo.setDuration(DurationUtils
+							.convertToDuration(duration));
+				}
+
+				Long throttling = result.getLong("throttling");
+				if (result.wasNull()) {
+					subscriptionWithInfo.setThrottling(DurationUtils
+							.convertToDuration(throttling));
+				} else {
+					subscriptionWithInfo.setThrottling(DurationUtils
+							.convertToDuration(defaultThrottling));
+				}
+				
+				subscriptionWithInfoList.add(subscriptionWithInfo);
+
+			}
+
+		} catch (SQLException e) {
+			logger.info("SQLException", e);
+		} catch (Exception e) {
+			logger.info("ERROR: failed to load HSQLDB JDBC driver.", e);
+
+		} finally {
+
+			try {
+				if (result != null) {
+					result.close();
+				}
+
+				if (stmt != null) {
+					stmt.close();
+				}
+
+				if (c != null) {
+					c.close();
+				}
+			} catch (SQLException e) {
+				logger.info("SQL Exception", e);
+			}
+
+		}
+		return subscriptionWithInfoList;
+
+	}
+
+	private long computeDuration(Long originalduration, Long timestamp) {
+
+		if (originalduration == null) {
+			originalduration = defaultDuration;
+		}
+
+		if (timestamp != null) {
+
+			long now = System.currentTimeMillis();
+			return originalduration - (now - timestamp);
+
+		} else {
+
+			return originalduration;
+
+		}
+
+	}
+
+	@Override
 	public long getTimestamp(String id) {
 
-		return 0;
+		long timestamp = 0;
+
+		Connection c = null;
+		PreparedStatement stmt = null;
+		ResultSet result = null;
+
+		try {
+
+			Class.forName("org.hsqldb.jdbc.JDBCDriver");
+
+			c = DriverManager.getConnection(URICONNECTION + NAME_DB, username,
+					password);
+
+			stmt = c.prepareStatement("SELECT timestamp FROM subscription WHERE subscriptionId = ? ");
+
+			stmt.setString(1, id);
+			result = stmt.executeQuery();
+
+			while (result.next()) {
+
+				timestamp = result.getLong("timestamp");
+			}
+
+		} catch (SQLException e) {
+			logger.info("SQLException", e);
+		} catch (Exception e) {
+			logger.info("ERROR: failed to load HSQLDB JDBC driver.", e);
+
+		} finally {
+
+			try {
+				if (result != null) {
+					result.close();
+				}
+
+				if (stmt != null) {
+					stmt.close();
+				}
+
+				if (c != null) {
+					c.close();
+				}
+			} catch (SQLException e) {
+				logger.info("SQL Exception", e);
+			}
+
+		}
+		return timestamp;
 
 	}
 

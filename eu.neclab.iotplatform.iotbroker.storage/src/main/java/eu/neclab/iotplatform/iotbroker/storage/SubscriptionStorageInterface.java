@@ -84,16 +84,20 @@ public interface SubscriptionStorageInterface {
 	SubscribeContextRequest getIncomingSubscription(String id);
 
 	/**
+	 * Retrieve all the stored incoming subscriptions
+	 */
+	List<SubscriptionWithInfo> getAllIncomingSubscription();
+
+	/**
 	 * Retrieve the subscription stored under an identifier.
 	 */
 	SubscribeContextRequest getOutgoingSubscription(String id);
 
 	/**
 	 * Retrieve the outgoing subscription stored under an identifier together
-	 * with agentUri and the link incomining subscription.
+	 * with agentUri and the link incoming subscription.
 	 */
-	OutgoingSubscriptionWithInfo getOutgoingSubscriptionWithMetadata(
-			String id);
+	OutgoingSubscriptionWithInfo getOutgoingSubscriptionWithMetadata(String id);
 
 	/**
 	 * Retrieve the URI that has been stored under an id.
@@ -136,7 +140,7 @@ public interface SubscriptionStorageInterface {
 	 * @return
 	 */
 	List<SubscriptionWithInfo> checkContextElement(ContextElement contextElement);
-	
+
 	void resetDB();
 
 }

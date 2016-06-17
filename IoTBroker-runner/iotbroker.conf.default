@@ -18,6 +18,9 @@ iotbroker_tomcatinithttpsport=9442
 # IoT Broker produced type
 iotbroker_producedtype="application/json"
 
+# IoT Broker scalability settings
+iotbroker_ismaster=true
+
 # Local storage settings
 iotbroker_hsqldburl="localhost"
 iotbroker_hsqldbport=9002

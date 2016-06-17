@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -65,10 +66,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import eu.neclab.iotplatform.iotbroker.commons.ComplexMetadataUtil;
+import eu.neclab.iotplatform.iotbroker.commons.DurationUtils;
 import eu.neclab.iotplatform.iotbroker.commons.EntityIDMatcher;
 import eu.neclab.iotplatform.iotbroker.commons.GenerateUniqueID;
 import eu.neclab.iotplatform.iotbroker.commons.OutgoingSubscriptionWithInfo;
 import eu.neclab.iotplatform.iotbroker.commons.Pair;
+import eu.neclab.iotplatform.iotbroker.commons.SubscriptionWithInfo;
 import eu.neclab.iotplatform.iotbroker.commons.TraceKeeper;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.IoTAgentWrapperInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface;
@@ -93,7 +96,6 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.OperationScope;
 import eu.neclab.iotplatform.ngsi.api.datamodel.PEPCredentials;
-import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ReasonPhrase;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Restriction;
@@ -160,6 +162,13 @@ public class SubscriptionController {
 	 */
 	@Value("${PEPCredentialsEnabled:false}")
 	private boolean PEPCredentialsEnabled;
+
+	/**
+	 * This flag enables the forwarding of NGSI-10 notifications to a proxy,
+	 * instead of a direct notification to the subscriber
+	 */
+	@Value("${isMaster:true}")
+	private boolean isMaster;
 
 	// @Value("${forcePepCredentials:false}")
 	// private boolean forcePepCredentials;
@@ -234,9 +243,10 @@ public class SubscriptionController {
 	private final ContextUniqueIdentifierComparator contextUniqueIdentifierComparator = new ContextUniqueIdentifierComparator();
 
 	/**
-	 * A key-value store for storing subscription-related information.
+	 * An in-memory key-value store for storing subscription-related
+	 * information.
 	 */
-	private final Map<String, SubscriptionData> subscriptionStore = Collections
+	private final Map<String, SubscriptionData> subscriptionDataIndex = Collections
 			.synchronizedMap(new HashMap<String, SubscriptionData>());
 
 	/**
@@ -266,14 +276,27 @@ public class SubscriptionController {
 	public SubscriptionController() {
 		super();
 		genUniqueID = new GenerateUniqueID();
+
+		// quick and dirty solution
+		// TODO start initialization after all bundles are started
+		final SubscriptionController subscriptionController = this;
+		timer.schedule(new TimerTask() {
+
+			@Override
+			public void run() {
+				subscriptionController.initializeSubscriptionDataIndex();
+
+			}
+		}, 2000);
+
 	}
 
 	/**
 	 * @return A pointer to the key-value store used for storing subscription-
 	 *         related information.
 	 */
-	public Map<String, SubscriptionData> getSubscriptionStore() {
-		return subscriptionStore;
+	public Map<String, SubscriptionData> getSubscriptionDataIndex() {
+		return subscriptionDataIndex;
 	}
 
 	/**
@@ -382,12 +405,30 @@ public class SubscriptionController {
 					 * reference must be the full path (comprehensive of the
 					 * notifyContextAvailability resource)
 					 */
-					 + "/ngsi9/notifyContextAvailability";
+					+ "/ngsi9/notifyContextAvailability";
 
 		} catch (UnknownHostException e) {
 			logger.error("Unknown Host", e);
 		}
 		return ref;
+	}
+
+	public void initializeSubscriptionDataIndex() {
+
+		logger.info("Restoring subscription tasks");
+
+		List<SubscriptionWithInfo> subscriptionWithInfoList = subscriptionStorage
+				.getAllIncomingSubscription();
+
+		for (SubscriptionWithInfo subscriptionWithInfo : subscriptionWithInfoList) {
+
+			logger.info("Restoring subscription: "
+					+ subscriptionWithInfo.getId());
+
+			handleInMemorySubscriptionTask(subscriptionWithInfo.getId(),
+					subscriptionWithInfo);
+		}
+
 	}
 
 	/**
@@ -422,6 +463,9 @@ public class SubscriptionController {
 		SubscribeContextAvailabilityRequest scaReq = new SubscribeContextAvailabilityRequest(
 				scReq.getAllEntity(), scReq.getAttributeList(), ref,
 				scReq.getDuration(), null, scReq.getRestriction());
+		if (scReq.getDuration() == null) {
+			scaReq.setDuration(DurationUtils.convertToDuration(defaultDuration));
+		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("Sending SubscribeContextAvailabilityRequest to ConfManWrapper:"
 					+ scaReq.toString());
@@ -440,9 +484,9 @@ public class SubscriptionController {
 		 * The response from the wrapper is analyzed, and if it is not positive
 		 * the function is aborted and an error is returned.
 		 */
-		if (subscribeContextAvailability.getErrorCode() != null
-				&& subscribeContextAvailability.getErrorCode().getCode() != 200
-				&& !ignoreIoTDiscoveryFailure) {
+		if (!ignoreIoTDiscoveryFailure
+				&& subscribeContextAvailability.getErrorCode() != null
+				&& subscribeContextAvailability.getErrorCode().getCode() != 200) {
 			scRes = new SubscribeContextResponse(null, new SubscribeError(null,
 					new StatusCode(500,
 							ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
@@ -455,73 +499,82 @@ public class SubscriptionController {
 				logger.debug("SUBSCRIPTION ID  = " + idSubRequest);
 			}
 
-			/*
-			 * We also create a task that will automatically unsubscribe again
-			 * as soon as the subscription has expired.
-			 */
+			handleInMemorySubscriptionTask(idSubRequest, scReq);
 
-			UnsubscribeTask task = new UnsubscribeTask(idSubRequest, this);
-			if (scReq.getDuration() != null && logger.isDebugEnabled()) {
-				logger.debug("Subscription time: "
-						+ scReq.getDuration().getTimeInMillis(
-								new GregorianCalendar()));
-			}
+			// The following commented out code is now executed by the previous
+			// private method.
 
+			// /*
+			// * We also create a task that will automatically unsubscribe again
+			// * as soon as the subscription has expired.
+			// */
+			//
+			// UnsubscribeTask task = new UnsubscribeTask(idSubRequest, this);
+			// if (scReq.getDuration() != null && logger.isDebugEnabled()) {
+			// logger.debug("Subscription time: "
+			// + scReq.getDuration().getTimeInMillis(
+			// new GregorianCalendar()));
+			// }
+			//
+			// //
 			// logger.info(String.format("Notification enable %b, at the proxy: %s",notificationProxyEnabled,
-			// notificationProxy));
-
-			// Lets define who should receive the notification when generated.
-			// Usually is the one defined by the Reference field in the
-			// subscription but it can be overridden if we define a proxy
-			String notificationHandler;
-			if (notificationProxyEnabled) {
-				if (notificationProxy == null || notificationProxy.isEmpty()) {
-					notificationHandler = scReq.getReference();
-					logger.warn("Notification proxy is not valid: "
-							+ notificationProxy);
-				}
-				notificationHandler = notificationProxy;
-			} else {
-				notificationHandler = scReq.getReference();
-			}
-
-			/*
-			 * Now we create a container where the relevant information about
-			 * this subscription is packed together. This relevant data consists
-			 * of - when the subscription is initiated - a link to the
-			 * unsubscribe task
-			 */
-
-			SubscriptionData subData = new SubscriptionData(notificationHandler);
-			subData.setStartTime(associationUtil.currentTime());
-			subData.setUnsubscribeTask(task);
-
-			if (traceOriginatorOfSubscription) {
-				String originator = getSubscriptionOriginator(scReq);
-				subData.setOriginator(originator);
-			}
-
-			/*
-			 * The subscription data is now put into the persistent storage,
-			 * where the id of the subscription (generated before) is used as
-			 * the key.
-			 */
-			subscriptionStore.put(idSubRequest, subData);
-
-			/*
-			 * The unsubscribe task is now submitted to the timer. In case no
-			 * duration is given, a default duration is used.
-			 */
-			if (scReq.getDuration() != null) {
-				timer.schedule(
-						task,
-						scReq.getDuration().getTimeInMillis(
-								new GregorianCalendar()));
-			} else {
-				timer.schedule(task, defaultDuration);
-				scaReq.setDuration(associationUtil
-						.convertToDuration(defaultDuration));
-			}
+			// // notificationProxy));
+			//
+			// // Lets define who should receive the notification when
+			// generated.
+			// // Usually is the one defined by the Reference field in the
+			// // subscription but it can be overridden if we define a proxy
+			// String notificationHandler;
+			// if (notificationProxyEnabled) {
+			// if (notificationProxy == null || notificationProxy.isEmpty()) {
+			// notificationHandler = scReq.getReference();
+			// logger.warn("Notification proxy is not valid: "
+			// + notificationProxy);
+			// }
+			// notificationHandler = notificationProxy;
+			// } else {
+			// notificationHandler = scReq.getReference();
+			// }
+			//
+			// /*
+			// * Now we create a container where the relevant information about
+			// * this subscription is packed together. This relevant data
+			// consists
+			// * of - when the subscription is initiated - a link to the
+			// * unsubscribe task
+			// */
+			//
+			// SubscriptionData subData = new
+			// SubscriptionData(notificationHandler);
+			// subData.setStartTime(associationUtil.currentTime());
+			// subData.setUnsubscribeTask(task);
+			//
+			// if (traceOriginatorOfSubscription) {
+			// String originator = getSubscriptionOriginator(scReq);
+			// subData.setOriginator(originator);
+			// }
+			//
+			// /*
+			// * The subscription data is now put into the persistent storage,
+			// * where the id of the subscription (generated before) is used as
+			// * the key.
+			// */
+			// subscriptionDataIndex.put(idSubRequest, subData);
+			//
+			// /*
+			// * The unsubscribe task is now submitted to the timer. In case no
+			// * duration is given, a default duration is used.
+			// */
+			// if (scReq.getDuration() != null) {
+			// timer.schedule(
+			// task,
+			// scReq.getDuration().getTimeInMillis(
+			// new GregorianCalendar()));
+			// } else {
+			// timer.schedule(task, defaultDuration);
+			// scaReq.setDuration(associationUtil
+			// .convertToDuration(defaultDuration));
+			// }
 
 			/*
 			 * Here the incoming subscription is stored in the persistent
@@ -574,6 +627,82 @@ public class SubscriptionController {
 
 	}
 
+	/**
+	 * This task is meant to handle a new subscription by indexing it in the
+	 * in-memory map and scheduling the needed tasks
+	 * 
+	 * @param subscriptionId
+	 * @param subscribeContextRequest
+	 */
+	private void handleInMemorySubscriptionTask(String subscriptionId,
+			SubscribeContextRequest subscribeContextRequest) {
+
+		/*
+		 * We also create a task that will automatically unsubscribe again as
+		 * soon as the subscription has expired.
+		 */
+
+		UnsubscribeTask task = new UnsubscribeTask(subscriptionId, this);
+		if (subscribeContextRequest.getDuration() != null
+				&& logger.isDebugEnabled()) {
+			logger.debug("Subscription time: "
+					+ subscribeContextRequest.getDuration().getTimeInMillis(
+							new GregorianCalendar()));
+		}
+
+		// logger.info(String.format("Notification enable %b, at the proxy: %s",notificationProxyEnabled,
+		// notificationProxy));
+
+		// Lets define who should receive the notification when generated.
+		// Usually is the one defined by the Reference field in the
+		// subscription but it can be overridden if we define a proxy
+		String notificationHandler;
+		if (notificationProxyEnabled) {
+			if (notificationProxy == null || notificationProxy.isEmpty()) {
+				notificationHandler = subscribeContextRequest.getReference();
+				logger.warn("Notification proxy is not valid: "
+						+ notificationProxy);
+			}
+			notificationHandler = notificationProxy;
+		} else {
+			notificationHandler = subscribeContextRequest.getReference();
+		}
+
+		/*
+		 * Now we create a container where the relevant information about this
+		 * subscription is packed together. This relevant data consists of -
+		 * when the subscription is initiated - a link to the unsubscribe task
+		 */
+
+		SubscriptionData subData = new SubscriptionData(notificationHandler);
+		subData.setStartTime(DurationUtils.currentTime());
+		subData.setUnsubscribeTask(task);
+
+		if (traceOriginatorOfSubscription) {
+			String originator = getSubscriptionOriginator(subscribeContextRequest);
+			subData.setOriginator(originator);
+		}
+
+		/*
+		 * The subscription data is now put into the persistent storage, where
+		 * the id of the subscription (generated before) is used as the key.
+		 */
+		subscriptionDataIndex.put(subscriptionId, subData);
+
+		/*
+		 * The unsubscribe task is now submitted to the timer. In case no
+		 * duration is given, a default duration is used.
+		 */
+		if (subscribeContextRequest.getDuration() != null) {
+			timer.schedule(task, subscribeContextRequest.getDuration()
+					.getTimeInMillis(new GregorianCalendar()));
+		} else {
+			timer.schedule(task, defaultDuration);
+
+		}
+
+	}
+
 	private String getSubscriptionOriginator(
 			SubscribeContextRequest subscription) {
 
@@ -588,11 +717,12 @@ public class SubscriptionController {
 
 				if (ScopeTypes.SubscriptionOriginator.toString().toLowerCase()
 						.equals(operationScope.getScopeType().toLowerCase())) {
-					String originator = operationScope.getScopeValue().toString();
-					if (originator.matches("http://.*")){
+					String originator = operationScope.getScopeValue()
+							.toString();
+					if (originator.matches("http://.*")) {
 						return originator;
 					} else {
-						return "http://"+originator;
+						return "http://" + originator;
 					}
 				}
 			}
@@ -622,24 +752,40 @@ public class SubscriptionController {
 							null)));
 
 		}
-		String subsAvailId = linkAvSub.getAvailIDs(uCSreq.getSubscriptionId())
-				.get(0);
-		final UpdateContextAvailabilitySubscriptionRequest uCAReq = new UpdateContextAvailabilitySubscriptionRequest(
-				sCReq.getEntityIdList(), sCReq.getAttributeList(),
-				uCSreq.getDuration(), subsAvailId, uCSreq.getRestriction());
-		new Thread() {
-			@Override
-			public void run() {
-				UpdateContextAvailabilitySubscriptionResponse uCASRes = confManWrapper
-						.receiveReqFrmSubscriptionController(uCAReq);
-				if (uCASRes != null && uCASRes.getErrorCode().getCode() != 200) {
-					logger.debug("Error from COnfmanager:"
-							+ uCASRes.toString().replaceAll("\\s", ""));
-				}
-			}
-		}.start();
+		List<String> availabilitySubscriptionIDs = linkAvSub.getAvailIDs(uCSreq
+				.getSubscriptionId());
+		String subsAvailId;
+		if (availabilitySubscriptionIDs != null
+				&& !availabilitySubscriptionIDs.isEmpty()) {
+			subsAvailId = linkAvSub.getAvailIDs(uCSreq.getSubscriptionId())
+					.get(0);
+			final UpdateContextAvailabilitySubscriptionRequest uCAReq = new UpdateContextAvailabilitySubscriptionRequest(
+					sCReq.getEntityIdList(), sCReq.getAttributeList(),
+					uCSreq.getDuration(), subsAvailId, uCSreq.getRestriction());
 
-		SubscriptionData subData = subscriptionStore.get(uCSreq
+			if (uCSreq.getDuration() == null) {
+				uCAReq.setDuration(DurationUtils
+						.convertToDuration(defaultDuration));
+			}
+
+			new Thread() {
+				@Override
+				public void run() {
+					UpdateContextAvailabilitySubscriptionResponse uCASRes = confManWrapper
+							.receiveReqFrmSubscriptionController(uCAReq);
+					if (uCASRes != null
+							&& uCASRes.getErrorCode().getCode() != 200) {
+						if (logger.isDebugEnabled())
+							logger.debug("Error from IoT Discovery:"
+									+ uCASRes.toString().replaceAll("\\s", ""));
+					}
+				}
+			}.start();
+		} else {
+			logger.info("Impossibile to find a ContextAvailabilitySubscription related to this subscription. Probably there was a problem with the communication with the IoT Discovery");
+		}
+
+		SubscriptionData subData = subscriptionDataIndex.get(uCSreq
 				.getSubscriptionId());
 		UnsubscribeTask prvtask = subData.getUnsubscribeTask();
 		UnsubscribeTask task = new UnsubscribeTask(uCSreq.getSubscriptionId(),
@@ -665,8 +811,6 @@ public class SubscriptionController {
 			try {
 				timer.schedule(task, new Date(System.currentTimeMillis()),
 						defaultDuration);
-				uCAReq.setDuration(associationUtil
-						.convertToDuration(defaultDuration));
 
 			} catch (Exception e) {
 				logger.error("Time Schedule Error", e);
@@ -702,18 +846,36 @@ public class SubscriptionController {
 		}
 		if (lSubscriptionIDOriginal.size() == 1) {
 			String tmp = lSubscriptionIDOriginal.get(0);
-			availabilitySub.deleteAvalabilitySubscription(tmp);
-			linkAvSub.delete(subscriptionID, tmp);
 
-			// Deleting the subscription, all the linked outgoing subscription
-			// will be deleted as a cascade effect
-			subscriptionStorage.deleteIncomingSubscription(subscriptionID);
+			/*
+			 * Remove information from the persistent storage Only master Broker
+			 * can do it
+			 */
+			if (isMaster) {
 
-			SubscriptionData sData = subscriptionStore.get(subscriptionID);
-			sData.getUnsubscribeTask().cancel();
-			sData.getThrottlingTask().cancel();
+				availabilitySub.deleteAvalabilitySubscription(tmp);
+				linkAvSub.delete(subscriptionID, tmp);
+
+				// Deleting the subscription, all the linked outgoing
+				// subscription
+				// will be deleted as a cascade effect
+				subscriptionStorage.deleteIncomingSubscription(subscriptionID);
+			}
+
+			/*
+			 * Remove from the in-memory subscriptionDataIndex
+			 */
+			SubscriptionData sData = subscriptionDataIndex.get(subscriptionID);
+			UnsubscribeTask unsubscribeTask = sData.getUnsubscribeTask();
+			if (unsubscribeTask != null) {
+				unsubscribeTask.cancel();
+			}
+			ThrottlingTask throttlingTask = sData.getThrottlingTask();
+			if (throttlingTask != null) {
+				throttlingTask.cancel();
+			}
 			logger.info("Subscription ID: " + subscriptionID + " Canceled");
-			subscriptionStore.remove(subscriptionID);
+			subscriptionDataIndex.remove(subscriptionID);
 		}
 
 	}
@@ -786,11 +948,17 @@ public class SubscriptionController {
 				subscriptionStorage.deleteIncomingSubscription(uCReq
 						.getSubscriptionId());
 
-				SubscriptionData sData = subscriptionStore.get(uCReq
+				SubscriptionData sData = subscriptionDataIndex.get(uCReq
 						.getSubscriptionId());
-				sData.getUnsubscribeTask().cancel();
-				sData.getThrottlingTask().cancel();
-				subscriptionStore.remove(tmp);
+				UnsubscribeTask unsubscribeTask = sData.getUnsubscribeTask();
+				if (unsubscribeTask != null) {
+					unsubscribeTask.cancel();
+				}
+				ThrottlingTask throttlingTask = sData.getThrottlingTask();
+				if (throttlingTask != null) {
+					throttlingTask.cancel();
+				}
+				subscriptionDataIndex.remove(tmp);
 
 			}
 		}
@@ -1053,8 +1221,8 @@ public class SubscriptionController {
 			// Lets try if the id is an incoming subscription
 			inSubReq = subscriptionStorage.getIncomingSubscription(ncReq
 					.getSubscriptionId());
-			
-			if (inSubReq != null){
+
+			if (inSubReq != null) {
 				inID = ncReq.getSubscriptionId();
 			}
 
@@ -1068,11 +1236,12 @@ public class SubscriptionController {
 			return new NotifyContextResponse(new StatusCode(470,
 					ReasonPhrase.SUBSCRIPTIONIDNOTFOUND_470.toString(), null));
 		}
-		
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("SubscriptionController: found incoming subscription ID: "
-					+ inID + System.getProperty("line.separator") + "SubscriptionController: Identified the original incoming "
+					+ inID
+					+ System.getProperty("line.separator")
+					+ "SubscriptionController: Identified the original incoming "
 					+ "subscription request: " + inSubReq.toString());
 		}
 
@@ -1100,27 +1269,27 @@ public class SubscriptionController {
 		 * that are potentially applicable for this notification.
 		 */
 
-			if (availId.size() == 1) {
-				if (logger.isDebugEnabled()){
-					logger.debug("SubscriptionController: found the following availability subscr ID:"
+		if (availId.size() == 1) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("SubscriptionController: found the following availability subscr ID:"
 						+ availId.get(0));
-				}
-				listAssoc = availabilitySub.getListOfAssociations(availId
-						.get(0));
+			}
+			listAssoc = availabilitySub.getListOfAssociations(availId.get(0));
 
 		} else if (!ignoreIoTDiscoveryFailure) {
 			logger.error("SubscriptionController: found wrong number of availability subscriptions, aborting.");
-			return new NotifyContextResponse(new StatusCode(500,
-					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(), "found wrong number of availability subscription. Expected 1"));
-			
+			return new NotifyContextResponse(
+					new StatusCode(500, ReasonPhrase.RECEIVERINTERNALERROR_500
+							.toString(),
+							"found wrong number of availability subscription. Expected 1"));
+
 		}
 
-			/*
+		/*
 		 * Now the associations are applied if there are any. Applying the
 		 * associations is done by the modifyEntityAttributeBasedAssociation
-		 * function. If there are no associations, the
-		 * contextelementresponse from the notification are taken as they
-		 * are.
+		 * function. If there are no associations, the contextelementresponse
+		 * from the notification are taken as they are.
 		 */
 
 		if (listAssoc != null && !listAssoc.isEmpty()) {
@@ -1128,8 +1297,7 @@ public class SubscriptionController {
 				logger.debug("SubscriptionController: Applying associations");
 
 			lCERes = modifyEntityAttributeBasedAssociation(
-					associationUtil
-							.convertToAssociationDS(listAssoc.get(0)),
+					associationUtil.convertToAssociationDS(listAssoc.get(0)),
 					ncReq.getContextElementResponseList());
 
 			/*
@@ -1138,14 +1306,14 @@ public class SubscriptionController {
 			 */
 
 			lCERes.addAll(ncReq.getContextElementResponseList());
-			
+
 			if (logger.isDebugEnabled())
 				logger.debug("SubscriptionController: Context Element Responses after applying assoc: "
 						+ lCERes.toString());
 
 		} else {
 			lCERes = ncReq.getContextElementResponseList();
-			
+
 			if (logger.isDebugEnabled())
 				logger.debug("SusbcriptionController: Found no associations");
 		}
@@ -1237,11 +1405,11 @@ public class SubscriptionController {
 			 * same attributedomain).
 			 */
 
-				QueryContextResponse qCRes_forMerger = new QueryContextResponse();
-				qCRes_forMerger.setContextResponseList(lCERes);
-				QueryResponseMerger qRM = new QueryResponseMerger(null);
-				qRM.put(qCRes_forMerger);
-				qCRes_forMerger = qRM.get();
+			QueryContextResponse qCRes_forMerger = new QueryContextResponse();
+			qCRes_forMerger.setContextResponseList(lCERes);
+			QueryResponseMerger qRM = new QueryResponseMerger(null);
+			qRM.put(qCRes_forMerger);
+			qCRes_forMerger = qRM.get();
 
 			if (logger.isDebugEnabled()) {
 				logger.debug("SubscriptionController: Response list after applying merger:"
@@ -1254,7 +1422,7 @@ public class SubscriptionController {
 			 * this notification.
 			 */
 
-			SubscriptionData subscriptionData = subscriptionStore.get(inID);
+			SubscriptionData subscriptionData = subscriptionDataIndex.get(inID);
 
 			List<ContextElementResponse> notificationQueue;
 
@@ -1317,7 +1485,6 @@ public class SubscriptionController {
 			 * subscription data, which is then put back into the storage.
 			 */
 			subscriptionData.setContextResponseQueue(notificationQueue);
-			subscriptionStore.put(inID, subscriptionData);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Adding to subdata subid:" + inID + " : "
 						+ subscriptionData);
@@ -1954,7 +2121,7 @@ public class SubscriptionController {
 
 		try {
 			northBoundWrapper.forwardNotification(notifyContextRequest,
-					new URI(subscriptionStore.get(incomingSubscriptionID)
+					new URI(subscriptionDataIndex.get(incomingSubscriptionID)
 							.getNotificationHandler()));
 		} catch (URISyntaxException e) {
 			logger.info("URISyntaxException", e);
@@ -2049,11 +2216,11 @@ public class SubscriptionController {
 			sCReq.setRestriction(restriction);
 		}
 
-		SubscriptionData subdata = subscriptionStore.get(originalId);
+		SubscriptionData subdata = subscriptionDataIndex.get(originalId);
 
 		logger.info("Current Duration: " + sCReq.getDuration().toString());
-		sCReq.setDuration(associationUtil.newDuration(sCReq.getDuration(),
-				associationUtil.currentTime().getTime()
+		sCReq.setDuration(DurationUtils.newDuration(sCReq.getDuration(),
+				DurationUtils.currentTime().getTime()
 						- subdata.getStartTime().getTime()));
 		logger.info("New Duration: " + sCReq.getDuration().toString());
 		return sCReq;
@@ -2079,7 +2246,8 @@ public class SubscriptionController {
 			UpdateContextSubscriptionRequest updateRequest, String originalID) {
 
 		// TODO check here if it is correct. I'm afraid that here it sending
-		// directly subscription update to IoT Agent without checking against the
+		// directly subscription update to IoT Agent without checking against
+		// the
 		// IoT discovery if the IoT Agent are anymore compliant with the
 		// subscription parameter
 
@@ -2096,15 +2264,17 @@ public class SubscriptionController {
 			tuCReq.setThrottling(updateRequest.getThrottling());
 			tuCReq.setSubscriptionId(id);
 			final URI agentUri = subscriptionStorage.getAgentUri(id);
-			new Thread() {
-				@Override
-				public void run() {
-					logger.debug(agentWrapper
-							.receiveReqFrmSubscriptionController(tuCReq,
-									agentUri));
-				}
+			if (agentUri != null) {
+				new Thread() {
+					@Override
+					public void run() {
+						logger.debug(agentWrapper
+								.receiveReqFrmSubscriptionController(tuCReq,
+										agentUri));
+					}
 
-			}.start();
+				}.start();
+			}
 		}
 	}
 
@@ -2256,8 +2426,6 @@ public class SubscriptionController {
 			return "ContextUniqueIdentifier [entityIdList=" + entityIdList
 					+ ", providingApplication=" + providingApplication + "]";
 		}
-		
-		
 
 	}
 

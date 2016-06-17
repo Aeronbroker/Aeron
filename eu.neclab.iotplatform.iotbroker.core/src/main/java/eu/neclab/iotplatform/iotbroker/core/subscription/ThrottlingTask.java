@@ -101,7 +101,7 @@ public class ThrottlingTask extends TimerTask {
 		logger.debug("SubscriptionId from TrottlingTask ---------------->"
 				+ subId);
 
-		SubscriptionData subscriptionData = subContoller.getSubscriptionStore()
+		SubscriptionData subscriptionData = subContoller.getSubscriptionDataIndex()
 				.get(subId);
 
 		logger.debug("Trotthling task ID ---------------->"

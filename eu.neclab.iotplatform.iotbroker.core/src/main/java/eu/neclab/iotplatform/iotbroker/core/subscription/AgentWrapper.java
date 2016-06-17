@@ -59,9 +59,9 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextSubscriptionRespons
 import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Requester;
 
 /**
- * Class for communicating with IoT Agents on behalf of the subscription 
+ * Class for communicating with IoT Agents on behalf of the subscription
  * controller.
- *
+ * 
  */
 public class AgentWrapper implements IoTAgentWrapperInterface {
 	private static Logger logger = Logger.getLogger(AgentWrapper.class);
@@ -71,7 +71,9 @@ public class AgentWrapper implements IoTAgentWrapperInterface {
 	/**
 	 * Creates a new instance of the class. Only a singleton instance is used
 	 * per IoT Broker deployment.
-	 * @param subscriptionController Pointer to the subscription controller.
+	 * 
+	 * @param subscriptionController
+	 *            Pointer to the subscription controller.
 	 */
 	public AgentWrapper(SubscriptionController subscriptionController) {
 		super();
@@ -93,11 +95,23 @@ public class AgentWrapper implements IoTAgentWrapperInterface {
 		this.ngsi10Requestor = ngsi10Requestor;
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface#receiveReqFrmSubscriptionController(eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextRequest, java.net.URI)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface
+	 * #
+	 * receiveReqFrmSubscriptionController(eu.neclab.iotplatform.ngsi.api.datamodel
+	 * .SubscribeContextRequest, java.net.URI)
 	 */
-	/* (non-Javadoc)
-	 * @see eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface#receiveReqFrmSubscriptionController(eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextRequest, java.net.URI)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface
+	 * #
+	 * receiveReqFrmSubscriptionController(eu.neclab.iotplatform.ngsi.api.datamodel
+	 * .SubscribeContextRequest, java.net.URI)
 	 */
 	@Override
 	public SubscribeContextResponse receiveReqFrmSubscriptionController(
@@ -110,24 +124,30 @@ public class AgentWrapper implements IoTAgentWrapperInterface {
 		return scRes;
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface#receiveFrmAgents(eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface
+	 * #receiveFrmAgents(eu.neclab.iotplatform.ngsi.api.datamodel.
+	 * NotifyContextRequest)
 	 */
 	@Override
-	public NotifyContextResponse receiveFrmAgents(NotifyContextRequest notifyContextRequest) {
-		
+	public NotifyContextResponse receiveFrmAgents(
+			NotifyContextRequest notifyContextRequest) {
+
 		/*
-		 * We pass the notification directly to the subscription controller.
-		 * The response received from it is then returned. In case the response
-		 * is null or it has a status code other than 200 "OK", a response
-		 * with status code 500 "internal error" is returned. 
+		 * We pass the notification directly to the subscription controller. The
+		 * response received from it is then returned. In case the response is
+		 * null or it has a status code other than 200 "OK", a response with
+		 * status code 500 "internal error" is returned.
 		 */
-		
+
 		NotifyContextResponse notifyContextResponse = subscriptionController
 				.receiveReqFrmAgentWrapper(notifyContextRequest);
 		if ((notifyContextResponse == null)
-				|| (notifyContextResponse.getResponseCode() != null && notifyContextResponse.getResponseCode()
-				.getCode() != 200)) {
+				|| (notifyContextResponse.getResponseCode() != null && notifyContextResponse
+						.getResponseCode().getCode() != 200)) {
 			return new NotifyContextResponse(new StatusCode(500,
 					"Receiver internal error", null));
 		} else {
@@ -135,11 +155,23 @@ public class AgentWrapper implements IoTAgentWrapperInterface {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface#receiveReqFrmSubscriptionController(eu.neclab.iotplatform.ngsi.api.datamodel.UnsubscribeContextRequest, java.net.URI)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface
+	 * #
+	 * receiveReqFrmSubscriptionController(eu.neclab.iotplatform.ngsi.api.datamodel
+	 * .UnsubscribeContextRequest, java.net.URI)
 	 */
-	/* (non-Javadoc)
-	 * @see eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface#receiveReqFrmSubscriptionController(eu.neclab.iotplatform.ngsi.api.datamodel.UnsubscribeContextRequest, java.net.URI)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface
+	 * #
+	 * receiveReqFrmSubscriptionController(eu.neclab.iotplatform.ngsi.api.datamodel
+	 * .UnsubscribeContextRequest, java.net.URI)
 	 */
 	@Override
 	public UnsubscribeContextResponse receiveReqFrmSubscriptionController(
@@ -151,24 +183,44 @@ public class AgentWrapper implements IoTAgentWrapperInterface {
 		logger.debug("Receive Request:" + uCRes.toString());
 		return uCRes;
 	}
-	
-	/* (non-Javadoc)
-	 * @see eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface#receiveReqFrmSubscriptionController(eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextSubscriptionRequest, java.net.URI)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface
+	 * #
+	 * receiveReqFrmSubscriptionController(eu.neclab.iotplatform.ngsi.api.datamodel
+	 * .UpdateContextSubscriptionRequest, java.net.URI)
 	 */
-	/* (non-Javadoc)
-	 * @see eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface#receiveReqFrmSubscriptionController(eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextSubscriptionRequest, java.net.URI)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * eu.neclab.iotplatform.iotbroker.core.subscription.IoTAgentWrapperInterface
+	 * #
+	 * receiveReqFrmSubscriptionController(eu.neclab.iotplatform.ngsi.api.datamodel
+	 * .UpdateContextSubscriptionRequest, java.net.URI)
 	 */
 	@Override
 	public UpdateContextSubscriptionResponse receiveReqFrmSubscriptionController(
 			UpdateContextSubscriptionRequest uCReq, URI uri) {
-		UpdateContextSubscriptionResponse a =new UpdateContextSubscriptionResponse();
-		a.setSubscribeResponse(new SubscribeResponse(uCReq.getSubscriptionId(), uCReq.getDuration(), uCReq.getThrottling()));
-		logger.debug(a);
-		logger.debug("Sending Request:" + uCReq.toString() + " : "
-				+ uri.toString());
-		UpdateContextSubscriptionResponse uCRes = ngsi10Requestor.updateContextSubscription(
-				uCReq, uri);
-		logger.debug("Receive Request:" + uCRes.toString());
+		UpdateContextSubscriptionResponse updateContextSubscriptionResponse = new UpdateContextSubscriptionResponse();
+		updateContextSubscriptionResponse
+				.setSubscribeResponse(new SubscribeResponse(uCReq
+						.getSubscriptionId(), uCReq.getDuration(), uCReq
+						.getThrottling()));
+		if (logger.isDebugEnabled()) {
+			logger.debug(updateContextSubscriptionResponse);
+			logger.debug("Sending Request:" + uCReq.toString() + " : "
+					+ uri.toString());
+		}
+		UpdateContextSubscriptionResponse uCRes = ngsi10Requestor
+				.updateContextSubscription(uCReq, uri);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Receive Request:" + uCRes.toString());
+
+		}
 		return uCRes;
 	}
 

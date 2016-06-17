@@ -1293,6 +1293,26 @@ public class RestProviderController {
 
 		return new ResponseEntity<QueryContextResponse>(response, HttpStatus.OK);
 	}
+	
+	/**
+	 * Executes the convenience method for subscribing.
+	 * 
+	 * @param request
+	 *            The request body of the subscription.
+	 * @return The response body.
+	 */
+	@RequestMapping(value = "/ngsi10/contextSubscriptions", method = RequestMethod.POST, consumes = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
+	public ResponseEntity<SubscribeContextResponse> convenientSubscribeContext(
+			HttpServletRequest requester,
+			@RequestBody SubscribeContextRequest request) {
+
+		logger.info(" <--- NGSI-10 has received a convenient request for SubscribeContextRequest ( POST )");
+
+		return subscribeContext(requester, request);
+
+	}
 
 	/**
 	 * Executes the convenience method for subscribing.

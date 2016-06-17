@@ -50,6 +50,7 @@ import java.util.Timer;
 
 import org.apache.log4j.Logger;
 
+import eu.neclab.iotplatform.iotbroker.commons.DurationUtils;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest;
@@ -165,7 +166,7 @@ public class NorthBoundWrapper {
 			 * Get the subscription data from the subscription controller.
 			 */
 			SubscriptionData sData = subscriptionController
-					.getSubscriptionStore().get(
+					.getSubscriptionDataIndex().get(
 							sCRes.getSubscribeResponse().getSubscriptionId());
 
 			// create the notification queue for the subscription
@@ -214,7 +215,7 @@ public class NorthBoundWrapper {
 		if (uCSres.getSubscribeError() == null) {
 
 			SubscriptionData sData = subscriptionController
-					.getSubscriptionStore().get(uCSreq.getSubscriptionId());
+					.getSubscriptionDataIndex().get(uCSreq.getSubscriptionId());
 			// Setting Throttling
 
 			ThrottlingTask taskThrottling = new ThrottlingTask(
@@ -222,7 +223,9 @@ public class NorthBoundWrapper {
 
 			// storeTimerTask and subId
 			ThrottlingTask prevTaskThrottling = sData.getThrottlingTask();
-			prevTaskThrottling.cancel();
+			if (prevTaskThrottling != null) {
+				prevTaskThrottling.cancel();
+			}
 			sData.setThrottlingTask(taskThrottling);
 			if (uCSres.getSubscribeResponse().getThrottling() != null) {
 				try {
@@ -245,7 +248,7 @@ public class NorthBoundWrapper {
 							new Date(System.currentTimeMillis()),
 							subscriptionController.getDefaultThrottling());
 					uCSres.getSubscribeResponse().setThrottling(
-							associationUtil
+							DurationUtils
 									.convertToDuration(subscriptionController
 											.getDefaultThrottling()));
 				} catch (Exception e) {
@@ -259,7 +262,7 @@ public class NorthBoundWrapper {
 			}
 
 			// add SubscriptionData to the Hashmap
-			subscriptionController.getSubscriptionStore().put(
+			subscriptionController.getSubscriptionDataIndex().put(
 					uCSreq.getSubscriptionId(), sData);
 		}
 

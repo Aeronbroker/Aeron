@@ -43,19 +43,12 @@ package eu.neclab.iotplatform.iotbroker.core.subscription;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.Duration;
 
 import org.apache.log4j.Logger;
 
@@ -103,64 +96,6 @@ public class AssociationsUtil {
 					AssociationDS.class));
 		}
 		return lAssoc;
-	}
-
-	/**
-	 * Returns the current time in {@link Date} format.
-	 */
-	public Date currentTime() {
-		Calendar cal = Calendar.getInstance();
-		return cal.getTime();
-
-	}
-
-	/**
-	 * Returns the remaining duration, given an initial duration and the
-	 * time elapsed so far.
-	 *
-	 * @param oldDuration
-	 *  The initial duration.
-	 * @param timeElapsed
-	 *  The time elapsed so far.
-	 * @return The remaining duration.
-	 */
-	public Duration newDuration(Duration oldDuration, long timeElapsed) {
-		long ss = oldDuration.getTimeInMillis(new GregorianCalendar());
-		logger.debug("Old Duration in millisecond:" + ss);
-		long remainingDuration = ss > timeElapsed ? ss - timeElapsed : 0;
-		logger.debug("timeElapsed in millisecond:" + timeElapsed);
-		logger.debug("remainingDuration in millisecond:" + remainingDuration);
-		DatatypeFactory df = null;
-		try {
-			df = DatatypeFactory.newInstance();
-		} catch (DatatypeConfigurationException e) {
-			logger.error("Data Type Wrong!",e);
-		}
-		Duration duration = df.newDuration(remainingDuration);
-		logger.debug("remainingDuration in Duration: " + duration);
-
-		return duration;
-
-	}
-
-	/**
-	 * Converts a string representing milliseconds into the {@link Duration} format.
-	 *
-	 * @param milliSeconds String representing a number of milliseconds.
-	 * @return The milliseconds in {@link Duration} format.
-	 */
-	public Duration convertToDuration(long milliSeconds) {
-
-		DatatypeFactory df = null;
-		try {
-			df = DatatypeFactory.newInstance();
-		} catch (DatatypeConfigurationException e) {
-			logger.error("Data Type Wrong!",e);
-		}
-		Duration duration = df.newDuration(milliSeconds);
-		logger.debug("String " + milliSeconds + " to Duration: " + duration);
-
-		return duration;
 	}
 
 	/**

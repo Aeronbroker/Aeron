@@ -519,6 +519,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	public IotBrokerCore() {
 
 		System.setProperty("java.awt.headless", "true");
+		
 
 	}
 

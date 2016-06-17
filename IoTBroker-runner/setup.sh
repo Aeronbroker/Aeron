@@ -145,6 +145,7 @@ setPropertyIntoIni "hsqldb.directory" "$iotbroker_hsqldbdirectory" "$iotbroker_c
 
 setPropertyIntoXML "schema_ngsi9_operation" "$iotbroker_schemangsi9operation" "$iotbroker_configxml"
 setPropertyIntoXML "schema_ngsi10_operation" "$iotbroker_schemangsi10operation" "$iotbroker_configxml"
+setPropertyIntoXML "isMaster" "$iotbroker_ismaster" "$iotbroker_configxml"
 setPropertyIntoXML "pathPreFix_ngsi9" "$iotbroker_pathprefixngsi9" "$iotbroker_configxml"
 setPropertyIntoXML "pathPreFix_ngsi10" "$iotbroker_pathprefixngsi10" "$iotbroker_configxml"
 setPropertyIntoXML "ngsi9Uri" "$iotbroker_ngsi9uri" "$iotbroker_configxml"
