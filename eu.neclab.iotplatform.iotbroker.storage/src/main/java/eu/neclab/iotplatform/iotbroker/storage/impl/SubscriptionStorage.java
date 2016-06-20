@@ -53,12 +53,9 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.Duration;
-import javax.xml.datatype.DatatypeConstants.Field;
 
 import org.apache.log4j.Logger;
 import org.hsqldb.types.Types;
-import org.junit.runner.Computer;
 import org.springframework.beans.factory.annotation.Value;
 
 import eu.neclab.iotplatform.iotbroker.commons.DurationUtils;
