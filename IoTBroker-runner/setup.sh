@@ -7,6 +7,7 @@ iotbroker_configini='/opt/Aeron/IoTBroker-runner/configuration//config.ini'
 iotbroker_configxml='/opt/Aeron/fiwareRelease/iotbrokerconfig/iotBroker/config/config.xml'
 iotbroker_embeddedagent_couchdbxml='/opt/Aeron/fiwareRelease/iotbrokerconfig/embeddedAgent/couchdb.xml'
 
+iotbroker_version="5.1.3"
 
 AUTOSETUP='false'
 PROPAGATEAUTO='false'
@@ -84,23 +85,88 @@ function setConfiguration {
 	value=${value//\//\\/}
 
 	
-	sed -i "s/$key=.*/$key=\'$value\'/g" "$3"
+	if grep -q "$key=.*" "$3"; then
+		sed -i "s/$key=.*/$key=\'$value\'/g" "$3"
+	else 
+		echo "$1='$2'" >> "$3"
+	fi
 
 }
 
+function disableBundle {
+
+	sed -i "s/.*$1-$iotbroker_version.jar.*//g" $iotbroker_configini
+
+}
+
+function enableBundle {
+	
+	found=`grep $1-$iotbroker_version.jar configuration/config.ini`
+	if [ -n "$found" ];
+	then
+		return
+	fi
+	
+	builder_target=`dirname $iotbroker_configini`
+	builder_target=`dirname $builder_target`
+	builder_target=`dirname $builder_target`
+	builder_target="$builder_target/eu.neclab.iotplatform.iotbroker.builder/target/iotbroker.builder-$iotbroker_version-assembly/bundle/"
+	
+	if [ ! -e $builder_target/$1-$iotbroker_version.jar ];
+	then
+		echo "WARNING bundle not found: $builder_target/$1-$iotbroker_version.jar"
+		return;
+	fi
+	
+	
+	lastline=`awk '/./{line=$0} END{print line}' $iotbroker_configini`
+	lastline=${lastline//\./\\\.}
+	lastline=${lastline//\//\\/}
+	if [[ $lastline != *,* ]] ; then
+		sed -i "s/$lastline/$lastline, \\\/g" $iotbroker_configini
+	fi
+	
+	if [ "$2" == "nostart" ];
+	then
+		echo "../eu.neclab.iotplatform.iotbroker.builder/target/iotbroker.builder-$iotbroker_version-assembly/bundle/$1-$iotbroker_version.jar, \\" >> $iotbroker_configini
+	else
+		echo "../eu.neclab.iotplatform.iotbroker.builder/target/iotbroker.builder-$iotbroker_version-assembly/bundle/$1-$iotbroker_version.jar@start, \\" >> $iotbroker_configini
+	fi
+}
+
+function correctConfigIni {
+
+	lastline=`awk '/./{line=$0} END{print line}' $iotbroker_configini`
+	correctlastline=${lastline/, \\/}
+	correctlastline=${correctlastline//\./\\\.}
+	correctlastline=${correctlastline//\//\\/}
+	sed -i "s/$correctlastline, \\\/$correctlastline/g" $iotbroker_configini
+	
+	sed -i '/^$/d' $iotbroker_configini
+	
+}
+
 # Escape characters
-sed -e 's/[]\/$*.^|[]/\\&/g' ./iotbroker.conf.local > ./.iotbroker.conf.local.escaped
-chmod +x .iotbroker.conf.local.escaped
-. ./.iotbroker.conf.local.escaped
+sed -e 's/[]\/$*.^|[]/\\&/g' ./iotbroker.conf.default > ./.iotbroker.conf.default.escaped
+chmod +x .iotbroker.conf.default.escaped
+. ./.iotbroker.conf.default.escaped
+
+if [ -e iotbroker.conf.local ];
+then
+	echo "Reading default preferences from iotbroker.conf.local"
+	sed -e 's/[]\/$*.^|[]/\\&/g' ./iotbroker.conf.local > ./.iotbroker.conf.local.escaped
+	chmod +x .iotbroker.conf.local.escaped
+	. ./.iotbroker.conf.local.escaped
+fi
 
 
 if [ "$AUTOSETUP" = true ]; 
 then
 	iotbrokerdir="$(dirname `pwd`)"
 	
-	iotbroker_configini="$iotbrokerdir/IoTBroker-runner/configuration/config.ini"
-	iotbroker_configxml="$iotbrokerdir/fiwareRelease/iotbrokerconfig/iotBroker/config/config.xml"
-	iotbroker_embeddedagent_couchdbxml="$iotbrokerdir/fiwareRelease/iotbrokerconfig/embeddedAgent/couchdb.xml"
+	iotbroker_configini_auto="$iotbrokerdir/IoTBroker-runner/configuration/config.ini"
+	iotbroker_configxml_auto="$iotbrokerdir/fiwareRelease/iotbrokerconfig/iotBroker/config/config.xml"
+	iotbroker_embeddedagent_couchdbxml_auto="$iotbrokerdir/fiwareRelease/iotbrokerconfig/embeddedAgent/couchdb.xml"
 
 	iotbroker_dir_doubleslash=${iotbrokerdir//\///\/}
 	iotbroker_hsqldbdirectory="$iotbroker_dir_doubleslash//SQL_database//database//linkDB"
@@ -108,18 +174,44 @@ then
 	iotbroker_dirconfig="$iotbrokerdir/fiwareRelease"
 	iotbroker_bundlesconfigurationlocation="$iotbrokerdir/fiwareRelease/bundleConfigurations"
 	
+	iotbroker_version_auto=`grep -m1 "<version>" $iotbrokerdir/eu.neclab.iotplatform.iotbroker.builder/pom.xml`;
+	if [ -z "$iotbroker_version_auto" ];
+	then
+		echo "WARNING: impossible to read the version from the $iotbrokerdir/eu.neclab.iotplatform.iotbroker.builder/pom.xml. Please set it in the setup.sh manually"
+	else
+		iotbroker_version_auto=${iotbroker_version_auto/<version>};
+		iotbroker_version_auto=${iotbroker_version_auto/<\/version>};
+		iotbroker_version_auto=${iotbroker_version_auto//	};
+		iotbroker_version_auto=${iotbroker_version_auto// };
+	fi
+	
 	if [ "$PROPAGATEAUTO" = true ];
 	then
 	
+		if [ ! -e iotbroker.conf.local ];
+		then
+			touch iotbroker.conf.local
+			echo "#!/bin/bash" >> iotbroker.conf.local
+		fi
+
 		setConfiguration "iotbroker_dirconfig" "$iotbroker_dirconfig" "iotbroker.conf.local"
 		setConfiguration "iotbroker_bundlesconfigurationlocation" "$iotbroker_bundlesconfigurationlocation" "iotbroker.conf.local"
 		setConfiguration "iotbroker_hsqldbdirectory" "$iotbroker_hsqldbdirectory" "iotbroker.conf.local"
 		
-		setConfiguration "iotbroker_configini" "$iotbroker_configini" "setup.sh"
-		setConfiguration "iotbroker_configxml" "$iotbroker_configxml" "setup.sh"
-		setConfiguration "iotbroker_embeddedagent_couchdbxml" "$iotbroker_embeddedagent_couchdbxml" "setup.sh"
+		setConfiguration "iotbroker_configini" "$iotbroker_configini_auto" "setup.sh"
+		setConfiguration "iotbroker_configxml" "$iotbroker_configxml_auto" "setup.sh"
+		setConfiguration "iotbroker_embeddedagent_couchdbxml" "$iotbroker_embeddedagent_couchdbxml_auto" "setup.sh"
+		if [ -n "$iotbroker_version_auto" ];
+		then
+				setConfiguration "iotbroker_version" "$iotbroker_version_auto" "setup.sh"
+		fi
 
 	fi
+	
+	iotbroker_configini=$iotbroker_configini_auto
+	iotbroker_configxml=$iotbroker_configxml_auto
+	iotbroker_embeddedagent_couchdbxml=$iotbroker_embeddedagent_couchdbxml_auto
+	iotbroker_version=$iotbroker_version_auto
 	
 	iotbroker_dirconfig=${iotbroker_dirconfig//\./\\\.}
 	iotbroker_dirconfig=${iotbroker_dirconfig//\//\\/}
@@ -163,3 +255,48 @@ setPropertyIntoXML "couchdb_createdb" "$iotbroker_embeddedagent_couchdbcreatedb"
 setPropertyIntoXML "couchdb_protocol" "$iotbroker_embeddedagent_couchdbprotocol" "$iotbroker_embeddedagent_couchdbxml"
 setPropertyIntoXML "couchdb_host" "$iotbroker_embeddedagent_couchdbhost" "$iotbroker_embeddedagent_couchdbxml"
 setPropertyIntoXML "couchdb_port" "$iotbroker_embeddedagent_couchdbport" "$iotbroker_embeddedagent_couchdbxml" 
+
+
+##ENABLE BASIC BUNDLE
+enableBundle iotbroker.commons
+enableBundle iotbroker.storage
+enableBundle iotbroker.client
+enableBundle iotbroker.core
+enableBundle iotbroker.restcontroller
+enableBundle ngsi.api
+enableBundle iotbroker.ext.resultfilter
+enableBundle tomcat-configuration-fragment nostart
+
+
+##ENABLE BIG DATA REPOSITORY BUNDLES
+if [ "$iotbroker_bigdatarepository" == "enabled" ]
+then
+	enableBundle iotbroker.couchdb
+else
+	disableBundle iotbroker.couchdb
+fi
+
+##ENABLE HISTORICAL AGENT BUNDLES
+if [ "$iotbroker_historicalagent" == "enabled" ]
+then
+	enableBundle iotbroker.embeddediotagent.core
+	enableBundle iotbroker.embeddediotagent.couchdb
+	enableBundle iotbroker.embeddediotagent.indexer
+	enableBundle iotbroker.embeddediotagent.storage
+else
+	disableBundle iotbroker.embeddediotagent.core
+	disableBundle iotbroker.embeddediotagent.couchdb
+	disableBundle iotbroker.embeddediotagent.indexer
+	disableBundle iotbroker.embeddediotagent.storage
+fi
+
+##ENABLE ENTITY REPOSITORY BUNDLES
+if [ "$iotbroker_entitycomposer" == "enabled" ]
+then
+	enableBundle entitycomposer
+else
+	disableBundle entitycomposer
+fi
+
+
+correctConfigIni

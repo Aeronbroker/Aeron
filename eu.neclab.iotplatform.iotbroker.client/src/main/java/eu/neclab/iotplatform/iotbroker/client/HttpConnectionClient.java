@@ -206,11 +206,11 @@ public class HttpConnectionClient {
 			if (contentType.equals("application/xml")) {
 				// connect using XML message body
 
-				logger.info("URL" + url + resource);
+				// logger.info("URL" + url + resource);
 
-				logger.info("Starting connection with: " + url);
+				logger.info("Starting connection with: " + url + resource);
 
-				logger.info("Send the QUERY!");
+				// logger.info("Send the QUERY!");
 
 				if (request instanceof NgsiStructure) {
 					String string = ((NgsiStructure) request).toString();
@@ -225,13 +225,15 @@ public class HttpConnectionClient {
 					Marshaller m = requestContext.createMarshaller();
 
 					// Ask the marshaller to marshall the request for you
-					logger.info("Request Class: "
-							+ request.getClass().toString());
+					// logger.info("Request Class: "
+					// + request.getClass().toString());
 					m.marshal(request, os);
 				}
 
 			} else {
 				// connect using JSON message body
+
+				logger.info("Starting connection with: " + url + resource);
 
 				// get the OutputStram form the connection
 				os = connection.getOutputStream();
@@ -252,16 +254,23 @@ public class HttpConnectionClient {
 								+ mapper.writeValueAsString(request));
 						mapper.writeValue(os, request);
 					} catch (JsonGenerationException e) {
-						logger.debug("JsonGenerationException", e);
+						if (logger.isDebugEnabled()) {
+							logger.debug("JsonGenerationException", e);
+						}
 					} catch (JsonMappingException e) {
-						logger.debug("JsonMappingException", e);
+						if (logger.isDebugEnabled()) {
+							logger.debug("JsonMappingException", e);
+						}
 					} catch (IOException e) {
-						logger.debug("IOException", e);
+						if (logger.isDebugEnabled()) {
+							logger.debug("IOException", e);
+						}
 					}
 				}
 
 			}
-			logger.info("Output Stream: " + os.toString());
+			logger.info("Output Stream to " + url + resource + " : "
+					+ os.toString());
 
 			// send Message
 			os.flush();
@@ -299,7 +308,7 @@ public class HttpConnectionClient {
 			}
 
 			return "500 - Connection Error - the URL: " + url
-					+ " cannot be reached!";
+					+ " create an internal error!";
 
 		} catch (JAXBException e) {
 			logger.info("XML Parse Error!", e);
@@ -341,8 +350,7 @@ public class HttpConnectionClient {
 	}
 
 	public String initializeUpdateContextConnectionToOrion(URL url,
-			String resource, UpdateContextRequest request,
-			String xAuthToken) {
+			String resource, UpdateContextRequest request, String xAuthToken) {
 
 		// initialize variables
 		HttpURLConnection connection = null;
@@ -393,8 +401,8 @@ public class HttpConnectionClient {
 
 			// use the above setConnection method to get a connection from url,
 			// resource and the method.
-			connection = createConnection(url, resource, "POST", "application/json",
-					xAuthToken);
+			connection = createConnection(url, resource, "POST",
+					"application/json", xAuthToken);
 
 			// get the OutputStram form the connection
 			os = connection.getOutputStream();

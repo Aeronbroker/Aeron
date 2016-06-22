@@ -1,6 +1,13 @@
 #!/bin/bash
 
 ##############################
+# IoT Broker feature selection
+##############################
+iotbroker_bigdatarepository="enabled"
+iotbroker_historicalagent="enabled"
+iotbroker_entitycomposer="enabled"
+
+##############################
 # IoT Broker configurations
 ##############################
 # Folders setting
