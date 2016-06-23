@@ -13,6 +13,7 @@ iotbroker_entitycomposer="enabled"
 # Folders setting
 iotbroker_dirconfig='/opt/Aeron/fiwareRelease'
 iotbroker_bundlesconfigurationlocation='/opt/Aeron/fiwareRelease/bundleConfigurations'
+iotbroker_logfile='logs/iotbroker.log'
 
 # XML Schemas path
 iotbroker_schemangsi9operation='${dir.config}/xmlSchema/Ngsi9_Operations_v08.xsd'

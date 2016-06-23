@@ -6,6 +6,7 @@
 iotbroker_configini='/opt/Aeron/IoTBroker-runner/configuration//config.ini'
 iotbroker_configxml='/opt/Aeron/fiwareRelease/iotbrokerconfig/iotBroker/config/config.xml'
 iotbroker_embeddedagent_couchdbxml='/opt/Aeron/fiwareRelease/iotbrokerconfig/embeddedAgent/couchdb.xml'
+iotbroker_loggerproperties="$iotbroker_bundlesconfigurationlocation/services/org.ops4j.pax.logging.properties"
 
 iotbroker_version="5.1.3"
 
@@ -135,7 +136,7 @@ function enableBundle {
 }
 
 function correctConfigIni {
-
+	
 	lastline=`awk '/./{line=$0} END{print line}' $iotbroker_configini`
 	correctlastline=${lastline/, \\/}
 	correctlastline=${correctlastline//\./\\\.}
@@ -164,16 +165,19 @@ if [ "$AUTOSETUP" = true ];
 then
 	iotbrokerdir="$(dirname `pwd`)"
 	
-	iotbroker_configini_auto="$iotbrokerdir/IoTBroker-runner/configuration/config.ini"
-	iotbroker_configxml_auto="$iotbrokerdir/fiwareRelease/iotbrokerconfig/iotBroker/config/config.xml"
-	iotbroker_embeddedagent_couchdbxml_auto="$iotbrokerdir/fiwareRelease/iotbrokerconfig/embeddedAgent/couchdb.xml"
-
 	iotbroker_dir_doubleslash=${iotbrokerdir//\///\/}
 	iotbroker_hsqldbdirectory="$iotbroker_dir_doubleslash//SQL_database//database//linkDB"
 	
 	iotbroker_dirconfig="$iotbrokerdir/fiwareRelease"
 	iotbroker_bundlesconfigurationlocation="$iotbrokerdir/fiwareRelease/bundleConfigurations"
-	
+	iotbroker_logfile="$iotbrokerdir/IoTBroker-runner/logs/iotbroker.log"	
+
+	iotbroker_configini_auto="$iotbrokerdir/IoTBroker-runner/configuration/config.ini"
+	iotbroker_configxml_auto="$iotbrokerdir/fiwareRelease/iotbrokerconfig/iotBroker/config/config.xml"
+	iotbroker_embeddedagent_couchdbxml_auto="$iotbrokerdir/fiwareRelease/iotbrokerconfig/embeddedAgent/couchdb.xml"
+	iotbroker_loggerproperties_auto="$iotbroker_bundlesconfigurationlocation/services/org.ops4j.pax.logging.properties"
+
+
 	iotbroker_version_auto=`grep -m1 "<version>" $iotbrokerdir/eu.neclab.iotplatform.iotbroker.builder/pom.xml`;
 	if [ -z "$iotbroker_version_auto" ];
 	then
@@ -197,10 +201,13 @@ then
 		setConfiguration "iotbroker_dirconfig" "$iotbroker_dirconfig" "iotbroker.conf.local"
 		setConfiguration "iotbroker_bundlesconfigurationlocation" "$iotbroker_bundlesconfigurationlocation" "iotbroker.conf.local"
 		setConfiguration "iotbroker_hsqldbdirectory" "$iotbroker_hsqldbdirectory" "iotbroker.conf.local"
-		
+		setConfiguration "iotbroker_logfile" "$iotbroker_logfile" "iotbroker.conf.local"
+
 		setConfiguration "iotbroker_configini" "$iotbroker_configini_auto" "setup.sh"
 		setConfiguration "iotbroker_configxml" "$iotbroker_configxml_auto" "setup.sh"
 		setConfiguration "iotbroker_embeddedagent_couchdbxml" "$iotbroker_embeddedagent_couchdbxml_auto" "setup.sh"
+		setConfiguration "iotbroker_loggerproperties" "$iotbroker_loggerproperties_auto" "setup.sh"
+
 		if [ -n "$iotbroker_version_auto" ];
 		then
 				setConfiguration "iotbroker_version" "$iotbroker_version_auto" "setup.sh"
@@ -212,7 +219,8 @@ then
 	iotbroker_configxml=$iotbroker_configxml_auto
 	iotbroker_embeddedagent_couchdbxml=$iotbroker_embeddedagent_couchdbxml_auto
 	iotbroker_version=$iotbroker_version_auto
-	
+	iotbroker_loggerproperties=$iotbroker_loggerproperties_auto
+
 	iotbroker_dirconfig=${iotbroker_dirconfig//\./\\\.}
 	iotbroker_dirconfig=${iotbroker_dirconfig//\//\\/}
 	
@@ -221,6 +229,9 @@ then
 	
 	iotbroker_hsqldbdirectory=${iotbroker_hsqldbdirectory//\./\\\.}
 	iotbroker_hsqldbdirectory=${iotbroker_hsqldbdirectory//\//\\/}
+
+	iotbroker_logfile=${iotbroker_logfile//\./\\\.}
+	iotbroker_logfile=${iotbroker_logfile//\//\\/}
 
 fi
 
@@ -256,6 +267,7 @@ setPropertyIntoXML "couchdb_protocol" "$iotbroker_embeddedagent_couchdbprotocol"
 setPropertyIntoXML "couchdb_host" "$iotbroker_embeddedagent_couchdbhost" "$iotbroker_embeddedagent_couchdbxml"
 setPropertyIntoXML "couchdb_port" "$iotbroker_embeddedagent_couchdbport" "$iotbroker_embeddedagent_couchdbxml" 
 
+setPropertyIntoProperties "log4j.appender.ReportFileAppender.File" "$iotbroker_logfile" "$iotbroker_loggerproperties"
 
 ##ENABLE BASIC BUNDLE
 enableBundle iotbroker.commons
