@@ -3,9 +3,9 @@
  * All rights reserved.
  * 
  * Authors:
- *          * Salvatore Longo - salvatore.longo@neclab.eu
  *          * Tobias Jacobs - tobias.jacobs@neclab.eu
  *          * Flavio Cirillo - flavio.cirillo@neclab.eu
+ *          * Salvatore Longo
  *          * Raihan Ul-Islam
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -501,81 +501,6 @@ public class SubscriptionController {
 
 			handleInMemorySubscriptionTask(idSubRequest, scReq);
 
-			// The following commented out code is now executed by the previous
-			// private method.
-
-			// /*
-			// * We also create a task that will automatically unsubscribe again
-			// * as soon as the subscription has expired.
-			// */
-			//
-			// UnsubscribeTask task = new UnsubscribeTask(idSubRequest, this);
-			// if (scReq.getDuration() != null && logger.isDebugEnabled()) {
-			// logger.debug("Subscription time: "
-			// + scReq.getDuration().getTimeInMillis(
-			// new GregorianCalendar()));
-			// }
-			//
-			// //
-			// logger.info(String.format("Notification enable %b, at the proxy: %s",notificationProxyEnabled,
-			// // notificationProxy));
-			//
-			// // Lets define who should receive the notification when
-			// generated.
-			// // Usually is the one defined by the Reference field in the
-			// // subscription but it can be overridden if we define a proxy
-			// String notificationHandler;
-			// if (notificationProxyEnabled) {
-			// if (notificationProxy == null || notificationProxy.isEmpty()) {
-			// notificationHandler = scReq.getReference();
-			// logger.warn("Notification proxy is not valid: "
-			// + notificationProxy);
-			// }
-			// notificationHandler = notificationProxy;
-			// } else {
-			// notificationHandler = scReq.getReference();
-			// }
-			//
-			// /*
-			// * Now we create a container where the relevant information about
-			// * this subscription is packed together. This relevant data
-			// consists
-			// * of - when the subscription is initiated - a link to the
-			// * unsubscribe task
-			// */
-			//
-			// SubscriptionData subData = new
-			// SubscriptionData(notificationHandler);
-			// subData.setStartTime(associationUtil.currentTime());
-			// subData.setUnsubscribeTask(task);
-			//
-			// if (traceOriginatorOfSubscription) {
-			// String originator = getSubscriptionOriginator(scReq);
-			// subData.setOriginator(originator);
-			// }
-			//
-			// /*
-			// * The subscription data is now put into the persistent storage,
-			// * where the id of the subscription (generated before) is used as
-			// * the key.
-			// */
-			// subscriptionDataIndex.put(idSubRequest, subData);
-			//
-			// /*
-			// * The unsubscribe task is now submitted to the timer. In case no
-			// * duration is given, a default duration is used.
-			// */
-			// if (scReq.getDuration() != null) {
-			// timer.schedule(
-			// task,
-			// scReq.getDuration().getTimeInMillis(
-			// new GregorianCalendar()));
-			// } else {
-			// timer.schedule(task, defaultDuration);
-			// scaReq.setDuration(associationUtil
-			// .convertToDuration(defaultDuration));
-			// }
-
 			/*
 			 * Here the incoming subscription is stored in the persistent
 			 * storage.
@@ -584,9 +509,9 @@ public class SubscriptionController {
 					System.currentTimeMillis());
 
 			/*
-			 * If the answer from the wrapper is positive or we decided it is
-			 * decided to ignore problems of the confman (ignoreConfManFailure),
-			 * then the subscribe response is also positive. It receives the
+			 * If the answer from the wrapper is positive or it is set to ignore
+			 * problems of the iotdiscovery (ignoreIoTDiscoveryFailure), then
+			 * the subscribe response is also positive. It receives the
 			 * subscription id generated before.
 			 */
 
@@ -1231,7 +1156,9 @@ public class SubscriptionController {
 		}
 
 		if (inSubReq == null) {
-			logger.error("No incoming subscription found related to the outgoing subscription: " + ncReq.getSubscriptionId() + ". Aborting "
+			logger.error("No incoming subscription found related to the outgoing subscription: "
+					+ ncReq.getSubscriptionId()
+					+ ". Aborting "
 					+ "the notification process.");
 			return new NotifyContextResponse(new StatusCode(470,
 					ReasonPhrase.SUBSCRIPTIONIDNOTFOUND_470.toString(), null));

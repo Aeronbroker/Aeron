@@ -677,7 +677,6 @@ public class RestProviderController {
 
 			UpdateContextResponse response = ngsiCore.updateContext(reqUpdate);
 
-
 			if (response != null
 					&& response.getContextElementResponse() != null
 					&& !response.getContextElementResponse().isEmpty()) {
@@ -693,7 +692,7 @@ public class RestProviderController {
 				return new ResponseEntity<UpdateContextElementResponse>(
 						respUpdate, HttpStatus.OK);
 			} else {
-				
+
 				UpdateContextElementResponse respUpdate = new UpdateContextElementResponse(
 						response.getErrorCode(), null);
 
@@ -717,19 +716,6 @@ public class RestProviderController {
 
 	}
 
-	/**
-	 * 
-	 * Executes the convenience method for appending attribute values to an
-	 * individual context entity.
-	 * 
-	 * 
-	 * @param EntityID
-	 *            The id of the Context Entity where attribute values shall be
-	 *            appended.
-	 * @param request
-	 *            The request body.
-	 * @return The response body.
-	 */
 	@RequestMapping(value = "/ngsi10/contextEntities/{entityID}", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
@@ -755,22 +741,34 @@ public class RestProviderController {
 
 			UpdateContextResponse response = ngsiCore.updateContext(reqUpdate);
 
-			// create the new context attribute response
-			ArrayList<ContextAttributeResponse> ar = new ArrayList<ContextAttributeResponse>();
-			for (ContextElementResponse element : response
-					.getContextElementResponse()) {
-				ContextAttributeResponse attrib = new ContextAttributeResponse();
-				attrib.setContextAttribute(element.getContextElement()
-						.getContextAttributeList());
-				attrib.setStatusCode(element.getStatusCode());
-				ar.add(attrib);
+			if (response != null
+					&& response.getContextElementResponse() != null
+					&& !response.getContextElementResponse().isEmpty()) {
+
+				// create the new context attribute response
+				ArrayList<ContextAttributeResponse> ar = new ArrayList<ContextAttributeResponse>();
+				for (ContextElementResponse element : response
+						.getContextElementResponse()) {
+					ContextAttributeResponse attrib = new ContextAttributeResponse();
+					attrib.setContextAttribute(element.getContextElement()
+							.getContextAttributeList());
+					attrib.setStatusCode(element.getStatusCode());
+					ar.add(attrib);
+				}
+
+				AppendContextElementResponse respAppend = new AppendContextElementResponse(
+						response.getErrorCode(), ar);
+
+				return new ResponseEntity<AppendContextElementResponse>(
+						respAppend, HttpStatus.OK);
+			} else {
+
+				AppendContextElementResponse respAppend = new AppendContextElementResponse(
+						response.getErrorCode(), null);
+
+				return new ResponseEntity<AppendContextElementResponse>(
+						respAppend, HttpStatus.OK);
 			}
-
-			AppendContextElementResponse respAppend = new AppendContextElementResponse(
-					response.getErrorCode(), ar);
-
-			return new ResponseEntity<AppendContextElementResponse>(respAppend,
-					HttpStatus.OK);
 
 		} else {
 
