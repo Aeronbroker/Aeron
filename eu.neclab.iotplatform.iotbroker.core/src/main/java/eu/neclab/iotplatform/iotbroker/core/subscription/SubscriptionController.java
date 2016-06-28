@@ -1231,7 +1231,7 @@ public class SubscriptionController {
 		}
 
 		if (inSubReq == null) {
-			logger.error("Incoming subscription id found, but no incoming subscription found. Aborting "
+			logger.error("No incoming subscription found related to the outgoing subscription: " + ncReq.getSubscriptionId() + ". Aborting "
 					+ "the notification process.");
 			return new NotifyContextResponse(new StatusCode(470,
 					ReasonPhrase.SUBSCRIPTIONIDNOTFOUND_470.toString(), null));

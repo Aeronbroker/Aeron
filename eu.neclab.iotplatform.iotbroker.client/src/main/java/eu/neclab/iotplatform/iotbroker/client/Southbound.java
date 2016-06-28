@@ -302,7 +302,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			// check whether connection returned with error, and react
 			// accordingly if that
 			// is the case
-			if (respObj != null && contentType.equals("application/xml")
+			if (respObj != null 
 					&& "500".matches(respObj.substring(0, 3))) {
 
 				output = new QueryContextResponse(null, new StatusCode(
@@ -473,7 +473,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 			}
 
-			if (respObj != null && contentType.equals("application/xml")
+			if (respObj != null 
 					&& "500".matches(respObj.substring(0, 3))) {
 
 				output = new SubscribeContextResponse(null, new SubscribeError(
@@ -595,7 +595,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 			}
 
-			if (respObj != null && contentType.equals("application/xml")
+			if (respObj != null 
 					&& "500".matches(respObj.substring(0, 3))) {
 
 				output = new UpdateContextSubscriptionResponse(null,
@@ -712,7 +712,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 			}
 
-			if (respObj != null && contentType.equals("application/xml")
+			if (respObj != null 
 					&& "500".matches(respObj.substring(0, 3))) {
 
 				output = new UnsubscribeContextResponse(null, new StatusCode(
@@ -835,7 +835,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 			}
 
-			if (respObj != null && contentType.equals("application/xml")
+			if (respObj != null 
 					&& "500".matches(respObj.substring(0, 3))) {
 
 				output = new UpdateContextResponse(new StatusCode(
@@ -949,8 +949,6 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			}
 
 			if (response != null && contentType.equals("application/xml")) {
-
-				logger.info("Response being parsed as XML");
 
 				if ("500".equals(response.substring(0, 3))) {
 
@@ -1259,7 +1257,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 			}
 
-			if (respObj != null && contentType.equals("application/xml")
+			if (respObj != null 
 					&& "500".matches(respObj.substring(0, 3))) {
 
 				output = new RegisterContextResponse(null, null,

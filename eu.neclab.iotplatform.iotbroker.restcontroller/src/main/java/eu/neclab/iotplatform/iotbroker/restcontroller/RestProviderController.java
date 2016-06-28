@@ -1237,7 +1237,7 @@ public class RestProviderController {
 		List<String> attributeList = new ArrayList<String>();
 		attributeList.add(attributeName);
 
-		EntityId entity = new EntityId(".*", typeName, false);
+		EntityId entity = new EntityId(".*", typeName, true);
 		entityIdList.add(entity);
 
 		QueryContextRequest request = new QueryContextRequest(entityIdList,
