@@ -302,7 +302,7 @@ else
 	disableBundle iotbroker.embeddediotagent.storage
 fi
 
-##ENABLE ENTITY REPOSITORY BUNDLES
+##ENABLE ENTITY COMPOSER BUNDLES
 if [ "$iotbroker_entitycomposer" == "enabled" ]
 then
 	enableBundle entitycomposer
