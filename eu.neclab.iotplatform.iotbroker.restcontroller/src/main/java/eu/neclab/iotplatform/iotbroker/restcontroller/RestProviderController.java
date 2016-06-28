@@ -142,7 +142,7 @@ public class RestProviderController {
 
 	/** The component for receiving NGSI 10 requests. */
 	private Ngsi10Interface ngsiCore;
-	
+
 	/** String representing the xml schema for NGSI 10. */
 	private @Value("${schema_ngsi10_operation}")
 	String sNgsi10schema;
@@ -150,7 +150,6 @@ public class RestProviderController {
 	/** String representing the xml schema for NGSI 9. */
 	private @Value("${schema_ngsi9_operation}")
 	String sNgsi9schema;
-
 
 	/**
 	 * Returns a pointer to the component which receives NGSI 10 requests
@@ -172,7 +171,6 @@ public class RestProviderController {
 	public void setNgsiCore(Ngsi10Interface ngsiCore) {
 		this.ngsiCore = ngsiCore;
 	}
-	
 
 	public LeafengineInterface getLeafengine() {
 		return leafengine;
@@ -679,7 +677,10 @@ public class RestProviderController {
 
 			UpdateContextResponse response = ngsiCore.updateContext(reqUpdate);
 
-			if (response != null) {
+
+			if (response != null
+					&& response.getContextElementResponse() != null
+					&& !response.getContextElementResponse().isEmpty()) {
 
 				ContextAttributeResponse contextAttributeResp = new ContextAttributeResponse(
 						response.getContextElementResponse().get(0)
@@ -691,17 +692,28 @@ public class RestProviderController {
 
 				return new ResponseEntity<UpdateContextElementResponse>(
 						respUpdate, HttpStatus.OK);
+			} else {
+				
+				UpdateContextElementResponse respUpdate = new UpdateContextElementResponse(
+						response.getErrorCode(), null);
+
+				return new ResponseEntity<UpdateContextElementResponse>(
+						respUpdate, HttpStatus.OK);
 			}
 
+		} else {
+
+			UpdateContextElementResponse response = new UpdateContextElementResponse(
+					new StatusCode(Code.BADREQUEST_400.getCode(),
+							ReasonPhrase.BADREQUEST_400.toString(), requester
+									.getContentType().contains(
+											"application/xml")
+									+ " syntax Error!"), null);
+
+			return new ResponseEntity<UpdateContextElementResponse>(response,
+					HttpStatus.OK);
+
 		}
-
-		UpdateContextElementResponse response = new UpdateContextElementResponse(
-				new StatusCode(Code.BADREQUEST_400.getCode(),
-						ReasonPhrase.BADREQUEST_400.toString(),
-						"XML syntax Error!"), null);
-
-		return new ResponseEntity<UpdateContextElementResponse>(response,
-				HttpStatus.OK);
 
 	}
 
@@ -1293,7 +1305,7 @@ public class RestProviderController {
 
 		return new ResponseEntity<QueryContextResponse>(response, HttpStatus.OK);
 	}
-	
+
 	/**
 	 * Executes the convenience method for subscribing.
 	 * 

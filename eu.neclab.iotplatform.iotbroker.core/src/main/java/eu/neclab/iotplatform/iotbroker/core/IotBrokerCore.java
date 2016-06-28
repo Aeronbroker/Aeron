@@ -1363,8 +1363,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 */
 		final UpdateContextRequest updateContextRequest = applyAssociation(request);
 
-		/*
-		 * Dump data in Big Data Repository if present.
+		/**
+		 * Dump data in Historical Agent if present.
 		 */
 		if (request.getUpdateAction() != UpdateActionType.DELETE
 				&& BundleUtils.isServiceRegistered(this, embeddedIoTAgent)) {
@@ -1424,19 +1424,11 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		}
 
-		//
-		// if (subscriptionStorage != null) {
-		// for (ContextElement contextElement : request.getContextElement()) {
-		// System.out.println(subscriptionStorage
-		// .checkContextElement(contextElement));
-		// }
-		// }
-
 		try {
 
 			if (pubSubUrlList != null) {
 				for (String url : pubSubUrlList) {
-					logger.info("Started Contact pub/sub broker..");
+					logger.info("Started Contact pub/sub broker: " + url);
 
 					response = ngsi10Requester.updateContext(
 							updateContextRequest, new URI(url));
@@ -1446,7 +1438,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 					// ATLEASTONE, MOST, NOONE fault tolerant)
 				}
 			} else if (pubSubUrl != null) {
-				logger.info("Started Contact pub/sub broker..");
+				logger.info("Started Contact pub/sub broker: " + pubSubUrl);
 
 				response = ngsi10Requester.updateContext(updateContextRequest,
 						new URI(pubSubUrl));
@@ -1455,7 +1447,13 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			logger.debug("URI Syntax Error", e);
 		}
 
-		if (ignorePubSubFailure) {
+		if (response == null) {
+			response = new UpdateContextResponse(new StatusCode(
+					Code.INTERNALERROR_500.getCode(),
+					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
+					"Unspecified error during UpdateContext"), null);
+		} else if (response.getErrorCode().getCode() != Code.OK_200.getCode()
+				&& ignorePubSubFailure) {
 			response = new UpdateContextResponse(new StatusCode(
 					Code.OK_200.getCode(), ReasonPhrase.OK_200.toString(), ""),
 					null);
