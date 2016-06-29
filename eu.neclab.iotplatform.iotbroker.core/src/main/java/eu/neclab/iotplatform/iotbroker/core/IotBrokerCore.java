@@ -1452,8 +1452,14 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 					Code.INTERNALERROR_500.getCode(),
 					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
 					"Unspecified error during UpdateContext"), null);
-		} else if (response.getErrorCode().getCode() != Code.OK_200.getCode()
-				&& ignorePubSubFailure) {
+		} else if ((response.getContextElementResponse() == null || response
+				.getContextElementResponse().isEmpty())
+				&& (response.getErrorCode() == null || (response.getErrorCode()
+						.getCode() != Code.OK_200.getCode() && ignorePubSubFailure))) {
+			/*
+			 * Here if the ContextElementResponse is empty AND the ErrorCode is null or there was an error
+			 */
+
 			response = new UpdateContextResponse(new StatusCode(
 					Code.OK_200.getCode(), ReasonPhrase.OK_200.toString(), ""),
 					null);

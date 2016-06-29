@@ -316,7 +316,7 @@ public class TestFunctionality {
 		EasyMock.verify(ngsi9InterfaceMock);
 		EasyMock.verify(ngsi10RequesterMock);
 		
-		assertEquals(brokerResp,updateResp);
+		assertEquals(updateResp,brokerResp);
 		
 		logger.info("Successfully tested FIWARE.Feature.IoT.BackendIoTBroker.Update.IdBased");
 	}	
