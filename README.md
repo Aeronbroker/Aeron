@@ -85,12 +85,16 @@ instance.
 
 |Directory            | Contents|
 |---------------------|---------|
-| ├── eu.neclab.iotplatform.couchdb		|	 Optional bundle for connection with a couchDB database for storing and retrieving context information.|										
-| ├── eu.neclab.iotplatform.entitycomposer |	Optional bundle for connection with a couchDB database for storing and retrieving context information. |
+| ├── eu.neclab.iotplatform.couchdb		|	 Optional bundle for connection with a couchDB database for dumping context information in a Big Data Repository.|										
+| ├── eu.neclab.iotplatform.entitycomposer |	Optional bundle handling the composition of entities. |
 |├── eu.neclab.iotplatform.iotbroker.builder | Maven builder project compiling all required and optional IoT Broker OSGi bundles.|
 |├── eu.neclab.iotplatform.iotbroker.client | Required bundle for the HTTP client used by IoT Broker. |
 |├── eu.neclab.iotplatform.iotbroker.commons | Required bundle for basic IoT Broker functionalities. |
 |├── eu.neclab.iotplatform.iotbroker.core | Required bundle containing the functional core of the IoT Broker. |
+|├── eu.neclab.iotplatform.iotbroker.embeddediotagent.core | Optional bundle for enabling storage and retrieve of (historical) context information. |
+|├── eu.neclab.iotplatform.iotbroker.embeddediotagent.couchdb | Optional bundle for enabling the storage of the (historical) context information into CouchDB. (This bundle must be activated if eu.neclab.iotplatform.iotbroker.embeddediotagent.core is active).|
+|├── eu.neclab.iotplatform.iotbroker.embeddediotagent.indexer | Optional bundle for indexing the (historical) context information (This bundle must be activated if eu.neclab.iotplatform.iotbroker.embeddediotagent.core is active).|
+|├── eu.neclab.iotplatform.iotbroker.embeddediotagent.storage | Optional bundle for handling the serialiation of the (historical) context information(This bundle must be activated if eu.neclab.iotplatform.iotbroker.embeddediotagent.core is active).|
 |├── eu.neclab.iotplatform.iotbroker.ext.resultfilter |Optional bundle for filtering results. Deploying this bundle  will effectuate that faulty query responses from IoT data sources are not forwarded to IoT applications.|
 |├── eu.neclab.iotplatform.iotbroker.restcontroller | Required bundle implementing the HTTP REST interface of the IoT Broker.|
 |├── eu.neclab.iotplatform.iotbroker.storage | Required bundle to setup and connect to an internal database. Note that this	database only used to store state information on data subscriptions and does not store any context data. For storing context data, please use the optional bundle eu.neclab.iotplatform.couchdb.|
@@ -129,36 +133,79 @@ mvn install
 mvn install
 ```
 
-  This command will generate 10 OSGI bundles inside the *eu.neclab.iotplatform.iotbroker.builder\target* folder:
+  This command will generate 14 OSGI bundles inside the *eu.neclab.iotplatform.iotbroker.builder\target* folder:
   
   (Note that the version numbers might differ from what is
   written in this document.)
 
 ```
-entitycomposer-4.4.3.jar
-iotbroker.client-4.4.3.jar
-iotbroker.commons-4.4.3.jar
-iotbroker.core-4.4.3.jar
-iotbroker.couchdb-4.4.3.jar
-iotbroker.ext.resultfilter-4.4.3.jar
-iotbroker.restcontroller-4.4.3.jar
-iotbroker.storage-4.4.3.jar
-ngsi.api-4.4.3.jar
-tomcat-configuration-fragment-4.4.3.jar
+entitycomposer-5.3.3.jar
+iotbroker.client-5.3.3.jar
+iotbroker.commons-5.3.3.jar
+iotbroker.core-5.3.3.jar
+iotbroker.couchdb-5.3.3.jar
+iotbroker.embeddediotagent.core-5.3.3.jar
+iotbroker.embeddediotagent.couchdb-5.3.3.jar
+iotbroker.embeddediotagent.indexer-5.3.3.jar
+iotbroker.embeddediotagent.storage-5.3.3.jar
+iotbroker.ext.resultfilter-5.3.3.jar
+iotbroker.restcontroller-5.3.3.jar
+iotbroker.storage-5.3.3.jar
+ngsi.api-5.3.3.jar
+tomcat-configuration-fragment-5.3.3.jar
 ```
 
 Configure the IoT Broker with setup scripts
 ---
-Two scripts are provided for an easy installation, you can find them in the *IoTBroker-runner* folder:
+IoT Broker configuration variables are spread among several files. For this reason is highly recommended the usage of the *setup.sh* script (only for Bash shell in UNIX system) available in the *IoTBroker-runner* folder (please note it is important that the structure of the folder needs to be the same as the one in the github repository https://github.com/Aeronbroker/Aeron).
 
-* iotbroker.conf: containing all the configurations variables to be set
-* setup.sh: setup script to be run in a linux shell (three paths need to be set at the very beginning of this script: iotbroker_configini, iotbroker_configxml and iotbroker_embeddedagent_couchdbxml)
+First we have to enter in the *IoTBroker-runner* folder:
+```
+cd IoTBroker-runner
+```
+
+For a very quick configuration of the IoT Broker the following command needs to be run (please make sure the setup.sh has the execute rights with a *chmod +x setup.sh*):
+```
+./setup.sh --auto
+```
+
+The setup script will look at the default configurations in the *iotbroker.conf.default* file and it will manage to automatically figure out the necessary path for the configuration.
+
+The paths will be configured only to IoT Broker configuration files and not in these setup files. In order to run in the future the *setup.sh* script without specifying the *--auto* option, the following command needs to be run:
+```
+./setup.sh --auto --propagateauto
+```
+
+The *--propagateauto* instructs the setup script to create a local configuration file, *iotbroker.conf.local*, with the right path configurations. From now on the next setup action can be done simply by the following command:
+```
+./setup.sh
+```
+
+In order to setup the IoTBroker differently from the default configuration, it is necessary to specify the custom preference in the *iotbroker.conf.local*. If the latter file has not yet been created by the --propagateauto options, it needs to be manually created. There are two possibilities:
+* Create and empty file called *iotbroker.conf.local*
+* Copy the *iotbroker.conf.default* into *iotbroker.conf.local*
+
+No differences between the two options, since the setup script will first look into the *iotbroker.conf.default* file and then all the variables will be overwritten by the *iotbroker.conf.local* file.
+Now the custom preferences can be set.
+
+Please note: if a *./setup.sh --auto --propagateauto* has not yet been run once, also the setup.sh needs to have the following 4 paths at the beginning of the script:
+```
+iotbroker_configini=
+iotbroker_configxml=
+iotbroker_embeddedagent_couchdbxml=
+iotbroker_loggerproperties=
+
+```
+
+For having the custom preferences set it is necessary to simply run:
+```
+./setup.sh
+```
 
 After running the setup.sh, the IoT Broker can be started with the provided scripts in *IoTBroker-runner* folder.
 
 Configure the IoT Broker manually
 ---
-
 The Iot Broker bundles are OSGI based and can be used with arbitrary OSGI frameworks like EQUINOX, FELIX, etc.
 The IoT Broker OSGI bundles have been tested with the EQUINOX and the FELIX framework.
 IoT Broker requires several VM arguments for the runtime that need to be specified (e.g. in Equinox modify the config.ini file):
@@ -174,22 +221,23 @@ In addition to that, the fiwareRelease folder needs to be copied e.g. into the u
 
 For example of an OSGI configuration using the EQUINOX framework (e.g. config.ini), please refer to the *IoTBroker-runner* folder.
 
-Using the runtime environment included by this repository
+Quick Start: Using the runtime environment included by this repository
 ---
 
-This repository contains a complete runtime environment for the IoT Broker. In the *IoTBroker-runner* folder you can find the Equinox OSGi environment together with its configuration file. The configuration files contains references the *fiwareRelease* folder, to the bundles in the *targetPlatform* folder, as well as to the IoT Broker bundles that can be found in the *eu.neclab.iotplatform.iotbroker.builder/target* folder after having successfully compiled the bundles.
+This repository contains a complete runtime environment for the IoT Broker. In the *IoTBroker-runner* folder you can find the Equinox OSGi environment together with its configuration file. The configuration files contains references to the *fiwareRelease* folder, to the bundles in the *targetPlatform* folder, as well as to the IoT Broker bundles that can be found in the *eu.neclab.iotplatform.iotbroker.builder/target* folder after having successfully compiled the bundles.
 
 To arrive at a running IoT Broker installation, the following steps need to be completed:
+
 1. Compile the IoT Broker bundles as described above
-2. Open the file *IoTBroker-runner/configuration/config.ini*. The parameter *dir.config* needs to be changed so that it points inside
-the location of the *fiwareRelease* folder. For example, if this project has been cloned to C:\Aeron on a Windows machine, then the 
-line has to be changed to *dir.config=C://Aeron//fiwareRelease*.
+
+2. Open the file *IoTBroker-runner*. Run a *./setup.sh --auto --propagateauto*.
+
 3. Run the IoT Broker by running one of the startup scripts for Windows or Unix in the *IoTBroker-runner* folder.
 
-Using the Black Box Test
+Testing: Using the Black Box Test
 ---
 While individual classes of the IoT Broker are already tested during compilation with Maven, the project *iotplatform.iotbroker.blackboxtest* is a dedicated black box test for a running instance of the IoT Broker using server mocks. It is based on the JUNIT-Framework.
-These tests assume that the IoT Broker is listening to port 80 and communicates with an IoT Discovery component at port 8002 on localhost. This corresponds to the default configuration.
+These tests assume that the IoT Broker is running and listening to port 80, it produces xml messages and it is set to communicates with an IoT Discovery component at port 8002 on localhost. This corresponds to the default configuration. All those IoTBroker settings can be configured with the setup scripts, see (readme.md#configure-the-iot-broker-with-setup-scripts), respectively through iotbroker_tomcatinitport, iotbroker_producedtype and iotbroker_ngsi9uri variables
 
 To run the tests, navigate to the directory *iotplatform.iotbroker.blackboxtest* and compile the project by the command 
 
@@ -201,6 +249,10 @@ The IoT Broker instance should be already running at the time of compilation. Pl
 
 To let the blackboxtest start, first it is necessary to install on the local Maven repository the IoT Broker components. For doing so please run a 'mvn install' in the eu.neclab.iotplatform.iotbroker.builder folder.
 
+In case the IoTBroker is running at different port or the port 8031, 8032 or 8002 is not available in your machine you can set those in the BlackBoxTest with the following command:
+'''
+mvn test -Dblackboxtest.iotbroker.port=8070 -Dblackboxtest.iotdiscoverymock.port=8061 -Dblackboxtest.agentmock1.port=8031 -Dblackboxtest.agentmock2.port=8032
+'''
 
 Minimum System Requirements
 ---
@@ -216,4 +268,4 @@ Minimum System Requirements:
 
 Bugs & Questions
 ---
-Please contact flavio.cirillo@neclab.eu or stefan.gessler@neclab.eu.
+Please contact iotplatform@neclab.eu, flavio.cirillo@neclab.eu or stefan.gessler@neclab.eu.
