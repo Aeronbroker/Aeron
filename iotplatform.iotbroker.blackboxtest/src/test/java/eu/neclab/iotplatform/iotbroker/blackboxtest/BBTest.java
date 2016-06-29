@@ -1,52 +1,28 @@
 package eu.neclab.iotplatform.iotbroker.blackboxtest;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.http.client.HttpClient;
-
-
-import org.mockserver.client.server.MockServerClient;
-import org.mockserver.integration.ClientAndServer;
-import org.mockserver.matchers.BodyMatcher;
-import org.mockserver.model.Body;
-import org.mockserver.verify.VerificationTimes;
-
-import eu.neclab.iotplatform.iotbroker.commons.XmlFactory;
-import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
-import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityResponse;
-import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
-import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
-import io.netty.channel.pool.FixedChannelPool.AcquireTimeoutAction;
-
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
+import static org.mockserver.matchers.Times.exactly;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
-import static org.mockserver.model.HttpForward.forward;
-import static org.mockserver.model.Header.header;
-import static org.mockserver.model.HttpResponse.notFoundResponse;
-import static org.mockserver.model.HttpResponse.response;
-import static org.mockserver.matchers.Times.exactly;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.mockserver.model.HttpForward.Scheme.HTTP;
-import static org.mockserver.model.HttpStatusCode.ACCEPTED_202;
-
-import static org.mockserver.model.StringBody.exact;
 import static org.mockserver.model.XPathBody.xpath;
-
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.mockserver.client.server.MockServerClient;
+import org.mockserver.integration.ClientAndServer;
+import org.mockserver.verify.VerificationTimes;
+
+import eu.neclab.iotplatform.iotbroker.commons.XmlFactory;
+import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityResponse;
+import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
+import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
 
 
 
@@ -59,10 +35,10 @@ import static org.junit.Assert.*;
  */
 public class BBTest {
 	
-	final int D_PORT = 8002; //port of discovery mock
-	final int A1_PORT = 8031; //port of agent 1 mock
-	final int A2_PORT = 8032; //port of agent 2 mock
-	final int B_PORT = 80; //port of IoT Broker
+	final int D_PORT = Integer.parseInt(System.getProperty("blackboxtest.iotdiscoverymock.port","8002")); //port of discovery mock
+	final int A1_PORT = Integer.parseInt(System.getProperty("blackboxtest.agentmock1.port","8031")); //port of agent 1 mock
+	final int A2_PORT = Integer.parseInt(System.getProperty("blackboxtest.agentmock2.port","8032")); //port of agent 2 mock
+	final int B_PORT = Integer.parseInt(System.getProperty("blackboxtest.iotbroker.port","80")); //port of IoT Broker
 	
 	/*
 	 * pointers to the mock servers (initialized in @Before method 
@@ -200,6 +176,7 @@ public class BBTest {
 				,
 				VerificationTimes.exactly(1)
 				);
+		
 	}
 	
 	/**
