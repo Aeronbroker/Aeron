@@ -182,18 +182,18 @@ The *--propagateauto* instructs the setup script to create a local configuration
 ```
 
 In order to setup the IoTBroker differently from the default configuration, it is necessary to specify the custom preference in the *iotbroker.conf.local*. If the latter file has not yet been created by the --propagateauto options, it needs to be manually created. There are two possibilities:
-* Create and empty file called *iotbroker.conf.local*
-* Copy the *iotbroker.conf.default* into *iotbroker.conf.local*
+* Create and empty file called *iotbroker.conf.local*, add at the first line *#!/bin/bash* and give the execute permissions.
+* Copy the *iotbroker.conf.default* into *iotbroker.conf.local* and give the execute permissions.
 
 No differences between the two options, since the setup script will first look into the *iotbroker.conf.default* file and then all the variables will be overwritten by the *iotbroker.conf.local* file.
 Now the custom preferences can be set.
 
-Please note: if a *./setup.sh --auto --propagateauto* has not yet been run once, also the setup.sh needs to have the following 4 paths at the beginning of the script:
+Please note: if a *./setup.sh --auto --propagateauto* has not yet been run once, also the setup.sh needs to have the following 4 paths set at the beginning of the script:
 ```
-iotbroker_configini=
-iotbroker_configxml=
-iotbroker_embeddedagent_couchdbxml=
-iotbroker_loggerproperties=
+iotbroker_configini='/opt/Aeron/IoTBroker-runner/configuration/config.ini'
+iotbroker_configxml='/opt/Aeron/fiwareRelease/iotbrokerconfig/iotBroker/config/config.xml'
+iotbroker_embeddedagent_couchdbxml='/opt/Aeron/fiwareRelease/iotbrokerconfig/embeddedAgent/couchdb.xml'
+iotbroker_loggerproperties="$iotbroker_bundlesconfigurationlocation/services/org.ops4j.pax.logging.properties"
 
 ```
 
@@ -241,18 +241,19 @@ These tests assume that the IoT Broker is running and listening to port 80, it p
 
 To run the tests, navigate to the directory *iotplatform.iotbroker.blackboxtest* and compile the project by the command 
 
-'''
+```
 mvn test
-'''
+```
 
 The IoT Broker instance should be already running at the time of compilation. Please note that a deployment of IoT Broker including at least all bundles loaded by the pre-configured OSGi environment ('IoTBroker-runner' folder) is necessary for the tests to run successfully.
 
 To let the blackboxtest start, first it is necessary to install on the local Maven repository the IoT Broker components. For doing so please run a 'mvn install' in the eu.neclab.iotplatform.iotbroker.builder folder.
 
 In case the IoTBroker is running at different port or the port 8031, 8032 or 8002 is not available in your machine you can set those in the BlackBoxTest with the following command:
-'''
+
+```
 mvn test -Dblackboxtest.iotbroker.port=8070 -Dblackboxtest.iotdiscoverymock.port=8061 -Dblackboxtest.agentmock1.port=8031 -Dblackboxtest.agentmock2.port=8032
-'''
+```
 
 Minimum System Requirements
 ---
