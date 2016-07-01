@@ -4,7 +4,7 @@
 
 	<groupId>eu.neclab</groupId>
 	<artifactId>iotplatform.iotbroker.blackboxtest</artifactId>
-	<version>5.3.3</version>
+	<version>5.4.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	
 	<name>iotplatform.iotbroker.blackboxtest</name>
