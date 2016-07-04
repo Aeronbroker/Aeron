@@ -8,10 +8,10 @@ This dockerfile can be used for building a docker image running the IoT Broker g
 Running the image will create a docker container with the IoT Broker running and listening to port 8060 and the log of the IoTBroker will be shown (you may need root permissions):
 
 ```
-docker run -p 8060:8060 cirillo/iotbroker
+docker run -p 8060:8060 fiware/iotbroker
 ```
 
 If you want to run the IoTBroker docker container in background use the following:
 ```
-docker run -p 8060:8060 cirillo/iotbroker > /dev/null &
+docker run -p 8060:8060 fiware/iotbroker > /dev/null &
 ```
