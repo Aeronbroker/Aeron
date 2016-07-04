@@ -109,6 +109,26 @@ instance.
 |├── targetPlatform| Contains the OSGi bundles needed for the IoT Broker at runtime. These bundles are pre-configured to be loaded by the runtime environment in the "IoTBroker-runner" folder.|
 |└── tomcat-configuration-fragment | Required bundle for tomcat server configuration.|
 
+IoT Broker Docker file
+---
+
+The fastest way to test the IoTBroker is through a docker container.
+In order to pull the latest docker, do the following:
+```
+docker pull fiware/iotbroker
+```
+The build process will install the latest version available on GitHub (https://github.com/Aeronbroker/Aeron).
+
+Running the image will create a docker container with the IoT Broker running and listening to port 8060 and the log of the IoTBroker will be shown (you may need root permissions):
+
+```
+docker run -p 8060:8060 fiware/iotbroker
+```
+
+If you want to run the IoTBroker docker container in background use the following:
+```
+docker run -p 8060:8060 fiware/iotbroker > /dev/null &
+```
 
 Building IoT Broker Source Code
 ---
