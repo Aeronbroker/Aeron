@@ -1,31 +1,34 @@
-# This is the dockerfile for IoT Broker version 4.4.3, September 2015
+# This is the dockerfile for IoT Broker version 5.3.3, September 2016
 
 FROM ubuntu
 
-MAINTAINER 'NEC Laboratories Europe, Tobias Jacobs, tobias.jacobs@neclab.eu'
+MAINTAINER 'NEC Laboratories Europe: iotplatform@neclab.eu, Flavio Cirillo: flavio.cirillo@neclab.eu'
 
+#install Maven, Java and GIT
 RUN apt-get update
+RUN apt-get install maven, default-jdk, git -y
 
-RUN apt-get install maven -y
-
-RUN apt-get install default-jdk -y
-
-RUN apt-get install git -y
-
+#Downloadt the IoTBroker SourceCode
 WORKDIR /root
-
 RUN git clone https://github.com/Aeronbroker/Aeron.git
 
+#Compile the SourceCode
 WORKDIR /root/Aeron/IoTbrokerParent
-
 RUN mvn install
-
 WORKDIR /root/Aeron/eu.neclab.iotplatform.iotbroker.builder/
-
 RUN mvn install
 
+#Setup the IoTBroker
 WORKDIR /root/Aeron/IoTBroker-runner
+RUN chmod +x unix64_start-IoTBroker_as_Daemon.sh setup.sh iotbroker.conf.default
+RUN ./setup.sh --auto --propagateauto
 
-RUN chmod +x unix64_start-IoTBroker.sh
+#Copy the service file to the init.d folder
+RUN cp /root/Aeron/linuxPackages/ubuntu/etc/init.d/iotbroker_nec /etc/init.d/
+RUN chmod 755 /etc/init.d/iotbroker_nec
 
-CMD bash -C '/root/Aeron/IoTBroker-runner/unix64_start-IoTBroker.sh'
+#Expose the port
+EXPOSE 8060
+
+#Start the IoTBroker
+CMD service iotbroker_nec start && tail -F /root/Aeron/IoTBroker-runner/logs/iotbroker.log
