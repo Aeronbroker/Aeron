@@ -8,7 +8,7 @@ iotbroker_configxml='/opt/Aeron/fiwareRelease/iotbrokerconfig/iotBroker/config/c
 iotbroker_embeddedagent_couchdbxml='/opt/Aeron/fiwareRelease/iotbrokerconfig/embeddedAgent/couchdb.xml'
 iotbroker_loggerproperties="$iotbroker_bundlesconfigurationlocation/services/org.ops4j.pax.logging.properties"
 
-iotbroker_version="5.1.3"
+iotbroker_version="5.3.3"
 
 AUTOSETUP='false'
 PROPAGATEAUTO='false'
@@ -151,6 +151,7 @@ function correctConfigIni {
 sed -e 's/[]\/$*.^|[]/\\&/g' ./iotbroker.conf.default > ./.iotbroker.conf.default.escaped
 chmod +x .iotbroker.conf.default.escaped
 . ./.iotbroker.conf.default.escaped
+
 
 if [ -e iotbroker.conf.local ];
 then

@@ -1,5 +1,17 @@
 #/bin/bash
 
+if [ -f pid.file ];
+then
+	if [ -z "`ps -ef | grep org.eclipse.osgi_iotbroker.jar | grep -v grep`" ]; 
+	then 
+		rm pid.file
+	else
+		HERE=`pwd`
+		echo "An instance of the IoT Broker seems already running. If you are sure that this is not the case, delete the file $HERE/pid.file"
+		exit 1
+	fi
+fi
+
 CONFIGINI="configuration/config.ini"
 
 RESETAGENT=false
@@ -53,4 +65,4 @@ else
     setPropertyIntoIni "iotbroker.reset" "false" "$CONFIGINI"
 fi
 
-nohup java -jar org.eclipse.osgi_iotbroker.jar >/dev/null 2>&1 &
+nohup java -jar org.eclipse.osgi_iotbroker.jar >/dev/null 2>&1 & echo $! > pid.file
