@@ -5,3 +5,4 @@
 */target/*
 *.log
 IoTBroker-runner/work/
+*.gitignore
