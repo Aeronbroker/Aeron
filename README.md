@@ -284,6 +284,7 @@ Minimum System Requirements:
 * RAM: 1 GB
 * DISK Space:50 MB
 * JAVA : Java 7
+* (Optional) CouchDB : Apache CouchDB (needed by the Historical Query and Big Data Repository features
 * Operating System: 32 or 64-bit version Windows or Linux
 
 

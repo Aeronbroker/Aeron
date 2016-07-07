@@ -4,11 +4,16 @@ FROM ubuntu
 
 MAINTAINER 'NEC Laboratories Europe: iotplatform@neclab.eu, Flavio Cirillo: flavio.cirillo@neclab.eu'
 
-#install Maven, Java and GIT
+#install CouchDB
 RUN apt-get update
-RUN apt-get install maven, default-jdk, git -y
+RUN apt-get install couchdb -y
+RUN mkdir /var/run/couchdb
+RUN chown -R couchdb:couchdb /var/run/couchdb
 
-#Downloadt the IoTBroker SourceCode
+#install Maven, Java and GIT
+RUN apt-get install maven default-jdk git -y
+
+#Download the IoTBroker SourceCode
 WORKDIR /root
 RUN git clone https://github.com/Aeronbroker/Aeron.git
 
@@ -20,15 +25,15 @@ RUN mvn install
 
 #Setup the IoTBroker
 WORKDIR /root/Aeron/IoTBroker-runner
-RUN chmod +x unix64_start-IoTBroker_as_Daemon.sh setup.sh iotbroker.conf.default
+RUN chmod +x *.sh iotbroker.conf.default
 RUN ./setup.sh --auto --propagateauto
 
 #Copy the service file to the init.d folder
-RUN cp /root/Aeron/linuxPackages/ubuntu/etc/init.d/iotbroker_nec /etc/init.d/
-RUN chmod 755 /etc/init.d/iotbroker_nec
+RUN printf "#!/bin/bash\n\n/usr/bin/couchdb > /dev/null &\n\n./unix64_exec.sh "$@" && tail -F /root/Aeron/IoTBroker-runner/logs/iotbroker.log 2> /dev/null" > iotbroker_dockerentrypoint.sh
+RUN chmod +x iotbroker_dockerentrypoint.sh
 
 #Expose the port
 EXPOSE 8060
 
 #Start the IoTBroker
-CMD service iotbroker_nec start && tail -F /root/Aeron/IoTBroker-runner/logs/iotbroker.log
+ENTRYPOINT ["./iotbroker_dockerentrypoint.sh"]
