@@ -44,7 +44,7 @@ iotbroker_pathprefixngsi9='ngsi9'
 iotbroker_pathprefixngsi10='ngsi10'
 
 # Ngsi9 uri of the local IoT Platform
-iotbroker_ngsi9uri='http://localhost:8075/'
+iotbroker_ngsi9uri='http://localhost:8065/'
 
 # Default throttling time
 iotbroker_defaultthrottling=1000
