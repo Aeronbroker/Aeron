@@ -10,6 +10,8 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.log4j.Logger;
+
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -20,6 +22,10 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 
 public class Indexer implements EmbeddedAgentIndexerInterface {
+	
+	/** The logger. */
+	private static Logger logger = Logger.getLogger(Indexer.class);
+
 	
 	public final static String LATEST_VALUE_PREFIX = "entity";
 	public final static String HISTORICAL_VALUE_PREFIX = "obs";
@@ -55,6 +61,9 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 			List<EntityId> entityIdList, Set<String> attributeNames) {
 
 		Multimap<String, String> idsAndAttributeNames = HashMultimap.create();
+		
+		logger.info("+++++++++++++++++++cachedIdsByType"+cachedIdsByType);
+		logger.info("+++++++++++++++++++cachedAttributeNamesById"+cachedAttributeNamesById);
 
 		for (EntityId entityId : entityIdList) {
 
