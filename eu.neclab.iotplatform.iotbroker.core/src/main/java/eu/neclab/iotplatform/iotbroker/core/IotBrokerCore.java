@@ -732,13 +732,15 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 * Now we query also the Embedded IoT Agent
 		 */
 		try {
+			logger.info("Checking if Historical Agent is present");
 			if (BundleUtils.isServiceRegistered(this, embeddedIoTAgent)) {
 
+				logger.info("Historical Agent present: fowarding the query");
 				tasks.add(Executors.callable(new EmbeddedIoTAgentRequestThread(
 						embeddedIoTAgent, request, merger)));
 			}
 		} catch (org.springframework.osgi.service.ServiceUnavailableException e) {
-			logger.warn("Not possible to store in the Big Data Repository: osgi service not registered");
+			logger.warn("Not possible to query the Big Data Repository: osgi service not registered");
 		}
 
 		/*
@@ -822,10 +824,13 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			long t0 = System.currentTimeMillis();
 			taskExecutor.invokeAll(tasks);
 			long t1 = System.currentTimeMillis();
-			logger.debug("Finished all tasks in " + (t1 - t0) + " ms");
+			if (logger.isDebugEnabled()) {
+				logger.debug("Finished all tasks in " + (t1 - t0) + " ms");
+			}
 
 		} catch (InterruptedException e) {
-			logger.debug("Thread Error", e);
+			logger.warn("Thread Error", e);
+			
 		}
 
 		/*
@@ -836,7 +841,9 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		QueryContextResponse mergerResponse = merger.get();
 
-		logger.debug("Response after merging: " + mergerResponse);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Response after merging: " + mergerResponse);
+		}
 
 		/*
 		 * Now we call also the result filter if it is present. The result
@@ -900,10 +907,13 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 * (And again we a similar workaround as above for the result filter)
 		 */
 
-		logger.info("Trying to access Big Data repository");
 		final QueryContextResponse queryContextRespListAfterMerge = mergerResponse;
 
+		logger.info("Checking if Big Data Repository is present");
 		if (storeQueryResponseAndNotifications) {
+			
+			logger.info("Trying to access Big Data repository");
+
 
 			if (BundleUtils.isServiceRegistered(this, embeddedIoTAgent)) {
 				new Thread() {
@@ -939,6 +949,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 				logger.warn("Not possible to store in the Big Data Repository: osgi service not registered");
 			}
 
+		} else {
+			logger.info("No Big Data Repository");
 		}
 
 		/**
@@ -1457,7 +1469,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 				&& (response.getErrorCode() == null || (response.getErrorCode()
 						.getCode() != Code.OK_200.getCode() && ignorePubSubFailure))) {
 			/*
-			 * Here if the ContextElementResponse is empty AND the ErrorCode is null or there was an error
+			 * Here if the ContextElementResponse is empty AND the ErrorCode is
+			 * null or there was an error
 			 */
 
 			response = new UpdateContextResponse(new StatusCode(
