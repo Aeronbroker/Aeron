@@ -21,7 +21,7 @@ case $key in
 		CONSOLE=true
 		;;
     -p|--property)
-		if [[ "$2" == -* ]]
+		if [[ "$2" != *=* ]]
 		then
 			echo "WARN: wrong property specification $1 $2. Please use -p|--property <property_name>=\"<property_value>\""
 		else
@@ -61,6 +61,8 @@ then
 	printf '%s\n' "${PROPERTIES[@]}"
 	echo "#!/bin/bash" > .iotbroker.conf.runtime 
 	printf '%s\n' "${PROPERTIES[@]}" >> .iotbroker.conf.runtime
+else 
+	rm -f .iotbroker.conf.runtime
 fi
 
 ./setup.sh
