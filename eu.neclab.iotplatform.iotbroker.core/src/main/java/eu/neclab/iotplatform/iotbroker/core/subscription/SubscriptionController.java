@@ -65,6 +65,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import eu.neclab.iotplatform.iotbroker.association.AssociationsUtil;
 import eu.neclab.iotplatform.iotbroker.commons.ComplexMetadataUtil;
 import eu.neclab.iotplatform.iotbroker.commons.DurationUtils;
 import eu.neclab.iotplatform.iotbroker.commons.EntityIDMatcher;

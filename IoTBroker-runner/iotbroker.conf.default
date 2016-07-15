@@ -6,6 +6,7 @@
 iotbroker_bigdatarepository="enabled"
 iotbroker_historicalagent="enabled"
 iotbroker_entitycomposer="enabled"
+iotbroker_association="enabled"
 
 ##############################
 # IoT Broker configurations

@@ -50,6 +50,7 @@ import java.util.Timer;
 
 import org.apache.log4j.Logger;
 
+import eu.neclab.iotplatform.iotbroker.association.AssociationsUtil;
 import eu.neclab.iotplatform.iotbroker.commons.DurationUtils;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;

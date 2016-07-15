@@ -163,6 +163,9 @@ enableBundle ngsi.api
 enableBundle iotbroker.ext.resultfilter
 enableBundle tomcat-configuration-fragment nostart
 
+##ENABLE/DISABLE ASSOCIATION
+setPropertyIntoXML "associationsEnabled" "$iotbroker_association" "$iotbroker_configxml"
+
 
 ##ENABLE BIG DATA REPOSITORY BUNDLES
 if [ "$iotbroker_bigdatarepository" == "enabled" ]

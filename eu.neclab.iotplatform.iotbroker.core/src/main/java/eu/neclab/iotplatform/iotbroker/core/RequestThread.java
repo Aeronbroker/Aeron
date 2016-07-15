@@ -49,9 +49,7 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
-import eu.neclab.iotplatform.iotbroker.commons.EntityIDMatcher;
-import eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface;
-import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
+import eu.neclab.iotplatform.iotbroker.association.AssociationsHandler;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
@@ -73,11 +71,12 @@ public class RequestThread implements Runnable {
 	private QueryResponseMerger merger;
 
 	private Ngsi10Requester requestor;
+	private AssociationsHandler associationsHandler;
 
-	private List<AssociationDS> additionalRequestList;
+	private List<AssociationDS> transitiveList;
 
 	/**
-	 *
+	 * 
 	 * @return The request of this instance.
 	 */
 	public QueryContextRequest getRequest() {
@@ -91,7 +90,7 @@ public class RequestThread implements Runnable {
 
 	/**
 	 * Initializes a new RequestThread.
-	 *
+	 * 
 	 * @param requestor
 	 *            A pointer to the interface making NGSI 10 requests.
 	 * @param request
@@ -106,18 +105,17 @@ public class RequestThread implements Runnable {
 	 *            Pointer to a {@link CountDownLatch} which represents the
 	 *            number of active request threads. Before the thread terminates
 	 *            it will decrement the latch.
-	 * @param additionalRequestList
+	 * @param transitiveList
 	 */
-	public RequestThread(
-			Ngsi10Requester requestor, QueryContextRequest request, URI uri,
-			QueryResponseMerger merger,
-			List<AssociationDS> additionalRequestList) {
+	public RequestThread(Ngsi10Requester requestor,
+			QueryContextRequest request, URI uri, QueryResponseMerger merger,
+			List<AssociationDS> transitiveList) {
 
 		this.requestor = requestor;
 		this.request = request;
 		this.uri = uri;
 		this.merger = merger;
-		this.additionalRequestList = additionalRequestList;
+		this.transitiveList = transitiveList;
 
 	}
 
@@ -135,7 +133,7 @@ public class RequestThread implements Runnable {
 		 * associations begin
 		 */
 		// Checking if transitiveList contains associations
-		if (!additionalRequestList.isEmpty()) {
+		if (transitiveList != null && !transitiveList.isEmpty()) {
 			// Getting List of ContextElementResponse from QueryContextResponse
 			List<ContextElementResponse> lContextElementResponse = response
 					.getListContextElementResponse();
@@ -144,93 +142,105 @@ public class RequestThread implements Runnable {
 			// For each of the ContextElementResponse
 			for (ContextElementResponse contEle : lContextElementResponse) {
 
-				for (AssociationDS aDS : additionalRequestList) {
-
-
-					logger.debug("Association Source EntityId: " + aDS.getSourceEA().getEntity());
-					logger.debug("Checked against Response EntityId: " + contEle.getContextElement().getEntityId());
-
-					// Checking if EntityID of QueryContextResponse matches with
-					// any source entity id of transitiveList of associations
-					if (EntityIDMatcher.matcher(aDS.getSourceEA().getEntity(),
-							contEle.getContextElement().getEntityId())) {
-
-						logger.debug("EntityIds Matching!");
-
-						// Checking if Attribute of source EntityID of
-						// transitiveList of associations is not empty or null
-
-						if (!"".equals(aDS.getSourceEA().getEntityAttribute())) {
-							// updating the EntityId with the Target EntityId of
-							// transitiveList of associations
-							contEle.getContextElement().setEntityId(
-									aDS.getTargetEA().getEntity());
-							boolean ifAttributeDomainNameExists = false;
-
-							if (contEle.getContextElement()
-									.getAttributeDomainName() != null
-									&& !contEle.getContextElement()
-									.getAttributeDomainName()
-									.equals("")) {
-								contEle.getContextElement()
-								.setAttributeDomainName(
-										aDS.getTargetEA()
-										.getEntityAttribute());
-								ifAttributeDomainNameExists = true;
-							}
-
-							if (!ifAttributeDomainNameExists) {
-								// updating the Attribute of same EntityId with
-								// the
-								// Attribute of Target EntityId of
-								// transitiveList of
-								// associations
-								List<ContextAttribute> lca = new ArrayList<ContextAttribute>();
-								for (ContextAttribute ca : contEle
-										.getContextElement()
-										.getContextAttributeList()) {
-									if (ca.getName().equals(
-											aDS.getSourceEA()
-											.getEntityAttribute())) {
-										ca.setName(aDS.getTargetEA()
-												.getEntityAttribute());
-										lca.add(ca);
-
-									}
-								}
-								contEle.getContextElement()
-								.setContextAttributeList(null);
-								contEle.getContextElement()
-								.setContextAttributeList(lca);
-							}
-
-						} else if ("".equals(aDS.getSourceEA()
-								.getEntityAttribute())) {
-
-							contEle.getContextElement().setEntityId(
-									aDS.getTargetEA().getEntity());
-
-							if (!"".equals(aDS.getTargetEA()
-									.getEntityAttribute())) {
-								List<ContextAttribute> lca = new ArrayList<ContextAttribute>();
-								for (ContextAttribute ca : contEle
-										.getContextElement()
-										.getContextAttributeList()) {
-									ca.setName(ca.getName());
-									lca.add(ca);
-								}
-								contEle.getContextElement()
-								.setContextAttributeList(null);
-								contEle.getContextElement()
-								.setContextAttributeList(lca);
-							}
-						}
-						// Adding the ContextElement to new
-						// ContextElementResponse
-						contextElementRespList.add(contEle);
-					}
+				List<ContextElementResponse> targetContextElementResponses = associationsHandler
+						.applySourceToTargetTransitivity(contEle, transitiveList);
+				
+				if (targetContextElementResponses != null && !targetContextElementResponses.isEmpty()){
+					contextElementRespList.addAll(targetContextElementResponses);
 				}
+
+				// for (AssociationDS aDS : additionalRequestList) {
+				//
+				//
+				// logger.debug("Association Source EntityId: " +
+				// aDS.getSourceEA().getEntity());
+				// logger.debug("Checked against Response EntityId: " +
+				// contEle.getContextElement().getEntityId());
+				//
+				// // Checking if EntityID of QueryContextResponse matches with
+				// // any source entity id of transitiveList of associations
+				// if (EntityIDMatcher.matcher(aDS.getSourceEA().getEntity(),
+				// contEle.getContextElement().getEntityId())) {
+				//
+				// logger.debug("EntityIds Matching!");
+				//
+				// // Checking if Attribute of source EntityID of
+				// // transitiveList of associations is not empty or null
+				//
+				// if (!"".equals(aDS.getSourceEA().getEntityAttribute())) {
+				// // updating the EntityId with the Target EntityId of
+				// // transitiveList of associations
+				// contEle.getContextElement().setEntityId(
+				// aDS.getTargetEA().getEntity());
+				// boolean ifAttributeDomainNameExists = false;
+				//
+				// if (contEle.getContextElement()
+				// .getAttributeDomainName() != null
+				// && !contEle.getContextElement()
+				// .getAttributeDomainName()
+				// .equals("")) {
+				// contEle.getContextElement()
+				// .setAttributeDomainName(
+				// aDS.getTargetEA()
+				// .getEntityAttribute());
+				// ifAttributeDomainNameExists = true;
+				// }
+				//
+				// if (!ifAttributeDomainNameExists) {
+				// // updating the Attribute of same EntityId with
+				// // the
+				// // Attribute of Target EntityId of
+				// // transitiveList of
+				// // associations
+				// List<ContextAttribute> lca = new
+				// ArrayList<ContextAttribute>();
+				// for (ContextAttribute ca : contEle
+				// .getContextElement()
+				// .getContextAttributeList()) {
+				// if (ca.getName().equals(
+				// aDS.getSourceEA()
+				// .getEntityAttribute())) {
+				// ca.setName(aDS.getTargetEA()
+				// .getEntityAttribute());
+				// lca.add(ca);
+				//
+				// }
+				// }
+				// contEle.getContextElement()
+				// .setContextAttributeList(null);
+				// contEle.getContextElement()
+				// .setContextAttributeList(lca);
+				// }
+				//
+				// } else if ("".equals(aDS.getSourceEA()
+				// .getEntityAttribute())) {
+				//
+				// contEle.getContextElement().setEntityId(
+				// aDS.getTargetEA().getEntity());
+				//
+				// if (!"".equals(aDS.getTargetEA()
+				// .getEntityAttribute())) {
+				// List<ContextAttribute> lca = new
+				// ArrayList<ContextAttribute>();
+				// for (ContextAttribute ca : contEle
+				// .getContextElement()
+				// .getContextAttributeList()) {
+				// ca.setName(ca.getName());
+				// lca.add(ca);
+				// }
+				// contEle.getContextElement()
+				// .setContextAttributeList(null);
+				// contEle.getContextElement()
+				// .setContextAttributeList(lca);
+				// }
+				// }
+				// // Adding the ContextElement to new
+				// // ContextElementResponse
+				// contextElementRespList.add(contEle);
+				// }
+				// }
 			}
+
 			QueryContextResponse updatedResponse = new QueryContextResponse();
 			updatedResponse.setContextResponseList(contextElementRespList);
 			updatedResponse.setErrorCode(response.getErrorCode());
@@ -238,8 +248,10 @@ public class RequestThread implements Runnable {
 		}
 
 		synchronized (merger) {
-			logger.debug("Start Merger!");
-			logger.debug("Response to put into merger: " + response);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Start Merger! Response to put into merger: "
+						+ response);
+			}
 			merger.put(response);
 		}
 

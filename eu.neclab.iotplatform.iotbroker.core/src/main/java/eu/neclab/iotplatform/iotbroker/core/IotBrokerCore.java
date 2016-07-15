@@ -45,7 +45,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -67,6 +66,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
+import eu.neclab.iotplatform.iotbroker.association.AssociationsHandler;
 import eu.neclab.iotplatform.iotbroker.commons.BundleUtils;
 import eu.neclab.iotplatform.iotbroker.commons.Pair;
 import eu.neclab.iotplatform.iotbroker.commons.SubscriptionWithInfo;
@@ -81,30 +81,24 @@ import eu.neclab.iotplatform.iotbroker.commons.interfaces.OnTimeIntervalHandlerI
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.OnValueHandlerInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.QueryService;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface;
-import eu.neclab.iotplatform.iotbroker.core.subscription.AssociationsUtil;
 import eu.neclab.iotplatform.iotbroker.core.subscription.ConfManWrapper;
 import eu.neclab.iotplatform.iotbroker.core.subscription.NorthBoundWrapper;
 import eu.neclab.iotplatform.iotbroker.core.subscription.SubscriptionController;
 import eu.neclab.iotplatform.iotbroker.storage.AvailabilitySubscriptionInterface;
 import eu.neclab.iotplatform.iotbroker.storage.LinkSubscriptionAvailabilityInterface;
 import eu.neclab.iotplatform.iotbroker.storage.SubscriptionStorageInterface;
-import eu.neclab.iotplatform.ngsi.api.datamodel.AttributeAssociation;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
-import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
-import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadataAssociation;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityResponse;
-import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextResponse;
-import eu.neclab.iotplatform.ngsi.api.datamodel.OperationScope;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ReasonPhrase;
@@ -127,12 +121,10 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextSubscriptionRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextSubscriptionResponse;
-import eu.neclab.iotplatform.ngsi.api.datamodel.ValueAssociation;
 import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Interface;
 import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Requester;
 import eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface;
 import eu.neclab.iotplatform.ngsi.association.datamodel.AssociationDS;
-import eu.neclab.iotplatform.ngsi.association.datamodel.EntityAttribute;
 
 /**
  * This class represents the functional core of the IoT Broker. Each IoT Broker
@@ -186,14 +178,21 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	private final ExecutorService taskExecutor = Executors
 			.newCachedThreadPool();
 
+	/** The implementation of the NGSI 9 interface */
+	private Ngsi9Interface ngsi9Impl;
+
+	/** Used to make NGSI 10 requests. */
+	private Ngsi10Requester ngsi10Requester;
+
 	/** The logger. */
 	private static Logger logger = Logger.getLogger(IotBrokerCore.class);
 
 	/** Utility for processing NGSI associations */
-	private final AssociationsUtil associationUtil = new AssociationsUtil();
+	private AssociationsHandler associationsHandler = new AssociationsHandler(
+			ngsi9Impl);
 
-	/** The unique xml factory to be used by all core instances. */
-	private static final XmlFactory xmlFactory = new XmlFactory();
+	@Value("${associationsEnabled}")
+	private boolean associationsEnabled;
 
 	/** Interface for making context availability subscriptions. */
 	private AvailabilitySubscriptionInterface availabilitySub;
@@ -464,12 +463,6 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		this.subscriptionStorage = subscriptionStorage;
 	}
 
-	/** The implementation of the NGSI 9 interface */
-	private Ngsi9Interface ngsi9Impl;
-
-	/** Used to make NGSI 10 requests. */
-	private Ngsi10Requester ngsi10Requester;
-
 	/**
 	 * Returns the implementation of the NGSI 9 interface. This interface is
 	 * used by the core for making NGSI-9 discovery operations.
@@ -568,63 +561,70 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	@Override
 	public QueryContextResponse queryContext(QueryContextRequest request) {
 
-		/*
-		 * ######################################################################
-		 * Here starts part of code for the ASSOCIATIONS
-		 * ##############################################
-		 */
+		// /*
+		// *
+		// ######################################################################
+		// * Here starts part of code for the ASSOCIATIONS
+		// * ##############################################
+		// */
+		//
+		// /*
+		// * create associations operation scope for discovery
+		// */
+		// OperationScope operationScope = new OperationScope(
+		// "IncludeAssociations", "SOURCES");
+		//
+		// /*
+		// * Create a new restriction with the same attribute expression and
+		// * operation scope as in the request.
+		// */
+		// Restriction restriction = new Restriction();
+		//
+		// if (request.getRestriction() != null) {
+		// if (request.getRestriction().getAttributeExpression() != null) {
+		// restriction.setAttributeExpression(request.getRestriction()
+		// .getAttributeExpression());
+		// }
+		// if (request.getRestriction().getOperationScope() != null) {
+		// restriction.setOperationScope(new ArrayList<OperationScope>(
+		// request.getRestriction().getOperationScope()));
+		// }
+		//
+		// } else {
+		//
+		// restriction.setAttributeExpression("");
+		//
+		// }
+		//
+		// /*
+		// * Add the associations operation scope to the the restriction.
+		// */
+		//
+		// ArrayList<OperationScope> lstOperationScopes = null;
+		//
+		// if (restriction.getOperationScope() == null) {
+		// lstOperationScopes = new ArrayList<OperationScope>();
+		// lstOperationScopes.add(operationScope);
+		// restriction.setOperationScope(lstOperationScopes);
+		// } else {
+		// restriction.getOperationScope().add(operationScope);
+		// }
+		//
+		// /*
+		// *
+		// ######################################################################
+		// * Here finishes part of code for the ASSOCIATIONS
+		// * ################################################
+		// */
 
-		/*
-		 * create associations operation scope for discovery
-		 */
-		OperationScope operationScope = new OperationScope(
-				"IncludeAssociations", "SOURCES");
-
-		/*
-		 * Create a new restriction with the same attribute expression and
-		 * operation scope as in the request.
-		 */
-		Restriction restriction = new Restriction();
-
-		if (request.getRestriction() != null) {
-			if (request.getRestriction().getAttributeExpression() != null) {
-				restriction.setAttributeExpression(request.getRestriction()
-						.getAttributeExpression());
-			}
-			if (request.getRestriction().getOperationScope() != null) {
-				restriction.setOperationScope(new ArrayList<OperationScope>(
-						request.getRestriction().getOperationScope()));
-			}
-
-		} else {
-
-			restriction.setAttributeExpression("");
-
+		if (associationsEnabled == true) {
+			associationsHandler.insertAssociationScope(request);
 		}
-
-		/*
-		 * Add the associations operation scope to the the restriction.
-		 */
-
-		ArrayList<OperationScope> lstOperationScopes = null;
-
-		if (restriction.getOperationScope() == null) {
-			lstOperationScopes = new ArrayList<OperationScope>();
-			lstOperationScopes.add(operationScope);
-			restriction.setOperationScope(lstOperationScopes);
-		} else {
-			restriction.getOperationScope().add(operationScope);
-		}
-
-		/*
-		 * ######################################################################
-		 * Here finishes part of code for the ASSOCIATIONS
-		 * ################################################
-		 */
 
 		DiscoverContextAvailabilityRequest discoveryRequest = new DiscoverContextAvailabilityRequest(
 				request.getEntityIdList(), request.getAttributeList(),
-				restriction);
+				request.getRestriction());
+
 		if (logger.isDebugEnabled()) {
 			logger.debug("DiscoverContextAvailabilityRequest:"
 					+ discoveryRequest.toString());
@@ -669,47 +669,57 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 				.getErrorCode().getCode() == 200)
 				&& discoveryResponse.getContextRegistrationResponse() != null) {
 
-			/*
-			 * ##################################################################
-			 * #### Here starts part of code for the ASSOCIATIONS
-			 * ##############################################
-			 */
+			// /*
+			// *
+			// ##################################################################
+			// * #### Here starts part of code for the ASSOCIATIONS
+			// * ##############################################
+			// */
+			//
+			// if (logger.isDebugEnabled()) {
+			// logger.debug("Receive discoveryResponse from Config Man:"
+			// + discoveryResponse);
+			// }
+			// List<AssociationDS> assocList = associationUtil
+			// .retrieveAssociation(discoveryResponse);
+			//
+			// if (logger.isDebugEnabled()) {
+			// logger.debug("Association List Size: " + assocList.size());
+			// }
+			// List<AssociationDS> additionalRequestList = associationUtil
+			// .initialLstOfmatchedAssociation(request, assocList);
+			//
+			// if (logger.isDebugEnabled()) {
+			// logger.debug("(Step 1) Initial List Of matchedAssociation:"
+			// + additionalRequestList);
+			// }
+			// List<AssociationDS> transitiveList = associationUtil
+			// .transitiveAssociationAnalysisFrQuery(assocList,
+			// additionalRequestList);
+			//
+			// if (logger.isDebugEnabled()) {
+			// logger.debug("(Step 2 ) Transitive List Of matchedAssociation:"
+			// + transitiveList);
+			//
+			// logger.debug("(Step 2 a) Final additionalRequestList List Of matchedAssociation:"
+			// + additionalRequestList);
+			// }
+			//
+			// /*
+			// *
+			// ##################################################################
+			// * #### Here finishes part of code for the ASSOCIATIONS
+			// * ##############################################
+			// */
 
-			if (logger.isDebugEnabled()) {
-				logger.debug("Receive discoveryResponse from Config Man:"
-						+ discoveryResponse);
+			List<AssociationDS> transitiveList = null;
+			if (associationsEnabled == true) {
+				transitiveList = associationsHandler.getTransitiveList(
+						discoveryResponse, request);
 			}
-			List<AssociationDS> assocList = associationUtil
-					.retrieveAssociation(discoveryResponse);
 
-			if (logger.isDebugEnabled()) {
-				logger.debug("Association List Size: " + assocList.size());
-			}
-			List<AssociationDS> additionalRequestList = associationUtil
-					.initialLstOfmatchedAssociation(request, assocList);
-
-			if (logger.isDebugEnabled()) {
-				logger.debug("(Step 1) Initial List Of matchedAssociation:"
-						+ additionalRequestList);
-			}
-			List<AssociationDS> transitiveList = associationUtil
-					.transitiveAssociationAnalysisFrQuery(assocList,
-							additionalRequestList);
-
-			if (logger.isDebugEnabled()) {
-				logger.debug("(Step 2 ) Transitive List Of matchedAssociation:"
-						+ transitiveList);
-
-				logger.debug("(Step 2 a) Final additionalRequestList List Of matchedAssociation:"
-						+ additionalRequestList);
-			}
 			List<Pair<QueryContextRequest, URI>> queryList = createQueryRequestList(
-					discoveryResponse, request);
-			/*
-			 * ##################################################################
-			 * #### Here finishes part of code for the ASSOCIATIONS
-			 * ##############################################
-			 */
+					discoveryResponse.getContextRegistrationResponse(), request);
 
 			int count = 0;
 			for (Pair<QueryContextRequest, URI> pair : queryList) {
@@ -830,7 +840,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		} catch (InterruptedException e) {
 			logger.warn("Thread Error", e);
-			
+
 		}
 
 		/*
@@ -911,9 +921,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		logger.info("Checking if Big Data Repository is present");
 		if (storeQueryResponseAndNotifications) {
-			
-			logger.info("Trying to access Big Data repository");
 
+			logger.info("Trying to access Big Data repository");
 
 			if (BundleUtils.isServiceRegistered(this, embeddedIoTAgent)) {
 				new Thread() {
@@ -955,7 +964,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		/**
 		 * The code snippet below is for dumping the data in a Big Data
-		 * repository in addition. This feature is currently disabled.
+		 * repository in addition.
 		 */
 		if (BundleUtils.isServiceRegistered(this, bigDataRepository)) {
 
@@ -1020,8 +1029,10 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			// TODO improve the logging here, the details are not really picking
 			// the important informations
 
-			logger.debug("No query results to return! Discovery response:"
-					+ discoveryResponse.toString());
+			if (logger.isDebugEnabled()) {
+				logger.debug("No query results to return! Discovery response:"
+						+ discoveryResponse.toString());
+			}
 
 			mergerResponse
 					.setErrorCode(new StatusCode(
@@ -1052,7 +1063,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		try {
 			XPathExpression expr = xpath.compile(attributeExpr);
 
-			Document doc = xmlFactory.stringToDocument(response.toString());
+			Document doc = XmlFactory.stringToDocument(response.toString());
 			Object result = expr.evaluate(doc, XPathConstants.NODESET);
 
 			NodeList nodes = (NodeList) result;
@@ -1100,24 +1111,25 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	 *         make which query.
 	 */
 	private List<Pair<QueryContextRequest, URI>> createQueryRequestList(
-			DiscoverContextAvailabilityResponse discoveryResponse,
+			List<ContextRegistrationResponse> contextRegistrationResponseList,
 			QueryContextRequest request) {
 
 		List<Pair<QueryContextRequest, URI>> output = new ArrayList<Pair<QueryContextRequest, URI>>();
 
-		for (int i = 0; i < discoveryResponse.getContextRegistrationResponse()
-				.size(); i++) {
-			List<ContextMetadata> lstcmd = discoveryResponse
-					.getContextRegistrationResponse().get(i)
+		for (ContextRegistrationResponse contextRegistrationResponse : contextRegistrationResponseList) {
+
+			List<ContextMetadata> contextMetadataList = contextRegistrationResponse
 					.getContextRegistration().getListContextMetadata();
-			if (lstcmd.size() > 0
-					&& "Association".equals(lstcmd.get(0).getName().toString())) {
+			
+			if (contextMetadataList.size() > 0
+					&& "Association".equals(contextMetadataList.get(0)
+							.getName().toString())) {
 				continue;
 			}
 
 			// (1) get the access URI
-			URI uri = discoveryResponse.getContextRegistrationResponse().get(i)
-					.getContextRegistration().getProvidingApplication();
+			URI uri = contextRegistrationResponse.getContextRegistration()
+					.getProvidingApplication();
 
 			// Check the trace and discard in case of loop detected
 			if (traceKeeperEnabled) {
@@ -1125,39 +1137,33 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 						request.getRestriction(), uri.toString())) {
 					logger.info(String
 							.format("Loop detected, discarding ContextRegistrationResponse: %sBecause of the QueryContext: %s",
-									discoveryResponse
-											.getContextRegistrationResponse()
-											.get(i), request));
+									contextRegistrationResponse, request));
 					continue;
 				}
 			}
 
 			// check if EntityId is != null
-			if (discoveryResponse.getContextRegistrationResponse().get(i)
-					.getContextRegistration().getListEntityId() != null) {
+			if (contextRegistrationResponse.getContextRegistration()
+					.getListEntityId() != null) {
 
 				// (2) create QueryContextRequest
 				QueryContextRequest contextRequest = new QueryContextRequest();
 
-				contextRequest.setEntityIdList(discoveryResponse
-						.getContextRegistrationResponse().get(i)
+				contextRequest.setEntityIdList(contextRegistrationResponse
 						.getContextRegistration().getListEntityId());
 
 				List<String> attributeNameList = new ArrayList<String>();
 
 				// check if different to null
-				if (discoveryResponse.getContextRegistrationResponse().get(i)
-						.getContextRegistration()
+				if (contextRegistrationResponse.getContextRegistration()
 						.getContextRegistrationAttribute() != null) {
 
 					// run over all attributes
-					for (int j = 0; j < discoveryResponse
-							.getContextRegistrationResponse().get(i)
+					for (int j = 0; j < contextRegistrationResponse
 							.getContextRegistration()
 							.getContextRegistrationAttribute().size(); j++) {
 
-						String attributeName = discoveryResponse
-								.getContextRegistrationResponse().get(i)
+						String attributeName = contextRegistrationResponse
 								.getContextRegistration()
 								.getContextRegistrationAttribute().get(j)
 								.getName();
@@ -1250,7 +1256,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		/*
 		 * If the subscription is successful we forward the subscription also to
-		 * the BigDataRepository (if present)
+		 * the HistoricalAgent (if present)
 		 */
 		if ((response.getSubscribeError() == null || response
 				.getSubscribeError().getStatusCode().getCode() == 200)
@@ -1329,7 +1335,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		/*
 		 * If the subscription is successful we forward the subscription also to
-		 * the BigDataRepository (if present)
+		 * the HistoricalAgent (if present)
 		 */
 		if ((response.getStatusCode() == null || response.getStatusCode()
 				.getCode() == 200)
@@ -1373,7 +1379,13 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		/*
 		 * Here we apply associations
 		 */
-		final UpdateContextRequest updateContextRequest = applyAssociation(request);
+		final UpdateContextRequest updateContextRequest ;
+		if (associationsEnabled == true) {
+			updateContextRequest = associationsHandler
+					.applyAssociation(request);
+		} else {
+			updateContextRequest = request;
+		}
 
 		/**
 		 * Dump data in Historical Agent if present.
@@ -1402,9 +1414,6 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 * Since the Embedded Agent may have its own subscription system, here
 		 * we check if it is enabled.
 		 */
-
-		// logger.info("embeddedIoTAgent is registered? : "
-		// + BundleUtils.isServiceRegistered(this, embeddedIoTAgent));
 
 		if (request.getUpdateAction() != UpdateActionType.DELETE) {
 			if (!BundleUtils.isServiceRegistered(this, embeddedIoTAgent)
@@ -1480,171 +1489,6 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		return response;
 
-	}
-
-	private UpdateContextRequest applyAssociation(UpdateContextRequest request) {
-
-		List<AssociationDS> listAssociationDS = new LinkedList<AssociationDS>();
-		final List<ContextElement> lContextElements = request
-				.getContextElement();
-		final List<ContextElement> listContextElement = new LinkedList<ContextElement>();
-		UpdateContextRequest updateContextRequest = null;
-		// Going through individual ContextElement
-		Iterator<ContextElement> it = lContextElements.iterator();
-		while (it.hasNext()) {
-			ContextElement contextElement = it.next();
-
-			/*
-			 * Retrieving EntityID and Entity Attributes for
-			 * DiscoverContextAvailabilityRequest
-			 */
-			List<EntityId> eidList = new LinkedList<EntityId>();
-			eidList.add(contextElement.getEntityId());
-
-			List<ContextAttribute> lContextAttributes = contextElement
-					.getContextAttributeList();
-			List<String> attributeList = new LinkedList<String>();
-
-			if (lContextAttributes != null && !lContextAttributes.isEmpty()) {
-
-				Iterator<ContextAttribute> itAttributeList = lContextAttributes
-						.iterator();
-				while (itAttributeList.hasNext()) {
-					ContextAttribute ca = itAttributeList.next();
-					attributeList.add(ca.getName());
-				}
-			}
-			// Creating Restriction OperationScopes for
-			// DiscoverContextAvailabilityRequest
-			OperationScope os = new OperationScope("IncludeAssociations",
-					"TARGETS");
-			List<OperationScope> loperOperationScopes = new LinkedList<OperationScope>();
-			loperOperationScopes.add(os);
-			Restriction restriction = new Restriction("", loperOperationScopes);
-
-			// Create the NGSI 9 DiscoverContextAvailabilityRequest
-			DiscoverContextAvailabilityRequest discoveryRequest = new DiscoverContextAvailabilityRequest(
-					eidList, attributeList, restriction);
-			// Get the NGSI 9 DiscoverContextAvailabilityResponse
-			DiscoverContextAvailabilityResponse discoveryResponse = ngsi9Impl
-					.discoverContextAvailability(discoveryRequest);
-
-			/*
-			 * Getting Associations information from
-			 * DiscoverContextAvailabilityResponse
-			 */
-
-			List<ContextRegistrationResponse> lcrr = discoveryResponse
-					.getContextRegistrationResponse();
-			Iterator<ContextRegistrationResponse> itContextRegistrationResponse = lcrr
-					.iterator();
-			while (itContextRegistrationResponse.hasNext()) {
-				ContextRegistrationResponse crr = itContextRegistrationResponse
-						.next();
-
-				List<ContextMetadata> lcmd = crr.getContextRegistration()
-						.getListContextMetadata();
-
-				Iterator<ContextMetadata> it1 = lcmd.iterator();
-				while (it1.hasNext()) {
-					ContextMetadata cmd = it1.next();
-					if ("Association".equals(cmd.getType().toString())) {
-
-						logger.debug("++++++++++++++++++++++++++++++++++++++++++++++++++befor value");
-						String s = "<value>" + cmd.getValue() + "</value>";
-						logger.debug("++++++++++++++++++++++++++++++++++++++++++++++++++befor value");
-						ContextMetadataAssociation cma = (ContextMetadataAssociation) xmlFactory
-								.convertStringToXml(cmd.toString(),
-										ContextMetadataAssociation.class);
-						XmlFactory xmlFac = new XmlFactory();
-						ValueAssociation va = (ValueAssociation) xmlFac
-								.convertStringToXml(s, ValueAssociation.class);
-						cma.setValue(va);
-
-						if (va.getAttributeAssociation().size() == 0) {
-
-							AssociationDS ads = new AssociationDS(
-									new EntityAttribute(va.getSourceEntity(),
-											""), new EntityAttribute(
-											va.getSourceEntity(), ""));
-							listAssociationDS.add(ads);
-						} else {
-							List<AttributeAssociation> lAttributeAsociations = va
-									.getAttributeAssociation();
-							for (AttributeAssociation aa : lAttributeAsociations) {
-								AssociationDS ads = new AssociationDS(
-										new EntityAttribute(
-												va.getSourceEntity(),
-												aa.getSourceAttribute()),
-										new EntityAttribute(va
-												.getTargetEntity(), aa
-												.getTargetAttribute()));
-								listAssociationDS.add(ads);
-							}
-						}
-					}
-
-				}
-			}
-			logger.debug("List of Assocaions from ConfigManager:"
-					+ listAssociationDS.toString());
-			if (!listAssociationDS.isEmpty()) {
-				for (ContextAttribute contextAttribute : contextElement
-						.getContextAttributeList()) {
-
-					List<EntityAttribute> loutput = associationUtil.findA(
-							listAssociationDS, new EntityAttribute(
-									contextElement.getEntityId(),
-									contextAttribute.getName()));
-					logger.debug("List of effective Associations:"
-							+ loutput.toString());
-					EntityId currentEntityID = null;
-
-					for (EntityAttribute entityAttribute1 : loutput) {
-						List<ContextAttribute> lcaRes = new LinkedList<ContextAttribute>();
-						if (currentEntityID != null) {
-							if (!currentEntityID.getId().equals(
-									entityAttribute1.getEntity().getId())) {
-								ContextElement contextElementResponse = new ContextElement(
-										entityAttribute1.getEntity(),
-										contextElement.getAttributeDomainName(),
-										lcaRes, contextElement
-												.getDomainMetadata());
-								listContextElement.add(contextElementResponse);
-								currentEntityID = entityAttribute1.getEntity();
-							}
-						} else {
-							ContextElement contextElementResponse = new ContextElement(
-									entityAttribute1.getEntity(),
-									contextElement.getAttributeDomainName(),
-									lcaRes, contextElement.getDomainMetadata());
-							listContextElement.add(contextElementResponse);
-							currentEntityID = entityAttribute1.getEntity();
-						}
-						ContextAttribute contextAttribute1 = new ContextAttribute(
-								"".equals(entityAttribute1.getEntityAttribute()) ? contextAttribute
-										.getName() : entityAttribute1
-										.getEntityAttribute(),
-								contextAttribute.getType(), contextAttribute
-										.getContextValue().toString(),
-								contextAttribute.getMetadata());
-						lcaRes.add(contextAttribute1);
-
-					}
-				}
-
-			} else {
-
-				listContextElement.add(contextElement);
-
-			}
-
-		}
-
-		updateContextRequest = new UpdateContextRequest(listContextElement,
-				request.getUpdateAction());
-
-		return updateContextRequest;
 	}
 
 	private void notifySubscribers(UpdateContextRequest updateContextRequest) {
@@ -1748,8 +1592,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		}
 
 		/**
-		 * The code snippet below is for dumping the data in a Big Data
-		 * repository in addition. This feature is currently disabled.
+		 * The code snippet below is for dumping the data in a Historical Agent.
 		 */
 		if (storeQueryResponseAndNotifications
 				&& !this.toString().equals(request.getOriginator())
@@ -1788,7 +1631,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		/**
 		 * The code snippet below is for dumping the data in a Big Data
-		 * repository in addition. This feature is currently disabled.
+		 * repository in addition.
 		 */
 		if (BundleUtils.isServiceRegistered(this, bigDataRepository)) {
 			new Thread() {

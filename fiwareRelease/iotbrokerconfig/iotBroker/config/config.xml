@@ -23,5 +23,8 @@
 
 <entry key="isMaster">true</entry>
 
+<entry key="associationsEnabled">false</entry>
+
+<entry key="storeQueryResponseAndNotifications">false</entry>
 
 </properties>

@@ -39,7 +39,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH 
  * DAMAGE.
  ******************************************************************************/
-package eu.neclab.iotplatform.iotbroker.core.subscription;
+package eu.neclab.iotplatform.iotbroker.association;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -77,7 +77,6 @@ public class AssociationsUtil {
 
 	private static Logger logger = Logger.getLogger(AssociationsUtil.class);
 
-	private static XmlFactory xmlfactory = new XmlFactory();
 	private static final String DIV = "<div>";
 
 	/**
@@ -88,11 +87,11 @@ public class AssociationsUtil {
 	 * @param assoc
 	 * @return
 	 */
-	public List<AssociationDS> convertToAssociationDS(String assoc) {
+	public static List<AssociationDS> convertToAssociationDS(String assoc) {
 		List<AssociationDS> lAssoc = new ArrayList<AssociationDS>();
 		String[] tmpstring = assoc.split(DIV);
 		for (String s : tmpstring) {
-			lAssoc.add((AssociationDS) xmlfactory.convertStringToXml(s,
+			lAssoc.add((AssociationDS) XmlFactory.convertStringToXml(s,
 					AssociationDS.class));
 		}
 		return lAssoc;
@@ -104,10 +103,10 @@ public class AssociationsUtil {
 	 * @param transitiveList The association list.
 	 * @return The list in string format.
 	 */
-	public String convertAssociationToString(List<AssociationDS> transitiveList) {
+	public static String convertAssociationToString(List<AssociationDS> transitiveList) {
 		StringBuilder buf = new StringBuilder();
 		for (AssociationDS ads : transitiveList) {
-			buf.append(xmlfactory.convertToXml(ads, AssociationDS.class));
+			buf.append(XmlFactory.convertToXml(ads, AssociationDS.class));
 			buf.append(DIV);
 		}
 
@@ -115,7 +114,7 @@ public class AssociationsUtil {
 	}
 
 
-	private int checkAssociationType(AssociationDS aDSfrmOriginal,
+	private static int checkAssociationType(AssociationDS aDSfrmOriginal,
 			AssociationDS aDSfrmQueue) {
 
 		int count = 0;
@@ -148,7 +147,7 @@ public class AssociationsUtil {
 		return count;
 	}
 
-	private AssociationDS createNewAssociations(int count,
+	private static AssociationDS createNewAssociations(int count,
 			AssociationDS aDSfrmOriginal, AssociationDS aDSfrmQueue) {
 
 		logger.debug("checkAssociationType:" + count + " aDSfrmOriginal:"
@@ -198,7 +197,7 @@ public class AssociationsUtil {
 	 * the returned association set contains C-->D, B-->D, and A-->D.
 	 *
 	 */
-	public List<AssociationDS> transitiveAssociationAnalysisFrQuery(
+	public static List<AssociationDS> transitiveAssociationAnalysisFrQuery(
 			List<AssociationDS> moreAssociations, List<AssociationDS> targetAssocs) {
 		logger.debug("Association List frm DiscoverContextAvailabilityResponse:"
 				+ moreAssociations);
@@ -252,7 +251,7 @@ public class AssociationsUtil {
 	 * @param assocList
 	 * The list of associations from which to extract.
 	 */
-	public List<AssociationDS> initialLstOfmatchedAssociation(
+	public static List<AssociationDS> initialLstOfmatchedAssociation(
 			QueryContextRequest qcReq, List<AssociationDS> assocList) {
 
 
@@ -401,7 +400,7 @@ public class AssociationsUtil {
 	 * @return
 	 * The constructed DiscoverContextAvailabilityResponse.
 	 */
-	public DiscoverContextAvailabilityResponse validDiscoverContextAvailabiltyResponse(
+	public static DiscoverContextAvailabilityResponse validDiscoverContextAvailabiltyResponse(
 			DiscoverContextAvailabilityResponse dcaRes,
 			List<AssociationDS> lassociDS) {
 
@@ -465,7 +464,7 @@ public class AssociationsUtil {
 	 * This method retrieves list of associations from
 	 * DiscoverContextAvailabilityResponse
 	 */
-	public List<AssociationDS> retrieveAssociation(
+	public static List<AssociationDS> retrieveAssociation(
 			DiscoverContextAvailabilityResponse dcaRes) {
 		List<AssociationDS> lADS = new LinkedList<AssociationDS>();
 		List<ContextRegistrationResponse> lcrr = dcaRes
@@ -493,11 +492,10 @@ public class AssociationsUtil {
 				if ("Association".equals(cmd.getName().toString())) {
 
 					String s = "<value>" + cmd.getValue() + "</value>";
-					ContextMetadataAssociation cma = (ContextMetadataAssociation) xmlfactory
+					ContextMetadataAssociation cma = (ContextMetadataAssociation) XmlFactory
 							.convertStringToXml(cmd.toString(),
 									ContextMetadataAssociation.class);
-					XmlFactory xmlFac = new XmlFactory();
-					ValueAssociation va = (ValueAssociation) xmlFac
+					ValueAssociation va = (ValueAssociation) XmlFactory
 							.convertStringToXml(s, ValueAssociation.class);
 					cma.setValue(va);
 
@@ -536,7 +534,7 @@ public class AssociationsUtil {
 	 * @param ea
 	 * @return
 	 */
-	public List<EntityAttribute> findA(List<AssociationDS> lads,
+	public static List<EntityAttribute> findAssociation(List<AssociationDS> lads,
 			EntityAttribute ea) {
 		logger.debug("List of associations");
 		for (AssociationDS a : lads) {

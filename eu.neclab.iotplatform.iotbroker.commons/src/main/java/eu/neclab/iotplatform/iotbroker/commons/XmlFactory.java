@@ -87,7 +87,7 @@ public class XmlFactory {
 	 * @return The XML String representing the Object.
 	 *
 	 */
-	public String convertToXml(Object source, Class<?> type) {
+	public static String convertToXml(Object source, Class<?> type) {
 		String result = null;
 		DataWriter dataWriter;
 		try {
@@ -118,7 +118,7 @@ public class XmlFactory {
 	 * @return The result of the conversion.
 	 *
 	 */
-	public Object convertStringToXml(String xml, Class<?> type) {
+	public static Object convertStringToXml(String xml, Class<?> type) {
 
 		Object response = null;
 
@@ -145,7 +145,7 @@ public class XmlFactory {
 	 * @return The result of the conversion.
 	 *
 	 */
-	public Object convertFileToXML(String path, Class<?> type){
+	public static Object convertFileToXML(String path, Class<?> type){
 		
 		//read String from File
 		byte[] encoded;
@@ -168,7 +168,7 @@ public class XmlFactory {
 	 * @return The resulting Document instance.
 	 *
 	 */
-	public Document stringToDocument(String xml) {
+	public static Document stringToDocument(String xml) {
 
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db;

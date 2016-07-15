@@ -47,6 +47,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import eu.neclab.iotplatform.iotbroker.association.AssociationsUtil;
 import eu.neclab.iotplatform.iotbroker.storage.AvailabilitySubscriptionInterface;
 import eu.neclab.iotplatform.iotbroker.storage.LinkSubscriptionAvailabilityInterface;
 import eu.neclab.iotplatform.iotbroker.storage.SubscriptionStorageInterface;
