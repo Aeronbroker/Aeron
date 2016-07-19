@@ -144,6 +144,7 @@ setPropertyIntoXML "hsqldb.password" "$iotbroker_hsqldbpassword" "$iotbroker_con
 setPropertyIntoXML "ignoreIoTDiscoveryFailure" "$iotbroker_ignoreiotdiscoveryfailure" "$iotbroker_configxml"
 setPropertyIntoXML "ignorePubSubFailure" "$iotbroker_ignorepubsubfailure" "$iotbroker_configxml"
 setPropertyIntoXML "default_content_type" "$iotbroker_producedtype" "$iotbroker_configxml"
+setPropertyIntoXML "pub_sub_addr" "$iotbroker_consumers" "$iotbroker_configxml"
 
 setPropertyIntoXML "couchdb_name" "$iotbroker_embeddedagent_couchdbname" "$iotbroker_embeddedagent_couchdbxml"
 setPropertyIntoXML "couchdb_createdb" "$iotbroker_embeddedagent_couchdbcreatedb" "$iotbroker_embeddedagent_couchdbxml"
@@ -164,7 +165,12 @@ enableBundle iotbroker.ext.resultfilter
 enableBundle tomcat-configuration-fragment nostart
 
 ##ENABLE/DISABLE ASSOCIATION
-setPropertyIntoXML "associationsEnabled" "$iotbroker_association" "$iotbroker_configxml"
+if [ "$iotbroker_association" == "enabled" ]
+then
+	setPropertyIntoXML "associationsEnabled" "true" "$iotbroker_configxml"
+else
+	setPropertyIntoXML "associationsEnabled" "false" "$iotbroker_configxml"
+fi
 
 
 ##ENABLE BIG DATA REPOSITORY BUNDLES

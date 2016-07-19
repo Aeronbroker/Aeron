@@ -27,6 +27,11 @@ iotbroker_tomcatinithttpsport=9442
 # IoT Broker produced type
 iotbroker_producedtype="application/json"
 
+# IoT Consumers
+# If more than one, they can be comma-separate. e.g. 'http://localhost:8001,http://localhost:8002'
+# The path needs to include the full path but the final resource. IoT Broker will add only "updateContext".
+iotbroker_consumers='http://localhost:8001/'
+
 # IoT Broker scalability settings
 iotbroker_ismaster=true
 
