@@ -256,7 +256,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			URI uri) {
 		
 		String contentType = CONTENT_TYPE;
-
+		
 		// initialize response as an empty response.
 		QueryContextResponse output = new QueryContextResponse();
 

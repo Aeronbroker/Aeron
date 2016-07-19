@@ -125,7 +125,7 @@ public class RequestThread implements Runnable {
 	 */
 	@Override
 	public void run() {
-
+				
 		QueryContextResponse response = requestor.queryContext(request, uri);
 
 		/*

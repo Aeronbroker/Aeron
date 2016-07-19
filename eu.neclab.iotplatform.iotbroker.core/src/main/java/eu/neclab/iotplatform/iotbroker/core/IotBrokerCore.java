@@ -188,8 +188,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	private static Logger logger = Logger.getLogger(IotBrokerCore.class);
 
 	/** Utility for processing NGSI associations */
-	private AssociationsHandler associationsHandler = new AssociationsHandler(
-			ngsi9Impl);
+	private AssociationsHandler associationsHandler = new AssociationsHandler();
 
 	@Value("${associationsEnabled}")
 	private boolean associationsEnabled;
@@ -516,6 +515,14 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 	}
 
+	public boolean isAssociationsEnabled() {
+		return associationsEnabled;
+	}
+
+	public void enableAssociations(boolean associationsEnabled) {
+		this.associationsEnabled = associationsEnabled;
+	}
+
 	@PostConstruct
 	public void postConstruct() {
 		if (pubSubUrl != null && pubSubUrl.contains(",")) {
@@ -617,13 +624,13 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		// * ################################################
 		// */
 
-		if (associationsEnabled == true) {
-			associationsHandler.insertAssociationScope(request);
-		}
-
 		DiscoverContextAvailabilityRequest discoveryRequest = new DiscoverContextAvailabilityRequest(
 				request.getEntityIdList(), request.getAttributeList(),
 				request.getRestriction());
+		
+		if (associationsEnabled == true) {
+			associationsHandler.insertAssociationScope(discoveryRequest);
+		}
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("DiscoverContextAvailabilityRequest:"
@@ -1001,7 +1008,9 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 			String xpathExpression = request.getRestriction()
 					.getAttributeExpression();
-			applyRestriction(xpathExpression, mergerResponse);
+			if (xpathExpression != null && !xpathExpression.isEmpty()) {
+				applyRestriction(xpathExpression, mergerResponse);
+			}
 
 		}
 
@@ -1091,7 +1100,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			}
 
 		} catch (XPathExpressionException e) {
-			logger.debug("Xpath Exception", e);
+			logger.error("Xpath Exception", e);
 		}
 
 	}
@@ -1120,7 +1129,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 			List<ContextMetadata> contextMetadataList = contextRegistrationResponse
 					.getContextRegistration().getListContextMetadata();
-			
+
 			if (contextMetadataList.size() > 0
 					&& "Association".equals(contextMetadataList.get(0)
 							.getName().toString())) {
@@ -1379,10 +1388,10 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		/*
 		 * Here we apply associations
 		 */
-		final UpdateContextRequest updateContextRequest ;
+		final UpdateContextRequest updateContextRequest;
 		if (associationsEnabled == true) {
-			updateContextRequest = associationsHandler
-					.applyAssociation(request);
+			updateContextRequest = associationsHandler.applyAssociation(
+					request, ngsi9Impl);
 		} else {
 			updateContextRequest = request;
 		}

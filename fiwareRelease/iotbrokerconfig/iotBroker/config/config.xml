@@ -9,6 +9,7 @@
 
 <entry key="ngsi9Uri">http://localhost:8075/</entry>
 <entry key="ngsi9RemoteUrl"></entry>
+<entry key="pub_sub_addr"></entry>
 
 <entry key="default_content_type">application/json</entry>
 

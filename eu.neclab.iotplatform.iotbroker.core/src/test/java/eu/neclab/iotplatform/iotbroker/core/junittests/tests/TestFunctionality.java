@@ -40,15 +40,11 @@ import java.net.URISyntaxException;
 
 import org.apache.log4j.Logger;
 import org.easymock.EasyMock;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import eu.neclab.iotplatform.iotbroker.commons.XmlFactory;
-import eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface;
 import eu.neclab.iotplatform.iotbroker.core.IotBrokerCore;
 import eu.neclab.iotplatform.iotbroker.core.subscription.AgentWrapper;
 import eu.neclab.iotplatform.iotbroker.core.subscription.ConfManWrapper;
@@ -88,59 +84,59 @@ public class TestFunctionality {
 	
 	//read input and output messages from files
 	DiscoverContextAvailabilityRequest discoverReq_attribExpr = (DiscoverContextAvailabilityRequest) 
-			(new XmlFactory()).convertFileToXML("src/test/resources/discoverReq_attribExpr.xml", DiscoverContextAvailabilityRequest.class);
+			XmlFactory.convertFileToXML("src/test/resources/discoverReq_attribExpr.xml", DiscoverContextAvailabilityRequest.class);
 	
 	DiscoverContextAvailabilityRequest discoverReq_type = (DiscoverContextAvailabilityRequest) 
-			(new XmlFactory()).convertFileToXML("src/test/resources/discoverReq_type.xml", DiscoverContextAvailabilityRequest.class);
+			XmlFactory.convertFileToXML("src/test/resources/discoverReq_type.xml", DiscoverContextAvailabilityRequest.class);
 	
 	DiscoverContextAvailabilityRequest discoverReq_pattern = (DiscoverContextAvailabilityRequest) 
-			(new XmlFactory()).convertFileToXML("src/test/resources/discoverReq_pattern.xml", DiscoverContextAvailabilityRequest.class);
+			XmlFactory.convertFileToXML("src/test/resources/discoverReq_pattern.xml", DiscoverContextAvailabilityRequest.class);
 	
 	DiscoverContextAvailabilityRequest discoverReq_update = (DiscoverContextAvailabilityRequest) 
-			(new XmlFactory()).convertFileToXML("src/test/resources/discoverReq_update.xml", DiscoverContextAvailabilityRequest.class);
+			XmlFactory.convertFileToXML("src/test/resources/discoverReq_update.xml", DiscoverContextAvailabilityRequest.class);
 
 	DiscoverContextAvailabilityRequest discoverReq_attribDom = (DiscoverContextAvailabilityRequest) 
-			(new XmlFactory()).convertFileToXML("src/test/resources/discoverReq_attribDom.xml", DiscoverContextAvailabilityRequest.class);
+			XmlFactory.convertFileToXML("src/test/resources/discoverReq_attribDom.xml", DiscoverContextAvailabilityRequest.class);
 	
 	
 	DiscoverContextAvailabilityResponse discoverResp = (DiscoverContextAvailabilityResponse)
-			(new XmlFactory()).convertFileToXML("src/test/resources/discoverResp.xml", DiscoverContextAvailabilityResponse.class);
+			XmlFactory.convertFileToXML("src/test/resources/discoverResp.xml", DiscoverContextAvailabilityResponse.class);
 	
 	DiscoverContextAvailabilityResponse discoverResp_notFound = (DiscoverContextAvailabilityResponse)
-			(new XmlFactory()).convertFileToXML("src/test/resources/discoverResp_notFound.xml", DiscoverContextAvailabilityResponse.class);
+			XmlFactory.convertFileToXML("src/test/resources/discoverResp_notFound.xml", DiscoverContextAvailabilityResponse.class);
 	
 	DiscoverContextAvailabilityResponse discoverResp_attribDom = (DiscoverContextAvailabilityResponse)
-			(new XmlFactory()).convertFileToXML("src/test/resources/discoverResp_attribDom.xml", DiscoverContextAvailabilityResponse.class);
+			XmlFactory.convertFileToXML("src/test/resources/discoverResp_attribDom.xml", DiscoverContextAvailabilityResponse.class);
 	
 	QueryContextRequest queryReq = (QueryContextRequest) 
-			(new XmlFactory()).convertFileToXML("src/test/resources/queryReq.xml", QueryContextRequest.class);
+			XmlFactory.convertFileToXML("src/test/resources/queryReq.xml", QueryContextRequest.class);
 	
 	QueryContextRequest queryReq_attribExpr = (QueryContextRequest) 
-			(new XmlFactory()).convertFileToXML("src/test/resources/queryReq_attribExpr.xml", QueryContextRequest.class);
+			XmlFactory.convertFileToXML("src/test/resources/queryReq_attribExpr.xml", QueryContextRequest.class);
 	
 	QueryContextRequest queryReq_type = (QueryContextRequest) 
-			(new XmlFactory()).convertFileToXML("src/test/resources/queryReq_type.xml", QueryContextRequest.class);
+			XmlFactory.convertFileToXML("src/test/resources/queryReq_type.xml", QueryContextRequest.class);
 	
 	QueryContextRequest queryReq_pattern = (QueryContextRequest) 
-			(new XmlFactory()).convertFileToXML("src/test/resources/queryReq_pattern.xml", QueryContextRequest.class);
+			XmlFactory.convertFileToXML("src/test/resources/queryReq_pattern.xml", QueryContextRequest.class);
 	
 	QueryContextRequest queryReq_attribDom = (QueryContextRequest) 
-			(new XmlFactory()).convertFileToXML("src/test/resources/queryReq_attribDom.xml", QueryContextRequest.class);
+			XmlFactory.convertFileToXML("src/test/resources/queryReq_attribDom.xml", QueryContextRequest.class);
 	
 	QueryContextResponse queryResp = (QueryContextResponse)
-			(new XmlFactory()).convertFileToXML("src/test/resources/queryResp.xml", QueryContextResponse.class);
+			XmlFactory.convertFileToXML("src/test/resources/queryResp.xml", QueryContextResponse.class);
 	
 	QueryContextResponse queryResp_notFound =  (QueryContextResponse)
-			(new XmlFactory()).convertFileToXML("src/test/resources/queryResp_notFound.xml", QueryContextResponse.class);
+			XmlFactory.convertFileToXML("src/test/resources/queryResp_notFound.xml", QueryContextResponse.class);
 	
 	QueryContextResponse queryResp_attribDom =  (QueryContextResponse)
-			(new XmlFactory()).convertFileToXML("src/test/resources/queryResp_attribDom.xml", QueryContextResponse.class);
+			XmlFactory.convertFileToXML("src/test/resources/queryResp_attribDom.xml", QueryContextResponse.class);
 	
 	UpdateContextRequest updateReq =  (UpdateContextRequest)
-			(new XmlFactory()).convertFileToXML("src/test/resources/updateReq.xml", UpdateContextRequest.class);
+			XmlFactory.convertFileToXML("src/test/resources/updateReq.xml", UpdateContextRequest.class);
 	
 	UpdateContextResponse updateResp =  (UpdateContextResponse)
-			(new XmlFactory()).convertFileToXML("src/test/resources/updateResp.xml", UpdateContextResponse.class);
+			XmlFactory.convertFileToXML("src/test/resources/updateResp.xml", UpdateContextResponse.class);
 	
 	@Before
 	public void before(){
@@ -158,6 +154,7 @@ public class TestFunctionality {
 		core.setAgentWrapper(agentWrapper);
 		core.setConfManWrapper(confManWrapper);
 		core.setNorthBoundWrapper(northBoundWrapper);
+		core.enableAssociations(true);
 		
 		subscriptionController.setAgentWrapper(agentWrapper);
 		subscriptionController.setConfManWrapper(confManWrapper);
@@ -261,7 +258,7 @@ public class TestFunctionality {
 		//configure mocks
 		EasyMock.expect(ngsi9InterfaceMock.discoverContextAvailability(discoverReq_pattern))
 			.andReturn(discoverResp);
-		
+			
 		try {
 			EasyMock.expect(ngsi10RequesterMock.queryContext(queryReq,new URI("http://192.168.100.1:70/application")))
 			.andReturn(queryResp);
@@ -299,7 +296,7 @@ public class TestFunctionality {
 		try {
 			EasyMock.expect(ngsi10RequesterMock.updateContext(updateReq,new URI("http://192.168.100.1:70/application")))
 			.andReturn(updateResp);
-		} catch (URISyntaxException e) {			
+		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
 		
