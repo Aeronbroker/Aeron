@@ -12,13 +12,13 @@
 					<contextRegistrationAttribute>
 						<name>RoomInfo</name>
 						<isDomain>true</isDomain>
-						<metaData>
+						<metadata>
 							<contextMetadata>
 								<name>ID</name>
 								<type>string</type>
 								<value>1110</value>
 							</contextMetadata>
-						</metaData>
+						</metadata>
 					</contextRegistrationAttribute>
 				</contextRegistrationAttributeList>
 				<providingApplication>http://192.168.100.1:70/application</providingApplication>
