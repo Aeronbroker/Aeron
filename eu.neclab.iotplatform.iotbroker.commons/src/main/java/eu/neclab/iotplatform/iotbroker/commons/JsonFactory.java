@@ -58,7 +58,7 @@ public class JsonFactory {
 
 	private static Logger logger = Logger.getLogger(JsonFactory.class);
 
-	public String convertJsonToString(Object source, Class<?> type) {
+	public static String convertJsonToString(Object source, Class<?> type) {
 
 		String response = null;
 
@@ -82,7 +82,7 @@ public class JsonFactory {
 
 	}
 
-	public Object convertStringToJsonObject(String xml, Class<?> type) {
+	public static Object convertStringToJsonObject(String xml, Class<?> type) {
 
 		Object response = null;
 		ObjectMapper mapper = new ObjectMapper();

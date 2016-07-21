@@ -61,18 +61,17 @@ import eu.neclab.iotplatform.ngsi.api.serialization.json.MetadataValueDeserializ
  * Implements ContextMetadata as defined in OMA NGSI 9/10 approved version 1.0.
  */
 @XmlRootElement(name = "contextMetadata")
-@XmlSeeAlso({ Segment.class, Circle.class, Polygon.class, Point.class, PEPCredentials.class })
+@XmlSeeAlso({ Segment.class, Circle.class, Polygon.class, Point.class,
+		PEPCredentials.class, Association.class })
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ContextMetadata extends NgsiStructure {
 
-
-
 	@XmlElement(name = "name")
 	private String name = null;
-	
+
 	@XmlSchemaType(name = "anyURI")
 	private URI type = null;
-	
+
 	@XmlElement(name = "value")
 	@JsonSerialize(using = MetadataObjectValueSerializer.class)
 	@JsonDeserialize(using = MetadataValueDeserializer.class)
@@ -88,7 +87,7 @@ public class ContextMetadata extends NgsiStructure {
 		this.type = type;
 		this.value = value;
 	}
-	
+
 	public ContextMetadata(MetadataTypes metadataType, URI type, Object value) {
 
 		this.name = metadataType.toString();
@@ -137,7 +136,5 @@ public class ContextMetadata extends NgsiStructure {
 				&& value.toString().equals(other.value.toString());
 
 	}
-
-
 
 }

@@ -53,8 +53,14 @@ public class FullHttpRequester {
 	/** The logger. */
 	private static Logger logger = Logger.getLogger(FullHttpRequester.class);
 
-	public static FullHttpResponse sendPost(URL url, String data, String contentType)
-			throws Exception {
+	public static FullHttpResponse sendPost(URL url, String data,
+			String contentType) throws Exception {
+
+		return sendPost(url, data, contentType, null);
+	}
+
+	public static FullHttpResponse sendPost(URL url, String data,
+			String contentType, String xAuthToken) throws Exception {
 
 		try {
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -65,6 +71,9 @@ public class FullHttpRequester {
 			if (contentType != null && !contentType.equals("")) {
 				con.setRequestProperty("Accept", contentType);
 				con.setRequestProperty("Content-Type", contentType);
+			}
+			if (xAuthToken != null && !xAuthToken.equals("")) {
+				con.setRequestProperty("X-Auth-Token", xAuthToken);
 			}
 
 			logger.info("\nSending 'POST' request to URL : " + url + "\n"
@@ -124,6 +133,12 @@ public class FullHttpRequester {
 
 	public static FullHttpResponse sendGet(URL url) {
 
+		return sendGet(url, null);
+
+	}
+
+	public static FullHttpResponse sendGet(URL url, String xAuthToken) {
+
 		FullHttpResponse httpResponse = null;
 
 		HttpURLConnection connection = null;
@@ -134,6 +149,9 @@ public class FullHttpRequester {
 			// Set up the initial connection
 			connection = (HttpURLConnection) url.openConnection();
 			connection.setRequestMethod("GET");
+			if (xAuthToken != null && !xAuthToken.equals("")) {
+				connection.setRequestProperty("X-Auth-Token", xAuthToken);
+			}
 			connection.setDoOutput(true);
 			connection.setReadTimeout(10000);
 
@@ -202,8 +220,15 @@ public class FullHttpRequester {
 
 	}
 
-	public static FullHttpResponse sendPut(URL url, String data, String contentType)
-			throws Exception {
+	public static FullHttpResponse sendPut(URL url, String data,
+			String contentType) throws Exception {
+
+		return sendPut(url, data, contentType, null);
+
+	}
+
+	public static FullHttpResponse sendPut(URL url, String data,
+			String contentType, String xAuthToken) throws Exception {
 
 		try {
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -214,6 +239,9 @@ public class FullHttpRequester {
 			if (contentType != null && !contentType.equals("")) {
 				con.setRequestProperty("Accept", contentType);
 				con.setRequestProperty("Content-Type", contentType);
+			}
+			if (xAuthToken != null && !xAuthToken.equals("")) {
+				con.setRequestProperty("X-Auth-Token", xAuthToken);
 			}
 
 			logger.info("\nSending 'PUT' request to URL : " + url + "\n"
@@ -275,11 +303,21 @@ public class FullHttpRequester {
 
 	public static FullHttpResponse sendDelete(URL url) throws Exception {
 
+		return sendDelete(url, null);
+
+	}
+
+	public static FullHttpResponse sendDelete(URL url, String xAuthToken)
+			throws Exception {
+
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
 		// add request header
 		con.setRequestMethod("DELETE");
 		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+		if (xAuthToken != null && !xAuthToken.equals("")) {
+			con.setRequestProperty("X-Auth-Token", xAuthToken);
+		}
 
 		logger.info("\nSending 'DELETE' request to URL : " + url);
 
@@ -297,7 +335,7 @@ public class FullHttpRequester {
 	}
 
 	public static void sendRequest(URL url, String method, String data,
-			String contentType) throws Exception {
+			String contentType, String xAuthToken) throws Exception {
 
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
@@ -306,6 +344,9 @@ public class FullHttpRequester {
 		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 		con.setRequestProperty("Accept", contentType);
 		con.setRequestProperty("Content-Type", contentType);
+		if (xAuthToken != null && !xAuthToken.equals("")) {
+			con.setRequestProperty("X-Auth-Token", xAuthToken);
+		}
 
 		// Send put request
 		con.setDoOutput(true);
@@ -331,6 +372,13 @@ public class FullHttpRequester {
 		con.disconnect();
 		// print result
 		logger.info("Response : " + response.toString());
+
+	}
+	
+	public static void sendRequest(URL url, String method, String data,
+			String contentType) throws Exception {
+
+		sendRequest(url, method, data, contentType, null);
 
 	}
 

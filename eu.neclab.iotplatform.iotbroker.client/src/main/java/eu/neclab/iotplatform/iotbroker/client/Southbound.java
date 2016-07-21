@@ -48,27 +48,30 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.http.Header;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import eu.neclab.iotplatform.iotbroker.commons.ContentType;
+import eu.neclab.iotplatform.iotbroker.commons.FullHttpRequester;
+import eu.neclab.iotplatform.iotbroker.commons.FullHttpResponse;
 import eu.neclab.iotplatform.iotbroker.commons.GenerateMetadata;
 import eu.neclab.iotplatform.iotbroker.commons.JsonFactory;
 import eu.neclab.iotplatform.iotbroker.commons.JsonValidator;
 import eu.neclab.iotplatform.iotbroker.commons.XmlFactory;
 import eu.neclab.iotplatform.iotbroker.commons.XmlValidator;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityResponse;
-import eu.neclab.iotplatform.ngsi.api.datamodel.MetadataTypes;
+import eu.neclab.iotplatform.ngsi.api.datamodel.NgsiStructure;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest;
@@ -117,12 +120,6 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	/** The logger. */
 	private static Logger logger = Logger.getLogger(Southbound.class);
 
-	/** The XmlFactory, used for XML parsing. */
-	private final XmlFactory xmlFactory = new XmlFactory();
-
-	/** The JsonFactory, used for JSON parsing. */
-	private final JsonFactory jsonFactory = new JsonFactory();
-
 	/** The ngsi10schema file for validation */
 	@Value("${schema_ngsi10_operation}")
 	private String ngsi10schema;
@@ -152,7 +149,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/** The Constant CONTENT_TYPE. */
 	@Value("${default_content_type:application/xml}")
-	private String CONTENT_TYPE;
+	private ContentType CONTENT_TYPE;
 
 	/** Adapt UpdateContextRequest to Orion Standard */
 	@Value("${adaptUpdatesToOrionStandard:true}")
@@ -198,7 +195,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			} catch (IllegalAccessException e) {
 				logger.info("InstantiationException", e);
 			}
-			obj = xmlFactory.convertStringToXml(body, classType);
+			obj = XmlFactory.convertStringToXml(body, classType);
 
 			status = validator.xmlValidation(obj, schema);
 
@@ -221,23 +218,105 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	}
 
-	private String tryDifferentContentType(Object request, String path,
-			String method, HttpConnectionClient connection, URL url) {
+	// private String tryDifferentContentType(Object request, String path,
+	// String method, HttpConnectionClient connection, URL url) {
+	//
+	// String response = null;
+	//
+	// if (CONTENT_TYPE.equals("application/xml")) {
+	//
+	// response = connection.initializeConnection(url, path, method,
+	// request, "application/json", xAuthToken);
+	//
+	// } else if (CONTENT_TYPE.equals("application/json")) {
+	//
+	// response = connection.initializeConnection(url, path, method,
+	// request, "application/xml", xAuthToken);
+	//
+	// }
+	// return response;
+	//
+	// }
 
-		String response = null;
+	private Object parseResponse(String body, ContentType contentType,
+			Class<?> clazz) {
+		if (contentType == ContentType.XML) {
 
-		if (CONTENT_TYPE.equals("application/xml")) {
+			return XmlFactory.convertStringToXml(body, clazz);
 
-			response = connection.initializeConnection(url, path, method,
-					request, "application/json", xAuthToken);
+		} else {
+			String toParse = body.replaceAll("\\\"metadatas\\\"",
+					"\\\"contextMetadata\\\"");
 
-		} else if (CONTENT_TYPE.equals("application/json")) {
-
-			response = connection.initializeConnection(url, path, method,
-					request, "application/xml", xAuthToken);
+			return JsonFactory.convertStringToJsonObject(toParse, clazz);
 
 		}
-		return response;
+	}
+
+	private ContentType getContentTypeFromResponse(FullHttpResponse response,
+			ContentType defaultContentType) {
+		Header[] headers = response.getHeaders("Content-Type");
+		if (headers.length != 0) {
+			String responseContentType = headers[0].getValue();
+			if (responseContentType != null) {
+				return ContentType.fromString(responseContentType,
+						defaultContentType);
+			}
+		}
+		return defaultContentType;
+	}
+
+	private FullHttpResponse sendPostTryingAllSupportedContentType(URL url,
+			NgsiStructure request, ContentType preferredContentType,
+			String xAuthToken) {
+
+		ContentType requestContentType = preferredContentType;
+		FullHttpResponse fullHttpResponse = null;
+
+		try {
+
+			String data;
+			if (requestContentType == ContentType.XML) {
+				data = request.toString();
+			} else {
+				data = request.toJsonString();
+			}
+
+			fullHttpResponse = FullHttpRequester.sendPost(url, data,
+					requestContentType.toString(), xAuthToken);
+
+			/*
+			 * Check if there contentType is not supported and switch to the
+			 * other IoT Broker supports
+			 */
+			if (fullHttpResponse.getStatusLine().getStatusCode() == 415) {
+
+				logger.info("Contacted HTTP server non supporting "
+						+ requestContentType
+						+ ". Trying a different content type");
+				if (requestContentType == ContentType.XML) {
+					requestContentType = ContentType.JSON;
+				} else {
+					requestContentType = ContentType.XML;
+				}
+
+				if (requestContentType == ContentType.XML) {
+					data = request.toString();
+				} else {
+					data = request.toJsonString();
+				}
+
+				fullHttpResponse = FullHttpRequester.sendPost(url, data,
+						requestContentType.toString(), xAuthToken);
+
+			}
+
+		} catch (Exception e) {
+			logger.warn("Exception", e);
+			return fullHttpResponse;
+		}
+
+		return fullHttpResponse;
 
 	}
 
@@ -254,146 +333,157 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	@Override
 	public QueryContextResponse queryContext(QueryContextRequest request,
 			URI uri) {
-		
-		String contentType = CONTENT_TYPE;
-		
+
+		ContentType preferredContentType = CONTENT_TYPE;
+
 		// initialize response as an empty response.
 		QueryContextResponse output = new QueryContextResponse();
 
 		try {
 
-			// convert the URI parameter into a URL
-			URL url = new URL(uri.toString());
+			Object response = sendRequest(new URL(uri.toString()),
+					"queryContext", request, preferredContentType,
+					QueryContextResponse.class);
 
-			// create the client used for the connection
-			HttpConnectionClient connection = new HttpConnectionClient();
-
-			logger.debug("Starting Http Thread");
-
-			// initialize the connection
-			String respObj = connection.initializeConnection(url,
-					"/queryContext", "POST", request, contentType, xAuthToken);
-
-			if (respObj.equals("415")) {
-
-				logger.info("NGSI-10 agent non supporting "+ contentType +". Trying a different content type");
-				if (CONTENT_TYPE.equals("application/xml")) {
-					contentType = "application/json";
-				} else if (CONTENT_TYPE.equals("application/json")) {
-					contentType = "application/xml";
-				}
-
-				
-				respObj = tryDifferentContentType(request, "/queryContext",
-						"POST", connection, url);
-
-				if (respObj.equals("415")) {
-
-					output = new QueryContextResponse(null, new StatusCode(
-							Code.INTERNALERROR_500.getCode(),
-							ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
-							"Content Type is not supported!"));
-					return output;
-
-				}
-
-			}
-
-			// check whether connection returned with error, and react
-			// accordingly if that
-			// is the case
-			if (respObj != null 
-					&& "500".matches(respObj.substring(0, 3))) {
-
-				output = new QueryContextResponse(null, new StatusCode(
-						Code.INTERNALERROR_500.getCode(),
-						ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
-						respObj.substring(5)));
-				return output;
-
-			}
-
-			/*
-			 * Otherwise the response did not return an error. Now we
-			 * additionally figure out whether the format of the response body
-			 * is correct XML or JSON. If yes, we transform it to a
-			 * QueryContextResponse object, otherwise we create an error
-			 * QueryContextResponse object.
-			 */
-
-			if (respObj != null
-					&& validateMessageBody(respObj, contentType,
-							QueryContextResponse.class, ngsi10schema)) {
-
-				if (contentType.equals("application/xml")) {
-
-					output = (QueryContextResponse) xmlFactory
-							.convertStringToXml(respObj,
-									QueryContextResponse.class);
-
-				} else {
-
-					output = (QueryContextResponse) jsonFactory
-							.convertStringToJsonObject(respObj,
-									QueryContextResponse.class);
-
-				}
-
-				logger.info("QueryContextResponse well Formed!");
-
-				if (logger.isDebugEnabled()) {
-					logger.debug("EntityID  "
-							+ output.getListContextElementResponse().size());
-					logger.debug("Response received!");
-				}
-
-				// Add Metadata to each ContextElementResponse: Time Stamp and
-				// Source URL
-				for (int i = 0; i < output.getListContextElementResponse()
-						.size(); i++) {
-
-					output.getListContextElementResponse().get(i)
-							.getContextElement().getDomainMetadata()
-							.add(GenerateMetadata.createSourceIPMetadata(uri));
-
-					output.getListContextElementResponse()
-							.get(i)
-							.getContextElement()
-							.getDomainMetadata()
-							.add(GenerateMetadata
-									.createDomainTimestampMetadata());
-
-				}
-
-			} else {
-				/*
-				 * We end up here if the response body is syntactically
-				 * incorrect.
-				 */
-
-				output = new QueryContextResponse();
-
-				// delete any contextResponsList in this empty response
-				output.setContextResponseList(null);
-
-				// set the error code in the response to some error!
-				output.setErrorCode(new StatusCode(Code.INTERNALERROR_500
-						.getCode(), ReasonPhrase.RECEIVERINTERNALERROR_500
-						.toString(), null));
-
+			// If there was an error then a StatusCode has been returned
+			if (response instanceof StatusCode) {
+				output = new QueryContextResponse(null, (StatusCode) response);
 				return output;
 			}
+
+			// Cast the response
+			output = (QueryContextResponse) response;
+
+			// TODO decide if make it optional
+			// Add Metadata to each ContextElementResponse: Time Stamp and
+			// Source URL
+			for (ContextElementResponse contextElementResponse : output
+					.getListContextElementResponse()) {
+
+				contextElementResponse.getContextElement().getDomainMetadata()
+						.add(GenerateMetadata.createSourceIPMetadata(uri));
+
+				contextElementResponse.getContextElement().getDomainMetadata()
+						.add(GenerateMetadata.createDomainTimestampMetadata());
+
+			}
+
+			// // convert the URI parameter into a URL
+			// URL url = new URL(uri.toString());
+			//
+			// String resource;
+			// if (url.toString().matches(".*/")) {
+			// resource = "queryContext";
+			// } else {
+			// resource = "/queryContext";
+			// }
+			//
+			// // initialize the connection
+			// FullHttpResponse response =
+			// sendPostTryingAllSupportedContentType(
+			// new URL(url + resource), request, contentType, xAuthToken);
+			//
+			// if (response.getStatusLine().getStatusCode() == 415) {
+			//
+			// logger.info("Queried agent does not support XML nor JSON. Aborting querying");
+			// output = new QueryContextResponse(null, new StatusCode(
+			// Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
+			// "Content Type is not supported!"));
+			// return output;
+			//
+			// }
+			//
+			// // check whether connection returned with error, and react
+			// // accordingly if that
+			// // is the case
+			// if (response.getStatusLine().getStatusCode() == 500) {
+			//
+			// output = new QueryContextResponse(null, new StatusCode(
+			// Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
+			// response.getStatusLine().getReasonPhrase()));
+			// return output;
+			//
+			// }
+			//
+			// /*
+			// * Otherwise the response did not return an error. Now we
+			// * additionally figure out whether the format of the response body
+			// * is correct XML or JSON. If yes, we transform it to a
+			// * QueryContextResponse object, otherwise we create an error
+			// * QueryContextResponse object.
+			// */
+			// ContentType responseContentType = getContentTypeFromResponse(
+			// response, contentType);
+			//
+			// if (response.getBody() != null
+			// && validateMessageBody(response.getBody(),
+			// responseContentType.toString(),
+			// QueryContextResponse.class, ngsi10schema)) {
+			//
+			// output = (QueryContextResponse) parseResponse(
+			// response.getBody(), responseContentType,
+			// QueryContextResponse.class);
+			//
+			// logger.info("QueryContextResponse well Formed!");
+			//
+			// if (logger.isDebugEnabled()) {
+			// logger.debug("EntityID  "
+			// + output.getListContextElementResponse().size());
+			// logger.debug("Response received!");
+			// }
+			//
+			// // Add Metadata to each ContextElementResponse: Time Stamp and
+			// // Source URL
+			// // TODO decide if make it optional
+			// for (ContextElementResponse contextElementResponse : output
+			// .getListContextElementResponse()) {
+			//
+			// contextElementResponse.getContextElement()
+			// .getDomainMetadata()
+			// .add(GenerateMetadata.createSourceIPMetadata(uri));
+			//
+			// contextElementResponse
+			// .getContextElement()
+			// .getDomainMetadata()
+			// .add(GenerateMetadata
+			// .createDomainTimestampMetadata());
+			//
+			// }
+			//
+			// } else {
+			// /*
+			// * We end up here if the response body is syntactically
+			// * incorrect.
+			// */
+			//
+			// output = new QueryContextResponse();
+			//
+			// // delete any contextResponsList in this empty response
+			// output.setContextResponseList(null);
+			//
+			// // set the error code in the response to some error!
+			// output.setErrorCode(new StatusCode(Code.INTERNALERROR_500
+			// .getCode(), ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(), null));
+			//
+			// return output;
+			// }
 
 		} catch (MalformedURLException e) {
 
-			logger.debug("Malformed URI", e);
+			logger.warn("Malformed URI", e);
 
 			output.setErrorCode(new StatusCode(
 					Code.INTERNALERROR_500.getCode(),
 					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(), null));
 
 		} catch (URISyntaxException e) {
-			logger.debug("Uri Exception", e);
+			logger.warn("Uri Exception", e);
+			return output;
+		} catch (Exception e) {
+			logger.warn("Exception", e);
 			return output;
 		}
 
@@ -421,101 +511,105 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 		SubscribeContextResponse output = new SubscribeContextResponse();
 
-		String contentType = CONTENT_TYPE;
-		
-		logger.debug("REQUEST BEFORE PARSE" + request.getReference());
+		ContentType preferredContentType = CONTENT_TYPE;
 
 		try {
 
 			// get address of local host
 			InetAddress thisIp = InetAddress.getLocalHost();
 
-			// initialize http connection
-			URL url = new URL(uri.toString());
-			HttpConnectionClient connection = new HttpConnectionClient();
+			// HttpConnectionClient connection = new HttpConnectionClient();
 
 			request.setReference("http://" + thisIp.getHostAddress() + ":"
 					+ tomcatPort + "/ngsi10/notify");
 
-			String resource;
-			if (url.toString().matches(".*/")) {
-				resource = "subscribeContext";
-			} else {
-				resource = "/subscribeContext";
-			}
+			Object response = sendRequest(new URL(uri.toString()),
+					"subscribeContext", request, preferredContentType,
+					SubscribeContextResponse.class);
 
-			String respObj = connection.initializeConnection(url, resource,
-					"POST", request, contentType, xAuthToken);
-
-			if (respObj.equals("415")) {
-				
-				logger.info("NGSI-10 agent non supporting "+ contentType +". Trying a different content type");
-				if (CONTENT_TYPE.equals("application/xml")) {
-					contentType = "application/json";
-				} else if (CONTENT_TYPE.equals("application/json")) {
-					contentType = "application/xml";
-				}
-
-				respObj = tryDifferentContentType(request, resource, "POST",
-						connection, url);
-
-				if (respObj.equals("415")) {
-
-					output = new SubscribeContextResponse(null,
-							new SubscribeError(null, new StatusCode(
-									Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(),
-									"Content Type is not supported!")));
-					return output;
-
-				}
-
-			}
-
-			if (respObj != null 
-					&& "500".matches(respObj.substring(0, 3))) {
-
+			// If there was an error then a StatusCode has been returned
+			if (response instanceof StatusCode) {
 				output = new SubscribeContextResponse(null, new SubscribeError(
-						null, new StatusCode(Code.INTERNALERROR_500.getCode(),
-								ReasonPhrase.RECEIVERINTERNALERROR_500
-										.toString(), respObj.substring(5))));
+						null, (StatusCode) response));
 				return output;
-
 			}
 
-			if (respObj != null
-					&& validateMessageBody(respObj, contentType,
-							SubscribeContextResponse.class, ngsi10schema)) {
+			// Cast the response
+			output = (SubscribeContextResponse) response;
 
-				if (contentType.equals("application/xml")) {
-
-					output = (SubscribeContextResponse) xmlFactory
-							.convertStringToXml(respObj,
-									SubscribeContextResponse.class);
-
-				} else {
-
-					output = (SubscribeContextResponse) jsonFactory
-							.convertStringToJsonObject(respObj,
-									SubscribeContextResponse.class);
-
-				}
-
-				return output;
-
-			} else {
-				// If the response is null or invalid then send an error message
-				output = new SubscribeContextResponse(null, new SubscribeError(
-						null, new StatusCode(Code.INTERNALERROR_500.getCode(),
-								ReasonPhrase.RECEIVERINTERNALERROR_500
-										.toString(), null)));
-				return output;
-
-			}
+			// String resource;
+			// if (url.toString().matches(".*/")) {
+			// resource = "subscribeContext";
+			// } else {
+			// resource = "/subscribeContext";
+			// }
+			//
+			// // String respObj = connection.initializeConnection(url,
+			// resource,
+			// // "POST", request, contentType, xAuthToken);
+			// FullHttpResponse response =
+			// sendPostTryingAllSupportedContentType(
+			// new URL(url + resource), request, preferredContentType,
+			// resource);
+			//
+			// if (response.getStatusLine().getStatusCode() == 415) {
+			//
+			// output = new SubscribeContextResponse(null, new SubscribeError(
+			// null, new StatusCode(Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(),
+			// "Content Type is not supported!")));
+			// return output;
+			//
+			// }
+			//
+			// if (response.getStatusLine().getStatusCode() == 500) {
+			//
+			// output = new SubscribeContextResponse(null, new SubscribeError(
+			// null, new StatusCode(Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(), response.getStatusLine()
+			// .getReasonPhrase())));
+			// return output;
+			//
+			// }
+			//
+			// // Check if there is a body
+			// if (response.getBody() == null || response.getBody().isEmpty()) {
+			//
+			// output = new SubscribeContextResponse(null, new SubscribeError(
+			// null, new StatusCode(Code.INTERNALERROR_500.getCode(),
+			// "Response from remote server empty", null)));
+			// }
+			//
+			// // Get the ContentType of the response
+			// ContentType responseContentType = getContentTypeFromResponse(
+			// response, preferredContentType);
+			//
+			// // Check if the message is valid
+			// if (response.getBody() != null
+			// && !validateMessageBody(response.getBody(),
+			// responseContentType.toString(),
+			// SubscribeContextResponse.class, ngsi10schema)) {
+			//
+			// output = new SubscribeContextResponse(
+			// null,
+			// new SubscribeError(
+			// null,
+			// new StatusCode(
+			// Code.INTERNALERROR_500.getCode(),
+			// "Response from remote server non a valid NGSI message",
+			// null)));
+			//
+			// }
+			//
+			// // Finally parse it
+			// output = (SubscribeContextResponse) parseResponse(
+			// response.getBody(), responseContentType,
+			// SubscribeContextResponse.class);
 
 		} catch (MalformedURLException e) {
-			logger.debug("Malformed URI", e);
+			logger.warn("Malformed URI", e);
 
 			output = new SubscribeContextResponse(null, new SubscribeError(
 					null, new StatusCode(Code.INTERNALERROR_500.getCode(),
@@ -523,12 +617,108 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 							null)));
 
 		} catch (IOException e) {
-			logger.debug("I/O Exception", e);
+			logger.warn("I/O Exception", e);
 
 			output = new SubscribeContextResponse(null, new SubscribeError(
 					null, new StatusCode(Code.INTERNALERROR_500.getCode(),
 							ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
 							null)));
+
+		}
+
+		return output;
+
+	}
+
+	/**
+	 * Calls the QueryContext method on an NGSI-10 server.
+	 * 
+	 * @return A StatusCode if there was an error, otherwise an object of the
+	 *         expectedResponseClazz
+	 * 
+	 */
+	private Object sendRequest(URL url, String resource, NgsiStructure request,
+			ContentType preferredContentType, Class<?> expectedResponseClazz) {
+
+		Object output;
+
+		try {
+			String correctedResource;
+			if (url.toString().isEmpty() || url.toString().matches(".*/")) {
+				correctedResource = resource;
+			} else {
+				correctedResource = "/" + resource;
+			}
+
+			FullHttpResponse response = sendPostTryingAllSupportedContentType(
+					new URL(url + correctedResource), request,
+					preferredContentType, correctedResource);
+
+			if (response.getStatusLine().getStatusCode() == 415) {
+
+				logger.info("Content Type is not supported by the receiver!");
+
+				// TODO make a better usage of the Status Code
+				output = new StatusCode(Code.INTERNALERROR_500.getCode(),
+						ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
+						"Content Type is not supported by the receiver!");
+				return output;
+
+			}
+
+			if (response.getStatusLine().getStatusCode() == 500) {
+
+				logger.info("Receiver Internal Error: "
+						+ response.getStatusLine().getReasonPhrase());
+
+				// TODO make a better usage of the Status Code
+				output = new StatusCode(Code.INTERNALERROR_500.getCode(),
+						ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
+						response.getStatusLine().getReasonPhrase());
+				return output;
+
+			}
+
+			// Check if there is a body
+			if (response.getBody() == null || response.getBody().isEmpty()) {
+
+				logger.info("Response from remote server empty");
+
+				// TODO make a better usage of the Status Code
+				output = new StatusCode(Code.INTERNALERROR_500.getCode(),
+						ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
+						ReasonPhrase.RECEIVERINTERNALERROR_500.toString());
+			}
+
+			// Get the ContentType of the response
+			ContentType responseContentType = getContentTypeFromResponse(
+					response, preferredContentType);
+
+			// Check if the message is valid
+			if (response.getBody() != null
+					&& !validateMessageBody(response.getBody(),
+							responseContentType.toString(),
+							expectedResponseClazz, ngsi10schema)) {
+
+				logger.info("Response from remote server non a valid NGSI message");
+
+				// TODO make a better usage of the Status Code
+				output = new StatusCode(Code.INTERNALERROR_500.getCode(),
+						ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
+						ReasonPhrase.RECEIVERINTERNALERROR_500.toString());
+
+			}
+
+			// Finally parse it
+			output = parseResponse(response.getBody(), responseContentType,
+					expectedResponseClazz);
+
+		} catch (MalformedURLException e) {
+			logger.warn("Malformed URI", e);
+
+			// TODO make a better usage of the Status Code
+			output = new StatusCode(Code.INTERNALERROR_500.getCode(),
+					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(), null);
 
 		}
 
@@ -550,96 +740,28 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	public UpdateContextSubscriptionResponse updateContextSubscription(
 			UpdateContextSubscriptionRequest request, URI uri) {
 
-		/*
-		 * This is implemented analogously to queryContext. See the comments
-		 * there for clarification.
-		 */
+		ContentType preferredContentType = CONTENT_TYPE;
 
-		String contentType = CONTENT_TYPE;
-		
 		UpdateContextSubscriptionResponse output = new UpdateContextSubscriptionResponse();
 
 		try {
 
-			URL url = new URL(uri.toString());
-			HttpConnectionClient connection = new HttpConnectionClient();
-			logger.debug("Starting Http Thread ");
+			Object response = sendRequest(new URL(uri.toString()),
+					"updateContextSubscription", request, preferredContentType,
+					UpdateContextSubscriptionResponse.class);
 
-			String respObj = connection.initializeConnection(url,
-					"/updateContextSubscription", "POST", request,
-					contentType, xAuthToken);
-
-			if (respObj.equals("415")) {
-				
-				logger.info("Not supporting "+ contentType +". Trying a different content type");
-				if (CONTENT_TYPE.equals("application/xml")) {
-					contentType = "application/json";
-				} else if (CONTENT_TYPE.equals("application/json")) {
-					contentType = "application/xml";
-				}
-
-				respObj = tryDifferentContentType(request,
-						"/updateContextSubscription", "POST", connection, url);
-
-				if (respObj.equals("415")) {
-
-					output = new UpdateContextSubscriptionResponse(null,
-							new SubscribeError(null, new StatusCode(
-									Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(),
-									"Content Type is not supported!")));
-					return output;
-
-				}
-
-			}
-
-			if (respObj != null 
-					&& "500".matches(respObj.substring(0, 3))) {
-
+			// If there was an error then a StatusCode has been returned
+			if (response instanceof StatusCode) {
 				output = new UpdateContextSubscriptionResponse(null,
-						new SubscribeError(null, new StatusCode(
-								Code.INTERNALERROR_500.getCode(),
-								ReasonPhrase.RECEIVERINTERNALERROR_500
-										.toString(), respObj.substring(5))));
+						new SubscribeError(null, (StatusCode) response));
 				return output;
-
 			}
-			if (respObj != null
-					&& validateMessageBody(respObj, contentType,
-							UpdateContextSubscriptionResponse.class,
-							ngsi10schema)) {
 
-				if (contentType.equals("application/xml")) {
-
-					output = (UpdateContextSubscriptionResponse) xmlFactory
-							.convertStringToXml(respObj,
-									UpdateContextSubscriptionResponse.class);
-
-				} else {
-
-					output = (UpdateContextSubscriptionResponse) jsonFactory
-							.convertStringToJsonObject(respObj,
-									UpdateContextSubscriptionResponse.class);
-
-				}
-
-				return output;
-
-			} else {
-
-				output = new UpdateContextSubscriptionResponse(null,
-						new SubscribeError(null, new StatusCode(
-								Code.INTERNALERROR_500.getCode(),
-								ReasonPhrase.RECEIVERINTERNALERROR_500
-										.toString(), null)));
-				return output;
-
-			}
+			// Cast the response
+			output = (UpdateContextSubscriptionResponse) response;
 
 		} catch (MalformedURLException e) {
-			logger.debug("Malformed URI", e);
+			logger.warn("Malformed URI", e);
 
 			output = new UpdateContextSubscriptionResponse(null,
 					new SubscribeError(null, new StatusCode(
@@ -665,101 +787,28 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	public UnsubscribeContextResponse unsubscribeContext(
 			UnsubscribeContextRequest request, URI uri) {
 
-		/*
-		 * This is implemented analogously to queryContext. See the comments
-		 * there for clarification.
-		 */
-
-		
-		String contentType = CONTENT_TYPE;
+		ContentType preferredContentType = CONTENT_TYPE;
 
 		UnsubscribeContextResponse output = new UnsubscribeContextResponse();
 
 		try {
 
-			// init connection
-			URL url = new URL(uri.toString());
-			HttpConnectionClient connection = new HttpConnectionClient();
-			logger.debug("Thread Http Start");
+			Object response = sendRequest(new URL(uri.toString()),
+					"updateContextSubscription", request, preferredContentType,
+					UnsubscribeContextResponse.class);
 
-			// connect and get response
-			String respObj = connection.initializeConnection(url,
-					"/unsubscribeContext", "POST", request, contentType,
-					xAuthToken);
-
-			if (respObj.equals("415")) {
-				
-				logger.info("NGSI-10 agent non supporting "+ contentType +". Trying a different content type");
-				if (CONTENT_TYPE.equals("application/xml")) {
-					contentType = "application/json";
-				} else if (CONTENT_TYPE.equals("application/json")) {
-					contentType = "application/xml";
-				}
-
-				respObj = tryDifferentContentType(request,
-						"/unsubscribeContext", "POST", connection, url);
-
-				if (respObj.equals("415")) {
-
-					output = new UnsubscribeContextResponse(null,
-							new StatusCode(Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(),
-									"Content Type is not supported!"));
-					return output;
-
-				}
-
-			}
-
-			if (respObj != null 
-					&& "500".matches(respObj.substring(0, 3))) {
-
-				output = new UnsubscribeContextResponse(null, new StatusCode(
-						Code.INTERNALERROR_500.getCode(),
-						ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
-						respObj.substring(5)));
+			// If there was an error then a StatusCode has been returned
+			if (response instanceof StatusCode) {
+				output = new UnsubscribeContextResponse(null,
+						(StatusCode) response);
 				return output;
-
 			}
-			// response valid and not null
-			if (respObj != null
-					&& validateMessageBody(respObj, contentType,
-							UnsubscribeContextResponse.class, ngsi10schema)) {
 
-				if (validateMessageBody(respObj, contentType,
-						UnsubscribeContextResponse.class, ngsi10schema)) {
-
-					if (contentType.equals("application/xml")) {
-
-						output = (UnsubscribeContextResponse) xmlFactory
-								.convertStringToXml(respObj,
-										UnsubscribeContextResponse.class);
-
-					} else {
-
-						output = (UnsubscribeContextResponse) jsonFactory
-								.convertStringToJsonObject(respObj,
-										UnsubscribeContextResponse.class);
-
-					}
-
-					return output;
-
-				} else {
-
-					output = new UnsubscribeContextResponse(null,
-							new StatusCode(Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(), null));
-
-					return output;
-
-				}
-			}
+			// Cast the response
+			output = (UnsubscribeContextResponse) response;
 
 		} catch (MalformedURLException e) {
-			logger.debug("Malformed URI", e);
+			logger.warn("Malformed URI", e);
 
 			output = new UnsubscribeContextResponse(null, new StatusCode(
 					Code.INTERNALERROR_500.getCode(),
@@ -784,92 +833,27 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	public UpdateContextResponse updateContext(UpdateContextRequest request,
 			URI uri) {
 
-		/*
-		 * This is implemented analogously to queryContext. See the comments
-		 * there for clarification.
-		 */
+		ContentType preferredContentType = CONTENT_TYPE;
 
-		String contentType = CONTENT_TYPE;
-		
 		UpdateContextResponse output = new UpdateContextResponse();
 
 		try {
 
-			URL url = new URL(uri.toString());
-			HttpConnectionClient connection = new HttpConnectionClient();
-			logger.debug("Starting Http Thread ");
+			Object response = sendRequest(new URL(uri.toString()),
+					"updateContext", request, preferredContentType,
+					UpdateContextResponse.class);
 
-			String respObj;
-			if (adaptUpdatesToOrionStandard) {
-				logger.info("Adapting updateContext to Orion Standards");
-				respObj = connection.initializeUpdateContextConnectionToOrion(
-						url, "/updateContext", request, xAuthToken);
-			} else {
-
-				respObj = connection.initializeConnection(url,
-						"/updateContext", "POST", request, contentType,
-						xAuthToken);
-			}
-
-			if (respObj.equals("415")) {
-				
-				logger.info("NGSI-10 agent non supporting "+ contentType +". Trying a different content type");
-				if (CONTENT_TYPE.equals("application/xml")) {
-					contentType = "application/json";
-				} else if (CONTENT_TYPE.equals("application/json")) {
-					contentType = "application/xml";
-				}
-
-				respObj = tryDifferentContentType(request, "/updateContext",
-						"POST", connection, url);
-
-				if (respObj.equals("415")) {
-
-					output = new UpdateContextResponse(new StatusCode(
-							Code.INTERNALERROR_500.getCode(),
-							ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
-							"Content Type is not supported!"), null);
-					return output;
-
-				}
-
-			}
-
-			if (respObj != null 
-					&& "500".matches(respObj.substring(0, 3))) {
-
-				output = new UpdateContextResponse(new StatusCode(
-						Code.INTERNALERROR_500.getCode(),
-						ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
-						respObj.substring(5)), null);
+			// If there was an error then a StatusCode has been returned
+			if (response instanceof StatusCode) {
+				output = new UpdateContextResponse((StatusCode) response, null);
 				return output;
-
 			}
 
-			if (respObj != null
-					&& validateMessageBody(respObj, contentType,
-							UpdateContextResponse.class, ngsi10schema)) {
-
-				if (contentType.equals("application/xml")) {
-
-					output = (UpdateContextResponse) xmlFactory
-							.convertStringToXml(respObj,
-									UpdateContextResponse.class);
-
-				} else {
-
-					output = (UpdateContextResponse) jsonFactory
-							.convertStringToJsonObject(respObj,
-									UpdateContextResponse.class);
-
-				}
-
-			}
-
-			return output;
+			// Cast the response
+			output = (UpdateContextResponse) response;
 
 		} catch (MalformedURLException e) {
-			logger.debug("Malformed URI", e);
+			logger.warn("Malformed URI", e);
 
 			output = new UpdateContextResponse(new StatusCode(
 					Code.INTERNALERROR_500.getCode(),
@@ -883,14 +867,29 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	public static void main(String[] args) {
 
-		ContextRegistration c = new ContextRegistration();
+		ContentType c1 = ContentType.JSON;
 
-		List<ContextMetadata> contextMetadataList = new ArrayList<ContextMetadata>();
-		contextMetadataList.add(new ContextMetadata(
-				MetadataTypes.NotificationHandler, null, "ciao"));
-		c.setListContextMetadata(contextMetadataList);
+		ContentType c2 = c1;
 
-		System.out.println(c.toJsonString());
+		System.out.println(c1.toString());
+		System.out.println(c2.toString());
+
+		if (c1 == c2) {
+			System.out.println("yes");
+		} else {
+			System.out.println("no");
+		}
+
+		c2 = ContentType.XML;
+
+		System.out.println(c1.toString());
+		System.out.println(c2.toString());
+
+		if (c1 == c2) {
+			System.out.println("yes");
+		} else {
+			System.out.println("no");
+		}
 
 	}
 
@@ -907,179 +906,197 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 		// initialze the response as an empty one
 		DiscoverContextAvailabilityResponse output = new DiscoverContextAvailabilityResponse();
-		
-		String contentType = CONTENT_TYPE;
+
+		ContentType preferredContentType = CONTENT_TYPE;
 
 		try {
 
-			// init connection
-			HttpConnectionClient connection = new HttpConnectionClient();
+			Object response = sendRequest(new URL(ngsi9url), "/"
+					+ ngsi9rootPath + "discoverContextAvailability", request,
+					preferredContentType,
+					DiscoverContextAvailabilityResponse.class);
 
-			URL ngsi9 = new URL(ngsi9url);
-
-			// connect
-			String response = connection.initializeConnection(ngsi9, "/"
-					+ ngsi9rootPath + "/discoverContextAvailability", "POST",
-					request, contentType, xAuthToken);
-
-			if (response.equals("415")) {
-				
-				logger.info("NGSI-10 agent non supporting "+ contentType +". Trying a different content type");
-				if (CONTENT_TYPE.equals("application/xml")) {
-					contentType = "application/json";
-				} else if (CONTENT_TYPE.equals("application/json")) {
-					contentType = "application/xml";
-				}
-
-				response = tryDifferentContentType(request, "/" + ngsi9rootPath
-						+ "/discoverContextAvailability", "POST", connection,
-						ngsi9);
-
-				if (response.equals("415")) {
-
-					output = new DiscoverContextAvailabilityResponse(null,
-							new StatusCode(Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(),
-									"Content Type is not supported!"));
-					return output;
-
-				}
-
+			// If there was an error then a StatusCode has been returned
+			if (response instanceof StatusCode) {
+				output = new DiscoverContextAvailabilityResponse(null,
+						(StatusCode) response);
+				return output;
 			}
 
-			if (response != null && contentType.equals("application/xml")) {
+			// Cast the response
+			output = (DiscoverContextAvailabilityResponse) response;
 
-				if ("500".equals(response.substring(0, 3))) {
-
-					output = new DiscoverContextAvailabilityResponse(null,
-							new StatusCode(Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(), response.substring(5)));
-					return output;
-
-				} else if (response != null
-						&& validateMessageBody(response, contentType,
-								DiscoverContextAvailabilityResponse.class,
-								ngsi9schema)) {
-
-					List<String> lstValue = getAssociationDataFromRegistrationMetaData(response);
-
-					Iterator<String> iter = lstValue.iterator();
-
-					while (iter.hasNext()) {
-
-						String s = iter.next();
-
-						if (logger.isDebugEnabled()) {
-							logger.debug("String Association -->" + s);
-						}
-					}
-
-					output = (DiscoverContextAvailabilityResponse) xmlFactory
-							.convertStringToXml(response,
-									DiscoverContextAvailabilityResponse.class);
-
-					/*
-					 * The xmlFactory, as currently used, is not able to
-					 * transform associations automatically. Therefore the
-					 * association information is extracted from the response
-					 * string and then re-inserted into the transformed object
-					 * using the method
-					 * addingAssociationDataToDiscContextAvailabilityRes.
-					 * 
-					 * TODO: this can potentially be done in a more elegant way.
-					 */
-					if (logger.isDebugEnabled()) {
-						logger.debug("Associations: " + lstValue);
-					}
-
-					output = addingAssociationDataToDiscContextAvailabilityRes(
-							output, lstValue);
-
-				} else {
-					output = new DiscoverContextAvailabilityResponse(null,
-							new StatusCode(Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(),
-									"XML Response not Valid!"));
-					return output;
-				}
-
-			} else {
-
-				logger.info("Response being parsed as JSON");
-
-				if (response != null && response.contains("500")) {
-
-					output = new DiscoverContextAvailabilityResponse(null,
-							new StatusCode(Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(), response.substring(5)));
-					return output;
-
-				} else if (response != null
-						&& validateMessageBody(response,contentType,
-								DiscoverContextAvailabilityResponse.class,
-								ngsi9schema)) {
-
-					List<String> lstValue = getAssociationDataFromRegistrationMetaData(response);
-
-					Iterator<String> iter = lstValue.iterator();
-
-					while (iter.hasNext()) {
-
-						String s = iter.next();
-
-						if (logger.isDebugEnabled()) {
-							logger.debug("String Association -->" + s);
-						}
-					}
-
-					// Correcting eventual errors of other JSON binding
-					response = response.replaceAll("\\\"metadatas\\\"",
-							"\\\"contextMetadata\\\"");
-
-					output = (DiscoverContextAvailabilityResponse) jsonFactory
-							.convertStringToJsonObject(response,
-									DiscoverContextAvailabilityResponse.class);
-
-					if (logger.isDebugEnabled()) {
-						logger.debug("Associations: " + lstValue);
-					}
-
-					/*
-					 * The xmlFactory, as currently used, is not able to
-					 * transform associations automatically. Therefore the
-					 * association information is extracted from the response
-					 * string and then re-inserted into the transformed object
-					 * using the method
-					 * addingAssociationDataToDiscContextAvailabilityRes.
-					 * 
-					 * TODO: this can potentially be done in a more elegant way.
-					 */
-
-					output = addingAssociationDataToDiscContextAvailabilityRes(
-							output, lstValue);
-
-				} else {
-					output = new DiscoverContextAvailabilityResponse(null,
-							new StatusCode(Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(),
-									"JSON Response not Valid!"));
-					return output;
-				}
-
-			}
+			// // init connection
+			// HttpConnectionClient connection = new HttpConnectionClient();
+			//
+			// URL ngsi9 = new URL(ngsi9url);
+			//
+			// // connect
+			// String response = connection.initializeConnection(ngsi9, "/"
+			// + ngsi9rootPath + "/discoverContextAvailability", "POST",
+			// request, contentType, xAuthToken);
+			//
+			// if (response.equals("415")) {
+			//
+			// logger.info("NGSI-10 agent non supporting " + contentType
+			// + ". Trying a different content type");
+			// if (CONTENT_TYPE.equals("application/xml")) {
+			// contentType = "application/json";
+			// } else if (CONTENT_TYPE.equals("application/json")) {
+			// contentType = "application/xml";
+			// }
+			//
+			// response = tryDifferentContentType(request, "/" + ngsi9rootPath
+			// + "/discoverContextAvailability", "POST", connection,
+			// ngsi9);
+			//
+			// if (response.equals("415")) {
+			//
+			// output = new DiscoverContextAvailabilityResponse(null,
+			// new StatusCode(Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(),
+			// "Content Type is not supported!"));
+			// return output;
+			//
+			// }
+			//
+			// }
+			//
+			// if (response != null && contentType.equals("application/xml")) {
+			//
+			// if ("500".equals(response.substring(0, 3))) {
+			//
+			// output = new DiscoverContextAvailabilityResponse(null,
+			// new StatusCode(Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(), response.substring(5)));
+			// return output;
+			//
+			// } else if (response != null
+			// && validateMessageBody(response, contentType,
+			// DiscoverContextAvailabilityResponse.class,
+			// ngsi9schema)) {
+			//
+			// List<String> lstValue =
+			// getAssociationDataFromRegistrationMetaData(response);
+			//
+			// Iterator<String> iter = lstValue.iterator();
+			//
+			// while (iter.hasNext()) {
+			//
+			// String s = iter.next();
+			//
+			// if (logger.isDebugEnabled()) {
+			// logger.debug("String Association -->" + s);
+			// }
+			// }
+			//
+			// output = (DiscoverContextAvailabilityResponse) xmlFactory
+			// .convertStringToXml(response,
+			// DiscoverContextAvailabilityResponse.class);
+			//
+			// /*
+			// * The xmlFactory, as currently used, is not able to
+			// * transform associations automatically. Therefore the
+			// * association information is extracted from the response
+			// * string and then re-inserted into the transformed object
+			// * using the method
+			// * addingAssociationDataToDiscContextAvailabilityRes.
+			// *
+			// * TODO: this can potentially be done in a more elegant way.
+			// */
+			// if (logger.isDebugEnabled()) {
+			// logger.debug("Associations: " + lstValue);
+			// }
+			//
+			// output = addingAssociationDataToDiscContextAvailabilityRes(
+			// output, lstValue);
+			//
+			// } else {
+			// output = new DiscoverContextAvailabilityResponse(null,
+			// new StatusCode(Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(),
+			// "XML Response not Valid!"));
+			// return output;
+			// }
+			//
+			// } else {
+			//
+			// logger.info("Response being parsed as JSON");
+			//
+			// if (response != null && response.contains("500")) {
+			//
+			// output = new DiscoverContextAvailabilityResponse(null,
+			// new StatusCode(Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(), response.substring(5)));
+			// return output;
+			//
+			// } else if (response != null
+			// && validateMessageBody(response, contentType,
+			// DiscoverContextAvailabilityResponse.class,
+			// ngsi9schema)) {
+			//
+			// List<String> lstValue =
+			// getAssociationDataFromRegistrationMetaData(response);
+			//
+			// Iterator<String> iter = lstValue.iterator();
+			//
+			// while (iter.hasNext()) {
+			//
+			// String s = iter.next();
+			//
+			// if (logger.isDebugEnabled()) {
+			// logger.debug("String Association -->" + s);
+			// }
+			// }
+			//
+			// // Correcting eventual errors of other JSON binding
+			// response = response.replaceAll("\\\"metadatas\\\"",
+			// "\\\"contextMetadata\\\"");
+			//
+			// output = (DiscoverContextAvailabilityResponse) jsonFactory
+			// .convertStringToJsonObject(response,
+			// DiscoverContextAvailabilityResponse.class);
+			//
+			// if (logger.isDebugEnabled()) {
+			// logger.debug("Associations: " + lstValue);
+			// }
+			//
+			// /*
+			// * The xmlFactory, as currently used, is not able to
+			// * transform associations automatically. Therefore the
+			// * association information is extracted from the response
+			// * string and then re-inserted into the transformed object
+			// * using the method
+			// * addingAssociationDataToDiscContextAvailabilityRes.
+			// *
+			// * TODO: this can potentially be done in a more elegant way.
+			// */
+			//
+			// output = addingAssociationDataToDiscContextAvailabilityRes(
+			// output, lstValue);
+			//
+			// } else {
+			// output = new DiscoverContextAvailabilityResponse(null,
+			// new StatusCode(Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(),
+			// "JSON Response not Valid!"));
+			// return output;
+			// }
+			//
+			// }
 
 		} catch (MalformedURLException e) {
-			logger.debug("Malformed URI", e);
+			logger.warn("Malformed URI", e);
 			output.setContextRegistrationResponse(null);
 			output.setErrorCode(new StatusCode(
 					Code.INTERNALERROR_500.getCode(),
-					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(), e
-							.getMessage()));
+					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
+					ReasonPhrase.RECEIVERINTERNALERROR_500.toString()));
 
 		}
 
@@ -1197,8 +1214,8 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 		 */
 
 		RegisterContextResponse output = new RegisterContextResponse();
-		
-		String contentType = CONTENT_TYPE;
+
+		ContentType preferredContentType = CONTENT_TYPE;
 
 		try {
 
@@ -1208,11 +1225,6 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			if (ngsi9RemoteUrl == null) {
 				ngsi9RemoteUrl = ngsi9url;
 			}
-
-			// initialize http connection
-			URL url = new URL(ngsi9RemoteUrl);
-			HttpConnectionClient connection = new HttpConnectionClient();
-
 			for (ContextRegistration contextRegistration : request
 					.getContextRegistrationList()) {
 				contextRegistration.setProvidingApplication(new URI("http://"
@@ -1220,91 +1232,123 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 						+ "/ngsi10/"));
 			}
 
-			String resource;
-			if (url.toString().matches(".*/")) {
-				resource = "registerContext";
-			} else {
-				resource = "/registerContext";
-			}
+			Object response = sendRequest(new URL(ngsi9RemoteUrl), "/"
+					+ ngsi9rootPath + "/" + "registerContext", request,
+					preferredContentType, RegisterContextResponse.class);
 
-			String respObj = connection.initializeConnection(url, "/"
-					+ ngsi9rootPath + "/" + resource, "POST", request,
-					contentType, xAuthToken);
-
-			if (respObj.equals("415")) {
-				
-				logger.info("NGSI-10 agent non supporting "+ contentType +". Trying a different content type");
-				if (CONTENT_TYPE.equals("application/xml")) {
-					contentType = "application/json";
-				} else if (CONTENT_TYPE.equals("application/json")) {
-					contentType = "application/xml";
-				}
-
-				respObj = tryDifferentContentType(request, resource, "POST",
-						connection, url);
-
-				if (respObj.equals("415")) {
-
-					output = new RegisterContextResponse(null, null,
-							new StatusCode(Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(),
-									"Content Type is not supported!"));
-
-					return output;
-
-				}
-
-			}
-
-			if (respObj != null 
-					&& "500".matches(respObj.substring(0, 3))) {
-
+			// If there was an error then a StatusCode has been returned
+			if (response instanceof StatusCode) {
 				output = new RegisterContextResponse(null, null,
-						new StatusCode(Code.INTERNALERROR_500.getCode(),
-								ReasonPhrase.RECEIVERINTERNALERROR_500
-										.toString(),
-								ReasonPhrase.RECEIVERINTERNALERROR_500
-										.toString()));
+						(StatusCode) response);
 				return output;
-
 			}
 
-			if (respObj != null
-					&& validateMessageBody(respObj, contentType,
-							RegisterContextResponse.class, ngsi9schema)) {
+			// Cast the response
+			output = (RegisterContextResponse) response;
 
-				if (contentType.equals("application/xml")) {
-
-					output = (RegisterContextResponse) xmlFactory
-							.convertStringToXml(respObj,
-									RegisterContextResponse.class);
-
-				} else {
-
-					output = (RegisterContextResponse) jsonFactory
-							.convertStringToJsonObject(respObj,
-									RegisterContextResponse.class);
-
-				}
-
-				return output;
-
-			} else {
-				// If the response is null or invalid then send an error message
-				output = new RegisterContextResponse(null, null,
-						new StatusCode(Code.INTERNALERROR_500.getCode(),
-								ReasonPhrase.RECEIVERINTERNALERROR_500
-										.toString(),
-								ReasonPhrase.RECEIVERINTERNALERROR_500
-										.toString()));
-				return output;
-
-			}
+			// // get address of local host
+			// InetAddress thisIp = InetAddress.getLocalHost();
+			//
+			// if (ngsi9RemoteUrl == null) {
+			// ngsi9RemoteUrl = ngsi9url;
+			// }
+			//
+			// // initialize http connection
+			// URL url = new URL(ngsi9RemoteUrl);
+			// HttpConnectionClient connection = new HttpConnectionClient();
+			//
+			// for (ContextRegistration contextRegistration : request
+			// .getContextRegistrationList()) {
+			// contextRegistration.setProvidingApplication(new URI("http://"
+			// + thisIp.getHostAddress() + ":" + tomcatPort
+			// + "/ngsi10/"));
+			// }
+			//
+			// String resource;
+			// if (url.toString().matches(".*/")) {
+			// resource = "registerContext";
+			// } else {
+			// resource = "/registerContext";
+			// }
+			//
+			// String respObj = connection.initializeConnection(url, "/"
+			// + ngsi9rootPath + "/" + resource, "POST", request,
+			// contentType, xAuthToken);
+			//
+			// if (respObj.equals("415")) {
+			//
+			// logger.info("NGSI-10 agent non supporting " + contentType
+			// + ". Trying a different content type");
+			// if (CONTENT_TYPE.equals("application/xml")) {
+			// contentType = "application/json";
+			// } else if (CONTENT_TYPE.equals("application/json")) {
+			// contentType = "application/xml";
+			// }
+			//
+			// respObj = tryDifferentContentType(request, resource, "POST",
+			// connection, url);
+			//
+			// if (respObj.equals("415")) {
+			//
+			// output = new RegisterContextResponse(null, null,
+			// new StatusCode(Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(),
+			// "Content Type is not supported!"));
+			//
+			// return output;
+			//
+			// }
+			//
+			// }
+			//
+			// if (respObj != null && "500".matches(respObj.substring(0, 3))) {
+			//
+			// output = new RegisterContextResponse(null, null,
+			// new StatusCode(Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString()));
+			// return output;
+			//
+			// }
+			//
+			// if (respObj != null
+			// && validateMessageBody(respObj, contentType,
+			// RegisterContextResponse.class, ngsi9schema)) {
+			//
+			// if (contentType.equals("application/xml")) {
+			//
+			// output = (RegisterContextResponse) xmlFactory
+			// .convertStringToXml(respObj,
+			// RegisterContextResponse.class);
+			//
+			// } else {
+			//
+			// output = (RegisterContextResponse) jsonFactory
+			// .convertStringToJsonObject(respObj,
+			// RegisterContextResponse.class);
+			//
+			// }
+			//
+			// return output;
+			//
+			// } else {
+			// // If the response is null or invalid then send an error message
+			// output = new RegisterContextResponse(null, null,
+			// new StatusCode(Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString()));
+			// return output;
+			//
+			// }
 
 		} catch (MalformedURLException e) {
 			if (logger.isDebugEnabled())
-				logger.debug("Malformed URI", e);
+				logger.warn("Malformed URI", e);
 
 			output = new RegisterContextResponse(null, null, new StatusCode(
 					Code.INTERNALERROR_500.getCode(),
@@ -1313,7 +1357,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 		} catch (IOException e) {
 			if (logger.isDebugEnabled())
-				logger.debug("I/O Exception", e);
+				logger.warn("I/O Exception", e);
 
 			output = new RegisterContextResponse(null, null, new StatusCode(
 					Code.INTERNALERROR_500.getCode(),
@@ -1322,7 +1366,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 		} catch (URISyntaxException e) {
 			if (logger.isDebugEnabled())
-				logger.debug("URISyntaxException", e);
+				logger.warn("URISyntaxException", e);
 
 			return null;
 		}
@@ -1343,113 +1387,129 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 		// init response as empty
 		SubscribeContextAvailabilityResponse output = null;
-		
-		String contentType = CONTENT_TYPE;
+
+		ContentType preferredContentType = CONTENT_TYPE;
 
 		try {
 
-			// init connection
-			HttpConnectionClient connection = new HttpConnectionClient();
+			Object response = sendRequest(new URL(ngsi9url), "/"
+					+ ngsi9rootPath + "/subscribeContextAvailability", request,
+					preferredContentType,
+					SubscribeContextAvailabilityResponse.class);
 
-			URL ngsi9 = new URL(ngsi9url);
-
-			String response = connection.initializeConnection(ngsi9, "/"
-					+ ngsi9rootPath + "/subscribeContextAvailability", "POST",
-					request, contentType, xAuthToken);
-
-			if (response.equals("415")) {
-				
-				logger.info("IoT Discovery not supporting "+ contentType +". Trying a different content type");
-				if (CONTENT_TYPE.equals("application/xml")) {
-					contentType = "application/json";
-				} else if (CONTENT_TYPE.equals("application/json")) {
-					contentType = "application/xml";
-				}
-
-				response = tryDifferentContentType(request, "/" + ngsi9rootPath
-						+ "/subscribeContextAvailability", "POST", connection,
-						ngsi9);
-
-				if (response.equals("415")) {
-
-					output = new SubscribeContextAvailabilityResponse(null,
-							null, new StatusCode(
-									Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(),
-									"Content Type is not supported!"));
-
-					return output;
-
-				}
-
+			// If there was an error then a StatusCode has been returned
+			if (response instanceof StatusCode) {
+				output = new SubscribeContextAvailabilityResponse(null, null,
+						(StatusCode) response);
+				return output;
 			}
 
-			if (response != null && contentType.equals("application/xml")) {
+			// Cast the response
+			output = (SubscribeContextAvailabilityResponse) response;
 
-				if ("500".equals(response.substring(0, 3))) {
-
-					output = new SubscribeContextAvailabilityResponse(null,
-							null, new StatusCode(
-									Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(), response.substring(5)));
-					return output;
-
-				} else if (response != null
-						&& validateMessageBody(response, contentType,
-								SubscribeContextAvailabilityResponse.class,
-								ngsi9schema)) {
-
-					output = (SubscribeContextAvailabilityResponse) xmlFactory
-							.convertStringToXml(response,
-									SubscribeContextAvailabilityResponse.class);
-
-				} else {
-
-					output = new SubscribeContextAvailabilityResponse(null,
-							null, new StatusCode(
-									Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(),
-									"XML Response not Valid!"));
-					return output;
-
-				}
-			} else {
-
-				if (response != null && response.contains("500")) {
-
-					output = new SubscribeContextAvailabilityResponse(null,
-							null, new StatusCode(
-									Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(), response.substring(5)));
-					return output;
-
-				} else if (response != null
-						&& validateMessageBody(response, contentType,
-								SubscribeContextAvailabilityResponse.class,
-								ngsi9schema)) {
-
-					output = (SubscribeContextAvailabilityResponse) jsonFactory
-							.convertStringToJsonObject(response,
-									SubscribeContextAvailabilityResponse.class);
-
-				} else {
-					output = new SubscribeContextAvailabilityResponse(null,
-							null, new StatusCode(
-									Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(),
-									"JSON Response not Valid!"));
-					return output;
-				}
-
-			}
+			// // init connection
+			// HttpConnectionClient connection = new HttpConnectionClient();
+			//
+			// URL ngsi9 = new URL(ngsi9url);
+			//
+			// String response = connection.initializeConnection(ngsi9, "/"
+			// + ngsi9rootPath + "/subscribeContextAvailability", "POST",
+			// request, contentType, xAuthToken);
+			//
+			// if (response.equals("415")) {
+			//
+			// logger.info("IoT Discovery not supporting " + contentType
+			// + ". Trying a different content type");
+			// if (CONTENT_TYPE.equals("application/xml")) {
+			// contentType = "application/json";
+			// } else if (CONTENT_TYPE.equals("application/json")) {
+			// contentType = "application/xml";
+			// }
+			//
+			// response = tryDifferentContentType(request, "/" + ngsi9rootPath
+			// + "/subscribeContextAvailability", "POST", connection,
+			// ngsi9);
+			//
+			// if (response.equals("415")) {
+			//
+			// output = new SubscribeContextAvailabilityResponse(null,
+			// null, new StatusCode(
+			// Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(),
+			// "Content Type is not supported!"));
+			//
+			// return output;
+			//
+			// }
+			//
+			// }
+			//
+			// if (response != null && contentType.equals("application/xml")) {
+			//
+			// if ("500".equals(response.substring(0, 3))) {
+			//
+			// output = new SubscribeContextAvailabilityResponse(null,
+			// null, new StatusCode(
+			// Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(), response.substring(5)));
+			// return output;
+			//
+			// } else if (response != null
+			// && validateMessageBody(response, contentType,
+			// SubscribeContextAvailabilityResponse.class,
+			// ngsi9schema)) {
+			//
+			// output = (SubscribeContextAvailabilityResponse) xmlFactory
+			// .convertStringToXml(response,
+			// SubscribeContextAvailabilityResponse.class);
+			//
+			// } else {
+			//
+			// output = new SubscribeContextAvailabilityResponse(null,
+			// null, new StatusCode(
+			// Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(),
+			// "XML Response not Valid!"));
+			// return output;
+			//
+			// }
+			// } else {
+			//
+			// if (response != null && response.contains("500")) {
+			//
+			// output = new SubscribeContextAvailabilityResponse(null,
+			// null, new StatusCode(
+			// Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(), response.substring(5)));
+			// return output;
+			//
+			// } else if (response != null
+			// && validateMessageBody(response, contentType,
+			// SubscribeContextAvailabilityResponse.class,
+			// ngsi9schema)) {
+			//
+			// output = (SubscribeContextAvailabilityResponse) jsonFactory
+			// .convertStringToJsonObject(response,
+			// SubscribeContextAvailabilityResponse.class);
+			//
+			// } else {
+			// output = new SubscribeContextAvailabilityResponse(null,
+			// null, new StatusCode(
+			// Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(),
+			// "JSON Response not Valid!"));
+			// return output;
+			// }
+			//
+			// }
 
 		} catch (MalformedURLException e) {
-			logger.debug("Malformed URI", e);
+			logger.warn("Malformed URI", e);
 
 			SubscribeContextAvailabilityResponse subscribeContextAvailabilityResponse = new SubscribeContextAvailabilityResponse(
 					null, null, new StatusCode(
@@ -1475,106 +1535,122 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			UnsubscribeContextAvailabilityRequest request) {
 
 		UnsubscribeContextAvailabilityResponse output = new UnsubscribeContextAvailabilityResponse();
-		
-		String contentType = CONTENT_TYPE;
+
+		ContentType preferredContentType = CONTENT_TYPE;
 
 		try {
 
-			URL ngsi9 = new URL(ngsi9url);
-			HttpConnectionClient connection = new HttpConnectionClient();
-			logger.debug("Starting http thread");
+			Object response = sendRequest(new URL(ngsi9url), ngsi9rootPath
+					+ "/unsubscribeContextAvailability", request,
+					preferredContentType,
+					UnsubscribeContextAvailabilityResponse.class);
 
-			String response = connection.initializeConnection(ngsi9, "/"
-					+ ngsi9rootPath + "/unsubscribeContextAvailability",
-					"POST", request, contentType, xAuthToken);
-
-			if (response.equals("415")) {
-				
-				logger.info("IoT Discovery not supporting "+ contentType +". Trying a different content type");
-				if (CONTENT_TYPE.equals("application/xml")) {
-					contentType = "application/json";
-				} else if (CONTENT_TYPE.equals("application/json")) {
-					contentType = "application/xml";
-				}
-
-				response = tryDifferentContentType(request, "/" + ngsi9rootPath
-						+ "/unsubscribeContextAvailability", "POST",
-						connection, ngsi9);
-
-				if (response.equals("415")) {
-
-					output = new UnsubscribeContextAvailabilityResponse(null,
-							new StatusCode(Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(),
-									"Content Type is not supported!"));
-
-					return output;
-
-				}
-
+			// If there was an error then a StatusCode has been returned
+			if (response instanceof StatusCode) {
+				output = new UnsubscribeContextAvailabilityResponse(null,
+						(StatusCode) response);
+				return output;
 			}
 
-			if (response != null && contentType.equals("application/xml")) {
+			// Cast the response
+			output = (UnsubscribeContextAvailabilityResponse) response;
 
-				if ("500".equals(response.substring(0, 3))) {
+			// URL ngsi9 = new URL(ngsi9url);
+			// HttpConnectionClient connection = new HttpConnectionClient();
+			// logger.debug("Starting http thread");
+			//
+			// String response = connection.initializeConnection(ngsi9, "/"
+			// + ngsi9rootPath + "/unsubscribeContextAvailability",
+			// "POST", request, contentType, xAuthToken);
+			//
+			// if (response.equals("415")) {
+			//
+			// logger.info("IoT Discovery not supporting " + contentType
+			// + ". Trying a different content type");
+			// if (CONTENT_TYPE.equals("application/xml")) {
+			// contentType = "application/json";
+			// } else if (CONTENT_TYPE.equals("application/json")) {
+			// contentType = "application/xml";
+			// }
+			//
+			// response = tryDifferentContentType(request, "/" + ngsi9rootPath
+			// + "/unsubscribeContextAvailability", "POST",
+			// connection, ngsi9);
+			//
+			// if (response.equals("415")) {
+			//
+			// output = new UnsubscribeContextAvailabilityResponse(null,
+			// new StatusCode(Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(),
+			// "Content Type is not supported!"));
+			//
+			// return output;
+			//
+			// }
+			//
+			// }
 
-					output = new UnsubscribeContextAvailabilityResponse(null,
-							new StatusCode(Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(), response.substring(5)));
-					return output;
-
-				} else if (response != null
-						&& validateMessageBody(response, contentType,
-								SubscribeContextAvailabilityResponse.class,
-								ngsi9schema)) {
-
-					output = (UnsubscribeContextAvailabilityResponse) xmlFactory
-							.convertStringToXml(
-									response,
-									UnsubscribeContextAvailabilityResponse.class);
-
-				} else {
-					output = new UnsubscribeContextAvailabilityResponse(null,
-							new StatusCode(Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(),
-									"XML Response not Valid!"));
-					return output;
-
-				}
-			} else {
-
-				if (response != null && response.contains("500")) {
-					output = new UnsubscribeContextAvailabilityResponse(null,
-							new StatusCode(Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(), response.substring(5)));
-					return output;
-				} else if (response != null
-						&& validateMessageBody(response, contentType,
-								SubscribeContextAvailabilityResponse.class,
-								ngsi9schema)) {
-
-					output = (UnsubscribeContextAvailabilityResponse) jsonFactory
-							.convertStringToJsonObject(
-									response,
-									UnsubscribeContextAvailabilityResponse.class);
-				} else {
-					output = new UnsubscribeContextAvailabilityResponse(null,
-							new StatusCode(Code.INTERNALERROR_500.getCode(),
-									ReasonPhrase.RECEIVERINTERNALERROR_500
-											.toString(),
-									"JSON Response not Valid!"));
-					return output;
-
-				}
-
-			}
+			// if (response != null && contentType.equals("application/xml")) {
+			//
+			// if ("500".equals(response.substring(0, 3))) {
+			//
+			// output = new UnsubscribeContextAvailabilityResponse(null,
+			// new StatusCode(Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(), response.substring(5)));
+			// return output;
+			//
+			// } else if (response != null
+			// && validateMessageBody(response, contentType,
+			// SubscribeContextAvailabilityResponse.class,
+			// ngsi9schema)) {
+			//
+			// output = (UnsubscribeContextAvailabilityResponse) xmlFactory
+			// .convertStringToXml(
+			// response,
+			// UnsubscribeContextAvailabilityResponse.class);
+			//
+			// } else {
+			// output = new UnsubscribeContextAvailabilityResponse(null,
+			// new StatusCode(Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(),
+			// "XML Response not Valid!"));
+			// return output;
+			//
+			// }
+			// } else {
+			//
+			// if (response != null && response.contains("500")) {
+			// output = new UnsubscribeContextAvailabilityResponse(null,
+			// new StatusCode(Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(), response.substring(5)));
+			// return output;
+			// } else if (response != null
+			// && validateMessageBody(response, contentType,
+			// SubscribeContextAvailabilityResponse.class,
+			// ngsi9schema)) {
+			//
+			// output = (UnsubscribeContextAvailabilityResponse) jsonFactory
+			// .convertStringToJsonObject(
+			// response,
+			// UnsubscribeContextAvailabilityResponse.class);
+			// } else {
+			// output = new UnsubscribeContextAvailabilityResponse(null,
+			// new StatusCode(Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500
+			// .toString(),
+			// "JSON Response not Valid!"));
+			// return output;
+			//
+			// }
+			//
+			// }
 
 		} catch (MalformedURLException e) {
-			logger.debug("Malformed URI", e);
+			logger.warn("Malformed URI", e);
 			output = new UnsubscribeContextAvailabilityResponse(null,
 					new StatusCode(Code.INTERNALERROR_500.getCode(),
 							ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
@@ -1618,93 +1694,106 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 		NotifyContextResponse output = new NotifyContextResponse();
 
-		String contentType = CONTENT_TYPE;
-		
+		ContentType preferredContentType = CONTENT_TYPE;
+
 		try {
 
-			HttpConnectionClient connection = new HttpConnectionClient();
+			Object response = sendRequest(new URL(uri.toString()), "", request,
+					preferredContentType, NotifyContextResponse.class);
 
-			String response = connection.initializeConnection(uri.toURL(), "",
-					"POST", request, contentType, xAuthToken);
-
-			if (response.equals("415")) {
-				
-				logger.info("Application not supporting "+ contentType +". Trying a different content type");
-				if (CONTENT_TYPE.equals("application/xml")) {
-					contentType = "application/json";
-				} else if (CONTENT_TYPE.equals("application/json")) {
-					contentType = "application/xml";
-				}
-
-				response = tryDifferentContentType(request, "", "POST",
-						connection, uri.toURL());
-
-				if (response.equals("415")) {
-
-					output = new NotifyContextResponse(new StatusCode(
-							Code.INTERNALERROR_500.getCode(),
-							ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
-							"Content Type is not supported!"));
-
-					return output;
-
-				}
-
+			// If there was an error then a StatusCode has been returned
+			if (response instanceof StatusCode) {
+				output = new NotifyContextResponse((StatusCode) response);
+				return output;
 			}
 
-			if (response != null && contentType.equals("application/xml")) {
-
-				if ("500".equals(response.substring(0, 3))) {
-
-					output = new NotifyContextResponse(new StatusCode(
-							Code.INTERNALERROR_500.getCode(),
-							ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
-							response.substring(5)));
-					return output;
-
-				} else if (response != null
-						&& validateMessageBody(response, contentType,
-								NotifyContextResponse.class, ngsi10schema)) {
-
-					output = (NotifyContextResponse) xmlFactory
-							.convertStringToXml(response,
-									NotifyContextResponse.class);
-
-				} else {
-					output = new NotifyContextResponse(new StatusCode(
-							Code.INTERNALERROR_500.getCode(),
-							ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
-							"XML Response not Valid!"));
-					return output;
-				}
-			} else {
-
-				if (response != null && response.contains("500")) {
-					output = new NotifyContextResponse(new StatusCode(
-							Code.INTERNALERROR_500.getCode(),
-							ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
-							response.substring(5)));
-					return output;
-				} else if (response != null
-						&& validateMessageBody(response, contentType,
-								SubscribeContextAvailabilityResponse.class,
-								ngsi10schema)) {
-					output = (NotifyContextResponse) jsonFactory
-							.convertStringToJsonObject(response,
-									NotifyContextResponse.class);
-				} else {
-					output = new NotifyContextResponse(new StatusCode(
-							Code.INTERNALERROR_500.getCode(),
-							ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
-							"JSON Response not Valid!"));
-					return output;
-				}
-
-			}
+			// Cast the response
+			output = (NotifyContextResponse) response;
+			//
+			// HttpConnectionClient connection = new HttpConnectionClient();
+			//
+			// String response = connection.initializeConnection(uri.toURL(),
+			// "",
+			// "POST", request, contentType, xAuthToken);
+			//
+			// if (response.equals("415")) {
+			//
+			// logger.info("Application not supporting " + contentType
+			// + ". Trying a different content type");
+			// if (CONTENT_TYPE.equals("application/xml")) {
+			// contentType = "application/json";
+			// } else if (CONTENT_TYPE.equals("application/json")) {
+			// contentType = "application/xml";
+			// }
+			//
+			// response = tryDifferentContentType(request, "", "POST",
+			// connection, uri.toURL());
+			//
+			// if (response.equals("415")) {
+			//
+			// output = new NotifyContextResponse(new StatusCode(
+			// Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
+			// "Content Type is not supported!"));
+			//
+			// return output;
+			//
+			// }
+			//
+			// }
+			//
+			// if (response != null && contentType.equals("application/xml")) {
+			//
+			// if ("500".equals(response.substring(0, 3))) {
+			//
+			// output = new NotifyContextResponse(new StatusCode(
+			// Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
+			// response.substring(5)));
+			// return output;
+			//
+			// } else if (response != null
+			// && validateMessageBody(response, contentType,
+			// NotifyContextResponse.class, ngsi10schema)) {
+			//
+			// output = (NotifyContextResponse) xmlFactory
+			// .convertStringToXml(response,
+			// NotifyContextResponse.class);
+			//
+			// } else {
+			// output = new NotifyContextResponse(new StatusCode(
+			// Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
+			// "XML Response not Valid!"));
+			// return output;
+			// }
+			// } else {
+			//
+			// if (response != null && response.contains("500")) {
+			// output = new NotifyContextResponse(new StatusCode(
+			// Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
+			// response.substring(5)));
+			// return output;
+			// } else if (response != null
+			// && validateMessageBody(response, contentType,
+			// SubscribeContextAvailabilityResponse.class,
+			// ngsi10schema)) {
+			// output = (NotifyContextResponse) jsonFactory
+			// .convertStringToJsonObject(response,
+			// NotifyContextResponse.class);
+			// } else {
+			// output = new NotifyContextResponse(new StatusCode(
+			// Code.INTERNALERROR_500.getCode(),
+			// ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
+			// "JSON Response not Valid!"));
+			// return output;
+			// }
+			//
+			// }
 
 		} catch (MalformedURLException e) {
-			logger.debug("Malformed URI", e);
-			output = new NotifyContextResponse();
+			logger.warn("Malformed URI", e);
 			output.setResponseCode(new StatusCode(Code.INTERNALERROR_500
 					.getCode(), ReasonPhrase.RECEIVERINTERNALERROR_500
 					.toString(), e.getMessage()));
