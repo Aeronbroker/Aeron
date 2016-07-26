@@ -149,11 +149,14 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/** The Constant CONTENT_TYPE. */
 	@Value("${default_content_type:application/xml}")
-	private ContentType CONTENT_TYPE;
+	private String defaultcontentType;
+
+	private ContentType CONTENT_TYPE = null;
 
 	/** Adapt UpdateContextRequest to Orion Standard */
-	@Value("${adaptUpdatesToOrionStandard:true}")
+	@Value("${adaptUpdatesToOrionStandard:false}")
 	private boolean adaptUpdatesToOrionStandard;
+	
 
 	/**
 	 * Validate if a message body is syntactically correct. Returns true if body
@@ -334,7 +337,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	public QueryContextResponse queryContext(QueryContextRequest request,
 			URI uri) {
 
-		ContentType preferredContentType = CONTENT_TYPE;
+		// ContentType preferredContentType = CONTENT_TYPE;
 
 		// initialize response as an empty response.
 		QueryContextResponse output = new QueryContextResponse();
@@ -342,8 +345,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 		try {
 
 			Object response = sendRequest(new URL(uri.toString()),
-					"queryContext", request, preferredContentType,
-					QueryContextResponse.class);
+					"queryContext", request, QueryContextResponse.class);
 
 			// If there was an error then a StatusCode has been returned
 			if (response instanceof StatusCode) {
@@ -511,7 +513,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 		SubscribeContextResponse output = new SubscribeContextResponse();
 
-		ContentType preferredContentType = CONTENT_TYPE;
+		// ContentType preferredContentType = CONTENT_TYPE;
 
 		try {
 
@@ -524,8 +526,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 					+ tomcatPort + "/ngsi10/notify");
 
 			Object response = sendRequest(new URL(uri.toString()),
-					"subscribeContext", request, preferredContentType,
-					SubscribeContextResponse.class);
+					"subscribeContext", request, SubscribeContextResponse.class);
 
 			// If there was an error then a StatusCode has been returned
 			if (response instanceof StatusCode) {
@@ -638,7 +639,13 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	 * 
 	 */
 	private Object sendRequest(URL url, String resource, NgsiStructure request,
-			ContentType preferredContentType, Class<?> expectedResponseClazz) {
+			Class<?> expectedResponseClazz) {
+
+		if (CONTENT_TYPE == null) {
+			CONTENT_TYPE = ContentType.fromString(defaultcontentType);
+		}
+
+		ContentType preferredContentType = CONTENT_TYPE;
 
 		Object output;
 
@@ -740,14 +747,14 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	public UpdateContextSubscriptionResponse updateContextSubscription(
 			UpdateContextSubscriptionRequest request, URI uri) {
 
-		ContentType preferredContentType = CONTENT_TYPE;
+		// ContentType preferredContentType = CONTENT_TYPE;
 
 		UpdateContextSubscriptionResponse output = new UpdateContextSubscriptionResponse();
 
 		try {
 
 			Object response = sendRequest(new URL(uri.toString()),
-					"updateContextSubscription", request, preferredContentType,
+					"updateContextSubscription", request,
 					UpdateContextSubscriptionResponse.class);
 
 			// If there was an error then a StatusCode has been returned
@@ -787,14 +794,14 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	public UnsubscribeContextResponse unsubscribeContext(
 			UnsubscribeContextRequest request, URI uri) {
 
-		ContentType preferredContentType = CONTENT_TYPE;
+		// ContentType preferredContentType = CONTENT_TYPE;
 
 		UnsubscribeContextResponse output = new UnsubscribeContextResponse();
 
 		try {
 
 			Object response = sendRequest(new URL(uri.toString()),
-					"updateContextSubscription", request, preferredContentType,
+					"updateContextSubscription", request,
 					UnsubscribeContextResponse.class);
 
 			// If there was an error then a StatusCode has been returned
@@ -833,15 +840,17 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	public UpdateContextResponse updateContext(UpdateContextRequest request,
 			URI uri) {
 
-		ContentType preferredContentType = CONTENT_TYPE;
+		// ContentType preferredContentType = CONTENT_TYPE;
 
 		UpdateContextResponse output = new UpdateContextResponse();
+		
+		adaptUpdatesToOrionStandard
+		I would suggest to have a completely different updateContext for Orion Context and then call it specifically. Maybe add a list of Orion Broker consumer in the settings (so having two pub_sub_addr).
 
 		try {
 
 			Object response = sendRequest(new URL(uri.toString()),
-					"updateContext", request, preferredContentType,
-					UpdateContextResponse.class);
+					"updateContext", request, UpdateContextResponse.class);
 
 			// If there was an error then a StatusCode has been returned
 			if (response instanceof StatusCode) {
@@ -907,13 +916,12 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 		// initialze the response as an empty one
 		DiscoverContextAvailabilityResponse output = new DiscoverContextAvailabilityResponse();
 
-		ContentType preferredContentType = CONTENT_TYPE;
+		// ContentType preferredContentType = CONTENT_TYPE;
 
 		try {
 
 			Object response = sendRequest(new URL(ngsi9url), "/"
 					+ ngsi9rootPath + "discoverContextAvailability", request,
-					preferredContentType,
 					DiscoverContextAvailabilityResponse.class);
 
 			// If there was an error then a StatusCode has been returned
@@ -1215,7 +1223,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 		RegisterContextResponse output = new RegisterContextResponse();
 
-		ContentType preferredContentType = CONTENT_TYPE;
+		// ContentType preferredContentType = CONTENT_TYPE;
 
 		try {
 
@@ -1234,7 +1242,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 			Object response = sendRequest(new URL(ngsi9RemoteUrl), "/"
 					+ ngsi9rootPath + "/" + "registerContext", request,
-					preferredContentType, RegisterContextResponse.class);
+					RegisterContextResponse.class);
 
 			// If there was an error then a StatusCode has been returned
 			if (response instanceof StatusCode) {
@@ -1388,13 +1396,12 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 		// init response as empty
 		SubscribeContextAvailabilityResponse output = null;
 
-		ContentType preferredContentType = CONTENT_TYPE;
+		// ContentType preferredContentType = CONTENT_TYPE;
 
 		try {
 
 			Object response = sendRequest(new URL(ngsi9url), "/"
 					+ ngsi9rootPath + "/subscribeContextAvailability", request,
-					preferredContentType,
 					SubscribeContextAvailabilityResponse.class);
 
 			// If there was an error then a StatusCode has been returned
@@ -1536,13 +1543,12 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 		UnsubscribeContextAvailabilityResponse output = new UnsubscribeContextAvailabilityResponse();
 
-		ContentType preferredContentType = CONTENT_TYPE;
+		// ContentType preferredContentType = CONTENT_TYPE;
 
 		try {
 
 			Object response = sendRequest(new URL(ngsi9url), ngsi9rootPath
 					+ "/unsubscribeContextAvailability", request,
-					preferredContentType,
 					UnsubscribeContextAvailabilityResponse.class);
 
 			// If there was an error then a StatusCode has been returned
@@ -1694,12 +1700,12 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 		NotifyContextResponse output = new NotifyContextResponse();
 
-		ContentType preferredContentType = CONTENT_TYPE;
+		// ContentType preferredContentType = CONTENT_TYPE;
 
 		try {
 
 			Object response = sendRequest(new URL(uri.toString()), "", request,
-					preferredContentType, NotifyContextResponse.class);
+					NotifyContextResponse.class);
 
 			// If there was an error then a StatusCode has been returned
 			if (response instanceof StatusCode) {
