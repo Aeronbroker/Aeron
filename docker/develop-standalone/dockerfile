@@ -58,5 +58,5 @@ EXPOSE 8060
 EXPOSE 8065
 
 #Start the IoTBroker
-#ENTRYPOINT ["./iotbroker_dockerentrypoint.sh"]
+ENTRYPOINT ["./iotbroker_dockerentrypoint.sh"]
 
