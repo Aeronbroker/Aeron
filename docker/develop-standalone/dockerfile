@@ -1,0 +1,62 @@
+# This is the dockerfile for IoT Broker standalone (IoT Broker + ConfMan)
+
+FROM ubuntu
+
+MAINTAINER 'NEC Laboratories Europe: iotplatform@neclab.eu, Flavio Cirillo: flavio.cirillo@neclab.eu'
+
+#Install postgres
+RUN apt-get update
+RUN apt-get install postgresql postgis -y
+RUN service postgresql start && su -c "psql -d postgres -c \"ALTER USER postgres PASSWORD 'postgres'\"" postgres
+
+#install CouchDB
+RUN apt-get install couchdb -y
+RUN mkdir /var/run/couchdb
+RUN chown -R couchdb:couchdb /var/run/couchdb
+
+#install Maven, Java and GIT
+RUN apt-get install maven default-jdk git -y
+
+#Download the IoTBroker SourceCode
+WORKDIR /root
+RUN git clone https://github.com/Aeronbroker/Aeron.git
+
+#Compile the SourceCode
+WORKDIR /root/Aeron/IoTbrokerParent
+RUN mvn install
+WORKDIR /root/Aeron/eu.neclab.iotplatform.iotbroker.builder/
+RUN mvn install
+
+#Setup the IoTBroker
+WORKDIR /root/Aeron/IoTBroker-runner
+RUN chmod +x *.sh iotbroker.conf.default
+RUN ./setup.sh --auto --propagateauto
+
+#Download the NEConfMan SourceCode
+WORKDIR /root
+RUN git clone https://github.com/Aeronbroker/NEConfMan.git
+
+#Compile the NEConfMan
+WORKDIR /root/NEConfMan/eu.neclab.iotplatform.confman.parent
+RUN mvn install
+WORKDIR /root/NEConfMan/eu.neclab.iotplatform.confman.builder
+RUN mvn install
+RUN cp /root/Aeron/eu.neclab.iotplatform.ngsi.api/target/ngsi.api* /root/NEConfMan/eu.neclab.iotplatform.confman.builder/target/builder-*/bundle/
+
+#Setup the NEConfMan
+WORKDIR /root/NEConfMan/ConfMan_Runner
+RUN chmod +x *.sh
+RUN ./setup.sh --auto --propagateauto
+
+#Create the dockerentrypoint
+WORKDIR /root/
+RUN printf "#!/bin/bash\n\n/usr/bin/couchdb > /dev/null &\n\nservice postgresql start && cd /root/NEConfMan/ConfMan_Runner && ./exec.sh \$@ &\n\ncd /root/Aeron/IoTBroker-runner\n./unix64_exec.sh \$@ &\ntail -n1000 -F /root/NEConfMan/ConfMan_Runner/logs/confman.log /root/Aeron/IoTBroker-runner/logs/iotbroker.log" >  iotbroker_dockerentrypoint.sh
+RUN chmod +x iotbroker_dockerentrypoint.sh
+
+#Expose the port
+EXPOSE 8060
+EXPOSE 8065
+
+#Start the IoTBroker
+#ENTRYPOINT ["./iotbroker_dockerentrypoint.sh"]
+
