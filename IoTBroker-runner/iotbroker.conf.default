@@ -14,7 +14,11 @@ iotbroker_association="enabled"
 # Folders setting
 iotbroker_dirconfig='/opt/Aeron/fiwareRelease'
 iotbroker_bundlesconfigurationlocation='/opt/Aeron/fiwareRelease/bundleConfigurations'
+
+# Logging configuration
+# Logging level ALL, DEBUG, ERROR, FATAL, INFO, OFF, WARN (https://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Level.html)
 iotbroker_logfile='logs/iotbroker.log'
+iotbroker_loglevel='INFO'
 
 # XML Schemas path
 iotbroker_schemangsi9operation='${dir.config}/xmlSchema/Ngsi9_Operations_v08.xsd'
@@ -30,7 +34,7 @@ iotbroker_producedtype="application/json"
 # IoT Consumers
 # If more than one, they can be comma-separate. e.g. 'http://localhost:8001,http://localhost:8002'
 # The path needs to include the full path but the final resource. IoT Broker will add only "updateContext".
-iotbroker_consumers='http://localhost:8001/'
+iotbroker_consumers='http://localhost:8001/ngsi10/'
 
 # IoT Broker scalability settings
 iotbroker_ismaster=true

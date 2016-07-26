@@ -69,6 +69,18 @@ function setConfiguration {
 
 }
 
+function setFirstPropertyValueOverMultipleValuesIntoProperties {
+	
+	key=$1
+	key=${key//\./\\\.}
+	key=${key//\//\\/}
+
+	
+	sed -i "s/$key=[^,]*/$key=$2/g" "$3"
+
+	
+}
+
 function disableBundle {
 
 	sed -i "s/.*$1-$iotbroker_version.jar.*//g" $iotbroker_configini

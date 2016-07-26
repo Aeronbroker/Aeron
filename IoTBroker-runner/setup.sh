@@ -153,6 +153,7 @@ setPropertyIntoXML "couchdb_host" "$iotbroker_embeddedagent_couchdbhost" "$iotbr
 setPropertyIntoXML "couchdb_port" "$iotbroker_embeddedagent_couchdbport" "$iotbroker_embeddedagent_couchdbxml" 
 
 setPropertyIntoProperties "log4j.appender.ReportFileAppender.File" "$iotbroker_logfile" "$iotbroker_loggerproperties"
+setFirstPropertyValueOverMultipleValuesIntoProperties "log4j.rootLogger" "$iotbroker_loglevel" "$iotbroker_loggerproperties"
 
 ##ENABLE BASIC BUNDLE
 enableBundle iotbroker.commons
