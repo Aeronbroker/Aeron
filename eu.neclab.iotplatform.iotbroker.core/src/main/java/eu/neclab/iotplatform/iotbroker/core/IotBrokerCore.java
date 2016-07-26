@@ -190,7 +190,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	/** Utility for processing NGSI associations */
 	private AssociationsHandler associationsHandler = new AssociationsHandler();
 
-	@Value("${associationsEnabled}")
+	@Value("${associationsEnabled:false}")
 	private boolean associationsEnabled;
 
 	/** Interface for making context availability subscriptions. */
