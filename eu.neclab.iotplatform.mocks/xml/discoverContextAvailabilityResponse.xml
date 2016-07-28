@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<discoverContextAvailabilityResponse>
+	<contextRegistrationResponseList>
+		<contextRegistrationResponse>
+			<contextRegistration>
+				<entityIdList>
+					<entityId type="Room" isPattern="false">
+						<id>ConferenceRoom</id>
+					</entityId>
+				</entityIdList>
+				<registrationMetaData />
+				<providingApplication>http://localhost:8001/nsgi10</providingApplication>
+			</contextRegistration>
+		</contextRegistrationResponse>		
+	</contextRegistrationResponseList>
+	<errorCode>
+		<code>200</code>
+		<reasonPhrase>OK</reasonPhrase>
+	</errorCode>
+</discoverContextAvailabilityResponse>
+
+

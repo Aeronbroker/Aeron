@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<registerContextRequest>
+   <contextRegistrationList>
+      <contextRegistration>
+         <registrationMetaData>
+            <contextMetadata>
+               <name>SimpleGeoLocation</name>
+               <type>http://metadata.info/list#simplegeolocation</type>
+               <value>
+                  <segment>
+                     <NW_Corner>7.0 , 3.0</NW_Corner>
+                     <SE_Corner>2.0 , 10.0</SE_Corner>
+                  </segment>
+               </value>
+            </contextMetadata>            
+         </registrationMetaData>
+         <providingApplication>http://192.168.100.1:70/application</providingApplication>
+         <entityIdList>
+            <entityId type="Room" isPattern="false">
+               <id>ConferenceRoom</id>
+            </entityId>
+            <entityId type="Room" isPattern="false">
+               <id>OfficeRoom</id>
+            </entityId>
+         </entityIdList>
+         <contextRegistrationAttributeList>
+            <contextRegistrationAttribute>
+               <name>temperature</name>
+               <type>degree</type>
+               <isDomain>false</isDomain>
+            </contextRegistrationAttribute>
+         </contextRegistrationAttributeList>
+      </contextRegistration>
+      <contextRegistration>
+         <registrationMetaData>
+            <contextMetadata>
+               <name>SimpleGeoLocation</name>
+               <type>http://metadata.info/list#simplegeolocation</type>
+               <value>
+                  <segment>
+                     <NW_Corner>9.0 , 7.0</NW_Corner>
+                     <SE_Corner>8.0 , 8.0</SE_Corner>
+                  </segment>
+               </value>
+            </contextMetadata>            
+         </registrationMetaData>
+         <providingApplication>http://192.168.100.1:80/application</providingApplication>
+         <entityIdList>
+            <entityId type="OpenSpace" isPattern="false">
+               <id>Garage</id>
+            </entityId>
+         </entityIdList>
+         <contextRegistrationAttributeList>
+            <contextRegistrationAttribute>
+               <name>temperature</name>
+               <type>degree</type>
+               <isDomain>false</isDomain>
+            </contextRegistrationAttribute>
+         </contextRegistrationAttributeList>
+      </contextRegistration>
+   </contextRegistrationList>
+   <registrationId></registrationId>
+</registerContextRequest>

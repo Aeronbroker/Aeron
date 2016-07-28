@@ -52,7 +52,8 @@
 							org.springframework.beans.factory;version="${spring.version}",
 							org.springframework.beans.factory.annotation;version="${spring.version}",
 							org.springframework.stereotype;version="${spring.version}",
-							org.xml.sax</Import-Package>
+							org.xml.sax,
+							org.apache.http</Import-Package>
 						<Export-Package>eu.neclab.iotplatform.iotbroker.client;version="${project.version}"</Export-Package>
 					</instructions>
 				</configuration>

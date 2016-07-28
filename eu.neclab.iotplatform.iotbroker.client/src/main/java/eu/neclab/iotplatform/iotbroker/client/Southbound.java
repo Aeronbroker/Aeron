@@ -150,8 +150,16 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	/** The Constant CONTENT_TYPE. */
 	@Value("${default_content_type:application/xml}")
 	private String defaultcontentType;
-
 	private ContentType CONTENT_TYPE = null;
+	
+	private ContentType getCONTENT_TYPE(){
+		if (CONTENT_TYPE == null){
+			CONTENT_TYPE = ContentType.fromString(defaultcontentType);
+		}
+		
+		return CONTENT_TYPE;
+	}
+
 
 	/** Adapt UpdateContextRequest to Orion Standard */
 	@Value("${adaptUpdatesToOrionStandard:false}")
@@ -641,11 +649,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	private Object sendRequest(URL url, String resource, NgsiStructure request,
 			Class<?> expectedResponseClazz) {
 
-		if (CONTENT_TYPE == null) {
-			CONTENT_TYPE = ContentType.fromString(defaultcontentType);
-		}
-
-		ContentType preferredContentType = CONTENT_TYPE;
+		ContentType preferredContentType = getCONTENT_TYPE();
 
 		Object output;
 
@@ -663,25 +667,38 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 			if (response.getStatusLine().getStatusCode() == 415) {
 
-				logger.info("Content Type is not supported by the receiver!");
+				logger.warn("Content Type is not supported by the receiver! URL: "+ url + correctedResource);
 
 				// TODO make a better usage of the Status Code
 				output = new StatusCode(Code.INTERNALERROR_500.getCode(),
 						ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
-						"Content Type is not supported by the receiver!");
+						"Content Type is not supported by the receiver! (application/xml and application/json tried)");
 				return output;
 
 			}
 
 			if (response.getStatusLine().getStatusCode() == 500) {
 
-				logger.info("Receiver Internal Error: "
+				logger.warn("Receiver Internal Error. URL: "+ url + correctedResource+". "
 						+ response.getStatusLine().getReasonPhrase());
 
 				// TODO make a better usage of the Status Code
 				output = new StatusCode(Code.INTERNALERROR_500.getCode(),
 						ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
-						response.getStatusLine().getReasonPhrase());
+						"Final receiver internal error: "+response.getStatusLine().getReasonPhrase());
+				return output;
+
+			}
+			
+			if (response.getStatusLine().getStatusCode() == 503) {
+
+				logger.warn("Service Unavailable. URL: "+ url + correctedResource+". "
+						+ response.getStatusLine().getReasonPhrase());
+
+				// TODO make a better usage of the Status Code
+				output = new StatusCode(Code.INTERNALERROR_500.getCode(),
+						ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
+						"Receiver service unavailable: "+response.getStatusLine().getReasonPhrase());
 				return output;
 
 			}
@@ -689,12 +706,15 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			// Check if there is a body
 			if (response.getBody() == null || response.getBody().isEmpty()) {
 
-				logger.info("Response from remote server empty");
+				logger.warn("Response from remote server empty");
 
 				// TODO make a better usage of the Status Code
 				output = new StatusCode(Code.INTERNALERROR_500.getCode(),
 						ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
-						ReasonPhrase.RECEIVERINTERNALERROR_500.toString());
+						"Receiver response empty");
+				
+				return output;
+
 			}
 
 			// Get the ContentType of the response
@@ -707,12 +727,15 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 							responseContentType.toString(),
 							expectedResponseClazz, ngsi10schema)) {
 
-				logger.info("Response from remote server non a valid NGSI message");
+				logger.warn("Response from remote server non a valid NGSI message");
 
 				// TODO make a better usage of the Status Code
 				output = new StatusCode(Code.INTERNALERROR_500.getCode(),
 						ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
-						ReasonPhrase.RECEIVERINTERNALERROR_500.toString());
+						"Receiver response non a valid NGSI message");
+				
+				return output;
+
 
 			}
 
@@ -840,12 +863,10 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	public UpdateContextResponse updateContext(UpdateContextRequest request,
 			URI uri) {
 
-		// ContentType preferredContentType = CONTENT_TYPE;
-
 		UpdateContextResponse output = new UpdateContextResponse();
 		
-		adaptUpdatesToOrionStandard
-		I would suggest to have a completely different updateContext for Orion Context and then call it specifically. Maybe add a list of Orion Broker consumer in the settings (so having two pub_sub_addr).
+//		adaptUpdatesToOrionStandard
+//		I would suggest to have a completely different updateContext for Orion Context and then call it specifically. Maybe add a list of Orion Broker consumer in the settings (so having two pub_sub_addr).
 
 		try {
 

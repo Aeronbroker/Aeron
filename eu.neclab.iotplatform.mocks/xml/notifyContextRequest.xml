@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<notifyContextRequest>
+	<subscriptionId>123ed5d</subscriptionId>
+	<originator></originator>
+	<contextResponseList>
+		<contextElementResponse>
+			<contextElement>
+				<entityId type="Room" isPattern="false">
+					<id>ConferenceRoom</id>					
+				</entityId>
+				<contextAttributeList>
+					<contextAttribute>
+						<name>temperature</name>
+						<type>Room</type>
+						<contextValue>10</contextValue>
+						<metadata>
+							<contextMetadata>
+								<name>ID</name>
+								<type>string</type>
+								<value>1110</value>
+							</contextMetadata>							
+						</metadata>
+					</contextAttribute>					
+				</contextAttributeList>				
+			</contextElement>
+			<statusCode>
+				<code>200</code>
+				<reasonPhrase>OK</reasonPhrase>				
+			</statusCode>
+		</contextElementResponse>
+		<contextElementResponse>
+			<contextElement>
+				<entityId type="Room" isPattern="false">
+					<id>Kitchen</id>					
+				</entityId>
+				<contextAttributeList>
+					<contextAttribute>
+						<name>temperature</name>
+						<type>Room</type>
+						<contextValue>10</contextValue>
+						<metadata>
+							<contextMetadata>
+								<name>ID</name>
+								<type>string</type>
+								<value>1110</value>
+							</contextMetadata>							
+						</metadata>
+					</contextAttribute>					
+				</contextAttributeList>				
+			</contextElement>
+			<statusCode>
+				<code>200</code>
+				<reasonPhrase>OK</reasonPhrase>				
+			</statusCode>
+		</contextElementResponse>
+	</contextResponseList>
+</notifyContextRequest>

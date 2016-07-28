@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<contextRegistrationResponse>
+	<contextRegistration>
+		<entityIdList>
+			<entityId isPattern="false">
+				<id>Kitchen</id>
+			</entityId>
+		</entityIdList>
+		<registrationMetaData />
+		<providingApplication>http://10.1.2.192:8003</providingApplication>
+	</contextRegistration>
+</contextRegistrationResponse>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<si:notificationServiceDiscoveryRequest xmlns:vm="http://www.surrey.ac.uk/ccsr/ontologies/VirtualEntityModel.owl#" xmlns:ai="http://www.neclab.eu/schema/VEResolutionInterface.xsd" xmlns:sm="http://www.surrey.ac.uk/ccsr/ontologies/ServiceModel.owl#" xmlns:rm="http://www.surrey.ac.uk/ccsr/ontologies/ResourceModel.owl#" xmlns:am="http://www.surrey.ac.uk/ccsr/ontologies/AssociationModel.owl#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:si="http://www.neclab.eu/schema/IoTServiceResolutionInterface.xsd">
+<si:subscriptionId>service_Id_3</si:subscriptionId>
+<si:serviceDescriptionLocators>
+<si:action>UPDATE</si:action>
+</si:serviceDescriptionLocators>
+</si:notificationServiceDiscoveryRequest>

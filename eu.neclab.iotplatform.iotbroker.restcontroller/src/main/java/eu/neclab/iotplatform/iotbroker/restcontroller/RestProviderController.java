@@ -563,8 +563,8 @@ public class RestProviderController {
 
 			UpdateContextResponse response = ngsiCore.updateContext(request);
 
-			System.out.println("########## Response to Converter ##########"
-					+ response);
+//			System.out.println("########## Response to Converter ##########"
+//					+ response);
 
 			return new ResponseEntity<UpdateContextResponse>(response,
 					HttpStatus.OK);

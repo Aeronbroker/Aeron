@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<registerContextRequest>
+   <contextRegistrationList>
+      <contextRegistration>
+         <registrationMetaData>
+            <contextMetadata>
+               <name>SimpleGeoLocation</name>
+               <type>http://metadata.info/list#simplegeolocation</type>
+               <value>
+                  <segment>
+                     <NW_Corner>5.0 , 8.0</NW_Corner>
+                     <SE_Corner>4.0 , 9.0</SE_Corner>
+                  </segment>
+               </value>
+            </contextMetadata>            
+         </registrationMetaData>
+        <providingApplication>http://192.168.100.7:7777/application7</providingApplication>
+         <entityIdList>
+            <entityId type="Room" isPattern="false">
+               <id>StoreRoom</id>
+            </entityId>
+         </entityIdList>
+         <contextRegistrationAttributeList>
+            <contextRegistrationAttribute>
+               <name>temperature</name>
+               <type>degree</type>
+               <isDomain>false</isDomain>
+            </contextRegistrationAttribute>
+         </contextRegistrationAttributeList>
+      </contextRegistration>
+   </contextRegistrationList>
+   <registrationId></registrationId>
+</registerContextRequest>

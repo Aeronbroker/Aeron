@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<subscribeContextAvailabilityRequest>
+	<entityIdList>
+		<entityId>
+			<id>ConferenceRoom</id>
+		</entityId>
+	</entityIdList>
+	<reference>http://localhost:8090/</reference>
+	<attributeList>
+		<attribute>temperature</attribute>
+		<attribute>light</attribute>
+	</attributeList>
+	<restriction>
+		<attributeExpression></attributeExpression>
+		<scope>
+			<operationScope>
+				<scopeType>SimpleGeoLocation</scopeType>
+				<scopeValue>
+					<circle>
+						<centerLatitude>8</centerLatitude>
+						<centerLongitude>6</centerLongitude>
+						<radius>2</radius>
+					</circle>
+				</scopeValue>
+			</operationScope>
+		</scope>
+	</restriction>
+	<duration></duration>
+</subscribeContextAvailabilityRequest>
