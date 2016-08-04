@@ -149,22 +149,20 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	/** The Constant CONTENT_TYPE. */
 	@Value("${default_content_type:application/xml}")
-	private String defaultcontentType;
+	private String defaultContentType;
 	private ContentType CONTENT_TYPE = null;
-	
-	private ContentType getCONTENT_TYPE(){
-		if (CONTENT_TYPE == null){
-			CONTENT_TYPE = ContentType.fromString(defaultcontentType);
+
+	private ContentType getCONTENT_TYPE() {
+		if (CONTENT_TYPE == null) {
+			CONTENT_TYPE = ContentType.fromString(defaultContentType);
 		}
-		
+
 		return CONTENT_TYPE;
 	}
-
 
 	/** Adapt UpdateContextRequest to Orion Standard */
 	@Value("${adaptUpdatesToOrionStandard:false}")
 	private boolean adaptUpdatesToOrionStandard;
-	
 
 	/**
 	 * Validate if a message body is syntactically correct. Returns true if body
@@ -640,7 +638,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	}
 
 	/**
-	 * Calls the QueryContext method on an NGSI-10 server.
+	 * 
 	 * 
 	 * @return A StatusCode if there was an error, otherwise an object of the
 	 *         expectedResponseClazz
@@ -667,10 +665,12 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 			if (response.getStatusLine().getStatusCode() == 415) {
 
-				logger.warn("Content Type is not supported by the receiver! URL: "+ url + correctedResource);
+				logger.warn("Content Type is not supported by the receiver! URL: "
+						+ url + correctedResource);
 
 				// TODO make a better usage of the Status Code
-				output = new StatusCode(Code.INTERNALERROR_500.getCode(),
+				output = new StatusCode(
+						Code.INTERNALERROR_500.getCode(),
 						ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
 						"Content Type is not supported by the receiver! (application/xml and application/json tried)");
 				return output;
@@ -679,26 +679,30 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 			if (response.getStatusLine().getStatusCode() == 500) {
 
-				logger.warn("Receiver Internal Error. URL: "+ url + correctedResource+". "
+				logger.warn("Receiver Internal Error. URL: " + url
+						+ correctedResource + ". "
 						+ response.getStatusLine().getReasonPhrase());
 
 				// TODO make a better usage of the Status Code
 				output = new StatusCode(Code.INTERNALERROR_500.getCode(),
 						ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
-						"Final receiver internal error: "+response.getStatusLine().getReasonPhrase());
+						"Final receiver internal error: "
+								+ response.getStatusLine().getReasonPhrase());
 				return output;
 
 			}
-			
+
 			if (response.getStatusLine().getStatusCode() == 503) {
 
-				logger.warn("Service Unavailable. URL: "+ url + correctedResource+". "
+				logger.warn("Service Unavailable. URL: " + url
+						+ correctedResource + ". "
 						+ response.getStatusLine().getReasonPhrase());
 
 				// TODO make a better usage of the Status Code
 				output = new StatusCode(Code.INTERNALERROR_500.getCode(),
 						ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
-						"Receiver service unavailable: "+response.getStatusLine().getReasonPhrase());
+						"Receiver service unavailable: "
+								+ response.getStatusLine().getReasonPhrase());
 				return output;
 
 			}
@@ -712,7 +716,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 				output = new StatusCode(Code.INTERNALERROR_500.getCode(),
 						ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
 						"Receiver response empty");
-				
+
 				return output;
 
 			}
@@ -733,9 +737,8 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 				output = new StatusCode(Code.INTERNALERROR_500.getCode(),
 						ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
 						"Receiver response non a valid NGSI message");
-				
-				return output;
 
+				return output;
 
 			}
 
@@ -864,9 +867,11 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			URI uri) {
 
 		UpdateContextResponse output = new UpdateContextResponse();
-		
-//		adaptUpdatesToOrionStandard
-//		I would suggest to have a completely different updateContext for Orion Context and then call it specifically. Maybe add a list of Orion Broker consumer in the settings (so having two pub_sub_addr).
+
+		// adaptUpdatesToOrionStandard
+		// I would suggest to have a completely different updateContext for
+		// Orion Context and then call it specifically. Maybe add a list of
+		// Orion Broker consumer in the settings (so having two pub_sub_addr).
 
 		try {
 
@@ -1237,11 +1242,6 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	public RegisterContextResponse registerContext(
 			RegisterContextRequest request) {
 
-		/*
-		 * This is implemented analogously to queryContext. See the comments
-		 * there for clarification.
-		 */
-
 		RegisterContextResponse output = new RegisterContextResponse();
 
 		// ContentType preferredContentType = CONTENT_TYPE;
@@ -1275,109 +1275,8 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			// Cast the response
 			output = (RegisterContextResponse) response;
 
-			// // get address of local host
-			// InetAddress thisIp = InetAddress.getLocalHost();
-			//
-			// if (ngsi9RemoteUrl == null) {
-			// ngsi9RemoteUrl = ngsi9url;
-			// }
-			//
-			// // initialize http connection
-			// URL url = new URL(ngsi9RemoteUrl);
-			// HttpConnectionClient connection = new HttpConnectionClient();
-			//
-			// for (ContextRegistration contextRegistration : request
-			// .getContextRegistrationList()) {
-			// contextRegistration.setProvidingApplication(new URI("http://"
-			// + thisIp.getHostAddress() + ":" + tomcatPort
-			// + "/ngsi10/"));
-			// }
-			//
-			// String resource;
-			// if (url.toString().matches(".*/")) {
-			// resource = "registerContext";
-			// } else {
-			// resource = "/registerContext";
-			// }
-			//
-			// String respObj = connection.initializeConnection(url, "/"
-			// + ngsi9rootPath + "/" + resource, "POST", request,
-			// contentType, xAuthToken);
-			//
-			// if (respObj.equals("415")) {
-			//
-			// logger.info("NGSI-10 agent non supporting " + contentType
-			// + ". Trying a different content type");
-			// if (CONTENT_TYPE.equals("application/xml")) {
-			// contentType = "application/json";
-			// } else if (CONTENT_TYPE.equals("application/json")) {
-			// contentType = "application/xml";
-			// }
-			//
-			// respObj = tryDifferentContentType(request, resource, "POST",
-			// connection, url);
-			//
-			// if (respObj.equals("415")) {
-			//
-			// output = new RegisterContextResponse(null, null,
-			// new StatusCode(Code.INTERNALERROR_500.getCode(),
-			// ReasonPhrase.RECEIVERINTERNALERROR_500
-			// .toString(),
-			// "Content Type is not supported!"));
-			//
-			// return output;
-			//
-			// }
-			//
-			// }
-			//
-			// if (respObj != null && "500".matches(respObj.substring(0, 3))) {
-			//
-			// output = new RegisterContextResponse(null, null,
-			// new StatusCode(Code.INTERNALERROR_500.getCode(),
-			// ReasonPhrase.RECEIVERINTERNALERROR_500
-			// .toString(),
-			// ReasonPhrase.RECEIVERINTERNALERROR_500
-			// .toString()));
-			// return output;
-			//
-			// }
-			//
-			// if (respObj != null
-			// && validateMessageBody(respObj, contentType,
-			// RegisterContextResponse.class, ngsi9schema)) {
-			//
-			// if (contentType.equals("application/xml")) {
-			//
-			// output = (RegisterContextResponse) xmlFactory
-			// .convertStringToXml(respObj,
-			// RegisterContextResponse.class);
-			//
-			// } else {
-			//
-			// output = (RegisterContextResponse) jsonFactory
-			// .convertStringToJsonObject(respObj,
-			// RegisterContextResponse.class);
-			//
-			// }
-			//
-			// return output;
-			//
-			// } else {
-			// // If the response is null or invalid then send an error message
-			// output = new RegisterContextResponse(null, null,
-			// new StatusCode(Code.INTERNALERROR_500.getCode(),
-			// ReasonPhrase.RECEIVERINTERNALERROR_500
-			// .toString(),
-			// ReasonPhrase.RECEIVERINTERNALERROR_500
-			// .toString()));
-			// return output;
-			//
-			// }
-
 		} catch (MalformedURLException e) {
-			if (logger.isDebugEnabled())
-				logger.warn("Malformed URI", e);
+			logger.warn("Malformed URI", e);
 
 			output = new RegisterContextResponse(null, null, new StatusCode(
 					Code.INTERNALERROR_500.getCode(),
@@ -1385,8 +1284,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 					ReasonPhrase.RECEIVERINTERNALERROR_500.toString()));
 
 		} catch (IOException e) {
-			if (logger.isDebugEnabled())
-				logger.warn("I/O Exception", e);
+			logger.warn("I/O Exception", e);
 
 			output = new RegisterContextResponse(null, null, new StatusCode(
 					Code.INTERNALERROR_500.getCode(),
@@ -1394,8 +1292,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 					ReasonPhrase.RECEIVERINTERNALERROR_500.toString()));
 
 		} catch (URISyntaxException e) {
-			if (logger.isDebugEnabled())
-				logger.warn("URISyntaxException", e);
+			logger.warn("URISyntaxException", e);
 
 			return null;
 		}

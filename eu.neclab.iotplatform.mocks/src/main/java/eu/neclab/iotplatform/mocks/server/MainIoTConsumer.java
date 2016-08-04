@@ -1,8 +1,9 @@
 package eu.neclab.iotplatform.mocks.server;
 
 import java.net.BindException;
-import java.util.HashSet;
 import java.util.Set;
+
+import eu.neclab.iotplatform.mocks.utils.RangesUtil;
 
 public class MainIoTConsumer {
 
@@ -13,29 +14,15 @@ public class MainIoTConsumer {
 			"eu.neclab.ioplatform.mocks.iotconsumer.ports", "8001");
 
 	public static void main(String[] args) {
+		
+		Set<Integer> portSet = RangesUtil.rangesToSet(portNumbers);
 
-		if (!portNumbers.matches("[0-9,-]*")) {
+		if (portSet == null) {
 			System.out
 					.println("Wrong eu.neclab.ioplatform.mocks.iotconsumer.ports property. "
 							+ "Allowed only ranges (e.g. 8001-8005) and single ports (e.g. 8001) separated by comma. "
 							+ "E.g. -Deu.neclab.ioplatform.mocks.iotconsumer.ports=8001-8005,8021,8025,8030-8040");
 			System.exit(0);
-		}
-
-		Set<Integer> portSet = new HashSet<Integer>();
-
-		String[] ports = portNumbers.split(",");
-
-		for (int i = 0; i < ports.length; i++) {
-			if (ports[i].contains("-")) {
-				String[] portsRange = ports[i].split("-");
-				Integer lowerBound = Integer.parseInt(portsRange[0]);
-				Integer upperBound = Integer.parseInt(portsRange[1]);
-				for (int j = lowerBound; j <= upperBound; j++)
-					portSet.add(j);
-			} else {
-				portSet.add(Integer.parseInt(ports[i]));
-			}
 		}
 
 		for (int portNumber : portSet) {

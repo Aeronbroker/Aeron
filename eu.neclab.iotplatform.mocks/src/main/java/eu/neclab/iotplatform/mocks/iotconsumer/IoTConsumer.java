@@ -25,7 +25,11 @@ public class IoTConsumer {
 			.fromString(
 					System.getProperty("eu.neclab.iotplaform.mocks.iotconsumer.defaultOutgoingContentType"),
 					ContentType.XML);
-	
+
+	public IoTConsumer() {
+		System.out.println("Create again");
+	}
+
 	@GET
 	@Path("/test")
 	@Produces("application/xml")

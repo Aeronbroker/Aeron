@@ -5,6 +5,9 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -24,11 +27,16 @@ import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 
+import com.sun.jersey.api.core.ResourceConfig;
+
 import eu.neclab.iotplatform.mocks.utils.Connector;
 import eu.neclab.iotplatform.mocks.utils.ContentType;
 import eu.neclab.iotplatform.mocks.utils.HeaderExtractor;
-import eu.neclab.iotplatform.mocks.utils.Mode;
 import eu.neclab.iotplatform.mocks.utils.UniqueIDGenerator;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
+import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NgsiStructure;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
@@ -53,9 +61,6 @@ public class IoTProvider {
 					System.getProperty("eu.neclab.iotplaform.mocks.iotprovider.defaultOutgoingContentType"),
 					ContentType.XML);
 
-	private final Mode mode = Mode.fromString(
-			System.getProperty("eu.neclab.ioplatform.mocks.iotprovider.mode"),
-			Mode.RANDOM);
 
 	private static String urlIoTAgent = "http://127.0.0.1:8004/ngsi10/notify";
 
@@ -67,10 +72,13 @@ public class IoTProvider {
 	private static String notifyContextRequestFile = "notifyContextRequest.xml";
 	private static String subscribeContextResponseFile = "subscribeContextResponse.xml";
 
+
 	@GET
 	@Path("/test")
 	@Produces("application/xml")
-	public String test() {
+	public String test(@Context ResourceConfig config) {
+
+		// System.out.println(config.getProperty("aa.aa.aa"));
 
 		return "test";
 
@@ -112,39 +120,80 @@ public class IoTProvider {
 		logger.info("Received a NGSI-10 Query");
 		if (logger.isDebugEnabled()) {
 			logger.debug("NGSI-10 Query received: " + body);
+
+		}
+
+		QueryContextResponse response = createQueryContextResponse(queryContextRequest);
+
+		if (outgoingContentType == ContentType.XML) {
+			return response.toString();
+		} else {
+			return response.toJsonString();
+		}
+
+		// QueryContextResponse response = new QueryContextResponse();
+		//
+		// String file = null;
+		// try {
+		// file = path + "/" + queryContextResponseFile;
+		//
+		// InputStream is = new FileInputStream(file);
+		//
+		// JAXBContext context;
+		// context = JAXBContext.newInstance(QueryContextResponse.class);
+		//
+		// // Create the marshaller, this is the nifty little thing that
+		// // will actually transform the object into XML
+		// Unmarshaller unmarshaller = context.createUnmarshaller();
+		// response = (QueryContextResponse) unmarshaller.unmarshal(is);
+		//
+		// if (logger.isDebugEnabled()) {
+		// logger.debug("NGSI-10 Query response: " + response);
+		// }
+		//
+		// } catch (JAXBException e) {
+		// logger.error("JAXB ERROR!", e);
+		// } catch (FileNotFoundException e) {
+		// logger.error("FILE NOT FOUND!: " + file);
+		// }
+		//
+		// if (outgoingContentType == ContentType.JSON) {
+		// return response.toJsonString();
+		// } else {
+		// return response.toString();
+		// }
+	}
+
+	private QueryContextResponse createQueryContextResponse(
+			QueryContextRequest queryRequest) {
+
+		Random rand = new Random();
+
+		List<ContextElementResponse> contextElementResponseList = new ArrayList<ContextElementResponse>();
+
+		for (EntityId entityId : queryRequest.getEntityIdList()) {
+
+			List<ContextAttribute> contextAttributeList = new ArrayList<ContextAttribute>();
+
+			for (String attributeName : queryRequest.getAttributeList()) {
+
+				contextAttributeList.add(new ContextAttribute(attributeName,
+						null, "" + rand.nextInt()));
+
+			}
+			ContextElementResponse contextElementResponse = new ContextElementResponse();
+
+			contextElementResponse.setContextElement(new ContextElement(
+					entityId, null, contextAttributeList, null));
+
+			contextElementResponseList.add(contextElementResponse);
 		}
 
 		QueryContextResponse response = new QueryContextResponse();
+		response.setContextResponseList(contextElementResponseList);
 
-		String file = null;
-		try {
-			file = path + "/" + queryContextResponseFile;
+		return response;
 
-			InputStream is = new FileInputStream(file);
-
-			JAXBContext context;
-			context = JAXBContext.newInstance(QueryContextResponse.class);
-
-			// Create the marshaller, this is the nifty little thing that
-			// will actually transform the object into XML
-			Unmarshaller unmarshaller = context.createUnmarshaller();
-			response = (QueryContextResponse) unmarshaller.unmarshal(is);
-
-			if (logger.isDebugEnabled()) {
-				logger.debug("NGSI-10 Query response: " + response);
-			}
-
-		} catch (JAXBException e) {
-			logger.error("JAXB ERROR!", e);
-		} catch (FileNotFoundException e) {
-			logger.error("FILE NOT FOUND!: " + file);
-		}
-		
-		if (outgoingContentType == ContentType.JSON) {
-			return response.toJsonString();
-		} else {
-			return response.toString();
-		}
 	}
 
 	public static String readNotifyFromFile(String id) {
