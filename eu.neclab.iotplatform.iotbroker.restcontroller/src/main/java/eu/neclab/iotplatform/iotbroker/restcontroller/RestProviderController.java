@@ -553,7 +553,7 @@ public class RestProviderController {
 								.get(i)
 								.getDomainMetadata()
 								.add(GenerateMetadata
-										.createDomainTimestampMetadata());
+										.createTimestampMetadata());
 					} catch (URISyntaxException e) {
 						logger.info(" URI Syntax Exception ", e);
 					}

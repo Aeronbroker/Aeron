@@ -676,58 +676,18 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 				.getErrorCode().getCode() == 200)
 				&& discoveryResponse.getContextRegistrationResponse() != null) {
 
-			// /*
-			// *
-			// ##################################################################
-			// * #### Here starts part of code for the ASSOCIATIONS
-			// * ##############################################
-			// */
-			//
-			// if (logger.isDebugEnabled()) {
-			// logger.debug("Receive discoveryResponse from Config Man:"
-			// + discoveryResponse);
-			// }
-			// List<AssociationDS> assocList = associationUtil
-			// .retrieveAssociation(discoveryResponse);
-			//
-			// if (logger.isDebugEnabled()) {
-			// logger.debug("Association List Size: " + assocList.size());
-			// }
-			// List<AssociationDS> additionalRequestList = associationUtil
-			// .initialLstOfmatchedAssociation(request, assocList);
-			//
-			// if (logger.isDebugEnabled()) {
-			// logger.debug("(Step 1) Initial List Of matchedAssociation:"
-			// + additionalRequestList);
-			// }
-			// List<AssociationDS> transitiveList = associationUtil
-			// .transitiveAssociationAnalysisFrQuery(assocList,
-			// additionalRequestList);
-			//
-			// if (logger.isDebugEnabled()) {
-			// logger.debug("(Step 2 ) Transitive List Of matchedAssociation:"
-			// + transitiveList);
-			//
-			// logger.debug("(Step 2 a) Final additionalRequestList List Of matchedAssociation:"
-			// + additionalRequestList);
-			// }
-			//
-			// /*
-			// *
-			// ##################################################################
-			// * #### Here finishes part of code for the ASSOCIATIONS
-			// * ##############################################
-			// */
-
+			// Look for associations
 			List<AssociationDS> transitiveList = null;
 			if (associationsEnabled == true) {
 				transitiveList = associationsHandler.getTransitiveList(
 						discoveryResponse, request);
 			}
 
+			// Create the query list of IoT Providers
 			List<Pair<QueryContextRequest, URI>> queryList = createQueryRequestList(
 					discoveryResponse.getContextRegistrationResponse(), request);
 
+			// Query the IoT Provider
 			int count = 0;
 			for (Pair<QueryContextRequest, URI> pair : queryList) {
 
