@@ -50,22 +50,19 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-
-import eu.neclab.iotplatform.ngsi.api.serialization.json.QueryContextResponseSerializer;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 @XmlRootElement(name = "queryContextResponse")
-
 /**
  * Implements QueryContextResponse
  * as defined in OMA NGSI 9/10 approved version 1.0.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@JsonSerialize(using = QueryContextResponseSerializer.class)
 public class QueryContextResponse extends NgsiStructure {
 
 	@XmlElementWrapper(name = "contextResponseList")
 	@XmlElement(name = "contextElementResponse")
+	@JsonProperty("contextElementResponses")
 	private List<ContextElementResponse> contextElementResponse;
 
 	@XmlElement(name = "errorCode")
@@ -109,8 +106,8 @@ public class QueryContextResponse extends NgsiStructure {
 		int result = 1;
 		result = prime
 				* result
-				+ (contextElementResponse == null ? 0
-						: contextElementResponse.hashCode());
+				+ (contextElementResponse == null ? 0 : contextElementResponse
+						.hashCode());
 		result = prime * result
 				+ (errorCode == null ? 0 : errorCode.hashCode());
 		return result;
@@ -128,20 +125,20 @@ public class QueryContextResponse extends NgsiStructure {
 			return false;
 		}
 		QueryContextResponse other = (QueryContextResponse) obj;
-		
+
 		/*
-		 * The following makes sure that empty response lists are regarded
-		 * equal to non-existing response lists.
+		 * The following makes sure that empty response lists are regarded equal
+		 * to non-existing response lists.
 		 */
 		if (contextElementResponse == null || contextElementResponse.isEmpty()) {
-			if (other.contextElementResponse != null && !other.contextElementResponse.isEmpty()) {
+			if (other.contextElementResponse != null
+					&& !other.contextElementResponse.isEmpty()) {
 				return false;
 			}
 		} else if (!contextElementResponse.equals(other.contextElementResponse)) {
 			return false;
 		}
-		
-		
+
 		if (errorCode == null) {
 			if (other.errorCode != null) {
 				return false;
@@ -151,8 +148,5 @@ public class QueryContextResponse extends NgsiStructure {
 		}
 		return true;
 	}
-
-
-
 
 }
