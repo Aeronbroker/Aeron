@@ -58,7 +58,7 @@ public class GenerateMetadata {
 	 * @throws URISyntaxException
 	 *             the uRI syntax exception
 	 */
-	public static ContextMetadata createDomainTimestampMetadata()
+	public static ContextMetadata createTimestampMetadata()
 			throws URISyntaxException {
 
 		// Define Timestamp Metadata

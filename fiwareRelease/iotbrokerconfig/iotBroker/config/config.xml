@@ -28,4 +28,7 @@
 
 <entry key="storeQueryResponseAndNotifications">false</entry>
 
+<entry key="timestampContextElement">false</entry>
+<entry key="trackContextSource">false</entry>
+
 </properties>

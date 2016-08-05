@@ -68,6 +68,10 @@ iotbroker_ignoreiotdiscoveryfailure=true
 # Ignore IoT PubSub server failure (to be enabled if there are no ngsi 10 pub-sub server sink available)
 iotbroker_ignorepubsubfailure=true
 
+# Data annotation
+iotbroker_timestampcontextelement=false
+iotbroker_trackcontextsource=false
+
 ### Embedded agent configuration
 
 # CouchDB configurations
