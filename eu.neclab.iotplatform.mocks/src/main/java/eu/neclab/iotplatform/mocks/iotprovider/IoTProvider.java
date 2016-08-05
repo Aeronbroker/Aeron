@@ -33,6 +33,7 @@ import eu.neclab.iotplatform.mocks.utils.Connector;
 import eu.neclab.iotplatform.mocks.utils.ContentType;
 import eu.neclab.iotplatform.mocks.utils.HeaderExtractor;
 import eu.neclab.iotplatform.mocks.utils.UniqueIDGenerator;
+import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
@@ -41,6 +42,7 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.NgsiStructure;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ReasonPhrase;
 import eu.neclab.iotplatform.ngsi.api.datamodel.StatusCode;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeResponse;
@@ -170,6 +172,8 @@ public class IoTProvider {
 		Random rand = new Random();
 
 		List<ContextElementResponse> contextElementResponseList = new ArrayList<ContextElementResponse>();
+		
+		StatusCode okCode = new StatusCode(Code.OK_200.getCode(),ReasonPhrase.OK_200.toString(),"");
 
 		for (EntityId entityId : queryRequest.getEntityIdList()) {
 
@@ -185,6 +189,7 @@ public class IoTProvider {
 
 			contextElementResponse.setContextElement(new ContextElement(
 					entityId, null, contextAttributeList, null));
+			contextElementResponse.setStatusCode(okCode);
 
 			contextElementResponseList.add(contextElementResponse);
 		}

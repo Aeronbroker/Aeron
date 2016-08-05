@@ -25,7 +25,7 @@ public class NGSIRequester {
 
 	// Get the IoT Discovery URL
 	private static String iotDiscoveryURL = System.getProperty(
-			"eu.neclab.ioplatform.mocks.iotprovider.iotDiscoveryUrl",
+			"eu.neclab.ioplatform.mocks.iotDiscoveryUrl",
 			"http://localhost:8065/");
 
 	public void doRegistration(RegisterContextRequest registration,
@@ -147,20 +147,6 @@ public class NGSIRequester {
 			// Get the ContentType of the response
 			ContentType responseContentType = getContentTypeFromResponse(
 					response, preferredContentType);
-
-			// Check if the message is valid
-			if (response.getBody() != null) {
-
-				logger.warn("Response from remote server non a valid NGSI message");
-
-				// TODO make a better usage of the Status Code
-				output = new StatusCode(Code.INTERNALERROR_500.getCode(),
-						ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
-						"Receiver response non a valid NGSI message");
-
-				return output;
-
-			}
 
 			// Finally parse it
 			output = parseResponse(response.getBody(), responseContentType,

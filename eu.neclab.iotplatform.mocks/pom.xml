@@ -123,6 +123,13 @@
 			<type>jar</type>
 		</dependency>
 
+		<dependency>
+			<groupId>eu.neclab.iotplatform</groupId>
+			<artifactId>iotbroker.commons</artifactId>
+			<version>${iotbroker.version}</version>
+			<type>jar</type>
+		</dependency>
+
 	</dependencies>
 
 </project>
