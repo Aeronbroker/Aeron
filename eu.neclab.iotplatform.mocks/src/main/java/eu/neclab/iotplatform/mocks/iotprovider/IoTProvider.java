@@ -74,8 +74,8 @@ public class IoTProvider {
 
 	private static String urlIoTAgent = "http://127.0.0.1:8004/ngsi10/notify";
 
-	private static String path = System.getProperty(
-			"eu.neclab.ioplatform.mocks.iotprovider.path", "xml/");
+	// private static String path = System.getProperty(
+	// "eu.neclab.ioplatform.mocks.iotprovider.path", "xml/");
 
 	// private static String notificationFile = "notification.xml";
 	// private static String queryContextResponseFile =
@@ -147,7 +147,12 @@ public class IoTProvider {
 
 			response = createQueryContextResponse(queryContextRequest);
 		} else {
-			response = readQueryContextResponseFromFile();
+			Object file = config.getProperty("file");
+			if (file == null) {
+				response = readQueryContextResponseFromFile(queryContextResponseFile);
+			} else {
+				response = readQueryContextResponseFromFile((String) file);
+			}
 		}
 
 		if (outgoingContentType == ContentType.XML) {
@@ -225,25 +230,21 @@ public class IoTProvider {
 
 	}
 
-	private QueryContextResponse readQueryContextResponseFromFile() {
+	private QueryContextResponse readQueryContextResponseFromFile(String file) {
 
 		QueryContextResponse response = new QueryContextResponse();
-		String file = null;
 		try {
 
-			file = path + "/" + notifyContextRequestFile;
+			// file = notifyContextRequestFile;
 			InputStream is = new FileInputStream(file);
 
 			JAXBContext context;
-			context = JAXBContext.newInstance(NotifyContextRequest.class);
+			context = JAXBContext.newInstance(QueryContextResponse.class);
 
 			// Create the marshaller, this is the nifty little thing that
 			// will actually transform the object into XML
 			Unmarshaller unmarshaller = context.createUnmarshaller();
-			response = (NotifyContextRequest) unmarshaller.unmarshal(is);
-
-			response.setOriginator(urlIoTAgent);
-			response.setSubscriptionId(id);
+			response = (QueryContextResponse) unmarshaller.unmarshal(is);
 
 		} catch (JAXBException e) {
 			logger.error("JAXB ERROR!", e);
@@ -251,38 +252,36 @@ public class IoTProvider {
 			logger.error("FILE NOT FOUND!: " + file);
 		}
 
-		String resp = response.toString();
-
-		return resp;
+		return response;
 	}
 
 	public static String readNotifyFromFile(String id) {
 
 		NotifyContextRequest response = new NotifyContextRequest();
-		String file = null;
-		try {
-
-			file = path + "/" + notifyContextRequestFile;
-			InputStream is = new FileInputStream(file);
-
-			JAXBContext context;
-			context = JAXBContext.newInstance(NotifyContextRequest.class);
-
-			// Create the marshaller, this is the nifty little thing that
-			// will actually transform the object into XML
-			Unmarshaller unmarshaller = context.createUnmarshaller();
-			response = (NotifyContextRequest) unmarshaller.unmarshal(is);
-
-			response.setOriginator(urlIoTAgent);
-			response.setSubscriptionId(id);
-
-		} catch (JAXBException e) {
-			logger.error("JAXB ERROR!", e);
-		} catch (FileNotFoundException e) {
-			logger.error("FILE NOT FOUND!: " + file);
-		}
-
-		String resp = response.toString();
+		// String file = null;
+		// try {
+		//
+		// file = path + "/" + notifyContextRequestFile;
+		// InputStream is = new FileInputStream(file);
+		//
+		// JAXBContext context;
+		// context = JAXBContext.newInstance(NotifyContextRequest.class);
+		//
+		// // Create the marshaller, this is the nifty little thing that
+		// // will actually transform the object into XML
+		// Unmarshaller unmarshaller = context.createUnmarshaller();
+		// response = (NotifyContextRequest) unmarshaller.unmarshal(is);
+		//
+		// response.setOriginator(urlIoTAgent);
+		// response.setSubscriptionId(id);
+		//
+		// } catch (JAXBException e) {
+		// logger.error("JAXB ERROR!", e);
+		// } catch (FileNotFoundException e) {
+		// logger.error("FILE NOT FOUND!: " + file);
+		// }
+		//
+		 String resp = response.toString();
 
 		return resp;
 	}
@@ -336,9 +335,8 @@ public class IoTProvider {
 
 		String file = null;
 		try {
-			file = path + "/" + subscribeContextResponseFile;
-			InputStream is = new FileInputStream(path + "/"
-					+ subscribeContextResponseFile);
+			file = subscribeContextResponseFile;
+			InputStream is = new FileInputStream(subscribeContextResponseFile);
 
 			JAXBContext context;
 			context = JAXBContext.newInstance(SubscribeContextResponse.class);
