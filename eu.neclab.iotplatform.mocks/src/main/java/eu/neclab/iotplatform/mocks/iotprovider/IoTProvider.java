@@ -1,5 +1,6 @@
 package eu.neclab.iotplatform.mocks.iotprovider;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -8,6 +9,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -69,7 +71,7 @@ public class IoTProvider {
 			"eu.neclab.iotplaform.mocks.iotprovider.defaultMode", "random");
 
 	private final String queryContextResponseFile = System.getProperty(
-			"eu.neclab.iotplaform.mocks.iotprovider.queryContextResponseFile",
+			"eu.neclab.iotplaform.mocks.iotprovider.defaultQueryContextResponseFile",
 			"queryContextResponse.xml");
 
 	private static String urlIoTAgent = "http://127.0.0.1:8004/ngsi10/notify";
@@ -146,19 +148,20 @@ public class IoTProvider {
 			}
 
 			response = createQueryContextResponse(queryContextRequest);
+
+			if (outgoingContentType == ContentType.XML) {
+				return response.toString();
+			} else {
+				return response.toJsonString();
+			}
+
 		} else {
 			Object file = config.getProperty("file");
 			if (file == null) {
-				response = readQueryContextResponseFromFile(queryContextResponseFile);
+				return readQueryContextResponseFromFile(queryContextResponseFile);
 			} else {
-				response = readQueryContextResponseFromFile((String) file);
+				return readQueryContextResponseFromFile((String) file);
 			}
-		}
-
-		if (outgoingContentType == ContentType.XML) {
-			return response.toString();
-		} else {
-			return response.toJsonString();
 		}
 
 		// QueryContextResponse response = new QueryContextResponse();
@@ -230,29 +233,43 @@ public class IoTProvider {
 
 	}
 
-	private QueryContextResponse readQueryContextResponseFromFile(String file) {
+	private String readQueryContextResponseFromFile(String file) {
 
-		QueryContextResponse response = new QueryContextResponse();
+		String response = null;
+
 		try {
+			response = new Scanner(new File(file)).useDelimiter("\\Z").next();
 
-			// file = notifyContextRequestFile;
-			InputStream is = new FileInputStream(file);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Response read from file: " + response);
+			}
 
-			JAXBContext context;
-			context = JAXBContext.newInstance(QueryContextResponse.class);
-
-			// Create the marshaller, this is the nifty little thing that
-			// will actually transform the object into XML
-			Unmarshaller unmarshaller = context.createUnmarshaller();
-			response = (QueryContextResponse) unmarshaller.unmarshal(is);
-
-		} catch (JAXBException e) {
-			logger.error("JAXB ERROR!", e);
 		} catch (FileNotFoundException e) {
-			logger.error("FILE NOT FOUND!: " + file);
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 		return response;
+
+		// try {
+		//
+		// // file = notifyContextRequestFile;
+		// InputStream is = new FileInputStream(file);
+		//
+		// JAXBContext context;
+		// context = JAXBContext.newInstance(QueryContextResponse.class);
+		//
+		// // Create the marshaller, this is the nifty little thing that
+		// // will actually transform the object into XML
+		// Unmarshaller unmarshaller = context.createUnmarshaller();
+		// response = (QueryContextResponse) unmarshaller.unmarshal(is);
+		//
+		// } catch (JAXBException e) {
+		// logger.error("JAXB ERROR!", e);
+		// } catch (FileNotFoundException e) {
+		// logger.error("FILE NOT FOUND!: " + file);
+		// }
+
 	}
 
 	public static String readNotifyFromFile(String id) {
@@ -281,7 +298,7 @@ public class IoTProvider {
 		// logger.error("FILE NOT FOUND!: " + file);
 		// }
 		//
-		 String resp = response.toString();
+		String resp = response.toString();
 
 		return resp;
 	}

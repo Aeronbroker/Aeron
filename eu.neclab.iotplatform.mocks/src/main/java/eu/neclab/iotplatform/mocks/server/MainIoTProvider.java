@@ -30,8 +30,8 @@ public class MainIoTProvider {
 			"eu.neclab.ioplatform.mocks.iotprovider.ports", "8001");
 
 	// Mode of the IoT Provider
-	private static final Mode mode = Mode.fromString(
-			System.getProperty("eu.neclab.ioplatform.mocks.iotprovider.mode"),
+	private static final Mode defaultMode = Mode.fromString(System
+			.getProperty("eu.neclab.ioplatform.mocks.iotprovider.defaultMode"),
 			Mode.RANDOM);
 
 	// Ranges of allowed EntityIds
@@ -94,13 +94,21 @@ public class MainIoTProvider {
 				e.printStackTrace();
 			}
 
-			Set<String> entityNames = chooseEntityNames();
-			Set<String> attributes = chooseAttributes();
+			if (Mode.fromString(System
+					.getProperty("eu.neclab.ioplatform.mocks.iotprovider."
+							+ portNumber + ".mode"), defaultMode) == Mode.RANDOM) {
 
-			RegisterContextRequest registration = createRegisterContextRequest(
-					entityNames, attributes, portNumber);
+				Set<String> entityNames = chooseEntityNames();
+				Set<String> attributes = chooseAttributes();
 
-			ngsiRequester.doRegistration(registration, ContentType.XML);
+				RegisterContextRequest registration = createRegisterContextRequest(
+						entityNames, attributes, portNumber);
+
+				// TODO use the SouthBound class
+				ngsiRequester.doRegistration(registration, ContentType.XML);
+			} else {
+
+			}
 
 		}
 
