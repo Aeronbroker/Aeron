@@ -41,8 +41,6 @@
  ******************************************************************************/
 package eu.neclab.iotplatform.ngsi.api.datamodel;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -144,32 +142,38 @@ public class Restriction extends NgsiStructure {
 		return true;
 	}
 
-	public static void main(String[] args) throws URISyntaxException {
-		SubscribeContextRequest subscription = new SubscribeContextRequest();
-		subscription.setReference("http://localhost:8002/");
-
-		List<String> attributeList = new ArrayList<String>();
-		attributeList.add("noise");
-		attributeList.add("temperature");
-		subscription.setAttributeList(attributeList);
-
-		List<EntityId> entityIdList = new ArrayList<EntityId>();
-		entityIdList.add(new EntityId(".*", new URI("room"), true));
-		entityIdList.add(new EntityId("ConferenceRoom", new URI("room"), false));
-		subscription.setEntityIdList(entityIdList);
-		
-		List<OperationScope> operationScopeList = new ArrayList<OperationScope>();
-		operationScopeList.add(new OperationScope("timestamp", "now"));
-		Restriction restriction = new Restriction("//noise", operationScopeList);
-		subscription.setRestriction(restriction);
-		
-		List<NotifyCondition> notifyConditionList = new ArrayList<NotifyCondition>();
-		notifyConditionList.add(new NotifyCondition(NotifyConditionEnum.ONVALUE, null, restriction));
-		subscription.setNotifyCondition(notifyConditionList);
-		
-		System.out.println(subscription.toString());
-		
-		System.out.println(subscription.toJsonString());
-	}
+//	public static void main(String[] args) {
+//		SubscribeContextRequest subscription = new SubscribeContextRequest();
+//		subscription.setReference("http://localhost:8002/");
+//
+//		List<String> attributeList = new ArrayList<String>();
+//		attributeList.add("noise");
+//		attributeList.add("temperature");
+//		subscription.setAttributeList(attributeList);
+//
+//		List<EntityId> entityIdList = new ArrayList<EntityId>();
+//		try {
+//			entityIdList.add(new EntityId(".*", new URI("room"), true));
+//			entityIdList.add(new EntityId("ConferenceRoom", new URI("room"), false));
+//
+//		} catch (URISyntaxException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		subscription.setEntityIdList(entityIdList);
+//		
+//		List<OperationScope> operationScopeList = new ArrayList<OperationScope>();
+//		operationScopeList.add(new OperationScope("timestamp", "now"));
+//		Restriction restriction = new Restriction("//noise", operationScopeList);
+//		subscription.setRestriction(restriction);
+//		
+//		List<NotifyCondition> notifyConditionList = new ArrayList<NotifyCondition>();
+//		notifyConditionList.add(new NotifyCondition(NotifyConditionEnum.ONVALUE, null, restriction));
+//		subscription.setNotifyCondition(notifyConditionList);
+//		
+//		System.out.println(subscription.toString());
+//		
+//		System.out.println(subscription.toJsonString());
+//	}
 
 }

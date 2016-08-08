@@ -51,7 +51,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "pepCredentials")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class PEPCredentials implements Serializable {
+public class PEPCredentials implements Serializable  {
 
 	/**
 	 * 

@@ -54,8 +54,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
- * Implements ContextElement
- * as defined in OMA NGSI 9/10 approved version 1.0.
+ * Implements ContextElement as defined in OMA NGSI 9/10 approved version 1.0.
  */
 @XmlRootElement(name = "contextElement")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -63,15 +62,15 @@ public class ContextElement extends NgsiStructure {
 
 	@XmlElement(name = "entityId", required = true)
 	private EntityId entityId;
-	
+
 	@XmlElement(name = "attributeDomainName")
 	private String attributeDomainName;
-	
+
 	@XmlElementWrapper(name = "contextAttributeList")
 	@XmlElement(name = "contextAttribute")
 	@JsonProperty("attributes")
 	private List<ContextAttribute> contextAttributeList;
-	
+
 	@XmlElementWrapper(name = "domainMetadata")
 	@XmlElement(name = "contextMetadata")
 	private List<ContextMetadata> domainMetadata;
@@ -97,6 +96,16 @@ public class ContextElement extends NgsiStructure {
 
 	public void setEntityId(EntityId entityId) {
 		this.entityId = entityId;
+	}
+
+	@Override
+	public boolean sanityCheck() {
+		if (entityId == null || entityId.getId() == null
+				|| entityId.getId().trim().isEmpty()) {
+			return false;
+		}
+		return true;
+
 	}
 
 	@JsonIgnore
@@ -145,8 +154,7 @@ public class ContextElement extends NgsiStructure {
 						.hashCode());
 		result = prime * result
 				+ (domainMetadata == null ? 0 : domainMetadata.hashCode());
-		result = prime * result
-				+ (entityId == null ? 0 : entityId.hashCode());
+		result = prime * result + (entityId == null ? 0 : entityId.hashCode());
 		return result;
 	}
 

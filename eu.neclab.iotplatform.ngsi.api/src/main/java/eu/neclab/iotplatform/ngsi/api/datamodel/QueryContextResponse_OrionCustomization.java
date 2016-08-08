@@ -58,40 +58,54 @@ import org.codehaus.jackson.annotate.JsonProperty;
  * as defined in OMA NGSI 9/10 approved version 1.0.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-public class QueryContextResponse extends NgsiStructure {
-
-	@SuppressWarnings("unchecked")
-	protected static Class<? extends NgsiStructure>[] jsonSerializationAlternatives = new Class[]{ QueryContextResponse_OrionCustomization.class };
+public class QueryContextResponse_OrionCustomization extends NgsiStructureAlternative {
 
 	@XmlElementWrapper(name = "contextResponseList")
 	@XmlElement(name = "contextElementResponse")
 	@JsonProperty("contextResponses")
-	private List<ContextElementResponse> contextElementResponse;
+	private List<ContextElementResponse_OrionCustomization> contextElementResponse;
 
 	@XmlElement(name = "errorCode")
 	private StatusCode errorCode = null;
 
-	public QueryContextResponse() {
+	public QueryContextResponse_OrionCustomization() {
 
 	}
 
-	public QueryContextResponse(
-			List<ContextElementResponse> contextResponseList,
+	public QueryContextResponse_OrionCustomization(
+			List<ContextElementResponse_OrionCustomization> contextResponseList,
 			StatusCode errorCode) {
 		this();
 		contextElementResponse = contextResponseList;
 		this.errorCode = errorCode;
 	}
 
-	public List<ContextElementResponse> getListContextElementResponse() {
+	public QueryContextResponse toQueryContextResponse() {
+
+		List<ContextElementResponse> contextElementResponseList = null;
+
+		if (contextElementResponse != null) {
+			contextElementResponseList = new ArrayList<ContextElementResponse>();
+			for (ContextElementResponse_OrionCustomization contextElementResponse_OrionCustomization : contextElementResponse) {
+				contextElementResponseList
+						.add(contextElementResponse_OrionCustomization
+								.toContextElementResponse());
+			}
+		}
+
+		return new QueryContextResponse(contextElementResponseList, errorCode);
+
+	}
+
+	public List<ContextElementResponse_OrionCustomization> getListContextElementResponse() {
 		if (contextElementResponse == null) {
-			contextElementResponse = new ArrayList<ContextElementResponse>();
+			contextElementResponse = new ArrayList<ContextElementResponse_OrionCustomization>();
 		}
 		return contextElementResponse;
 	}
 
 	public void setContextResponseList(
-			List<ContextElementResponse> ContextResponseList) {
+			List<ContextElementResponse_OrionCustomization> ContextResponseList) {
 		contextElementResponse = ContextResponseList;
 	}
 
@@ -102,11 +116,11 @@ public class QueryContextResponse extends NgsiStructure {
 	public void setErrorCode(StatusCode errorCode) {
 		this.errorCode = errorCode;
 	}
-
+	
 	@Override
 	public boolean sanityCheck() {
 		if (contextElementResponse != null && !contextElementResponse.isEmpty()) {
-			for (ContextElementResponse contextElementR : contextElementResponse) {
+			for (ContextElementResponse_OrionCustomization contextElementR : contextElementResponse) {
 				if (!contextElementR.sanityCheck()) {
 					return false;
 				}
@@ -143,7 +157,7 @@ public class QueryContextResponse extends NgsiStructure {
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		QueryContextResponse other = (QueryContextResponse) obj;
+		QueryContextResponse_OrionCustomization other = (QueryContextResponse_OrionCustomization) obj;
 
 		/*
 		 * The following makes sure that empty response lists are regarded equal
@@ -166,6 +180,11 @@ public class QueryContextResponse extends NgsiStructure {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	public NgsiStructure toStandardNgsiStructure() {
+		return toQueryContextResponse();
 	}
 
 }

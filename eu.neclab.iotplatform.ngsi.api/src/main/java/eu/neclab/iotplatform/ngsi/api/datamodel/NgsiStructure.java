@@ -62,7 +62,6 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -77,6 +76,9 @@ public abstract class NgsiStructure {
 	/** The logger. */
 	private static Logger logger = Logger.getLogger(NgsiStructure.class);
 
+	protected static Class<? extends NgsiStructure>[] jsonSerializationAlternatives;
+	protected static Class<? extends NgsiStructure>[] xmlSerializationAlternatives;
+
 	@Override
 	public String toString() {
 
@@ -88,25 +90,24 @@ public abstract class NgsiStructure {
 			carMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 			carMarshaller.marshal(this, sw);
 			result = sw.toString();
-//			String result1 = result;
 
 			result = result.replaceAll("<value.*xsi:type=\"xs:string\".*?>",
 					"<value>");
 
 			result = result.replaceAll(
 					"<scopeValue.*xsi:type=\"xs:string\".*?>", "<scopeValue>");
-			
-			
-			result = replaceObjectValues("<value[^>]*xsi:type=.*?>(.+?)</value>?", ".*xsi:type=\"([^\"]*)\"", "value", result);
-			result = replaceObjectValues("<scopeValue[^>]*xsi:type=.*?>(.+?)</scopeValue>", ".*xsi:type=\"([^\"]*)\"", "scopeValue", result);
 
+			result = replaceObjectValues(
+					"<value[^>]*xsi:type=.*?>(.+?)</value>?",
+					".*xsi:type=\"([^\"]*)\"", "value", result);
+			result = replaceObjectValues(
+					"<scopeValue[^>]*xsi:type=.*?>(.+?)</scopeValue>",
+					".*xsi:type=\"([^\"]*)\"", "scopeValue", result);
 
 			result = result.replaceAll("&lt;", "<");
 			result = result.replaceAll("&gt;", ">");
-			
+
 			result = formatXmlString(result);
-
-
 
 		} catch (JAXBException e) {
 			throw new RuntimeException(e);
@@ -116,8 +117,9 @@ public abstract class NgsiStructure {
 
 	}
 
-	
-	private String replaceObjectValues(String valuePatternRegex, String valueTypePatternRegex, String wrappingValueTag, String strings){
+	private String replaceObjectValues(String valuePatternRegex,
+			String valueTypePatternRegex, String wrappingValueTag,
+			String strings) {
 		String string = new String(strings.replace("\n", ""));
 
 		Pattern pattern = Pattern.compile(valuePatternRegex);
@@ -133,43 +135,44 @@ public abstract class NgsiStructure {
 			Matcher valueTypeMatcher = valueTypePattern.matcher(value);
 			if (valueTypeMatcher.find()) {
 
-				String newValue = "<"+wrappingValueTag+"><" + valueTypeMatcher.group(1) + ">"
-						+ matcher.group(1) + "</" + valueTypeMatcher.group(1)
-						+ "></"+wrappingValueTag+">";				
-				newString = newString.replace(value,newValue);
+				String newValue = "<" + wrappingValueTag + "><"
+						+ valueTypeMatcher.group(1) + ">" + matcher.group(1)
+						+ "</" + valueTypeMatcher.group(1) + "></"
+						+ wrappingValueTag + ">";
+				newString = newString.replace(value, newValue);
 
 			}
 		}
 		return newString;
 	}
-	
-	private String formatXmlString(String string){
-		String newString = string.replaceAll("> *<","><");
-		
+
+	private String formatXmlString(String string) {
+		String newString = string.replaceAll("> *<", "><");
+
 		Source xmlInput = new StreamSource(new StringReader(newString));
-        StringWriter stringWriter = new StringWriter();
-        StreamResult xmlOutput = new StreamResult(stringWriter);
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        transformerFactory.setAttribute("indent-number", 2);
-        Transformer transformer;
-        String formatted = null;
+		StringWriter stringWriter = new StringWriter();
+		StreamResult xmlOutput = new StreamResult(stringWriter);
+		TransformerFactory transformerFactory = TransformerFactory
+				.newInstance();
+		transformerFactory.setAttribute("indent-number", 2);
+		Transformer transformer;
+		String formatted = null;
 		try {
 			transformer = transformerFactory.newTransformer();
-	        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-	        transformer.transform(xmlInput, xmlOutput);
-	        formatted = xmlOutput.getWriter().toString();
-//	        System.out.println(formatted);
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.transform(xmlInput, xmlOutput);
+			formatted = xmlOutput.getWriter().toString();
+			// System.out.println(formatted);
 		} catch (TransformerConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (TransformerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
-		
+		}
+
 		return (formatted != null) ? formatted : string;
 	}
-	
 
 	public String toJsonString() {
 
@@ -199,12 +202,8 @@ public abstract class NgsiStructure {
 
 	}
 
-	public static Object convertStringToXml(String xml, Class<?> type) {
-
-		if (type.getSuperclass() != NgsiStructure.class) {
-			throw new RuntimeException("Cannot convert String to "
-					+ type.getName());
-		}
+	public static Object convertStringToXml(String xml,
+			Class<? extends NgsiStructure> type) {
 
 		Object response = null;
 
@@ -222,7 +221,19 @@ public abstract class NgsiStructure {
 
 	}
 
-	public static Object parseStringToJson(String json, Class<?> clazz) {
+	/**
+	 * Equivalent to {@link parseStringToJson(String json, Class<? extends
+	 * NgsiStructure> clazz, boolean checkJsonSerializationAlternatives, boolean
+	 * sanityCheck)} with sanityCheck set to false and
+	 * checkJsonSerializationAlternatives set to false
+	 * 
+	 * @param json
+	 * @param clazz
+	 * @return
+	 */
+	public static Object parseStringToJson(String json,
+			Class<? extends NgsiStructure> clazz) {
+
 		ObjectMapper mapper = new ObjectMapper();
 		Object object = null;
 
@@ -231,16 +242,131 @@ public abstract class NgsiStructure {
 
 		try {
 			object = mapper.readValue(json, clazz);
-		} catch (JsonParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (JsonGenerationException e) {
+			logger.info("JsonGenerationException", e);
 		} catch (JsonMappingException e) {
+			logger.info("JsonMappingException", e);
+		} catch (IOException e) {
+			logger.info("IOException", e);
+		}
+
+		return object;
+	}
+
+	/**
+	 * Parse the json string and perform a sanityCheck of the NGSI structure (if
+	 * sanityCheck set to true) and it tries to de-serialize the json object
+	 * with other NGSI json serialization known)
+	 * 
+	 * @param json
+	 * @param clazz
+	 * @param checkJsonSerializationAlternatives
+	 * @param sanityCheck
+	 * @return
+	 */
+	public static Object parseStringToJson(String json,
+			Class<? extends NgsiStructure> clazz,
+			boolean checkJsonSerializationAlternatives, boolean sanityCheck) {
+
+		// Lets try to parse with the standard NGSI json serialization
+		Object object = parseStringToJson(json, clazz);
+
+		// Sanity check (if requested)
+		boolean sane = true;
+		if (sanityCheck) {
+			if (object != null) {
+				if (object instanceof NgsiStructure) {
+					NgsiStructure ngsiStructure = (NgsiStructure) object;
+					if (!ngsiStructure.sanityCheck()) {
+						sane = false;
+					}
+				}
+			} else {
+				sane = false;
+			}
+		}
+
+		if (!sane) {
+			logger.info("Ojbect not sane." + object);
+		}
+
+		// If the object is not sane, either check the alternatives or
+		// instantiate an empty object
+		if (!sane) {
+			if (checkJsonSerializationAlternatives) {
+				object = parseJsonWithDifferentSerialization(json, clazz);
+			} else {
+				// If not sane trying to create an empty object
+				try {
+					object = clazz.newInstance();
+				} catch (InstantiationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+		return object;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static Object parseJsonWithDifferentSerialization(String json,
+			Class<? extends NgsiStructure> clazz) {
+
+		Object object = null;
+
+		try {
+			// Lets try all the alternative specified
+			for (Class<? extends NgsiStructure> alternativeType : (Class<? extends NgsiStructure>[]) clazz
+					.getDeclaredField("jsonSerializationAlternatives")
+					.get(null)) {
+
+				logger.info(String.format(
+						"Trying to deserialize json %s as %s", json,
+						alternativeType));
+
+				object = NgsiStructure.parseStringToJson(json, alternativeType);
+				// If is null continue checking alternatives
+				if (object != null) {
+					if (object instanceof NgsiStructureAlternative) {
+						NgsiStructureAlternative ngsiStructure = (NgsiStructureAlternative) object;
+						if (ngsiStructure.sanityCheck()) {
+							// If is sane stop to check alternatives
+							return ngsiStructure.toStandardNgsiStructure();
+						}
+					}
+				}
+			}
+		} catch (IllegalAccessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchFieldException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SecurityException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 		return object;
+
 	}
+
+	/**
+	 * This check returns true if the object complies with the NGSI schema
+	 * (please note that not all the sanity checks for all the NGSI structure
+	 * has been implemented yet)
+	 * 
+	 * @return
+	 */
+	public boolean sanityCheck() {
+		return true;
+	}
+	
 }

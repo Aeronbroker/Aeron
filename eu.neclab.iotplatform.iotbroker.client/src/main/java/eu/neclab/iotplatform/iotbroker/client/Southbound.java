@@ -61,9 +61,7 @@ import eu.neclab.iotplatform.iotbroker.commons.ContentType;
 import eu.neclab.iotplatform.iotbroker.commons.FullHttpRequester;
 import eu.neclab.iotplatform.iotbroker.commons.FullHttpResponse;
 import eu.neclab.iotplatform.iotbroker.commons.GenerateMetadata;
-import eu.neclab.iotplatform.iotbroker.commons.JsonFactory;
 import eu.neclab.iotplatform.iotbroker.commons.JsonValidator;
-import eu.neclab.iotplatform.iotbroker.commons.XmlFactory;
 import eu.neclab.iotplatform.iotbroker.commons.XmlValidator;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
@@ -200,7 +198,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	 * 
 	 */
 	private boolean validateMessageBody(String body, String contentType,
-			Class<?> classType, String schema) {
+			Class<? extends NgsiStructure> classType, String schema) {
 
 		boolean status = false;
 		/*
@@ -220,7 +218,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			} catch (IllegalAccessException e) {
 				logger.info("InstantiationException", e);
 			}
-			obj = XmlFactory.convertStringToXml(body, classType);
+			obj = NgsiStructure.convertStringToXml(body, classType);
 
 			status = validator.xmlValidation(obj, schema);
 
@@ -237,23 +235,23 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 					+ schema);
 		}
 
-		logger.info("Incoming request Valid:" + status);
+		logger.info("Incoming request Valid: " + status);
 
 		return status;
 
 	}
 
 	private Object parseResponse(String body, ContentType contentType,
-			Class<?> clazz) {
+			Class<? extends NgsiStructure> clazz) {
 		if (contentType == ContentType.XML) {
 
-			return XmlFactory.convertStringToXml(body, clazz);
+			return NgsiStructure.convertStringToXml(body, clazz);
 
 		} else {
 			String toParse = body.replaceAll("\\\"metadatas\\\"",
 					"\\\"contextMetadata\\\"");
 
-			return JsonFactory.convertStringToJsonObject(toParse, clazz);
+			return NgsiStructure.parseStringToJson(toParse, clazz, true, true);
 
 		}
 	}
@@ -512,7 +510,8 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	 * 
 	 */
 	private Object sendRequest(URL url, String resource, NgsiStructure request,
-			Class<?> expectedResponseClazz, String schemaLocation) {
+			Class<? extends NgsiStructure> expectedResponseClazz,
+			String schemaLocation) {
 
 		ContentType preferredContentType = getCONTENT_TYPE();
 

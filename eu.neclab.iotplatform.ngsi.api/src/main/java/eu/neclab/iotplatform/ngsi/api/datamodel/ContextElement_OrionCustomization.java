@@ -61,7 +61,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
  */
 @XmlRootElement(name = "contextElement")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ContextElement_OrionCustomization extends NgsiStructure {
+public class ContextElement_OrionCustomization extends NgsiStructureAlternative {
 
 	@XmlElement(name = "id", required = true)
 	private String id = null;
@@ -125,6 +125,15 @@ public class ContextElement_OrionCustomization extends NgsiStructure {
 		this.type = type;
 		this.isPattern = isPattern;
 		this.contextAttributeList = contextAttribute_OrionCustomizationList;
+
+	}
+
+	@Override
+	public boolean sanityCheck() {
+		if (id == null || id.trim().isEmpty()) {
+			return false;
+		}
+		return true;
 
 	}
 
@@ -223,6 +232,11 @@ public class ContextElement_OrionCustomization extends NgsiStructure {
 		} else if (!type.equals(other.type))
 			return false;
 		return true;
+	}
+
+	@Override
+	public NgsiStructure toStandardNgsiStructure() {
+		return toContextElement();
 	}
 
 }

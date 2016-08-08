@@ -59,7 +59,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
  */
 @XmlRootElement(name = "updateContextRequest")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class UpdateContextRequest_OrionCustomization extends NgsiStructure {
+public class UpdateContextRequest_OrionCustomization extends NgsiStructureAlternative {
 
 	@XmlElementWrapper(name = "contextElementList")
 	@XmlElement(name = "contextElement", required = true)
@@ -97,6 +97,20 @@ public class UpdateContextRequest_OrionCustomization extends NgsiStructure {
 		}
 		this.updateAction = updateContextRequest.getUpdateAction();
 
+	}
+	
+	public UpdateContextRequest toUpdateContextRequest(){
+		UpdateContextRequest updateContextRequest = new UpdateContextRequest();
+		if (contextElement != null){
+			List<ContextElement> contextElementList = new ArrayList<ContextElement>();
+			for (ContextElement_OrionCustomization contextElement_OrionCustomization : contextElement){
+				contextElementList.add(contextElement_OrionCustomization.toContextElement());
+			}
+			updateContextRequest.setContextElement(contextElementList);
+		}
+		updateContextRequest.setUpdateAction(updateAction);
+		
+		return updateContextRequest;
 	}
 
 	@JsonIgnore
@@ -137,6 +151,11 @@ public class UpdateContextRequest_OrionCustomization extends NgsiStructure {
 
 		return this.updateAction == other.updateAction;
 
+	}
+
+	@Override
+	public NgsiStructure toStandardNgsiStructure() {
+		return toUpdateContextRequest();
 	}
 
 }

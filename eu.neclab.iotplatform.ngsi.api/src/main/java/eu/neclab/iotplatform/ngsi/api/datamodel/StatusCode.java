@@ -47,8 +47,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Implements StatusCode
- * as defined in OMA NGSI 9/10 approved version 1.0.
+ * Implements StatusCode as defined in OMA NGSI 9/10 approved version 1.0.
  */
 @XmlRootElement(name = "statusCode")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -99,6 +98,16 @@ public class StatusCode extends NgsiStructure {
 	}
 
 	@Override
+	public boolean sanityCheck() {
+		if (code == 0
+				&& (reasonPhrase == null || reasonPhrase.trim().isEmpty())) {
+			return false;
+		}
+		return true;
+
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
@@ -140,6 +149,5 @@ public class StatusCode extends NgsiStructure {
 		}
 		return true;
 	}
-
 
 }

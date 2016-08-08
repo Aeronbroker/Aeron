@@ -60,7 +60,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
  */
 @XmlRootElement(name = "contextAttribute")
 @XmlAccessorType(XmlAccessType.FIELD)
-public final class ContextAttribute_OrionCustomization extends NgsiStructure {
+public final class ContextAttribute_OrionCustomization extends NgsiStructureAlternative {
 
 	/** The name of the attribute represented by this ContextAttribute. */
 	@XmlElement(required = true)
@@ -206,6 +206,11 @@ public final class ContextAttribute_OrionCustomization extends NgsiStructure {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	public NgsiStructure toStandardNgsiStructure() {
+		return toContextAttribute();
 	}
 
 }

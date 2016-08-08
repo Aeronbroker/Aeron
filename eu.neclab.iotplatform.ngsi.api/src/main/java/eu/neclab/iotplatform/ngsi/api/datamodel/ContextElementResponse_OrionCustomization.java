@@ -52,7 +52,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "contextElementResponse")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ContextElementResponse_OrionCustomization extends NgsiStructure {
+public class ContextElementResponse_OrionCustomization extends NgsiStructureAlternative {
 
 	@XmlElement(name = "contextElement", required = true)
 	private ContextElement_OrionCustomization contextElement = null;
@@ -91,6 +91,16 @@ public class ContextElementResponse_OrionCustomization extends NgsiStructure {
 		
 		return new ContextElementResponse(contextElement.toContextElement(), statusCode);
 	
+	}
+	
+	@Override
+	public boolean sanityCheck() {
+		if (contextElement == null || !contextElement.sanityCheck()
+				|| !statusCode.sanityCheck()) {
+			return false;
+		}
+		return true;
+
 	}
 
 	@Override
@@ -131,6 +141,11 @@ public class ContextElementResponse_OrionCustomization extends NgsiStructure {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	public NgsiStructure toStandardNgsiStructure() {
+		return toContextElementResponse();
 	}
 
 }

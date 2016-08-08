@@ -90,7 +90,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 @XmlRootElement(name = "notifyContextRequest")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class NotifyContextRequest extends NgsiStructure {
+public class NotifyContextRequest_OrionCustomization extends NgsiStructureAlternative {
 
 	@XmlElement(name = "subscriptionId", required = true)
 	private String subscriptionId = null;
@@ -102,15 +102,17 @@ public class NotifyContextRequest extends NgsiStructure {
 	@XmlElementWrapper(name = "contextResponseList")
 	@XmlElement(name = "contextElementResponse")
 	@JsonProperty("contextResponses")
-	private List<ContextElementResponse> contextElementResponse;
+	private List<ContextElementResponse_OrionCustomization> contextElementResponse;
 
-	public NotifyContextRequest() {
+	public NotifyContextRequest_OrionCustomization() {
 
 	}
 
-	public NotifyContextRequest(String subscriptionId, String originator,
-			List<ContextElementResponse> contextElementResponseList) {
-		this.subscriptionId = subscriptionId;
+	public NotifyContextRequest_OrionCustomization(
+			String subcriptionId,
+			String originator,
+			List<ContextElementResponse_OrionCustomization> contextElementResponseList) {
+		this.subscriptionId = subcriptionId;
 		this.originator = originator;
 		this.contextElementResponse = contextElementResponseList;
 
@@ -132,18 +134,37 @@ public class NotifyContextRequest extends NgsiStructure {
 		this.originator = originator;
 	}
 
+	public NotifyContextRequest toNotifyContextRequest() {
+		List<ContextElementResponse> contextElementResponseList = null;
+		if (contextElementResponse != null) {
+			contextElementResponseList = new ArrayList<ContextElementResponse>();
+			for (ContextElementResponse_OrionCustomization contextElementResponse_OrionCustomization : contextElementResponse) {
+				contextElementResponseList
+						.add(contextElementResponse_OrionCustomization
+								.toContextElementResponse());
+			}
+		}
+		return new NotifyContextRequest(subscriptionId, originator,
+				contextElementResponseList);
+	}
+
 	@JsonIgnore
-	public List<ContextElementResponse> getContextElementResponseList() {
+	public List<ContextElementResponse_OrionCustomization> getContextElementResponseList() {
 		if (contextElementResponse == null) {
-			contextElementResponse = new ArrayList<ContextElementResponse>();
+			contextElementResponse = new ArrayList<ContextElementResponse_OrionCustomization>();
 		}
 		return contextElementResponse;
 	}
 
 	@JsonIgnore
 	public void setContextResponseList(
-			List<ContextElementResponse> contextResponseList) {
+			List<ContextElementResponse_OrionCustomization> contextResponseList) {
 		this.contextElementResponse = contextResponseList;
+	}
+
+	@Override
+	public NgsiStructure toStandardNgsiStructure() {
+		return toNotifyContextRequest();
 	}
 
 }

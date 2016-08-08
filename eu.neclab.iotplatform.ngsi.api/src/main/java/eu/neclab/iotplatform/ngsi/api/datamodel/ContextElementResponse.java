@@ -47,8 +47,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Implements ContextElementResponse
- * as defined in OMA NGSI 9/10 approved version 1.0.
+ * Implements ContextElementResponse as defined in OMA NGSI 9/10 approved
+ * version 1.0.
  */
 @XmlRootElement(name = "contextElementResponse")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -85,6 +85,16 @@ public class ContextElementResponse extends NgsiStructure {
 
 	public void setStatusCode(StatusCode statusCode) {
 		this.statusCode = statusCode;
+	}
+
+	@Override
+	public boolean sanityCheck() {
+		if (contextElement == null || !contextElement.sanityCheck()
+				|| !statusCode.sanityCheck()) {
+			return false;
+		}
+		return true;
+
 	}
 
 	@Override
