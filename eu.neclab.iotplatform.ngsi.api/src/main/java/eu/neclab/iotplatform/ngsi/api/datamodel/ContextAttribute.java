@@ -58,6 +58,9 @@ import javax.xml.bind.annotation.XmlSchemaType;
 @XmlRootElement(name = "contextAttribute")
 @XmlAccessorType(XmlAccessType.FIELD)
 public final class ContextAttribute extends NgsiStructure {
+	
+	@SuppressWarnings("unchecked")
+	protected static Class<? extends NgsiStructure>[] jsonSerializationAlternatives = new Class[]{ ContextAttribute_OrionCustomization.class };
 
 	/** The name of the attribute represented by this ContextAttribute. */
 	@XmlElement(required = true)

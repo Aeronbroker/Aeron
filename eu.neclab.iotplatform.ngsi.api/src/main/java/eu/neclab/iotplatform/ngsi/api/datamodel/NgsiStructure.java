@@ -44,6 +44,7 @@ package eu.neclab.iotplatform.ngsi.api.datamodel;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -368,5 +369,47 @@ public abstract class NgsiStructure {
 	public boolean sanityCheck() {
 		return true;
 	}
-	
+
+	public static void main(String[] args) {
+		String json = "{  \"contextResponses\" : [    {      \"contextElement\" : {        \"type\" : \"thermometer\",        \"isPattern\" : \"false\",        \"id\" : \"thermo1\",        \"attributes\" : [          {            \"name\" : \"temperature\",            \"type\" : \"float\",            \"value\" : \"300.00\"          }        ]      },      \"statusCode\" : {        \"code\" : \"200\",        \"reasonPhrase\" : \"OK\"      }    }  ]}";
+
+		Object object = NgsiStructure.parseStringToJson(json,
+				QueryContextResponse.class, true, true);
+
+		if (object instanceof QueryContextResponse) {
+			System.out.println("funge: " + object);
+		}
+
+		// QueryContextResponse queryContextResponse = (QueryContextResponse)
+		// NgsiStructure
+		// .parseStringToJson(json, QueryContextResponse.class);
+		//
+		// for (ContextElementResponse contextElementResponse :
+		// queryContextResponse
+		// .getListContextElementResponse()) {
+		// if (contextElementResponse.getContextElement() != null
+		// && (contextElementResponse.getContextElement()
+		// .getEntityId() == null
+		// || contextElementResponse.getContextElement()
+		// .getEntityId().getId() == null || contextElementResponse
+		// .getContextElement().getEntityId().getId()
+		// .isEmpty())) {
+		//
+		// System.out.println("Not a valid queryContextRequest");
+		//
+		// break;
+		// }
+		//
+		// }
+		//
+		// QueryContextResponse_OrionCustomization
+		// queryContextResponse_OrionCustomizatio =
+		// (QueryContextResponse_OrionCustomization) NgsiStructure
+		// .parseStringToJson(json,
+		// QueryContextResponse_OrionCustomization.class);
+		// queryContextResponse = queryContextResponse_OrionCustomizatio
+		// .toQueryContextResponse();
+		//
+		// System.out.println(queryContextResponse);
+	}
 }

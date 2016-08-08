@@ -53,12 +53,15 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
- * Implements UpdateContextResponse
- * as defined in OMA NGSI 9/10 approved version 1.0.
+ * Implements UpdateContextResponse as defined in OMA NGSI 9/10 approved version
+ * 1.0.
  */
 @XmlRootElement(name = "updateContextResponse")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class UpdateContextResponse extends NgsiStructure {
+
+	@SuppressWarnings("unchecked")
+	protected static Class<? extends NgsiStructure>[] jsonSerializationAlternatives = new Class[] { UpdateContextResponse_OrionCustomization.class };
 
 	@XmlElement(name = "errorCode")
 	private StatusCode errorCode = null;

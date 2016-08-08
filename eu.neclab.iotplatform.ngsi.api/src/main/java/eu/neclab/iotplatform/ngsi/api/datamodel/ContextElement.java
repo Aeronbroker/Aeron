@@ -59,6 +59,9 @@ import org.codehaus.jackson.annotate.JsonProperty;
 @XmlRootElement(name = "contextElement")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ContextElement extends NgsiStructure {
+	
+	@SuppressWarnings("unchecked")
+	protected static Class<? extends NgsiStructure>[] jsonSerializationAlternatives = new Class[]{ ContextElement_OrionCustomization.class };
 
 	@XmlElement(name = "entityId", required = true)
 	private EntityId entityId;

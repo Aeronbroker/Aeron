@@ -53,16 +53,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-
-
-
 /**
- * Implements UpdateContextRequest
- * as defined in OMA NGSI 9/10 approved version 1.0.
+ * Implements UpdateContextRequest as defined in OMA NGSI 9/10 approved version
+ * 1.0.
  */
 @XmlRootElement(name = "updateContextRequest")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class UpdateContextRequest extends NgsiStructure {
+
+	@SuppressWarnings("unchecked")
+	protected static Class<? extends NgsiStructure>[] jsonSerializationAlternatives = new Class[] { UpdateContextRequest_OrionCustomization.class };
 
 	@XmlElementWrapper(name = "contextElementList")
 	@XmlElement(name = "contextElement", required = true)
@@ -104,26 +104,23 @@ public class UpdateContextRequest extends NgsiStructure {
 	public void setUpdateAction(UpdateActionType updateAction) {
 		this.updateAction = updateAction;
 	}
-	
+
 	@Override
-	public boolean equals(Object obj){
-		
-		if(obj == null || obj.getClass() != this.getClass())
+	public boolean equals(Object obj) {
+
+		if (obj == null || obj.getClass() != this.getClass())
 			return false;
-		
+
 		UpdateContextRequest other = (UpdateContextRequest) obj;
-		
-		if(contextElement == null || contextElement.isEmpty()){
-			if(other.contextElement != null && !other.contextElement.isEmpty() )
+
+		if (contextElement == null || contextElement.isEmpty()) {
+			if (other.contextElement != null && !other.contextElement.isEmpty())
 				return false;
-		}
-		else if(!contextElement.equals(other.contextElement))
+		} else if (!contextElement.equals(other.contextElement))
 			return false;
-		
-		return 
-				this.updateAction == other.updateAction;
-		
+
+		return this.updateAction == other.updateAction;
+
 	}
-		
 
 }

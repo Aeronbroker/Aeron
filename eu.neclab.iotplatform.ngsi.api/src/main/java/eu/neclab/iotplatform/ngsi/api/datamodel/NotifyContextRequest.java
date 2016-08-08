@@ -91,6 +91,9 @@ import org.codehaus.jackson.annotate.JsonProperty;
 @XmlRootElement(name = "notifyContextRequest")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class NotifyContextRequest extends NgsiStructure {
+	
+	@SuppressWarnings("unchecked")
+	protected static Class<? extends NgsiStructure>[] jsonSerializationAlternatives = new Class[]{ NotifyContextRequest_OrionCustomization.class };
 
 	@XmlElement(name = "subscriptionId", required = true)
 	private String subscriptionId = null;

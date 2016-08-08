@@ -53,6 +53,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "contextElementResponse")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ContextElementResponse extends NgsiStructure {
+	
+	@SuppressWarnings("unchecked")
+	protected static Class<? extends NgsiStructure>[] jsonSerializationAlternatives = new Class[]{ ContextElementResponse_OrionCustomization.class };
 
 	@XmlElement(name = "contextElement", required = true)
 	private ContextElement contextElement = null;
