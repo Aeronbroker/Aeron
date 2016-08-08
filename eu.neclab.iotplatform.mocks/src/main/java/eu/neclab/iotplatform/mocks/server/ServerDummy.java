@@ -1,6 +1,7 @@
 package eu.neclab.iotplatform.mocks.server;
 
 import java.net.BindException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.mortbay.jetty.Server;
@@ -8,6 +9,8 @@ import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
 
 import com.sun.jersey.spi.container.servlet.ServletContainer;
+
+import eu.neclab.iotplatform.mocks.utils.Mode;
 
 public class ServerDummy {
 
@@ -37,24 +40,50 @@ public class ServerDummy {
 			Exception {
 		sh = new ServletHolder(ServletContainer.class);
 
-		
 		sh.setInitParameter(
 				"com.sun.jersey.config.property.resourceConfigClass",
 				"com.sun.jersey.api.core.PackagesResourceConfig");
 		sh.setInitParameter("com.sun.jersey.config.property.packages",
 				classBound);
-	
+
 		// custom parameters
-//		sh.setInitParameters(initParameters);
+		Map<String, Object> initParameters = getCustomInitParamters(port);
+		sh.setInitParameters(initParameters);
 
 		Server server = new Server(port);
-
 
 		Context context = new Context(server, "/", Context.SESSIONS);
 
 		context.addServlet(sh, "/*");
 		server.start();
 
+	}
+
+	private Map<String, Object> getCustomInitParamters(int port) {
+
+		Map<String, Object> initParameters = new HashMap<String, Object>();
+
+		String mode = System
+				.getProperty("eu.neclab.iotplaform.mocks.iotprovider." + port
+						+ ".mode");
+		if (mode != null) {
+
+			initParameters.put("mode", Mode.fromString(mode, Mode.RANDOM));
+
+		}
+
+		String queryContextResponseFile = System.getProperty(
+				"eu.neclab.iotplaform.mocks.iotprovider." + port
+						+ ".queryContextResponseFile",
+				"QueryContextResponse.xml");
+		if (queryContextResponseFile != null) {
+
+			initParameters.put("queryContextResponseFile",
+					queryContextResponseFile);
+
+		}
+
+		return initParameters;
 	}
 
 	public void stopServer() {

@@ -32,6 +32,7 @@ import com.sun.jersey.api.core.ResourceConfig;
 import eu.neclab.iotplatform.mocks.utils.Connector;
 import eu.neclab.iotplatform.mocks.utils.ContentType;
 import eu.neclab.iotplatform.mocks.utils.HeaderExtractor;
+import eu.neclab.iotplatform.mocks.utils.Mode;
 import eu.neclab.iotplatform.mocks.utils.UniqueIDGenerator;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
@@ -58,11 +59,18 @@ public class IoTProvider {
 			.fromString(
 					System.getProperty("eu.neclab.iotplaform.mocks.iotprovider.defaultIncomingContentType"),
 					ContentType.XML);
+
 	private final ContentType defaultOutgoingContentType = ContentType
 			.fromString(
 					System.getProperty("eu.neclab.iotplaform.mocks.iotprovider.defaultOutgoingContentType"),
 					ContentType.XML);
 
+	private final String defaultMode = System.getProperty(
+			"eu.neclab.iotplaform.mocks.iotprovider.defaultMode", "random");
+
+	private final String queryContextResponseFile = System.getProperty(
+			"eu.neclab.iotplaform.mocks.iotprovider.queryContextResponseFile",
+			"queryContextResponse.xml");
 
 	private static String urlIoTAgent = "http://127.0.0.1:8004/ngsi10/notify";
 
@@ -70,17 +78,15 @@ public class IoTProvider {
 			"eu.neclab.ioplatform.mocks.iotprovider.path", "xml/");
 
 	// private static String notificationFile = "notification.xml";
-	private static String queryContextResponseFile = "queryContextResponse.xml";
+	// private static String queryContextResponseFile =
+	// "queryContextResponse.xml";
 	private static String notifyContextRequestFile = "notifyContextRequest.xml";
 	private static String subscribeContextResponseFile = "subscribeContextResponse.xml";
-
 
 	@GET
 	@Path("/test")
 	@Produces("application/xml")
 	public String test(@Context ResourceConfig config) {
-
-		// System.out.println(config.getProperty("aa.aa.aa"));
 
 		return "test";
 
@@ -99,7 +105,8 @@ public class IoTProvider {
 	@Path("/queryContext")
 	@Consumes("application/json,application/xml")
 	@Produces("application/json,application/xml")
-	public String queryContext(String body, @Context HttpHeaders headers) {
+	public String queryContext(String body, @Context HttpHeaders headers,
+			@Context ResourceConfig config) {
 
 		// Get the incoming content-type
 		ContentType incomingContentType = HeaderExtractor.getContentType(
@@ -109,23 +116,39 @@ public class IoTProvider {
 		ContentType outgoingContentType = HeaderExtractor.getAccept(headers,
 				defaultOutgoingContentType);
 
-		// Parse the request
-		QueryContextRequest queryContextRequest;
-		if (incomingContentType == ContentType.JSON) {
-			queryContextRequest = (QueryContextRequest) NgsiStructure
-					.parseStringToJson(body, QueryContextRequest.class);
+		Mode mode;
+		Object contextMode = config.getProperty("mode");
+		if (contextMode == null) {
+			mode = Mode.fromString(defaultMode, Mode.RANDOM);
+		} else if (contextMode instanceof Mode) {
+			mode = (Mode) contextMode;
 		} else {
-			queryContextRequest = (QueryContextRequest) NgsiStructure
-					.convertStringToXml(body, QueryContextRequest.class);
+			mode = Mode.RANDOM;
 		}
 
-		logger.info("Received a NGSI-10 Query");
-		if (logger.isDebugEnabled()) {
-			logger.debug("NGSI-10 Query received: " + body);
+		QueryContextResponse response;
+		if (mode == Mode.RANDOM) {
 
+			// Parse the request
+			QueryContextRequest queryContextRequest;
+			if (incomingContentType == ContentType.JSON) {
+				queryContextRequest = (QueryContextRequest) NgsiStructure
+						.parseStringToJson(body, QueryContextRequest.class);
+			} else {
+				queryContextRequest = (QueryContextRequest) NgsiStructure
+						.convertStringToXml(body, QueryContextRequest.class);
+			}
+
+			logger.info("Received a NGSI-10 Query");
+			if (logger.isDebugEnabled()) {
+				logger.debug("NGSI-10 Query received: " + body);
+
+			}
+
+			response = createQueryContextResponse(queryContextRequest);
+		} else {
+			response = readQueryContextResponseFromFile();
 		}
-
-		QueryContextResponse response = createQueryContextResponse(queryContextRequest);
 
 		if (outgoingContentType == ContentType.XML) {
 			return response.toString();
@@ -172,8 +195,9 @@ public class IoTProvider {
 		Random rand = new Random();
 
 		List<ContextElementResponse> contextElementResponseList = new ArrayList<ContextElementResponse>();
-		
-		StatusCode okCode = new StatusCode(Code.OK_200.getCode(),ReasonPhrase.OK_200.toString(),"");
+
+		StatusCode okCode = new StatusCode(Code.OK_200.getCode(),
+				ReasonPhrase.OK_200.toString(), "");
 
 		for (EntityId entityId : queryRequest.getEntityIdList()) {
 
@@ -199,6 +223,37 @@ public class IoTProvider {
 
 		return response;
 
+	}
+
+	private QueryContextResponse readQueryContextResponseFromFile() {
+
+		QueryContextResponse response = new QueryContextResponse();
+		String file = null;
+		try {
+
+			file = path + "/" + notifyContextRequestFile;
+			InputStream is = new FileInputStream(file);
+
+			JAXBContext context;
+			context = JAXBContext.newInstance(NotifyContextRequest.class);
+
+			// Create the marshaller, this is the nifty little thing that
+			// will actually transform the object into XML
+			Unmarshaller unmarshaller = context.createUnmarshaller();
+			response = (NotifyContextRequest) unmarshaller.unmarshal(is);
+
+			response.setOriginator(urlIoTAgent);
+			response.setSubscriptionId(id);
+
+		} catch (JAXBException e) {
+			logger.error("JAXB ERROR!", e);
+		} catch (FileNotFoundException e) {
+			logger.error("FILE NOT FOUND!: " + file);
+		}
+
+		String resp = response.toString();
+
+		return resp;
 	}
 
 	public static String readNotifyFromFile(String id) {
