@@ -59,7 +59,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
  */
 @XmlRootElement(name = "polygon")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Polygon implements Serializable{
+public class Polygon extends NgsiStructure implements Serializable{
 
 	/**
 	 *

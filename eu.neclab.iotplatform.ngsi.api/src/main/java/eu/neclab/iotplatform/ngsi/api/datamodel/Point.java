@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "point")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Point implements Serializable {
+public class Point extends NgsiStructure implements Serializable {
 
 	/**
 	 * 
