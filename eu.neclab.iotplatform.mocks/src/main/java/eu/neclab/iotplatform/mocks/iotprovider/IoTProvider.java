@@ -35,6 +35,7 @@ import eu.neclab.iotplatform.mocks.utils.Connector;
 import eu.neclab.iotplatform.mocks.utils.ContentType;
 import eu.neclab.iotplatform.mocks.utils.HeaderExtractor;
 import eu.neclab.iotplatform.mocks.utils.Mode;
+import eu.neclab.iotplatform.mocks.utils.ServerConfiguration;
 import eu.neclab.iotplatform.mocks.utils.UniqueIDGenerator;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
@@ -67,12 +68,13 @@ public class IoTProvider {
 					System.getProperty("eu.neclab.iotplaform.mocks.iotprovider.defaultOutgoingContentType"),
 					ContentType.XML);
 
-	private final String defaultMode = System.getProperty(
-			"eu.neclab.iotplaform.mocks.iotprovider.defaultMode", "random");
+	// private final String defaultMode = System.getProperty(
+	// "eu.neclab.iotplaform.mocks.iotprovider.defaultMode", "random");
 
-	private final String queryContextResponseFile = System.getProperty(
-			"eu.neclab.iotplaform.mocks.iotprovider.defaultQueryContextResponseFile",
-			"queryContextResponse.xml");
+	private final String queryContextResponseFile = System
+			.getProperty(
+					"eu.neclab.iotplaform.mocks.iotprovider.defaultQueryContextResponseFile",
+					"queryContextResponse.xml");
 
 	private static String urlIoTAgent = "http://127.0.0.1:8004/ngsi10/notify";
 
@@ -120,12 +122,11 @@ public class IoTProvider {
 
 		Mode mode;
 		Object contextMode = config.getProperty("mode");
-		if (contextMode == null) {
-			mode = Mode.fromString(defaultMode, Mode.RANDOM);
-		} else if (contextMode instanceof Mode) {
-			mode = (Mode) contextMode;
+		if (contextMode != null && contextMode instanceof String) {
+			mode = (Mode) Mode.fromString((String) contextMode,
+					ServerConfiguration.DEFAULT_MODE);
 		} else {
-			mode = Mode.RANDOM;
+			mode = ServerConfiguration.DEFAULT_MODE;
 		}
 
 		QueryContextResponse response;
@@ -144,7 +145,6 @@ public class IoTProvider {
 			logger.info("Received a NGSI-10 Query");
 			if (logger.isDebugEnabled()) {
 				logger.debug("NGSI-10 Query received: " + body);
-
 			}
 
 			response = createQueryContextResponse(queryContextRequest);
@@ -156,9 +156,9 @@ public class IoTProvider {
 			}
 
 		} else {
-			Object file = config.getProperty("file");
+			Object file = config.getProperty("queryContextResponseFile");
 			if (file == null) {
-				return readQueryContextResponseFromFile(queryContextResponseFile);
+				return readQueryContextResponseFromFile(ServerConfiguration.DEFAULT_QUERYCONTEXTRESPONSEFILE);
 			} else {
 				return readQueryContextResponseFromFile((String) file);
 			}
