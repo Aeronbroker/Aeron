@@ -291,8 +291,14 @@
 				minOccurs="0" maxOccurs="1" />
 			<xs:element name="registrationMetadata" type="RegistrationMetadata"
 				minOccurs="0" maxOccurs="1" />
-			<xs:element name="providingApplication" type="xs:anyURI"
-				minOccurs="1" maxOccurs="1" />
+			<xs:element name="providingApplication"
+				minOccurs="1" maxOccurs="1">
+				<xs:simpleType>
+					<xs:restriction base="xs:anyURI">
+						<xs:minLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 
