@@ -65,14 +65,14 @@ public class NotifyCondition extends NgsiStructure {
 	private List<String> condValues;
 
 	@XmlElement(name = "restriction")
-	private Restriction restriction = null;
+	private String restriction = null;
 
 	public NotifyCondition() {
 
 	}
 
 	public NotifyCondition(NotifyConditionEnum notifyConditionEnum,
-			List<String> condValues, Restriction restriction) {
+			List<String> condValues, String restriction) {
 		this.type = notifyConditionEnum;
 		this.condValues = condValues;
 		this.restriction = restriction;
@@ -95,11 +95,11 @@ public class NotifyCondition extends NgsiStructure {
 		this.condValues = condValue;
 	}
 
-	public Restriction getRestriction() {
+	public String getRestriction() {
 		return restriction;
 	}
 
-	public void setRestriction(Restriction restriction) {
+	public void setRestriction(String restriction) {
 		this.restriction = restriction;
 	}
 
