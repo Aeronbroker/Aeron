@@ -77,7 +77,7 @@ public class FullHttpRequester {
 			}
 
 			logger.info("\nSending 'POST' request to URL : " + url + "\n"
-					+ "Put parameters : " + data + "\n");
+					+ "POST parameters : " + data + "\n");
 
 			if (data != null && !data.equals("")) {
 				// Send put request

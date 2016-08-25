@@ -47,12 +47,13 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Implements ContextElementResponse
- * as defined in OMA NGSI 9/10 approved version 1.0.
+ * Implements ContextElementResponse as defined in OMA NGSI 9/10 approved
+ * version 1.0.
  */
 @XmlRootElement(name = "contextElementResponse")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ContextElementResponse_OrionCustomization extends NgsiStructureAlternative {
+public class ContextElementResponse_OrionCustomization extends
+		NgsiStructureAlternative {
 
 	@XmlElement(name = "contextElement", required = true)
 	private ContextElement_OrionCustomization contextElement = null;
@@ -64,7 +65,8 @@ public class ContextElementResponse_OrionCustomization extends NgsiStructureAlte
 
 	}
 
-	public ContextElementResponse_OrionCustomization(ContextElement_OrionCustomization contextElement,
+	public ContextElementResponse_OrionCustomization(
+			ContextElement_OrionCustomization contextElement,
 			StatusCode statusCode) {
 		this.contextElement = contextElement;
 		this.statusCode = statusCode;
@@ -75,7 +77,8 @@ public class ContextElementResponse_OrionCustomization extends NgsiStructureAlte
 		return contextElement;
 	}
 
-	public void setContextElement(ContextElement_OrionCustomization contextElement) {
+	public void setContextElement(
+			ContextElement_OrionCustomization contextElement) {
 		this.contextElement = contextElement;
 	}
 
@@ -86,17 +89,18 @@ public class ContextElementResponse_OrionCustomization extends NgsiStructureAlte
 	public void setStatusCode(StatusCode statusCode) {
 		this.statusCode = statusCode;
 	}
-	
-	public ContextElementResponse toContextElementResponse(){
-		
-		return new ContextElementResponse(contextElement.toContextElement(), statusCode);
-	
+
+	public ContextElementResponse toContextElementResponse() {
+
+		return new ContextElementResponse(contextElement.toContextElement(),
+				statusCode);
+
 	}
-	
+
 	@Override
 	public boolean sanityCheck() {
 		if (contextElement == null || !contextElement.sanityCheck()
-				|| !statusCode.sanityCheck()) {
+				|| statusCode == null || !statusCode.sanityCheck()) {
 			return false;
 		}
 		return true;

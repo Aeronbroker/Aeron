@@ -248,10 +248,8 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			return NgsiStructure.convertStringToXml(body, clazz);
 
 		} else {
-			String toParse = body.replaceAll("\\\"metadatas\\\"",
-					"\\\"contextMetadata\\\"");
 
-			return NgsiStructure.parseStringToJson(toParse, clazz, true, true);
+			return NgsiStructure.parseStringToJson(body, clazz, true, true);
 
 		}
 	}

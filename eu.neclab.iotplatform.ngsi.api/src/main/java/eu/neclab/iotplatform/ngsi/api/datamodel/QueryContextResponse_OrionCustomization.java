@@ -50,6 +50,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 @XmlRootElement(name = "queryContextResponse")
@@ -58,7 +59,8 @@ import org.codehaus.jackson.annotate.JsonProperty;
  * as defined in OMA NGSI 9/10 approved version 1.0.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-public class QueryContextResponse_OrionCustomization extends NgsiStructureAlternative {
+public class QueryContextResponse_OrionCustomization extends
+		NgsiStructureAlternative {
 
 	@XmlElementWrapper(name = "contextResponseList")
 	@XmlElement(name = "contextElementResponse")
@@ -97,26 +99,30 @@ public class QueryContextResponse_OrionCustomization extends NgsiStructureAltern
 
 	}
 
+	@JsonIgnore
 	public List<ContextElementResponse_OrionCustomization> getListContextElementResponse() {
 		if (contextElementResponse == null) {
 			contextElementResponse = new ArrayList<ContextElementResponse_OrionCustomization>();
 		}
 		return contextElementResponse;
 	}
-
+	
+	@JsonIgnore
 	public void setContextResponseList(
 			List<ContextElementResponse_OrionCustomization> ContextResponseList) {
 		contextElementResponse = ContextResponseList;
 	}
 
+	@JsonIgnore
 	public StatusCode getErrorCode() {
 		return errorCode;
 	}
 
+	@JsonIgnore
 	public void setErrorCode(StatusCode errorCode) {
 		this.errorCode = errorCode;
 	}
-	
+
 	@Override
 	public boolean sanityCheck() {
 		if (contextElementResponse != null && !contextElementResponse.isEmpty()) {
