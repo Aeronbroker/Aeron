@@ -84,6 +84,7 @@ public class SubscribeContextRequest extends NgsiStructure {
 	
 	@XmlElementWrapper(name = "notifyConditions")
 	@XmlElement(name = "notifyCondition")
+	@JsonProperty("notifyConditions")
 	private List<NotifyCondition> notifyCondition;
 	
 	@XmlElement(name = "throttling")
