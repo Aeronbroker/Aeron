@@ -15,6 +15,8 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadataAssociation;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityResponse;
@@ -41,7 +43,8 @@ public class AssociationsHandler {
 		// this.ngsi9Impl = ngsi9Impl;
 	}
 
-	public void insertAssociationScope(DiscoverContextAvailabilityRequest request) {
+	public static void insertAssociationScope(
+			DiscoverContextAvailabilityRequest request) {
 
 		/*
 		 * create associations operation scope for discovery
@@ -82,7 +85,7 @@ public class AssociationsHandler {
 
 	}
 
-	public List<AssociationDS> getTransitiveList(
+	public static List<AssociationDS> getTransitiveList(
 			DiscoverContextAvailabilityResponse discoveryResponse,
 			QueryContextRequest queryRequest) {
 
@@ -119,7 +122,39 @@ public class AssociationsHandler {
 
 	}
 
-	public List<ContextElementResponse> applySourceToTargetTransitivity(
+	public static List<ContextRegistrationResponse> getAssociatedContextRegistrations(
+			List<AssociationDS> transitiveList) {
+
+		List<ContextRegistrationResponse> associatedContextRegistrations = new ArrayList<ContextRegistrationResponse>();
+
+		for (AssociationDS associationDS : transitiveList) {
+
+			ContextRegistration contextRegistration = new ContextRegistration();
+
+			contextRegistration.setListEntityId(new ArrayList<EntityId>());
+			contextRegistration.getListEntityId().add(
+					associationDS.getSourceEA().getEntity());
+
+			contextRegistration
+					.setListContextRegistrationAttribute(new ArrayList<ContextRegistrationAttribute>());
+			contextRegistration.getContextRegistrationAttribute().add(
+					new ContextRegistrationAttribute(associationDS
+							.getSourceEA().getEntityAttribute(), null, false,
+							null));
+
+			contextRegistration.setProvidingApplication(associationDS
+					.getProvidingApplication());
+
+			associatedContextRegistrations.add(new ContextRegistrationResponse(
+					contextRegistration, null));
+
+		}
+
+		return associatedContextRegistrations;
+
+	}
+
+	public static List<ContextElementResponse> applySourceToTargetTransitivity(
 			ContextElementResponse contextElementResponse,
 			List<AssociationDS> transitiveList) {
 
@@ -199,17 +234,19 @@ public class AssociationsHandler {
 						newContextElement.setContextAttributeList(lca);
 					}
 				}
+				
+				newContextElementResponseList.add(new ContextElementResponse(
+						newContextElement, contextElementResponse.getStatusCode()));
 			}
 
-			newContextElementResponseList.add(new ContextElementResponse(
-					newContextElement, contextElementResponse.getStatusCode()));
+
 		}
 
 		return newContextElementResponseList;
 	}
 
-	public UpdateContextRequest applyAssociation(UpdateContextRequest request,
-			Ngsi9Interface ngsi9Impl) {
+	public static UpdateContextRequest applyAssociation(
+			UpdateContextRequest request, Ngsi9Interface ngsi9Impl) {
 
 		List<AssociationDS> listAssociationDS = new LinkedList<AssociationDS>();
 		final List<ContextElement> lContextElements = request
@@ -293,7 +330,9 @@ public class AssociationsHandler {
 							AssociationDS ads = new AssociationDS(
 									new EntityAttribute(va.getSourceEntity(),
 											""), new EntityAttribute(
-											va.getSourceEntity(), ""));
+											va.getSourceEntity(), ""), crr
+											.getContextRegistration()
+											.getProvidingApplication());
 							listAssociationDS.add(ads);
 						} else {
 							List<AttributeAssociation> lAttributeAsociations = va
@@ -305,7 +344,9 @@ public class AssociationsHandler {
 												aa.getSourceAttribute()),
 										new EntityAttribute(va
 												.getTargetEntity(), aa
-												.getTargetAttribute()));
+												.getTargetAttribute()), crr
+												.getContextRegistration()
+												.getProvidingApplication());
 								listAssociationDS.add(ads);
 							}
 						}

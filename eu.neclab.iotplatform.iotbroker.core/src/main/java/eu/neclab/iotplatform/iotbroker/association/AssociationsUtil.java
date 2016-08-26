@@ -67,11 +67,10 @@ import eu.neclab.iotplatform.ngsi.association.datamodel.AssociationDS;
 import eu.neclab.iotplatform.ngsi.association.datamodel.EntityAttribute;
 
 /**
- * Utility for working with NGSI associations. Instances of this class
- * are state-less, i.e. one global instance suffices (unless one wants do
- * do fancy things like using different instances assigned to different
- * loggers).
- *
+ * Utility for working with NGSI associations. Instances of this class are
+ * state-less, i.e. one global instance suffices (unless one wants do do fancy
+ * things like using different instances assigned to different loggers).
+ * 
  */
 public class AssociationsUtil {
 
@@ -80,10 +79,10 @@ public class AssociationsUtil {
 	private static final String DIV = "<div>";
 
 	/**
-	 *
+	 * 
 	 * Converts a list of associations represented by a String into a
 	 * {@link List} of association objects.
-	 *
+	 * 
 	 * @param assoc
 	 * @return
 	 */
@@ -99,11 +98,13 @@ public class AssociationsUtil {
 
 	/**
 	 * Returns a String representation of an association list.
-	 *
-	 * @param transitiveList The association list.
+	 * 
+	 * @param transitiveList
+	 *            The association list.
 	 * @return The list in string format.
 	 */
-	public static String convertAssociationToString(List<AssociationDS> transitiveList) {
+	public static String convertAssociationToString(
+			List<AssociationDS> transitiveList) {
 		StringBuilder buf = new StringBuilder();
 		for (AssociationDS ads : transitiveList) {
 			buf.append(XmlFactory.convertToXml(ads, AssociationDS.class));
@@ -113,7 +114,6 @@ public class AssociationsUtil {
 		return buf.toString();
 	}
 
-
 	private static int checkAssociationType(AssociationDS aDSfrmOriginal,
 			AssociationDS aDSfrmQueue) {
 
@@ -121,26 +121,27 @@ public class AssociationsUtil {
 
 		if ("".equals(aDSfrmOriginal.getSourceEA().getEntityAttribute())
 				&& "".equals(aDSfrmOriginal.getTargetEA().getEntityAttribute())) {
+
 			if ("".equals(aDSfrmQueue.getSourceEA().getEntityAttribute())
-					&& "".equals(aDSfrmQueue.getTargetEA().getEntityAttribute()
-							)) {
+					&& "".equals(aDSfrmQueue.getTargetEA().getEntityAttribute())) {
+
 				count = 1;
-			} else if (!"".equals(aDSfrmQueue.getSourceEA().getEntityAttribute())
-					&& !"".equals(aDSfrmQueue.getTargetEA().getEntityAttribute()
-							)) {
+			} else if (!"".equals(aDSfrmQueue.getSourceEA()
+					.getEntityAttribute())
+					&& !"".equals(aDSfrmQueue.getTargetEA()
+							.getEntityAttribute())) {
 				count = 2;
 			}
-		} else if (!"".equals(aDSfrmOriginal.getSourceEA().getEntityAttribute())
-				&& !"".equals(aDSfrmOriginal.getTargetEA().getEntityAttribute()
-						)) {
+		} else if (!""
+				.equals(aDSfrmOriginal.getSourceEA().getEntityAttribute())
+				&& !"".equals(aDSfrmOriginal.getTargetEA().getEntityAttribute())) {
 			if ("".equals(aDSfrmQueue.getSourceEA().getEntityAttribute())
-					&& "".equals(aDSfrmQueue.getTargetEA().getEntityAttribute()
-							)) {
+					&& "".equals(aDSfrmQueue.getTargetEA().getEntityAttribute())) {
 				count = 3;
-			} else if (!"".equals(aDSfrmQueue.getSourceEA().getEntityAttribute()
-					)
-					&& !"".equals(aDSfrmQueue.getTargetEA().getEntityAttribute()
-							)) {
+			} else if (!"".equals(aDSfrmQueue.getSourceEA()
+					.getEntityAttribute())
+					&& !"".equals(aDSfrmQueue.getTargetEA()
+							.getEntityAttribute())) {
 				count = 4;
 			}
 		}
@@ -155,21 +156,24 @@ public class AssociationsUtil {
 		AssociationDS newAssociationDS = null;
 		if (count == 1) {
 			newAssociationDS = new AssociationDS(aDSfrmOriginal.getSourceEA(),
-					aDSfrmQueue.getTargetEA());
+					aDSfrmQueue.getTargetEA(),
+					aDSfrmOriginal.getProvidingApplication());
 		} else if (count == 2) {
 			newAssociationDS = new AssociationDS(new EntityAttribute(
 					aDSfrmOriginal.getSourceEA().getEntity(), aDSfrmQueue
-					.getSourceEA().getEntityAttribute()),
+							.getSourceEA().getEntityAttribute()),
 					new EntityAttribute(aDSfrmQueue.getTargetEA().getEntity(),
-							aDSfrmQueue.getSourceEA().getEntityAttribute()));
+							aDSfrmQueue.getSourceEA().getEntityAttribute()),
+					aDSfrmOriginal.getProvidingApplication());
 
 		} else if (count == 3) {
 
 			newAssociationDS = new AssociationDS(new EntityAttribute(
 					aDSfrmOriginal.getSourceEA().getEntity(), aDSfrmOriginal
-					.getSourceEA().getEntityAttribute()),
+							.getSourceEA().getEntityAttribute()),
 					new EntityAttribute(aDSfrmQueue.getTargetEA().getEntity(),
-							aDSfrmOriginal.getSourceEA().getEntityAttribute()));
+							aDSfrmOriginal.getSourceEA().getEntityAttribute()),
+					aDSfrmOriginal.getProvidingApplication());
 		} else if (count == 4) {
 			logger.debug("aDSfrmOriginal.getTargetEA().getEntityAttribute():"
 					+ aDSfrmOriginal.getTargetEA().getEntityAttribute()
@@ -178,7 +182,9 @@ public class AssociationsUtil {
 			if (aDSfrmOriginal.getTargetEA().getEntityAttribute()
 					.equals(aDSfrmQueue.getSourceEA().getEntityAttribute())) {
 				newAssociationDS = new AssociationDS(
-						aDSfrmOriginal.getSourceEA(), aDSfrmQueue.getTargetEA());
+						aDSfrmOriginal.getSourceEA(),
+						aDSfrmQueue.getTargetEA(),
+						aDSfrmOriginal.getProvidingApplication());
 			}
 		}
 		return newAssociationDS;
@@ -193,16 +199,17 @@ public class AssociationsUtil {
 	 * association A --> C.
 	 * <p>
 	 * This is applied until there is nothing left to add. This means that e.g.
-	 * when targetAssocs contains C-->D and moreAssociations contains both A-->B and B-->C, then
-	 * the returned association set contains C-->D, B-->D, and A-->D.
-	 *
+	 * when targetAssocs contains C-->D and moreAssociations contains both A-->B
+	 * and B-->C, then the returned association set contains C-->D, B-->D, and
+	 * A-->D.
+	 * 
 	 */
 	public static List<AssociationDS> transitiveAssociationAnalysisFrQuery(
-			List<AssociationDS> moreAssociations, List<AssociationDS> targetAssocs) {
+			List<AssociationDS> moreAssociations,
+			List<AssociationDS> targetAssocs) {
 		logger.debug("Association List frm DiscoverContextAvailabilityResponse:"
 				+ moreAssociations);
-		logger.debug("Association List frm additionalReqList:"
-				+ targetAssocs);
+		logger.debug("Association List frm additionalReqList:" + targetAssocs);
 		List<AssociationDS> transitiveAssociationDS = new LinkedList<AssociationDS>();
 		// this is gonna be the output
 
@@ -242,18 +249,17 @@ public class AssociationsUtil {
 	}
 
 	/**
-	 *
-	 * This method extracts from the associations list all associations
-	 * whose target match with the given query context request.
-	 *
+	 * 
+	 * This method extracts from the associations list all associations whose
+	 * target match with the given query context request.
+	 * 
 	 * @param qcReq
-	 * The query context request to match with
+	 *            The query context request to match with
 	 * @param assocList
-	 * The list of associations from which to extract.
+	 *            The list of associations from which to extract.
 	 */
 	public static List<AssociationDS> initialLstOfmatchedAssociation(
 			QueryContextRequest qcReq, List<AssociationDS> assocList) {
-
 
 		/*
 		 * Initialize the list of associations that will be returned
@@ -268,49 +274,67 @@ public class AssociationsUtil {
 
 		List<EntityId> entityList = qcReq.getEntityIdList();
 
-		logger.debug("Entity ID list SIZE:"+ entityList.size());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Entity ID list SIZE:" + entityList.size());
+		}
 
 		for (EntityId eID : entityList) {
 
-			logger.debug("EntityId: "+ eID);
+			if (logger.isDebugEnabled()) {
 
-			logger.debug("Association List Size: "+ assocList.size());
+				logger.debug("EntityId: " + eID);
+
+				logger.debug("Association List Size: " + assocList.size());
+			}
 
 			for (AssociationDS aDS : assocList) {
 
-				logger.debug("Association Target Id: "+ aDS.getTargetEA().getEntityID());
+				if (logger.isDebugEnabled()) {
+
+					logger.debug("Association Target Id: "
+							+ aDS.getTargetEA().getEntityID());
+				}
 				/*
-				 * First check whether the target entity of the association matches
-				 * with the entity id. If this is not the case, then nothing is done
-				 * for this pair
+				 * First check whether the target entity of the association
+				 * matches with the entity id. If this is not the case, then
+				 * nothing is done for this pair
 				 */
 
 				if (EntityIDMatcher.matcher(aDS.getTargetEA().getEntity(), eID)) {
 
-					logger.debug("Association Target Id matched Entity Id: "+ aDS.getTargetEA().getEntityID() + " = "+ eID.getId());
+					if (logger.isDebugEnabled()) {
+
+						logger.debug("Association Target Id matched Entity Id: "
+								+ aDS.getTargetEA().getEntityID()
+								+ " = "
+								+ eID.getId());
+					}
 
 					/*
-					 * Now check whether the association is an attribute association.
+					 * Now check whether the association is an attribute
+					 * association.
 					 */
 
 					if ("".equals(aDS.getSourceEA().getEntityAttribute())) {
 
 						/*
-						 * If the association is no attribute association, then check
-						 * whether in the query context request there is an attribute
-						 * specified.
+						 * If the association is no attribute association, then
+						 * check whether in the query context request there is
+						 * an attribute specified.
 						 */
 
 						if (qcReq.getAttributeList().size() > 0) {
 
-
 							/*
-							 * If attributes are specified in the query request, then the
-							 * entity association is converted to a set of attribute associations.
-							 *
-							 * For each of the attributes in the query, an attribute association
-							 * is created where this attribute is both in source and target. These
-							 * associations are put into the list of associations to return.
+							 * If attributes are specified in the query request,
+							 * then the entity association is converted to a set
+							 * of attribute associations.
+							 * 
+							 * For each of the attributes in the query, an
+							 * attribute association is created where this
+							 * attribute is both in source and target. These
+							 * associations are put into the list of
+							 * associations to return.
 							 */
 
 							for (int i = 0; i < qcReq.getAttributeList().size(); i++) {
@@ -321,31 +345,37 @@ public class AssociationsUtil {
 									// sourceattribute has
 									// already been checked
 									// above.
-									additionalReqList.add(new AssociationDS(
-											new EntityAttribute(aDS
-													.getSourceEA().getEntity(),
-													qcReq.getAttributeList()
-													.get(i)),
+									additionalReqList
+											.add(new AssociationDS(
 													new EntityAttribute(aDS
-															.getTargetEA().getEntity(),
-															qcReq.getAttributeList()
-															.get(i))));
+															.getSourceEA()
+															.getEntity(), qcReq
+															.getAttributeList()
+															.get(i)),
+													new EntityAttribute(aDS
+															.getTargetEA()
+															.getEntity(), qcReq
+															.getAttributeList()
+															.get(i)),
+													aDS.getProvidingApplication()));
 								}
 							}
 						} else {
 
 							/*
-							 * Otherwise, if the association is an entity association and
-							 * there is no attribute specified in the query, then the association
-							 * is put into the set of associations to return just like it is,
+							 * Otherwise, if the association is an entity
+							 * association and there is no attribute specified
+							 * in the query, then the association is put into
+							 * the set of associations to return just like it
+							 * is,
 							 */
 							additionalReqList.add(new AssociationDS(aDS
 									.getSourceEA(), new EntityAttribute(aDS
-											.getTargetEA().getEntity(), "")));
+									.getTargetEA().getEntity(), ""), aDS
+									.getProvidingApplication()));
 						}
 
-					} else if (!"".equals(aDS.getSourceEA().getEntityAttribute()
-							)) { // note: "just 'else' is sufficient
+					} else {
 						if (qcReq.getAttributeList().size() > 0) {
 
 							/*
@@ -353,9 +383,9 @@ public class AssociationsUtil {
 							 * attribute association and the query specifies
 							 * attributes. What we do here is to search for an
 							 * attribute in the query that matches with the
-							 * target attribute of the association.
-							 * When found, we add the association to the list
-							 * of associations to return.
+							 * target attribute of the association. When found,
+							 * we add the association to the list of
+							 * associations to return.
 							 */
 
 							for (int i = 0; i < qcReq.getAttributeList().size(); i++) {
@@ -363,23 +393,28 @@ public class AssociationsUtil {
 								if (aDS.getTargetEA()
 										.getEntityAttribute()
 										.equals(qcReq.getAttributeList().get(i))) {
-									additionalReqList.add(new AssociationDS(aDS
-											.getSourceEA(),
-											new EntityAttribute(aDS
-													.getTargetEA().getEntity(),
-													qcReq.getAttributeList()
-													.get(i))));
+									additionalReqList
+											.add(new AssociationDS(
+													aDS.getSourceEA(),
+													new EntityAttribute(aDS
+															.getTargetEA()
+															.getEntity(), qcReq
+															.getAttributeList()
+															.get(i)),
+													aDS.getProvidingApplication()));
 								}
 							}
 						} else {
 							/*
-							 * The final case is here: The association is an attribute
-							 * association and the query specifies no attribute. In this
-							 * case we simply add the association to the list of associations
-							 * to return.
+							 * The final case is here: The association is an
+							 * attribute association and the query specifies no
+							 * attribute. In this case we simply add the
+							 * association to the list of associations to
+							 * return.
 							 */
 							additionalReqList.add(new AssociationDS(aDS
-									.getSourceEA(), aDS.getTargetEA()));
+									.getSourceEA(), aDS.getTargetEA(), aDS
+									.getProvidingApplication()));
 						}
 					}
 				}
@@ -390,24 +425,23 @@ public class AssociationsUtil {
 	}
 
 	/**
-	 * Constructs a {@link DiscoverContextAvailabilityResponse} that contains all sources that
-	 * have to be queried in order to apply the given associations.
-	 *
+	 * Constructs a {@link DiscoverContextAvailabilityResponse} that contains
+	 * all sources that have to be queried in order to apply the given
+	 * associations.
+	 * 
 	 * @param dcaRes
-	 * 	The given {@link DiscoverContextAvailabilityResponse} from which the sources are taken.
+	 *            The given {@link DiscoverContextAvailabilityResponse} from
+	 *            which the sources are taken.
 	 * @param lassociDS
-	 * The list of associations.
-	 * @return
-	 * The constructed DiscoverContextAvailabilityResponse.
+	 *            The list of associations.
+	 * @return The constructed DiscoverContextAvailabilityResponse.
 	 */
 	public static DiscoverContextAvailabilityResponse validDiscoverContextAvailabiltyResponse(
 			DiscoverContextAvailabilityResponse dcaRes,
 			List<AssociationDS> lassociDS) {
 
-
 		List<ContextRegistrationResponse> lcrr = dcaRes
 				.getContextRegistrationResponse();
-
 
 		List<ContextRegistrationResponse> validlcrr = new LinkedList<ContextRegistrationResponse>();
 		DiscoverContextAvailabilityResponse vDCARes = new DiscoverContextAvailabilityResponse();
@@ -416,25 +450,25 @@ public class AssociationsUtil {
 				for (ContextRegistrationResponse crr : lcrr) {
 					URI uri = crr.getContextRegistration()
 							.getProvidingApplication();
-					if (uri != null && !"".equals(uri.toString()) && crr.getContextRegistration().getListEntityId() != null) {
+					if (uri != null
+							&& !"".equals(uri.toString())
+							&& crr.getContextRegistration().getListEntityId() != null) {
 						List<EntityId> leid = crr.getContextRegistration()
 								.getListEntityId();
 						for (EntityId eid : leid) {
-							if (EntityIDMatcher.matcher(eid, aDS
-									.getSourceEA().getEntity())) {
+							if (EntityIDMatcher.matcher(eid, aDS.getSourceEA()
+									.getEntity())) {
 								List<ContextRegistrationAttribute> lcra = crr
 										.getContextRegistration()
 										.getContextRegistrationAttribute();
 								for (ContextRegistrationAttribute cra : lcra) {
 									if ("".equals(aDS.getSourceEA()
-											.getEntityAttribute()
-											)) {
+											.getEntityAttribute())) {
 										if (aDS.getTargetEA()
 												.getEntityAttribute()
 												.equals(cra.getName())
 												|| "".equals(aDS.getTargetEA()
-														.getEntityAttribute()
-														)) {
+														.getEntityAttribute())) {
 											validlcrr.add(crr);
 										}
 									} else if (aDS.getSourceEA()
@@ -442,7 +476,6 @@ public class AssociationsUtil {
 											.equals(cra.getName())) {
 										validlcrr.add(crr);
 									}
-
 
 									break;
 								}
@@ -466,6 +499,7 @@ public class AssociationsUtil {
 	 */
 	public static List<AssociationDS> retrieveAssociation(
 			DiscoverContextAvailabilityResponse dcaRes) {
+
 		List<AssociationDS> lADS = new LinkedList<AssociationDS>();
 		List<ContextRegistrationResponse> lcrr = dcaRes
 				.getContextRegistrationResponse();
@@ -473,7 +507,10 @@ public class AssociationsUtil {
 		Iterator<ContextRegistrationResponse> itContextRegistrationResponse = lcrr
 				.iterator();
 
-		logger.debug("N. Context Registrations inside the DiscoverContextAvailability Response = " + lcrr.size());
+		if (logger.isDebugEnabled()) {
+			logger.debug("N. Context Registrations inside the DiscoverContextAvailability Response = "
+					+ lcrr.size());
+		}
 
 		while (itContextRegistrationResponse.hasNext()) {
 			ContextRegistrationResponse crr = itContextRegistrationResponse
@@ -486,8 +523,10 @@ public class AssociationsUtil {
 			while (it1.hasNext()) {
 				ContextMetadata cmd = it1.next();
 
-				logger.debug("Context Metadata ="+ cmd);
-				logger.debug("Context Metadata Name ="+ cmd.getName());
+				if (logger.isDebugEnabled()) {
+					logger.debug("Context Metadata =" + cmd);
+					logger.debug("Context Metadata Name =" + cmd.getName());
+				}
 
 				if ("Association".equals(cmd.getName().toString())) {
 
@@ -499,13 +538,23 @@ public class AssociationsUtil {
 							.convertStringToXml(s, ValueAssociation.class);
 					cma.setValue(va);
 
-					logger.debug("Association Target Id ----------------> "+va.getTargetEntity());
+					if (logger.isDebugEnabled()) {
+						logger.debug("Association Target Id ----------------> "
+								+ va.getTargetEntity());
+					}
+
+					if (va == null || va.getSourceEntity() == null
+							|| va.getTargetEntity() == null) {
+						continue;
+					}
 
 					if (va.getAttributeAssociation().isEmpty()) {
 
 						AssociationDS ads = new AssociationDS(
 								new EntityAttribute(va.getSourceEntity(), ""),
-								new EntityAttribute(va.getTargetEntity(), ""));
+								new EntityAttribute(va.getTargetEntity(), ""),
+								crr.getContextRegistration()
+										.getProvidingApplication());
 						lADS.add(ads);
 					} else {
 						List<AttributeAssociation> lAttributeAsociations = va
@@ -515,8 +564,10 @@ public class AssociationsUtil {
 							AssociationDS ads = new AssociationDS(
 									new EntityAttribute(va.getSourceEntity(),
 											aa.getSourceAttribute()),
-											new EntityAttribute(va.getTargetEntity(),
-													aa.getTargetAttribute()));
+									new EntityAttribute(va.getTargetEntity(),
+											aa.getTargetAttribute()), crr
+											.getContextRegistration()
+											.getProvidingApplication());
 							lADS.add(ads);
 						}
 					}
@@ -529,13 +580,13 @@ public class AssociationsUtil {
 	}
 
 	/**
-	 *
+	 * 
 	 * @param lads
 	 * @param ea
 	 * @return
 	 */
-	public static List<EntityAttribute> findAssociation(List<AssociationDS> lads,
-			EntityAttribute ea) {
+	public static List<EntityAttribute> findAssociation(
+			List<AssociationDS> lads, EntityAttribute ea) {
 		logger.debug("List of associations");
 		for (AssociationDS a : lads) {
 			logger.debug(a.toString());
@@ -575,9 +626,9 @@ public class AssociationsUtil {
 				}
 				if ("".equals(a.getSourceEA().getEntityAttribute())) {
 					EntityAttribute f = new EntityAttribute(a.getTargetEA()
-							.getEntity(), "".equals(a.getTargetEA().getEntityAttribute())
-							? tEa.getEntityAttribute() : a
-									.getSourceEA().getEntityAttribute());
+							.getEntity(), "".equals(a.getTargetEA()
+							.getEntityAttribute()) ? tEa.getEntityAttribute()
+							: a.getSourceEA().getEntityAttribute());
 
 					if (!outputlea.contains(f)) {
 						logger.debug("Adding in final queue:" + f.toString());

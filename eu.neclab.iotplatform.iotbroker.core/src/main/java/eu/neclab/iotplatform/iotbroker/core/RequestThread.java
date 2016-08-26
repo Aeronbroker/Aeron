@@ -71,7 +71,7 @@ public class RequestThread implements Runnable {
 	private QueryResponseMerger merger;
 
 	private Ngsi10Requester requestor;
-	private AssociationsHandler associationsHandler;
+//	private AssociationsHandler associationsHandler;
 
 	private List<AssociationDS> transitiveList;
 
@@ -139,10 +139,11 @@ public class RequestThread implements Runnable {
 					.getListContextElementResponse();
 			// Creating new List of ContextElementResponse
 			List<ContextElementResponse> contextElementRespList = new ArrayList<ContextElementResponse>();
+			contextElementRespList.addAll(lContextElementResponse);
 			// For each of the ContextElementResponse
 			for (ContextElementResponse contEle : lContextElementResponse) {
 
-				List<ContextElementResponse> targetContextElementResponses = associationsHandler
+				List<ContextElementResponse> targetContextElementResponses = AssociationsHandler
 						.applySourceToTargetTransitivity(contEle, transitiveList);
 				
 				if (targetContextElementResponses != null && !targetContextElementResponses.isEmpty()){

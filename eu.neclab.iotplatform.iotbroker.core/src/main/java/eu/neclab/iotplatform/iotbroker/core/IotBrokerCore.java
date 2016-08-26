@@ -188,7 +188,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	private static Logger logger = Logger.getLogger(IotBrokerCore.class);
 
 	/** Utility for processing NGSI associations */
-	private AssociationsHandler associationsHandler = new AssociationsHandler();
+	// private AssociationsHandler associationsHandler = new
+	// AssociationsHandler();
 
 	@Value("${associationsEnabled:false}")
 	private boolean associationsEnabled;
@@ -627,9 +628,9 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		DiscoverContextAvailabilityRequest discoveryRequest = new DiscoverContextAvailabilityRequest(
 				request.getEntityIdList(), request.getAttributeList(),
 				request.getRestriction());
-		
+
 		if (associationsEnabled == true) {
-			associationsHandler.insertAssociationScope(discoveryRequest);
+			AssociationsHandler.insertAssociationScope(discoveryRequest);
 		}
 
 		if (logger.isDebugEnabled()) {
@@ -676,16 +677,23 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 				.getErrorCode().getCode() == 200)
 				&& discoveryResponse.getContextRegistrationResponse() != null) {
 
+			List<ContextRegistrationResponse> contextRegistrationToQuery = new ArrayList<ContextRegistrationResponse>();
+			contextRegistrationToQuery.addAll(discoveryResponse
+					.getContextRegistrationResponse());
+
 			// Look for associations
 			List<AssociationDS> transitiveList = null;
 			if (associationsEnabled == true) {
-				transitiveList = associationsHandler.getTransitiveList(
+				transitiveList = AssociationsHandler.getTransitiveList(
 						discoveryResponse, request);
+
+				contextRegistrationToQuery.addAll(AssociationsHandler
+						.getAssociatedContextRegistrations(transitiveList));
 			}
 
 			// Create the query list of IoT Providers
 			List<Pair<QueryContextRequest, URI>> queryList = createQueryRequestList(
-					discoveryResponse.getContextRegistrationResponse(), request);
+					contextRegistrationToQuery, request);
 
 			// Query the IoT Provider
 			int count = 0;
@@ -1090,7 +1098,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			List<ContextMetadata> contextMetadataList = contextRegistrationResponse
 					.getContextRegistration().getListContextMetadata();
 
-			if (contextMetadataList.size() > 0
+			if (contextMetadataList != null
+					&& !contextMetadataList.isEmpty()
 					&& "Association".equals(contextMetadataList.get(0)
 							.getName().toString())) {
 				continue;
@@ -1350,7 +1359,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 */
 		final UpdateContextRequest updateContextRequest;
 		if (associationsEnabled == true) {
-			updateContextRequest = associationsHandler.applyAssociation(
+			updateContextRequest = AssociationsHandler.applyAssociation(
 					request, ngsi9Impl);
 		} else {
 			updateContextRequest = request;
