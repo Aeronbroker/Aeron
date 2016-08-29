@@ -91,8 +91,10 @@ public class IoTProvider {
 	@Path("/test")
 	@Produces("application/xml")
 	public String test(@Context ResourceConfig config) {
+		
+		String string = new String("{\"contextElement\":{\"entityId\":{\"id\":\"thermo1\",\"type\":\"thermometer\",\"isPattern\":false},\"attributeDomainName\":null,\"domainMetadata\":[],\"attributes\":[{\"name\":\"humidity\",\"type\":\"float\",\"contextValue\":\"30.00\",\"metadata\":[{\"name\":\"unit\",\"type\":\"string\",\"value\":\"%\"}]},{\"name\":\"temperature\",\"type\":\"float\",\"contextValue\":\"20.00\",\"metadata\":[{\"name\":\"unit\",\"type\":\"string\",\"value\":\"celsius\"}]},{\"name\":\"humidity\",\"type\":\"float\",\"contextValue\":\"30.00\",\"metadata\":[{\"name\":\"unit\",\"type\":\"string\",\"value\":\"%\"}]},{\"name\":\"temperature\",\"type\":\"float\",\"contextValue\":\"20.00\",\"metadata\":[{\"name\":\"unit\",\"type\":\"string\",\"value\":\"celsius\"}]}]},\"statusCode\":{\"code\":200,\"reasonPhrase\":\"OK\",\"details\":null}}");
 
-		return "test";
+		return string;
 
 	}
 
