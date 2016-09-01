@@ -41,12 +41,16 @@
  ******************************************************************************/
 package eu.neclab.iotplatform.iotbroker.commons;
 
+import java.net.URI;
+
+import com.google.common.collect.Multimap;
+
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 
 /**
  * A class for matching entity ids against other entity ids. The actual matching
  * is implemented by a static method.
- *
+ * 
  */
 public class EntityIDMatcher {
 
@@ -68,7 +72,7 @@ public class EntityIDMatcher {
 	 * instance matches the pattern. When both instances are patterns they are
 	 * only matching if the patterns are exactly equal, so matching patterns
 	 * against other patterns is in general not supported.
-	 *
+	 * 
 	 * @param e1
 	 *            The first EntityId instance.
 	 * @param e2
@@ -81,26 +85,37 @@ public class EntityIDMatcher {
 
 	}
 
+	public static boolean matcher(EntityId e1, EntityId e2,
+			Multimap<URI, URI> subtypesMap) {
+
+		return typeMatcher(e1, e2, subtypesMap) && idsMatcher(e1, e2);
+
+	}
+
 	private static boolean typeMatcher(EntityId e1, EntityId e2) {
 
+		return e1.getType() == null || e2.getType() == null
+				|| e1.getType().toString().equals(e2.getType().toString());
 
-		return
-				e1.getType() == null ||
-				e2.getType() == null ||
-				e1.getType().toString().equals(e2.getType().toString()) ;
+	}
+
+	private static boolean typeMatcher(EntityId e1, EntityId e2,
+			Multimap<URI, URI> subtypesMap) {
+
+		if (subtypesMap == null) {
+			return typeMatcher(e1, e2);
+		}
+
+		return e1.getType() == null || e2.getType() == null
+				|| e1.getType().toString().equals(e2.getType().toString())
+				|| subtypesMap.get(e2.getType()).contains(e1.getType());
 
 	}
 
 	private static boolean idsMatcher(EntityId e1, EntityId e2) {
 
-		return
-				e1.getIsPattern()
-				&& e2.getId().matches(e1.getId())
-				||
-				e2.getIsPattern()
-				&& e1.getId().matches(e2.getId())
-				||
-				e2.getId().equals(e1.getId())
-				;
+		return e1.getIsPattern() && e2.getId().matches(e1.getId())
+				|| e2.getIsPattern() && e1.getId().matches(e2.getId())
+				|| e2.getId().equals(e1.getId());
 	}
 }

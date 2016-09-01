@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><components xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0">
+    <scr:component enabled="true" name="eu.neclab.iotplatform.confman.postgis.PostGISIndexer" activate="activate" deactivate="deactivate">
+        <implementation class="eu.neclab.iotplatform.confman.postgis.PostGISdatabase"/>
+        <service servicefactory="false">
+            <provide interface="eu.neclab.spatialtools.common.interfaces.ISpatialIndexer"/>
+        </service>
+        <property name="service.pid" value="eu.neclab.iotplatform.confman.postgis.PostGISIndexer" private="false"/>
+    </scr:component>
+</components>

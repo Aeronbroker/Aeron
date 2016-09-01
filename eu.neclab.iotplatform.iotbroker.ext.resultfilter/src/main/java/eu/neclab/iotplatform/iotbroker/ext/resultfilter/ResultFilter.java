@@ -41,6 +41,7 @@
  ******************************************************************************/
 package eu.neclab.iotplatform.iotbroker.ext.resultfilter;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -48,11 +49,17 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
+import eu.neclab.iotplatform.iotbroker.commons.BundleUtils;
 import eu.neclab.iotplatform.iotbroker.commons.EntityIDMatcher;
+import eu.neclab.iotplatform.iotbroker.commons.interfaces.KnowledgeBaseInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
+import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
@@ -69,6 +76,16 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextRequest;
 public class ResultFilter implements ResultFilterInterface {
 
 	private static Logger logger = Logger.getLogger(ResultFilter.class);
+
+	private KnowledgeBaseInterface knowledgeBase;
+
+	public KnowledgeBaseInterface getKnowledgeBase() {
+		return knowledgeBase;
+	}
+
+	public void setKnowledgeBase(KnowledgeBaseInterface knowledgeBase) {
+		this.knowledgeBase = knowledgeBase;
+	}
 
 	/**
 	 * This the main function for filtering a list of
@@ -95,6 +112,11 @@ public class ResultFilter implements ResultFilterInterface {
 			List<ContextElementResponse> contextElementResponseList,
 			List<QueryContextRequest> requestList) {
 
+		Multimap<URI, URI> subtypesMap = null;
+		if (BundleUtils.isServiceRegistered(this, knowledgeBase)) {
+			subtypesMap = getSubtypesMap(requestList);
+		}
+
 		/*
 		 * We first initialize the list of query context responses to return
 		 */
@@ -107,6 +129,7 @@ public class ResultFilter implements ResultFilterInterface {
 			logger.debug("Resultfilter: request list based on which the filtering is done:"
 					+ requestList.toString());
 		}
+
 		/*
 		 * Now we populate this list with empty query context responses. The
 		 * number of empty responses we add corresponds to the number of
@@ -135,7 +158,7 @@ public class ResultFilter implements ResultFilterInterface {
 					ContextElementResponse filtereContextElementResponse = filterResultIndividual(
 							contextElementResponse,
 							queryContextRequest.getEntityIdList(),
-							queryContextRequest.getAttributeList());
+							queryContextRequest.getAttributeList(), subtypesMap);
 
 					if (filtereContextElementResponse != null) {
 						queryContextResponse.getListContextElementResponse()
@@ -151,6 +174,35 @@ public class ResultFilter implements ResultFilterInterface {
 				+ filteredResultList + "end");
 		logger.debug("ending resultFiltering");
 		return filteredResultList;
+	}
+
+	/**
+	 * This method create a multimap containing all the needed subtypes for a
+	 * discovery
+	 * 
+	 * @param request
+	 * @return
+	 */
+	private Multimap<URI, URI> getSubtypesMap(
+			List<QueryContextRequest> requestList) {
+
+		Multimap<URI, URI> subtypesMap = HashMultimap.create();
+
+		for (QueryContextRequest queryContextRequest : requestList) {
+			for (EntityId entityId : queryContextRequest.getEntityIdList()) {
+				URI type = entityId.getType();
+				if (type != null && !type.toString().isEmpty()
+						&& !subtypesMap.containsKey(type)) {
+					Set<URI> subtypes = knowledgeBase.getSubTypes(type);
+					if (subtypes != null) {
+						subtypesMap.putAll(type, subtypes);
+					}
+				}
+			}
+		}
+
+		return subtypesMap;
+
 	}
 
 	/**
@@ -172,7 +224,8 @@ public class ResultFilter implements ResultFilterInterface {
 	 */
 	private ContextElementResponse filterResultIndividual(
 			ContextElementResponse contextElementResponseToFilter,
-			List<EntityId> entityIdsRequested, List<String> attributesRequested) {
+			List<EntityId> entityIdsRequested,
+			List<String> attributesRequested, Multimap<URI, URI> subtypesMap) {
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("Evaluating context element response "
@@ -227,7 +280,7 @@ public class ResultFilter implements ResultFilterInterface {
 			 * account.
 			 */
 			if (EntityIDMatcher.matcher(contextElementResponseToFilter
-					.getContextElement().getEntityId(), entityID)) {
+					.getContextElement().getEntityId(), entityID, subtypesMap)) {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Response EntityId: "
 							+ contextElementResponseToFilter
@@ -406,7 +459,7 @@ public class ResultFilter implements ResultFilterInterface {
 			ContextElementResponse filteredContextElementResponse = filterResultIndividual(
 					contextElementResponseToFilter,
 					subscribeContextRequestFilter.getEntityIdList(),
-					subscribeContextRequestFilter.getAttributeList());
+					subscribeContextRequestFilter.getAttributeList(), null);
 
 			if (filteredContextElementResponse != null) {
 				filteredContextElementResponseList
@@ -425,7 +478,7 @@ public class ResultFilter implements ResultFilterInterface {
 							filteredContextElementResponseList);
 
 		}
-		
+
 		return filteredContextElementResponseList;
 
 	}
