@@ -17,3 +17,7 @@ gnome-terminal --working-directory=$MOCKS_HOME -x sh -c "java -cp mocks-$VERSION
 ngsi9-registercontext -e Node1 -t http://www.semanticweb.org/neclab/smartsantander/NGSI#Node -a temperature -v http://localhost:8002/ngsi10 -u $IOTDISCOVERY_URL/ngsi9/registerContext
 
 
+#Start First Application
+#gnome-terminal --working-directory=$MOCKS_HOME -x sh -c "java -cp mocks-$VERSION-jar-with-dependencies.jar eu.neclab.iotplatform.mocks.server.MainApplication"
+
+

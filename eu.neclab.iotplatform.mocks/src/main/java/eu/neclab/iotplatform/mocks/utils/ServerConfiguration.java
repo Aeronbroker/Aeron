@@ -16,7 +16,8 @@ public class ServerConfiguration {
 	public final static String DEFAULT_DOREGISTRATION = "true";
 	public final static String DEFAULT_QUERYCONTEXTRESPONSEFILE = "/path/to/queryContextResponse.xml";
 	public final static String DEFAULT_REGISTERCONTEXTAVAILABILITY = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><registerContextRequest><contextRegistrationList><contextRegistration><entityIdList><entityId isPattern=\"true\"><id>.*</id></entityId></entityIdList><providingApplication>PROVIDINGAPPLICATION_PLACEHOLDER</providingApplication></contextRegistration></contextRegistrationList></registerContextRequest>";
-
+	public final static int DEFAULT_PERIOD = 5;
+	
 	private int port;
 	private Mode mode;
 	private String queryContextResponseFile;

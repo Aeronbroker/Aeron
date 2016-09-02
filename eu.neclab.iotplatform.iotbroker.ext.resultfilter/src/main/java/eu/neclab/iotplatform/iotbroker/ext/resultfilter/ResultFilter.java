@@ -59,7 +59,6 @@ import eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
-import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
@@ -114,7 +113,10 @@ public class ResultFilter implements ResultFilterInterface {
 
 		Multimap<URI, URI> subtypesMap = null;
 		if (BundleUtils.isServiceRegistered(this, knowledgeBase)) {
-			subtypesMap = getSubtypesMap(requestList);
+			subtypesMap = HashMultimap.create();
+			for (QueryContextRequest queryContextRequest : requestList) {
+				subtypesMap.putAll(getSubtypesMap(queryContextRequest));
+			}
 		}
 
 		/*
@@ -183,20 +185,26 @@ public class ResultFilter implements ResultFilterInterface {
 	 * @param request
 	 * @return
 	 */
-	private Multimap<URI, URI> getSubtypesMap(
-			List<QueryContextRequest> requestList) {
+	private Multimap<URI, URI> getSubtypesMap(QueryContextRequest request) {
+
+		Multimap<URI, URI> subtypesMap = getSubtypesMap(request
+				.getEntityIdList());
+
+		return subtypesMap;
+
+	}
+
+	private Multimap<URI, URI> getSubtypesMap(List<EntityId> entityIdList) {
 
 		Multimap<URI, URI> subtypesMap = HashMultimap.create();
 
-		for (QueryContextRequest queryContextRequest : requestList) {
-			for (EntityId entityId : queryContextRequest.getEntityIdList()) {
-				URI type = entityId.getType();
-				if (type != null && !type.toString().isEmpty()
-						&& !subtypesMap.containsKey(type)) {
-					Set<URI> subtypes = knowledgeBase.getSubTypes(type);
-					if (subtypes != null) {
-						subtypesMap.putAll(type, subtypes);
-					}
+		for (EntityId entityId : entityIdList) {
+			URI type = entityId.getType();
+			if (type != null && !type.toString().isEmpty()
+					&& !subtypesMap.containsKey(type)) {
+				Set<URI> subtypes = knowledgeBase.getSubTypes(type);
+				if (subtypes != null) {
+					subtypesMap.putAll(type, subtypes);
 				}
 			}
 		}
@@ -443,6 +451,12 @@ public class ResultFilter implements ResultFilterInterface {
 			List<ContextElementResponse> contextElementResponseToFilterList,
 			SubscribeContextRequest subscribeContextRequestFilter) {
 
+		Multimap<URI, URI> subtypesMap = null;
+		if (BundleUtils.isServiceRegistered(this, knowledgeBase)) {
+			subtypesMap = getSubtypesMap(subscribeContextRequestFilter
+					.getEntityIdList());
+		}
+
 		List<ContextElementResponse> filteredContextElementResponseList = new ArrayList<ContextElementResponse>();
 
 		if (contextElementResponseToFilterList == null
@@ -459,7 +473,7 @@ public class ResultFilter implements ResultFilterInterface {
 			ContextElementResponse filteredContextElementResponse = filterResultIndividual(
 					contextElementResponseToFilter,
 					subscribeContextRequestFilter.getEntityIdList(),
-					subscribeContextRequestFilter.getAttributeList(), null);
+					subscribeContextRequestFilter.getAttributeList(), subtypesMap);
 
 			if (filteredContextElementResponse != null) {
 				filteredContextElementResponseList

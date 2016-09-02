@@ -109,15 +109,25 @@ public class MainIoTProvider {
 		NGSIRequester ngsiRequester = new NGSIRequester();
 
 		for (int portNumber : portSet) {
+			
+			/*
+			 * Specific configuration for a specific server
+			 */
+			Mode serverMode;
+			String serverQueryContextResponseFile;
+			if (configurations != null) {
+				serverMode = (Mode.fromString(configurations
+						.get("eu.neclab.ioplatform.mocks.iotprovider."
+								+ portNumber + ".mode"), mode));
 
-			Mode serverMode = (Mode.fromString(configurations
-					.get("eu.neclab.ioplatform.mocks.iotprovider." + portNumber
-							+ ".mode"), mode));
-
-			String serverQueryContextResponseFile = configurations
-					.getOrDefault("eu.neclab.ioplatform.mocks.iotprovider."
-							+ portNumber + ".queryContextResponseFile",
-							queryContextResponseFile);
+				serverQueryContextResponseFile = configurations.getOrDefault(
+						"eu.neclab.ioplatform.mocks.iotprovider." + portNumber
+								+ ".queryContextResponseFile",
+						queryContextResponseFile);
+			} else {
+				serverMode = mode;
+				serverQueryContextResponseFile = queryContextResponseFile;
+			}
 
 			ServerDummy server = new ServerDummy();
 
@@ -172,8 +182,9 @@ public class MainIoTProvider {
 						}
 					} else {
 						try {
-							FullHttpRequester.sendPost(new URL(
-									iotDiscoveryURL+"/ngsi9/registerContext"), getDefaultRegistration(portNumber),
+							FullHttpRequester.sendPost(new URL(iotDiscoveryURL
+									+ "/ngsi9/registerContext"),
+									getDefaultRegistration(portNumber),
 									ContentType.XML.toString());
 						} catch (MalformedURLException e) {
 							// TODO Auto-generated catch block

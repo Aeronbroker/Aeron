@@ -1,0 +1,13 @@
+# query generic Node sensor
+ngsi10-querycontext -e ".*" -a temperature -t http://www.semanticweb.org/neclab/smartsantander/NGSI#Node -p true -u http://localhost:8070/ngsi10/queryContext
+
+reply: <?xml version="1.0" encoding="UTF-8" standalone="yes"?><queryContextResponse><contextResponseList><contextElementResponse><contextElement><entityId type="http://www.semanticweb.org/neclab/smartsantander/NGSI#Node" isPattern="false"><id>Node1</id></entityId><contextAttributeList><contextAttribute><name>temperature</name><contextValue>2025636933</contextValue></contextAttribute><contextAttribute><name>temperature</name><contextValue>2025636933</contextValue></contextAttribute></contextAttributeList><domainMetadata/></contextElement><statusCode><code>200</code><reasonPhrase>OK</reasonPhrase><details></details></statusCode></contextElementResponse><contextElementResponse><contextElement><entityId type="http://www.semanticweb.org/neclab/smartsantander/NGSI#BusSensor" isPattern="false"><id>Bus1</id></entityId><contextAttributeList><contextAttribute><name>temperature</name><contextValue>-2058854939</contextValue></contextAttribute><contextAttribute><name>temperature</name><contextValue>-2058854939</contextValue></contextAttribute></contextAttributeList><domainMetadata/></contextElement><statusCode><code>200</code><reasonPhrase>OK</reasonPhrase><details></details></statusCode></contextElementResponse></contextResponseList></queryContextResponse>
+
+# query specific Bus sensor
+ngsi10-querycontext -e ".*" -a temperature -t http://www.semanticweb.org/neclab/smartsantander/NGSI#BusSensor -p true -u http://localhost:8070/ngsi10/queryContext
+
+reply: <?xml version="1.0" encoding="UTF-8" standalone="yes"?><queryContextResponse><contextResponseList><contextElementResponse><contextElement><entityId type="http://www.semanticweb.org/neclab/smartsantander/NGSI#Node" isPattern="false"><id>Node1</id></entityId><contextAttributeList><contextAttribute><name>temperature</name><contextValue>-2135021789</contextValue></contextAttribute><contextAttribute><name>temperature</name><contextValue>-2135021789</contextValue></contextAttribute></contextAttributeList><domainMetadata/></contextElement><statusCode><code>200</code><reasonPhrase>OK</reasonPhrase><details></details></statusCode></contextElementResponse></contextResponseList></queryContextResponse>
+
+# subscribe specific Bus sensor
+ngsi10-subscribecontext -e ".*",http://www.semanticweb.org/neclab/smartsantander/NGSI#BusSensor,true -a temperature -r http://localhost:8101/ngsi10/notify -u http://localhost:8070/ngsi10/subscribeContext
+
