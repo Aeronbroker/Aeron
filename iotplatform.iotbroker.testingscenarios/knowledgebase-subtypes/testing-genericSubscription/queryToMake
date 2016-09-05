@@ -1,0 +1,4 @@
+# subscribe to more generic Node (getting notification from both)
+ngsi10-subscribecontext -e ".*",http://www.semanticweb.org/neclab/smartsantander/NGSI#Node,true -a temperature -r http://localhost:8101/ngsi10/notify -u http://localhost:8070/ngsi10/subscribeContext
+
+
