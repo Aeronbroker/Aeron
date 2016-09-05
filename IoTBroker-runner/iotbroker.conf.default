@@ -24,7 +24,10 @@ iotbroker_loglevel='INFO'
 iotbroker_schemangsi9operation='${dir.config}/xmlSchema/Ngsi9_Operations_v08.xsd'
 iotbroker_schemangsi10operation='${dir.config}/xmlSchema/Ngsi10_Operations_v08.xsd'
 
-# IoT Broker port 
+# IoT Broker exposed address (used e.g. for outgoing subscription)
+iotbroker_exposedAddress=127.0.0.1 
+
+# IoT Broker port
 iotbroker_tomcatinitport=8060
 iotbroker_tomcatinithttpsport=9442
 

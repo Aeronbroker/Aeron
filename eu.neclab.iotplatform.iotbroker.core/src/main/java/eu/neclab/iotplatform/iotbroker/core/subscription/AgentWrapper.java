@@ -116,8 +116,10 @@ public class AgentWrapper implements IoTAgentWrapperInterface {
 	@Override
 	public SubscribeContextResponse receiveReqFrmSubscriptionController(
 			SubscribeContextRequest scReq, URI uri) {
-		logger.debug("Sending Request:" + scReq.toString() + " : "
-				+ uri.toString());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Sending Request:" + scReq.toString() + " : "
+					+ uri.toString());
+		}
 		SubscribeContextResponse scRes = ngsi10Requestor.subscribeContext(
 				scReq, uri);
 		logger.info("###################Receive Request:" + scRes.toString());

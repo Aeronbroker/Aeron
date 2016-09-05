@@ -45,10 +45,14 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -144,8 +148,14 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	@Value("${X-Auth-Token:1234567890}")
 	private String xAuthToken;
 
-	/** Port of tomcat server from command-line parameter */
-	private final String tomcatPort = System.getProperty("tomcat.init.port");
+	@Value("${exposedAddress:}")
+	private String exposedAddress;
+
+	private String ngsi10Reference = null;
+	private String ngsi9Reference = null;
+
+	// /** Port of tomcat server from command-line parameter */
+	// private final String tomcatPort = System.getProperty("tomcat.init.port");
 
 	/** The Constant CONTENT_TYPE. */
 	@Value("${default_content_type:application/xml}")
@@ -241,6 +251,71 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	}
 
+	/**
+	 * @return The URL where agents should send there notifications to. This is
+	 *         the address where the NGSI RESTful interface is reachable.
+	 */
+	public String getNgsi10RefURl() {
+
+		if (ngsi10Reference == null) {
+			String address = getLocalAddress();
+
+			ngsi10Reference = "http://" + address + ":"
+					+ System.getProperty("tomcat.init.port") + "/ngsi10";
+
+		}
+
+		return ngsi10Reference;
+	}
+
+	private String getLocalAddress() {
+
+		String address = null;
+
+		if (exposedAddress != null && !exposedAddress.isEmpty()) {
+
+			address = exposedAddress;
+
+		} else {
+			Enumeration<NetworkInterface> n;
+			try {
+				n = NetworkInterface.getNetworkInterfaces();
+				while (n.hasMoreElements()) {
+					NetworkInterface e = n.nextElement();
+					if (e.getName().matches("docker.*")
+							|| e.getName().equals("lo")) {
+						continue;
+					}
+					Enumeration<InetAddress> a = e.getInetAddresses();
+					while (a.hasMoreElements()) {
+						InetAddress addr = a.nextElement();
+						String add = addr.getHostAddress();
+						if (add.matches("^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})$"))
+							address = add;
+					}
+					if (address != null) {
+						break;
+					}
+				}
+			} catch (SocketException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+			if (address == null) {
+				try {
+					address = InetAddress.getLocalHost().getHostAddress()
+							+ "/ngsi10";
+				} catch (UnknownHostException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		return address;
+
+	}
+	
 	private Object parseResponse(String body, ContentType contentType,
 			Class<? extends NgsiStructure> clazz) {
 		if (contentType == ContentType.XML) {
@@ -456,13 +531,15 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 		try {
 
-			// get address of local host
-			InetAddress thisIp = InetAddress.getLocalHost();
+			// // get address of local host
+			// InetAddress thisIp = InetAddress.getLocalHost();
+			//
+			// // HttpConnectionClient connection = new HttpConnectionClient();
+			//
+			// request.setReference("http://" + thisIp.getHostAddress() + ":"
+			// + tomcatPort + "/ngsi10/notify");
 
-			// HttpConnectionClient connection = new HttpConnectionClient();
-
-			request.setReference("http://" + thisIp.getHostAddress() + ":"
-					+ tomcatPort + "/ngsi10/notify");
+			request.setReference(getNgsi10RefURl() + "/notify");
 
 			Object response = sendRequest(new URL(uri.toString()),
 					"subscribeContext", request,
@@ -924,9 +1001,11 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			}
 			for (ContextRegistration contextRegistration : request
 					.getContextRegistrationList()) {
-				contextRegistration.setProvidingApplication(new URI("http://"
-						+ thisIp.getHostAddress() + ":" + tomcatPort
-						+ "/ngsi10/"));
+				// contextRegistration.setProvidingApplication(new URI("http://"
+				// + thisIp.getHostAddress() + ":" + tomcatPort
+				// + "/ngsi10/"));
+				contextRegistration
+						.setProvidingApplication(new URI(getNgsi10RefURl()));
 			}
 
 			Object response = sendRequest(new URL(ngsi9RemoteUrl), "/"
