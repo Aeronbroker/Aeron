@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.ws.rs.core.HttpHeaders;
 
+import eu.neclab.iotplatform.iotbroker.commons.ContentType;
+
 public class HeaderExtractor {
 
 	public static ContentType getContentType(HttpHeaders headers,

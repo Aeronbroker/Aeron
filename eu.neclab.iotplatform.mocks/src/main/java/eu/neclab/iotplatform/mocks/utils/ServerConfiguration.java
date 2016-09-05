@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import eu.neclab.iotplatform.iotbroker.commons.ContentType;
+
 public class ServerConfiguration {
 
 	public final static String DEFAULT_PORTNUMBERS = "8001";

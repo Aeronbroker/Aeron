@@ -1,32 +1,10 @@
 package eu.neclab.iotplatform.mocks.iotproducer;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 
-import eu.neclab.iotplatform.mocks.utils.Connector;
 import eu.neclab.iotplatform.mocks.utils.Mode;
-import eu.neclab.iotplatform.mocks.utils.UniqueIDGenerator;
-import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest;
-import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextResponse;
-import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeResponse;
 
 @Path("ngsi10")
 public class IoTProducer {

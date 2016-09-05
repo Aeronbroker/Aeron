@@ -27,8 +27,9 @@ import org.apache.log4j.Logger;
 
 import com.sun.jersey.api.core.ResourceConfig;
 
-import eu.neclab.iotplatform.mocks.utils.Connector;
-import eu.neclab.iotplatform.mocks.utils.ContentType;
+import eu.neclab.iotplatform.iotbroker.commons.ContentType;
+import eu.neclab.iotplatform.iotbroker.commons.FullHttpRequester;
+import eu.neclab.iotplatform.iotbroker.commons.FullHttpResponse;
 import eu.neclab.iotplatform.mocks.utils.HeaderExtractor;
 import eu.neclab.iotplatform.mocks.utils.Mode;
 import eu.neclab.iotplatform.mocks.utils.ServerConfiguration;
@@ -437,7 +438,8 @@ public class IoTProvider {
 
 	@POST
 	@Path("/subscribeContext")
-	@Produces("application/xml")
+	@Consumes("application/json,application/xml")
+	@Produces("application/json,application/xml")
 	public String subscriptionResponse(@Context HttpHeaders headers,
 			@Context ResourceConfig config, String body,
 			@Context HttpServletRequest req) {
@@ -502,23 +504,33 @@ public class IoTProvider {
 				@Override
 				public void run() {
 
-					Connector conn = null;
-					try {
-						conn = new Connector(new URL(subscribeContextRequest
-								.getReference()));
-
-					} catch (MalformedURLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
 					NotifyContextRequest notification = createNotifyContext(
 							subscribeContextRequest, id, originator);
 
+					ContentType contentType;
+					String data;
 					if (outgoingContentType == ContentType.JSON) {
-						conn.start("", "POST", notification.toJsonString());
+						contentType = ContentType.JSON;
+						data = notification.toJsonString();
 					} else {
-						conn.start("", "POST", notification.toString());
+						contentType = ContentType.XML;
+						data = notification.toString();
 					}
+
+					FullHttpResponse response = null;
+					try {
+						response = FullHttpRequester.sendPost(
+								new URL(subscribeContextRequest.getReference()),
+								data, contentType.toString());
+					} catch (MalformedURLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					logger.info("Response to notification: "+ response);
 
 				}
 
