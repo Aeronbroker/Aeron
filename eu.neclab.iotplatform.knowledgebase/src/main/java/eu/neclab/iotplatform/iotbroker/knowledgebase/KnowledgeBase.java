@@ -41,8 +41,7 @@ public class KnowledgeBase implements KnowledgeBaseInterface {
 		try {
 
 			// Read properties from file
-			input = new FileInputStream(
-					System.getProperty("dir.config")
+			input = new FileInputStream(System.getProperty("dir.config")
 					+ "/iotbrokerconfig/knowledgeBase/knowledgeBase.properties");
 
 			// Load the properties file
@@ -77,12 +76,12 @@ public class KnowledgeBase implements KnowledgeBaseInterface {
 	public Set<URI> getSubTypes(URI type) {
 
 		// Example:
-		// http://localhost:8080/query?request=getSubTypes&entityType=MovingSensor
+		// http://localhost:8015/query?request=getAllSubTypes&entityType=Node
 
 		Set<URI> subtypes = null;
 
 		// Lets create the query string
-		String queryString = "request=getSubTypes&";
+		String queryString = "request=getAllSubTypes&";
 		String[] namespaceAndType = type.toString().split("#");
 		if (namespaceAndType.length == 1) {
 			queryString += "entityType=" + namespaceAndType[0];
@@ -94,11 +93,12 @@ public class KnowledgeBase implements KnowledgeBaseInterface {
 		try {
 			fullUrl = new URL(url + "/query?" + queryString);
 
-			FullHttpResponse fullHttpResponse = FullHttpRequester.sendGet(fullUrl);
+			FullHttpResponse fullHttpResponse = FullHttpRequester
+					.sendGet(fullUrl);
 
 			if (fullHttpResponse.getStatusLine().getStatusCode() == 200) {
 
-				subtypes = parseSubtypes(fullHttpResponse.getBody());
+				subtypes = parseTypes(fullHttpResponse.getBody());
 
 			} else {
 				logger.info(String
@@ -116,7 +116,7 @@ public class KnowledgeBase implements KnowledgeBaseInterface {
 		return subtypes;
 	}
 
-	private Set<URI> parseSubtypes(String body) {
+	private Set<URI> parseTypes(String body) {
 
 		JsonParser jsonParser = new JsonParser();
 		JsonObject jo = (JsonObject) jsonParser.parse(body);
@@ -180,8 +180,46 @@ public class KnowledgeBase implements KnowledgeBaseInterface {
 
 	@Override
 	public Set<URI> getSuperTypes(URI type) {
-		// TODO Auto-generated method stub
-		return null;
+
+		// Example:
+		// http://localhost:8015/query?request=getAllSuperTypes&entityType=BusSensor
+
+		Set<URI> superTypes = null;
+
+		// Lets create the query string
+		String queryString = "request=getAllSuperTypes&";
+		String[] namespaceAndType = type.toString().split("#");
+		if (namespaceAndType.length == 1) {
+			queryString += "entityType=" + namespaceAndType[0];
+		} else {
+			queryString += "entityType=" + namespaceAndType[1];
+		}
+
+		URL fullUrl;
+		try {
+			fullUrl = new URL(url + "/query?" + queryString);
+
+			FullHttpResponse fullHttpResponse = FullHttpRequester
+					.sendGet(fullUrl);
+
+			if (fullHttpResponse.getStatusLine().getStatusCode() == 200) {
+
+				superTypes = parseTypes(fullHttpResponse.getBody());
+
+			} else {
+				logger.warn(String
+						.format("Problem when contacting the KnowledgeBase server. StatusCode: %s. ReasonPhrase: %s.",
+								fullHttpResponse.getStatusLine()
+										.getStatusCode(), fullHttpResponse
+										.getStatusLine().getReasonPhrase()));
+			}
+
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return superTypes;
 	}
 
 }

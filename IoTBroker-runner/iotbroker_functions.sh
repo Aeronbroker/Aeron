@@ -4,6 +4,7 @@ iotbroker_configini='/opt/Aeron/IoTBroker-runner/configuration//config.ini'
 iotbroker_configxml='/opt/Aeron/fiwareRelease/iotbrokerconfig/iotBroker/config/config.xml'
 iotbroker_embeddedagent_couchdbxml='/opt/Aeron/fiwareRelease/iotbrokerconfig/embeddedAgent/couchdb.xml'
 iotbroker_loggerproperties="$iotbroker_bundlesconfigurationlocation/services/org.ops4j.pax.logging.properties"
+iotbroker_knowledgebaseproperties="/opt/Aeron/fiwareRelease/iotbrokerconfig/knowledgeBase/knowledgeBase.properties"
 
 iotbroker_version="5.3.3"
 

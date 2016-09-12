@@ -20,6 +20,7 @@ esac
 shift # past argument or value
 done
 
+# Functions
 . iotbroker_functions.sh
 
 # Escape characters
@@ -60,6 +61,7 @@ then
 	iotbroker_configxml_auto="$iotbrokerdir/fiwareRelease/iotbrokerconfig/iotBroker/config/config.xml"
 	iotbroker_embeddedagent_couchdbxml_auto="$iotbrokerdir/fiwareRelease/iotbrokerconfig/embeddedAgent/couchdb.xml"
 	iotbroker_loggerproperties_auto="$iotbroker_bundlesconfigurationlocation/services/org.ops4j.pax.logging.properties"
+	iotbroker_knowledgebaseproperties_auto="$iotbrokerdir/fiwareRelease/iotbrokerconfig/knowledgeBase/knowledgeBase.properties"
 
 
 	iotbroker_version_auto=`grep -m1 "<version>" $iotbrokerdir/eu.neclab.iotplatform.iotbroker.builder/pom.xml`;
@@ -91,6 +93,7 @@ then
 		setConfiguration "iotbroker_configxml" "$iotbroker_configxml_auto" "iotbroker_functions.sh"
 		setConfiguration "iotbroker_embeddedagent_couchdbxml" "$iotbroker_embeddedagent_couchdbxml_auto" "iotbroker_functions.sh"
 		setConfiguration "iotbroker_loggerproperties" "$iotbroker_loggerproperties_auto" "iotbroker_functions.sh"
+		setConfiguration "iotbroker_knowledgebaseproperties" "$iotbroker_knowledgebaseproperties_auto" "iotbroker_functions.sh"
 
 		if [ -n "$iotbroker_version_auto" ];
 		then
@@ -104,6 +107,7 @@ then
 	iotbroker_embeddedagent_couchdbxml=$iotbroker_embeddedagent_couchdbxml_auto
 	iotbroker_version=$iotbroker_version_auto
 	iotbroker_loggerproperties=$iotbroker_loggerproperties_auto
+	iotbroker_knowledgebaseproperties=$iotbroker_knowledgebaseproperties_auto
 
 	iotbroker_dirconfig=${iotbroker_dirconfig//\./\\\.}
 	iotbroker_dirconfig=${iotbroker_dirconfig//\//\\/}
@@ -158,6 +162,10 @@ setPropertyIntoXML "couchdb_port" "$iotbroker_embeddedagent_couchdbport" "$iotbr
 setPropertyIntoProperties "log4j.appender.ReportFileAppender.File" "$iotbroker_logfile" "$iotbroker_loggerproperties"
 setFirstPropertyValueOverMultipleValuesIntoProperties "log4j.rootLogger" "$iotbroker_loglevel" "$iotbroker_loggerproperties"
 
+setPropertyIntoProperties "knowledgebase_address" "$iotbroker_knowledgebaseaddress" "$iotbroker_knowledgebaseproperties"
+setPropertyIntoProperties "knowledgebase_port" "$iotbroker_knowledgebaseport" "$iotbroker_knowledgebaseproperties"
+
+
 ##ENABLE BASIC BUNDLE
 enableBundle iotbroker.commons
 enableBundle iotbroker.storage
@@ -205,6 +213,14 @@ then
 	enableBundle entitycomposer
 else
 	disableBundle entitycomposer
+fi
+
+##ENABLE SEMANTIC BUNDLES
+if [ "$iotbroker_semantic" == "enabled" ]
+then
+	enableBundle knowledgebase
+else
+	disableBundle knowledgebase
 fi
 
 

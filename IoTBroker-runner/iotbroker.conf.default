@@ -7,6 +7,7 @@ iotbroker_bigdatarepository="enabled"
 iotbroker_historicalagent="enabled"
 iotbroker_entitycomposer="enabled"
 iotbroker_association="enabled"
+iotbroker_semantic="enabled"
 
 ##############################
 # IoT Broker configurations
@@ -74,6 +75,10 @@ iotbroker_ignorepubsubfailure=true
 # Data annotation
 iotbroker_timestampcontextelement=false
 iotbroker_trackcontextsource=false
+
+# Knowledge Base configuration
+iotbroker_knowledgebaseaddress='http://127.0.0.1'
+iotbroker_knowledgebaseport=8015
 
 ### Embedded agent configuration
 
