@@ -1423,27 +1423,41 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		}
 
-		try {
+		if (pubSubUrlList != null) {
+			for (String url : pubSubUrlList) {
 
-			if (pubSubUrlList != null) {
-				for (String url : pubSubUrlList) {
+				if (url != null) {
 					logger.info("Started Contact pub/sub broker: " + url);
 
-					response = ngsi10Requester.updateContext(
-							updateContextRequest, new URI(url));
-					// TODO here the only the last response is taken into
-					// consideration as updateCotnextResponse. It would be
-					// necessary to have some rule (for example, ALL,
-					// ATLEASTONE, MOST, NOONE fault tolerant)
+					try {
+						response = ngsi10Requester.updateContext(
+								updateContextRequest, new URI(url));
+					} catch (URISyntaxException e) {
+						logger.info("Impossible to connect to the pub/sub broker: "
+								+ url);
+						if (logger.isDebugEnabled()) {
+							logger.debug("URI Syntax Error", e);
+						}
+					}
 				}
-			} else if (pubSubUrl != null) {
-				logger.info("Started Contact pub/sub broker: " + pubSubUrl);
+				// TODO here the only the last response is taken into
+				// consideration as updateCotnextResponse. It would be
+				// necessary to have some rule (for example, ALL,
+				// ATLEASTONE, MOST, NOONE fault tolerant)
+			}
+		} else if (pubSubUrl != null) {
+			logger.info("Started Contact pub/sub broker: " + pubSubUrl);
 
+			try {
 				response = ngsi10Requester.updateContext(updateContextRequest,
 						new URI(pubSubUrl));
+			} catch (URISyntaxException e) {
+				logger.info("Impossible to connect to the pub/sub broker: "
+						+ pubSubUrl);
+				if (logger.isDebugEnabled()) {
+					logger.debug("URI Syntax Error", e);
+				}
 			}
-		} catch (URISyntaxException e) {
-			logger.debug("URI Syntax Error", e);
 		}
 
 		if (response == null) {

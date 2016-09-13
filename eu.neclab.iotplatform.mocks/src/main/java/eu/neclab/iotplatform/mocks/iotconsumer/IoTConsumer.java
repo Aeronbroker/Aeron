@@ -10,7 +10,7 @@ import javax.ws.rs.core.HttpHeaders;
 
 import org.apache.log4j.Logger;
 
-import eu.neclab.iotplatform.mocks.utils.ContentType;
+import eu.neclab.iotplatform.iotbroker.commons.ContentType;
 import eu.neclab.iotplatform.mocks.utils.HeaderExtractor;
 import eu.neclab.iotplatform.ngsi.api.datamodel.StatusCode;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextResponse;

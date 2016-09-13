@@ -1616,7 +1616,7 @@ public class RestProviderController {
 	@RequestMapping(value = "/leafengine/notify", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-	public ResponseEntity<String> notifyContext(HttpServletRequest requester,
+	public ResponseEntity<String> notificationFromLeafengine(HttpServletRequest requester,
 			@RequestBody String notify) {
 
 		logger.info(" <--- Leafengine notification has been arrived  ---> \n");

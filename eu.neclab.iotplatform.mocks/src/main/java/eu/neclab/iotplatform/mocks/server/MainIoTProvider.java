@@ -1,22 +1,34 @@
 package eu.neclab.iotplatform.mocks.server;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.BindException;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 
 import eu.neclab.iotplatform.iotbroker.commons.ContentType;
+import eu.neclab.iotplatform.iotbroker.commons.FullHttpRequester;
 import eu.neclab.iotplatform.mocks.utils.Mode;
 import eu.neclab.iotplatform.mocks.utils.NGSIRequester;
 import eu.neclab.iotplatform.mocks.utils.RangesUtil;
+import eu.neclab.iotplatform.mocks.utils.ServerConfiguration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
@@ -26,64 +38,110 @@ public class MainIoTProvider {
 
 	private static Logger logger = Logger.getLogger(MainIoTProvider.class);
 
-	private static String portNumbers = System.getProperty(
-			"eu.neclab.ioplatform.mocks.iotprovider.ports", "8001");
+	// Port Numbers
+	private static String portNumbers;
 
 	// Mode of the IoT Provider
-	private static final Mode mode = Mode.fromString(
-			System.getProperty("eu.neclab.ioplatform.mocks.iotprovider.mode"),
-			Mode.RANDOM);
+	private static Mode mode;
 
 	// Ranges of allowed EntityIds
-	private static final String rangesOfEntityIds = System
-			.getProperty(
-					"eu.neclab.ioplatform.mocks.iotprovider.rangesOfEntityIds",
-					"1-100");
+	private static String rangesOfEntityIds;
 
 	// Number of EntityIds to select amongst the EntityIds.
-	private static final int numberOfEntityIdsToSelect = Integer
-			.parseInt(System
-					.getProperty(
-							"eu.neclab.ioplatform.mocks.iotprovider.numberOfEntityIdsToSelect",
-							"10"));
+	private static int numberOfEntityIdsToSelect;
 
 	// Ranges of allowed Attributes
-	private static final String rangesOfAttributes = System.getProperty(
-			"eu.neclab.ioplatform.mocks.iotprovider.rangesOfAttributes",
-			"1-100");
+	private static String rangesOfAttributes;
 
 	// Number of Attributes to select amongst the Attributes.
-	private static final int numberOfAttributesToSelect = Integer
-			.parseInt(System
-					.getProperty(
-							"eu.neclab.ioplatform.mocks.iotprovider.numberOfAttributesToSelect",
-							"10"));
+	private static int numberOfAttributesToSelect;
 
 	// Get the IoT Discovery URL
-	private static String exposedURL = System
-			.getProperty("eu.neclab.ioplatform.mocks.iotprovider.exposedURL");
+	private static String exposedURL;
+
+	// Get the IoT Discovery URL
+	private static ContentType outgoingContentType;
+
+	private static boolean doRegistration;
+
+	private static String queryContextResponseFile;
+
+	private static String registerContextAvailabilityFile;
+
+	// Configurations file
+	private static String configurationFile = System
+			.getProperty("eu.neclab.ioplatform.mocks.iotprovider.configurationFile");
+
+	// Configurations map
+	private static Map<String, String> configurations;
+
+	// Get the IoT Discovery URL
+	private static String iotDiscoveryURL = System.getProperty(
+			"eu.neclab.ioplatform.mocks.iotDiscoveryUrl",
+			"http://localhost:8065/");
+
+	private static Set<Integer> portSet;
 
 	public static void main(String[] args) {
 
-		Set<Integer> portSet = RangesUtil.rangesToSet(portNumbers);
-
-		if (portSet == null) {
-			System.out
-					.println("Wrong eu.neclab.ioplatform.mocks.iotconsumer.ports property. "
-							+ "Allowed only ranges (e.g. 8001-8005) and single ports (e.g. 8001) separated by comma. "
-							+ "E.g. -Deu.neclab.ioplatform.mocks.iotconsumer.ports=8001-8005,8021,8025,8030-8040");
-			System.exit(0);
+		if (configurationFile != null) {
+			readConfigurations(configurationFile);
+		} else {
+			logger.warn("Impossible to read configuration file: "
+					+ configurationFile);
 		}
+
+		setBasicConfigurations();
+
+		// Set<Integer> portSet = RangesUtil.rangesToSet(portNumbers);
+		//
+		// if (portSet == null) {
+		// System.out
+		// .println("Wrong eu.neclab.ioplatform.mocks.iotconsumer.ports property. "
+		// +
+		// "Allowed only ranges (e.g. 8001-8005) and single ports (e.g. 8001) separated by comma. "
+		// +
+		// "E.g. -Deu.neclab.ioplatform.mocks.iotconsumer.ports=8001-8005,8021,8025,8030-8040"
+		// + " or similarly in the configuation file ");
+		// System.exit(0);
+		// }
 
 		NGSIRequester ngsiRequester = new NGSIRequester();
 
 		for (int portNumber : portSet) {
+			
+			/*
+			 * Specific configuration for a specific server
+			 */
+			Mode serverMode;
+			String serverQueryContextResponseFile;
+			if (configurations != null) {
+				serverMode = (Mode.fromString(configurations
+						.get("eu.neclab.ioplatform.mocks.iotprovider."
+								+ portNumber + ".mode"), mode));
+
+				serverQueryContextResponseFile = configurations.getOrDefault(
+						"eu.neclab.ioplatform.mocks.iotprovider." + portNumber
+								+ ".queryContextResponseFile",
+						queryContextResponseFile);
+			} else {
+				serverMode = mode;
+				serverQueryContextResponseFile = queryContextResponseFile;
+			}
+
 			ServerDummy server = new ServerDummy();
+
+			ServerConfiguration serverConfigurations = new ServerConfiguration();
+			serverConfigurations.setPort(portNumber);
+			serverConfigurations.setMode(serverMode);
+			serverConfigurations
+					.setQueryContextResponseFile(serverQueryContextResponseFile);
 
 			try {
 
 				server.startServer(portNumber,
-						"eu.neclab.iotplatform.mocks.iotprovider");
+						"eu.neclab.iotplatform.mocks.iotprovider",
+						serverConfigurations);
 
 			} catch (BindException e) {
 				// TODO Auto-generated catch block
@@ -94,14 +152,222 @@ public class MainIoTProvider {
 				e.printStackTrace();
 			}
 
-			Set<String> entityNames = chooseEntityNames();
-			Set<String> attributes = chooseAttributes();
+			if (doRegistration) {
+				if (serverMode == Mode.RANDOM) {
 
-			RegisterContextRequest registration = createRegisterContextRequest(
-					entityNames, attributes, portNumber);
+					Set<String> entityNames = chooseEntityNames();
+					Set<String> attributes = chooseAttributes();
 
-			ngsiRequester.doRegistration(registration, ContentType.XML);
+					RegisterContextRequest registration = createRegisterContextRequest(
+							entityNames, attributes, portNumber);
 
+					// TODO use the SouthBound class
+					ngsiRequester.doRegistration(registration, ContentType.XML);
+
+				} else {
+					if (registerContextAvailabilityFile != null) {
+						String registration = readRegisterContextAvailabilityFile(registerContextAvailabilityFile);
+						if (registration != null) {
+							try {
+								FullHttpRequester.sendPost(new URL(
+										iotDiscoveryURL), registration,
+										ContentType.XML.toString());
+							} catch (MalformedURLException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+					} else {
+						try {
+							FullHttpRequester.sendPost(new URL(iotDiscoveryURL
+									+ "/ngsi9/registerContext"),
+									getDefaultRegistration(portNumber),
+									ContentType.XML.toString());
+						} catch (MalformedURLException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+
+				}
+			}
+
+		}
+
+	}
+
+	private static String readRegisterContextAvailabilityFile(String file) {
+
+		String response = null;
+
+		try {
+			response = new Scanner(new File(file)).useDelimiter("\\Z").next();
+
+			if (logger.isDebugEnabled()) {
+				logger.debug("Registration read from file: " + response);
+			}
+
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return response;
+
+	}
+
+	private static void readConfigurations(String file) {
+
+		configurations = new HashMap<String, String>();
+
+		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				if (line.matches("#.*")) {
+					continue;
+				}
+				if (line.matches(".*=.*")) {
+					String[] keyValue = line.split("=");
+					configurations.put(keyValue[0],
+							keyValue[1].replace("\"", ""));
+				} else {
+					logger.warn("Wrong property in the configuration file: "
+							+ line);
+				}
+			}
+		} catch (FileNotFoundException e) {
+			logger.warn("FileNotFoundException: Impossible to read configuration file: "
+					+ configurationFile);
+		} catch (IOException e) {
+			logger.warn("IOException: Impossible to read configuration file: "
+					+ configurationFile);
+		}
+
+	}
+
+	private static void setBasicConfigurations() {
+
+		/*
+		 * Port Numbers
+		 */
+		if (configurations != null) {
+			portNumbers = configurations.getOrDefault(
+					"eu.neclab.ioplatform.mocks.iotprovider.ports",
+					ServerConfiguration.DEFAULT_PORTNUMBERS);
+		} else {
+			portNumbers = ServerConfiguration.DEFAULT_PORTNUMBERS;
+		}
+		portSet = RangesUtil.rangesToSet(portNumbers);
+
+		/*
+		 * defaultMode
+		 */
+		if (configurations != null) {
+			mode = Mode.fromString(configurations
+					.get("eu.neclab.ioplatform.mocks.iotprovider.mode"),
+					ServerConfiguration.DEFAULT_MODE);
+		} else {
+			mode = ServerConfiguration.DEFAULT_MODE;
+		}
+
+		/*
+		 * Ranges of allowed EntityIds
+		 */
+		if (configurations != null) {
+			rangesOfEntityIds = configurations.getOrDefault(
+					"eu.neclab.ioplatform.mocks.iotprovider.rangesOfEntityIds",
+					ServerConfiguration.DEFAULT_RANGESOFENTITYIDS);
+		} else {
+			rangesOfEntityIds = ServerConfiguration.DEFAULT_RANGESOFENTITYIDS;
+		}
+
+		/*
+		 * Number of EntityIds to select amongst the EntityIds.
+		 */
+		if (configurations != null) {
+			numberOfEntityIdsToSelect = Integer
+					.parseInt(configurations
+							.getOrDefault(
+									"eu.neclab.ioplatform.mocks.iotprovider.numberOfEntityIdsToSelect",
+									ServerConfiguration.DEFAULT_RANGESOFENTITYIDSTOSELECT));
+		} else {
+			numberOfEntityIdsToSelect = Integer
+					.parseInt(ServerConfiguration.DEFAULT_RANGESOFENTITYIDSTOSELECT);
+		}
+
+		/*
+		 * Ranges of allowed Attributes
+		 */
+		if (configurations != null) {
+			rangesOfAttributes = configurations
+					.getOrDefault(
+							"eu.neclab.ioplatform.mocks.iotprovider.rangesOfAttributes",
+							ServerConfiguration.DEFAULT_RANGESOFATTRIBUTES);
+		} else {
+			rangesOfAttributes = ServerConfiguration.DEFAULT_RANGESOFATTRIBUTES;
+		}
+
+		/*
+		 * Number of Attributes to select amongst the Attributes.
+		 */
+		if (configurations != null) {
+			numberOfAttributesToSelect = Integer
+					.parseInt(configurations
+							.getOrDefault(
+									"eu.neclab.ioplatform.mocks.iotprovider.numberOfAttributesToSelect",
+									ServerConfiguration.DEFAULT_RANGESOFATTRIBUTESTOSELECT));
+		} else {
+			numberOfAttributesToSelect = Integer
+					.parseInt(ServerConfiguration.DEFAULT_RANGESOFATTRIBUTESTOSELECT);
+		}
+
+		/*
+		 * ExposedUrl
+		 */
+		if (configurations != null) {
+			exposedURL = configurations.getOrDefault(
+					"eu.neclab.ioplatform.mocks.iotprovider.exposedURL",
+					ServerConfiguration.DEFAULT_EXPOSEDURL);
+		} else {
+			exposedURL = ServerConfiguration.DEFAULT_EXPOSEDURL;
+		}
+
+		/*
+		 * doRegistration
+		 */
+		if (configurations != null) {
+			doRegistration = Boolean.parseBoolean(configurations.getOrDefault(
+					"eu.neclab.ioplatform.mocks.iotprovider.doRegistration",
+					ServerConfiguration.DEFAULT_DOREGISTRATION));
+		} else {
+			doRegistration = Boolean
+					.parseBoolean(ServerConfiguration.DEFAULT_DOREGISTRATION);
+		}
+
+		/*
+		 * queryContextResponseFile
+		 */
+		if (configurations != null) {
+			queryContextResponseFile = configurations
+					.getOrDefault(
+							"eu.neclab.ioplatform.mocks.iotprovider.queryContextResponseFile",
+							ServerConfiguration.DEFAULT_QUERYCONTEXTRESPONSEFILE);
+		} else {
+			queryContextResponseFile = ServerConfiguration.DEFAULT_QUERYCONTEXTRESPONSEFILE;
+		}
+
+		/*
+		 * queryContextResponseFile
+		 */
+		if (configurations != null) {
+			registerContextAvailabilityFile = configurations
+					.get("eu.neclab.ioplatform.mocks.iotprovider.registerContextAvailabilityFile");
 		}
 
 	}
@@ -194,7 +460,8 @@ public class MainIoTProvider {
 		try {
 			String ref;
 			if (exposedURL != null) {
-				ref = exposedURL;
+				ref = exposedURL + ":" + port + "/ngsi10/";
+				;
 			} else {
 				ref = "http://" + InetAddress.getLocalHost().getHostAddress()
 						+ ":" + port + "/ngsi10/";
@@ -219,6 +486,28 @@ public class MainIoTProvider {
 		RegisterContextRequest registration = new RegisterContextRequest();
 		registration.setContextRegistrationList(contextRegistrationList);
 
+		return registration;
+	}
+
+	private static String getDefaultRegistration(int port) {
+		String registration = ServerConfiguration.DEFAULT_REGISTERCONTEXTAVAILABILITY;
+		try {
+			String ref;
+			if (exposedURL != null) {
+				ref = exposedURL + ":" + port + "/ngsi10/";
+				;
+			} else {
+				ref = "http://" + InetAddress.getLocalHost().getHostAddress()
+						+ ":" + port + "/ngsi10/";
+			}
+
+			registration = registration.replace(
+					"PROVIDINGAPPLICATION_PLACEHOLDER", ref);
+
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return registration;
 	}
 

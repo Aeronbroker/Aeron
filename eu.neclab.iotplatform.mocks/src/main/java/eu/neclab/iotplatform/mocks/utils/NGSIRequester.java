@@ -9,7 +9,6 @@ import org.apache.log4j.Logger;
 import eu.neclab.iotplatform.iotbroker.commons.ContentType;
 import eu.neclab.iotplatform.iotbroker.commons.FullHttpRequester;
 import eu.neclab.iotplatform.iotbroker.commons.FullHttpResponse;
-import eu.neclab.iotplatform.iotbroker.commons.JsonFactory;
 import eu.neclab.iotplatform.iotbroker.commons.XmlFactory;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NgsiStructure;
@@ -70,7 +69,7 @@ public class NGSIRequester {
 	 * 
 	 */
 	private Object sendRequest(URL url, String resource, NgsiStructure request,
-			Class<?> expectedResponseClazz, ContentType preferredContentType) {
+			Class<? extends NgsiStructure> expectedResponseClazz, ContentType preferredContentType) {
 
 		Object output;
 
@@ -220,7 +219,7 @@ public class NGSIRequester {
 	}
 
 	private Object parseResponse(String body, ContentType contentType,
-			Class<?> clazz) {
+			Class<? extends NgsiStructure> clazz) {
 		if (contentType == ContentType.XML) {
 
 			return XmlFactory.convertStringToXml(body, clazz);
@@ -229,7 +228,7 @@ public class NGSIRequester {
 			String toParse = body.replaceAll("\\\"metadatas\\\"",
 					"\\\"contextMetadata\\\"");
 
-			return JsonFactory.convertStringToJsonObject(toParse, clazz);
+			return NgsiStructure.parseStringToJson(toParse, clazz, true, true);
 
 		}
 	}

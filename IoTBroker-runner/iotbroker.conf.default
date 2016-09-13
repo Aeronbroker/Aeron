@@ -7,6 +7,7 @@ iotbroker_bigdatarepository="enabled"
 iotbroker_historicalagent="enabled"
 iotbroker_entitycomposer="enabled"
 iotbroker_association="enabled"
+iotbroker_semantic="enabled"
 
 ##############################
 # IoT Broker configurations
@@ -24,7 +25,10 @@ iotbroker_loglevel='INFO'
 iotbroker_schemangsi9operation='${dir.config}/xmlSchema/Ngsi9_Operations_v08.xsd'
 iotbroker_schemangsi10operation='${dir.config}/xmlSchema/Ngsi10_Operations_v08.xsd'
 
-# IoT Broker port 
+# IoT Broker exposed address (used e.g. for outgoing subscription)
+iotbroker_exposedAddress=127.0.0.1 
+
+# IoT Broker port
 iotbroker_tomcatinitport=8060
 iotbroker_tomcatinithttpsport=9442
 
@@ -71,6 +75,10 @@ iotbroker_ignorepubsubfailure=true
 # Data annotation
 iotbroker_timestampcontextelement=false
 iotbroker_trackcontextsource=false
+
+# Knowledge Base configuration
+iotbroker_knowledgebaseaddress='http://127.0.0.1'
+iotbroker_knowledgebaseport=8015
 
 ### Embedded agent configuration
 

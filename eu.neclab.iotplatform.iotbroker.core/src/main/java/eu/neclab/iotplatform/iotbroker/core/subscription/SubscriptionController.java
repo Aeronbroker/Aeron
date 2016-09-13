@@ -42,6 +42,8 @@
 package eu.neclab.iotplatform.iotbroker.core.subscription;
 
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
@@ -49,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -170,6 +173,12 @@ public class SubscriptionController {
 	 */
 	@Value("${isMaster:true}")
 	private boolean isMaster;
+
+	@Value("${exposedAddress:}")
+	private String exposedAddress;
+
+	private String ngsi10Reference = null;
+	private String ngsi9Reference = null;
 
 	// @Value("${forcePepCredentials:false}")
 	// private boolean forcePepCredentials;
@@ -381,15 +390,64 @@ public class SubscriptionController {
 	 *         the address where the NGSI RESTful interface is reachable.
 	 */
 	public String getRefURl() {
-		String ref = null;
-		try {
-			ref = "http://" + InetAddress.getLocalHost().getHostAddress() + ":"
+
+		if (ngsi10Reference == null) {
+			String address = getLocalAddress();
+
+			ngsi10Reference = "http://" + address + ":"
 					+ System.getProperty("tomcat.init.port") + "/ngsi10";
 
-		} catch (UnknownHostException e) {
-			logger.error("Unknown Host", e);
 		}
-		return ref;
+
+		return ngsi10Reference;
+	}
+
+	private String getLocalAddress() {
+
+		String address = null;
+
+		if (exposedAddress != null && !exposedAddress.isEmpty()) {
+
+			address = exposedAddress;
+
+		} else {
+			Enumeration<NetworkInterface> n;
+			try {
+				n = NetworkInterface.getNetworkInterfaces();
+				while (n.hasMoreElements()) {
+					NetworkInterface e = n.nextElement();
+					if (e.getName().matches("docker.*")
+							|| e.getName().equals("lo")) {
+						continue;
+					}
+					Enumeration<InetAddress> a = e.getInetAddresses();
+					while (a.hasMoreElements()) {
+						InetAddress addr = a.nextElement();
+						String add = addr.getHostAddress();
+						if (add.matches("^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})$"))
+							address = add;
+					}
+					if (address != null) {
+						break;
+					}
+				}
+			} catch (SocketException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+			if (address == null) {
+				try {
+					address = InetAddress.getLocalHost().getHostAddress()
+							+ "/ngsi10";
+				} catch (UnknownHostException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		return address;
+
 	}
 
 	/**
@@ -397,9 +455,11 @@ public class SubscriptionController {
 	 *         the address where the NGSI RESTful interface is reachable.
 	 */
 	public String getNGSI9RefURl() {
-		String ref = null;
-		try {
-			ref = "http://" + InetAddress.getLocalHost().getHostAddress() + ":"
+
+		if (ngsi9Reference == null) {
+			String address = getLocalAddress();
+
+			ngsi9Reference = "http://" + address + ":"
 					+ System.getProperty("tomcat.init.port")
 					/*
 					 * It was decided within a FIWARE discussion, that the ngsi9
@@ -408,10 +468,9 @@ public class SubscriptionController {
 					 */
 					+ "/ngsi9/notifyContextAvailability";
 
-		} catch (UnknownHostException e) {
-			logger.error("Unknown Host", e);
 		}
-		return ref;
+
+		return ngsi9Reference;
 	}
 
 	public void initializeSubscriptionDataIndex() {
@@ -1532,7 +1591,7 @@ public class SubscriptionController {
 		 * and the new association list. (See documentation of availability
 		 * subscription storage)
 		 */
-		String association = associationUtil
+		String association = AssociationsUtil
 				.convertAssociationToString(transitiveList);
 
 		if (logger.isDebugEnabled()) {

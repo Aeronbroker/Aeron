@@ -1,19 +1,20 @@
 package eu.neclab.iotplatform.mocks.iotprovider;
 
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -21,18 +22,17 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 
 import com.sun.jersey.api.core.ResourceConfig;
 
-import eu.neclab.iotplatform.mocks.utils.Connector;
-import eu.neclab.iotplatform.mocks.utils.ContentType;
+import eu.neclab.iotplatform.iotbroker.commons.ContentType;
+import eu.neclab.iotplatform.iotbroker.commons.FullHttpRequester;
+import eu.neclab.iotplatform.iotbroker.commons.FullHttpResponse;
 import eu.neclab.iotplatform.mocks.utils.HeaderExtractor;
 import eu.neclab.iotplatform.mocks.utils.Mode;
+import eu.neclab.iotplatform.mocks.utils.ServerConfiguration;
 import eu.neclab.iotplatform.mocks.utils.UniqueIDGenerator;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
@@ -45,6 +45,7 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ReasonPhrase;
 import eu.neclab.iotplatform.ngsi.api.datamodel.StatusCode;
+import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UnsubscribeContextResponse;
@@ -65,12 +66,13 @@ public class IoTProvider {
 					System.getProperty("eu.neclab.iotplaform.mocks.iotprovider.defaultOutgoingContentType"),
 					ContentType.XML);
 
-	private final String defaultMode = System.getProperty(
-			"eu.neclab.iotplaform.mocks.iotprovider.defaultMode", "random");
+	// private final String defaultMode = System.getProperty(
+	// "eu.neclab.iotplaform.mocks.iotprovider.defaultMode", "random");
 
-	private final String queryContextResponseFile = System.getProperty(
-			"eu.neclab.iotplaform.mocks.iotprovider.queryContextResponseFile",
-			"queryContextResponse.xml");
+	private final String queryContextResponseFile = System
+			.getProperty(
+					"eu.neclab.iotplaform.mocks.iotprovider.defaultQueryContextResponseFile",
+					"queryContextResponse.xml");
 
 	private static String urlIoTAgent = "http://127.0.0.1:8004/ngsi10/notify";
 
@@ -88,7 +90,10 @@ public class IoTProvider {
 	@Produces("application/xml")
 	public String test(@Context ResourceConfig config) {
 
-		return "test";
+		String string = new String(
+				"{\"contextElement\":{\"entityId\":{\"id\":\"thermo1\",\"type\":\"thermometer\",\"isPattern\":false},\"attributeDomainName\":null,\"domainMetadata\":[],\"attributes\":[{\"name\":\"humidity\",\"type\":\"float\",\"contextValue\":\"30.00\",\"metadata\":[{\"name\":\"unit\",\"type\":\"string\",\"value\":\"%\"}]},{\"name\":\"temperature\",\"type\":\"float\",\"contextValue\":\"20.00\",\"metadata\":[{\"name\":\"unit\",\"type\":\"string\",\"value\":\"celsius\"}]},{\"name\":\"humidity\",\"type\":\"float\",\"contextValue\":\"30.00\",\"metadata\":[{\"name\":\"unit\",\"type\":\"string\",\"value\":\"%\"}]},{\"name\":\"temperature\",\"type\":\"float\",\"contextValue\":\"20.00\",\"metadata\":[{\"name\":\"unit\",\"type\":\"string\",\"value\":\"celsius\"}]}]},\"statusCode\":{\"code\":200,\"reasonPhrase\":\"OK\",\"details\":null}}");
+
+		return string;
 
 	}
 
@@ -101,12 +106,63 @@ public class IoTProvider {
 
 	}
 
+	public static String getClientIpAddr(HttpServletRequest request) {
+		String ip = request.getHeader("X-Forwarded-For");
+		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+			ip = request.getHeader("Proxy-Client-IP");
+		}
+		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+			ip = request.getHeader("WL-Proxy-Client-IP");
+		}
+		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+			ip = request.getHeader("HTTP_X_FORWARDED_FOR");
+		}
+		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+			ip = request.getHeader("HTTP_X_FORWARDED");
+		}
+		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+			ip = request.getHeader("HTTP_X_CLUSTER_CLIENT_IP");
+		}
+		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+			ip = request.getHeader("HTTP_CLIENT_IP");
+		}
+		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+			ip = request.getHeader("HTTP_FORWARDED_FOR");
+		}
+		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+			ip = request.getHeader("HTTP_FORWARDED");
+		}
+		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+			ip = request.getHeader("HTTP_VIA");
+		}
+		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+			ip = request.getHeader("REMOTE_ADDR");
+		}
+		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+			ip = request.getRemoteAddr();
+		}
+		if (ip == null) {
+			ip = "unknown";
+		}
+		return ip;
+	}
+
 	@POST
 	@Path("/queryContext")
 	@Consumes("application/json,application/xml")
 	@Produces("application/json,application/xml")
 	public String queryContext(String body, @Context HttpHeaders headers,
 			@Context ResourceConfig config) {
+
+		// // System.out.println("here I get something?"+req.getReader());
+		// if ("POST".equalsIgnoreCase(req.getMethod())) {
+		// try {
+		// System.out.println(CharStreams.toString(req.getReader()));
+		// } catch (IOException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		// }
 
 		// Get the incoming content-type
 		ContentType incomingContentType = HeaderExtractor.getContentType(
@@ -118,12 +174,11 @@ public class IoTProvider {
 
 		Mode mode;
 		Object contextMode = config.getProperty("mode");
-		if (contextMode == null) {
-			mode = Mode.fromString(defaultMode, Mode.RANDOM);
-		} else if (contextMode instanceof Mode) {
-			mode = (Mode) contextMode;
+		if (contextMode != null && contextMode instanceof String) {
+			mode = (Mode) Mode.fromString((String) contextMode,
+					ServerConfiguration.DEFAULT_MODE);
 		} else {
-			mode = Mode.RANDOM;
+			mode = ServerConfiguration.DEFAULT_MODE;
 		}
 
 		QueryContextResponse response;
@@ -142,23 +197,23 @@ public class IoTProvider {
 			logger.info("Received a NGSI-10 Query");
 			if (logger.isDebugEnabled()) {
 				logger.debug("NGSI-10 Query received: " + body);
-
 			}
 
 			response = createQueryContextResponse(queryContextRequest);
-		} else {
-			Object file = config.getProperty("file");
-			if (file == null) {
-				response = readQueryContextResponseFromFile(queryContextResponseFile);
-			} else {
-				response = readQueryContextResponseFromFile((String) file);
-			}
-		}
 
-		if (outgoingContentType == ContentType.XML) {
-			return response.toString();
+			if (outgoingContentType == ContentType.XML) {
+				return response.toString();
+			} else {
+				return response.toJsonString();
+			}
+
 		} else {
-			return response.toJsonString();
+			Object file = config.getProperty("queryContextResponseFile");
+			if (file == null) {
+				return readQueryContextResponseFromFile(ServerConfiguration.DEFAULT_QUERYCONTEXTRESPONSEFILE);
+			} else {
+				return readQueryContextResponseFromFile((String) file);
+			}
 		}
 
 		// QueryContextResponse response = new QueryContextResponse();
@@ -197,6 +252,90 @@ public class IoTProvider {
 	private QueryContextResponse createQueryContextResponse(
 			QueryContextRequest queryRequest) {
 
+		// Random rand = new Random();
+
+		// List<ContextElementResponse> contextElementResponseList = new
+		// ArrayList<ContextElementResponse>();
+		//
+		// StatusCode okCode = new StatusCode(Code.OK_200.getCode(),
+		// ReasonPhrase.OK_200.toString(), "");
+		//
+		// for (EntityId entityId : queryRequest.getEntityIdList()) {
+		//
+		// List<ContextAttribute> contextAttributeList = new
+		// ArrayList<ContextAttribute>();
+		//
+		// for (String attributeName : queryRequest.getAttributeList()) {
+		//
+		// contextAttributeList.add(new ContextAttribute(attributeName,
+		// null, "" + rand.nextInt()));
+		//
+		// }
+		// ContextElementResponse contextElementResponse = new
+		// ContextElementResponse();
+		//
+		// contextElementResponse.setContextElement(new ContextElement(
+		// entityId, null, contextAttributeList, null));
+		// contextElementResponse.setStatusCode(okCode);
+		//
+		// contextElementResponseList.add(contextElementResponse);
+		// }
+
+		QueryContextResponse response = new QueryContextResponse();
+		response.setContextResponseList(createContextElementResponses(
+				queryRequest.getEntityIdList(), queryRequest.getAttributeList()));
+
+		return response;
+
+	}
+
+	private NotifyContextRequest createNotifyContext(
+			SubscribeContextRequest subscribeContext, String subscriptionID,
+			String originator) {
+
+		// Random rand = new Random();
+
+		// List<ContextElementResponse> contextElementResponseList = new
+		// ArrayList<ContextElementResponse>();
+		//
+		// StatusCode okCode = new StatusCode(Code.OK_200.getCode(),
+		// ReasonPhrase.OK_200.toString(), "");
+		//
+		// for (EntityId entityId : queryRequest.getEntityIdList()) {
+		//
+		// List<ContextAttribute> contextAttributeList = new
+		// ArrayList<ContextAttribute>();
+		//
+		// for (String attributeName : queryRequest.getAttributeList()) {
+		//
+		// contextAttributeList.add(new ContextAttribute(attributeName,
+		// null, "" + rand.nextInt()));
+		//
+		// }
+		// ContextElementResponse contextElementResponse = new
+		// ContextElementResponse();
+		//
+		// contextElementResponse.setContextElement(new ContextElement(
+		// entityId, null, contextAttributeList, null));
+		// contextElementResponse.setStatusCode(okCode);
+		//
+		// contextElementResponseList.add(contextElementResponse);
+		// }
+
+		NotifyContextRequest notification = new NotifyContextRequest();
+		notification.setContextResponseList(createContextElementResponses(
+				subscribeContext.getEntityIdList(),
+				subscribeContext.getAttributeList()));
+		notification.setSubscriptionId(subscriptionID);
+		notification.setOriginator(originator);
+
+		return notification;
+
+	}
+
+	private List<ContextElementResponse> createContextElementResponses(
+			List<EntityId> entityIdList, List<String> attributeList) {
+
 		Random rand = new Random();
 
 		List<ContextElementResponse> contextElementResponseList = new ArrayList<ContextElementResponse>();
@@ -204,11 +343,11 @@ public class IoTProvider {
 		StatusCode okCode = new StatusCode(Code.OK_200.getCode(),
 				ReasonPhrase.OK_200.toString(), "");
 
-		for (EntityId entityId : queryRequest.getEntityIdList()) {
+		for (EntityId entityId : entityIdList) {
 
 			List<ContextAttribute> contextAttributeList = new ArrayList<ContextAttribute>();
 
-			for (String attributeName : queryRequest.getAttributeList()) {
+			for (String attributeName : attributeList) {
 
 				contextAttributeList.add(new ContextAttribute(attributeName,
 						null, "" + rand.nextInt()));
@@ -223,36 +362,47 @@ public class IoTProvider {
 			contextElementResponseList.add(contextElementResponse);
 		}
 
-		QueryContextResponse response = new QueryContextResponse();
-		response.setContextResponseList(contextElementResponseList);
-
-		return response;
+		return contextElementResponseList;
 
 	}
 
-	private QueryContextResponse readQueryContextResponseFromFile(String file) {
+	private String readQueryContextResponseFromFile(String file) {
 
-		QueryContextResponse response = new QueryContextResponse();
+		String response = null;
+
 		try {
+			response = new Scanner(new File(file)).useDelimiter("\\Z").next();
 
-			// file = notifyContextRequestFile;
-			InputStream is = new FileInputStream(file);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Response read from file: " + response);
+			}
 
-			JAXBContext context;
-			context = JAXBContext.newInstance(QueryContextResponse.class);
-
-			// Create the marshaller, this is the nifty little thing that
-			// will actually transform the object into XML
-			Unmarshaller unmarshaller = context.createUnmarshaller();
-			response = (QueryContextResponse) unmarshaller.unmarshal(is);
-
-		} catch (JAXBException e) {
-			logger.error("JAXB ERROR!", e);
 		} catch (FileNotFoundException e) {
-			logger.error("FILE NOT FOUND!: " + file);
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 		return response;
+
+		// try {
+		//
+		// // file = notifyContextRequestFile;
+		// InputStream is = new FileInputStream(file);
+		//
+		// JAXBContext context;
+		// context = JAXBContext.newInstance(QueryContextResponse.class);
+		//
+		// // Create the marshaller, this is the nifty little thing that
+		// // will actually transform the object into XML
+		// Unmarshaller unmarshaller = context.createUnmarshaller();
+		// response = (QueryContextResponse) unmarshaller.unmarshal(is);
+		//
+		// } catch (JAXBException e) {
+		// logger.error("JAXB ERROR!", e);
+		// } catch (FileNotFoundException e) {
+		// logger.error("FILE NOT FOUND!: " + file);
+		// }
+
 	}
 
 	public static String readNotifyFromFile(String id) {
@@ -281,85 +431,184 @@ public class IoTProvider {
 		// logger.error("FILE NOT FOUND!: " + file);
 		// }
 		//
-		 String resp = response.toString();
+		String resp = response.toString();
 
 		return resp;
 	}
 
 	@POST
 	@Path("/subscribeContext")
-	@Produces("application/xml")
-	public SubscribeContextResponse subscriptionResponse(String body) {
+	@Consumes("application/json,application/xml")
+	@Produces("application/json,application/xml")
+	public String subscriptionResponse(@Context HttpHeaders headers,
+			@Context ResourceConfig config, String body,
+			@Context HttpServletRequest req) {
 
-		logger.info("Received a NGSI-10 SubscribeContext");
-		if (logger.isDebugEnabled()) {
-			logger.debug("Received a NGSI-10 SubscribeContext: " + body);
-		}
+		final String originator = getClientIpAddr(req);
 
-		final String reference;
-		Pattern pattern_reference = Pattern
-				.compile("<reference>(\\S+)</reference>");
+		// Get the incoming content-type
+		ContentType incomingContentType = HeaderExtractor.getContentType(
+				headers, defaultIncomingContentType);
 
-		Matcher matcher = pattern_reference
-				.matcher(body.replaceAll("\\s+", ""));
+		// Get the accepted content type
+		final ContentType outgoingContentType = HeaderExtractor.getAccept(
+				headers, defaultOutgoingContentType);
 
-		if (matcher.find()) {
-			reference = matcher.group(1);
+		// Get the mode of working
+		Mode mode;
+		Object contextMode = config.getProperty("mode");
+		if (contextMode != null && contextMode instanceof String) {
+			mode = (Mode) Mode.fromString((String) contextMode,
+					ServerConfiguration.DEFAULT_MODE);
 		} else {
-			return null;
+			mode = ServerConfiguration.DEFAULT_MODE;
 		}
 
-		UniqueIDGenerator idGenerator = new UniqueIDGenerator();
-		final String id = idGenerator.getNextUniqueId();
-		ScheduledExecutorService executorService = Executors
-				.newScheduledThreadPool(1);
-		executorService.scheduleWithFixedDelay(new Runnable() {
-			@Override
-			public void run() {
+		SubscribeContextResponse response;
+		if (mode == Mode.RANDOM) {
 
-				Connector conn = null;
-				try {
-					conn = new Connector(new URL(reference));
-
-				} catch (MalformedURLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				conn.start("", "POST", readNotifyFromFile(id.toString()));
-
+			// Parse the request
+			final SubscribeContextRequest subscribeContextRequest;
+			if (incomingContentType == ContentType.JSON) {
+				subscribeContextRequest = (SubscribeContextRequest) NgsiStructure
+						.parseStringToJson(body, SubscribeContextRequest.class);
+			} else {
+				subscribeContextRequest = (SubscribeContextRequest) NgsiStructure
+						.convertStringToXml(body, SubscribeContextRequest.class);
 			}
 
-		}, 1, 2, TimeUnit.SECONDS);
-
-		SubscribeContextResponse response = new SubscribeContextResponse();
-
-		String file = null;
-		try {
-			file = subscribeContextResponseFile;
-			InputStream is = new FileInputStream(subscribeContextResponseFile);
-
-			JAXBContext context;
-			context = JAXBContext.newInstance(SubscribeContextResponse.class);
-
-			// Create the marshaller, this is the nifty little thing that
-			// will actually transform the object into XML
-			Unmarshaller unmarshaller = context.createUnmarshaller();
-			response = (SubscribeContextResponse) unmarshaller.unmarshal(is);
-
-			response.setSubscribeResponse(new SubscribeResponse(id.toString(),
-					response.getSubscribeResponse().getDuration(), null));
-
+			logger.info("Received a NGSI-10 SubscribeContext");
 			if (logger.isDebugEnabled()) {
-				logger.debug("NGSI-10 Subscribe response: " + response);
+				logger.debug("Received a NGSI-10 SubscribeContext: " + body);
 			}
 
-		} catch (JAXBException e) {
-			logger.error("JAXB ERROR!", e);
-		} catch (FileNotFoundException e) {
-			logger.error("FILE NOT FOUND!: " + file);
-		}
+			// Create the subscription id
+			UniqueIDGenerator idGenerator = new UniqueIDGenerator();
+			final String id = idGenerator.getNextUniqueId();
 
-		return response;
+			// Get the period of notification from configurations
+			Integer period;
+			Object contextPeriod = config.getProperty("period");
+			if (contextPeriod != null && contextPeriod instanceof String) {
+				period = (Integer) Integer.parseInt((String) contextPeriod,
+						ServerConfiguration.DEFAULT_PERIOD);
+			} else {
+				period = ServerConfiguration.DEFAULT_PERIOD;
+			}
+
+			// Create the timer for the notification thread
+			ScheduledExecutorService executorService = Executors
+					.newScheduledThreadPool(1);
+			executorService.scheduleWithFixedDelay(new Runnable() {
+
+				@Override
+				public void run() {
+
+					NotifyContextRequest notification = createNotifyContext(
+							subscribeContextRequest, id, originator);
+
+					ContentType contentType;
+					String data;
+					if (outgoingContentType == ContentType.JSON) {
+						contentType = ContentType.JSON;
+						data = notification.toJsonString();
+					} else {
+						contentType = ContentType.XML;
+						data = notification.toString();
+					}
+
+					FullHttpResponse response = null;
+					try {
+						response = FullHttpRequester.sendPost(
+								new URL(subscribeContextRequest.getReference()),
+								data, contentType.toString());
+					} catch (MalformedURLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					logger.info("Response to notification: "+ response);
+
+				}
+
+			}, 1, period, TimeUnit.SECONDS);
+
+			response = new SubscribeContextResponse();
+			response.setSubscribeResponse(new SubscribeResponse(id,
+					subscribeContextRequest.getDuration(),
+					subscribeContextRequest.getThrottling()));
+
+			if (outgoingContentType == ContentType.XML) {
+				return response.toString();
+			} else {
+				return response.toJsonString();
+			}
+
+		} else {
+			// Object file = config.getProperty("queryContextResponseFile");
+			// if (file == null) {
+			// return
+			// readQueryContextResponseFromFile(ServerConfiguration.DEFAULT_QUERYCONTEXTRESPONSEFILE);
+			// } else {
+			// return readQueryContextResponseFromFile((String) file);
+			// }
+		}
+		return null;
+
+		// UniqueIDGenerator idGenerator = new UniqueIDGenerator();
+		// final String id = idGenerator.getNextUniqueId();
+		// ScheduledExecutorService executorService = Executors
+		// .newScheduledThreadPool(1);
+		// executorService.scheduleWithFixedDelay(new Runnable() {
+		// @Override
+		// public void run() {
+		//
+		// Connector conn = null;
+		// try {
+		// conn = new Connector(new URL(reference));
+		//
+		// } catch (MalformedURLException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		// conn.start("", "POST", readNotifyFromFile(id.toString()));
+		//
+		// }
+		//
+		// }, 1, 2, TimeUnit.SECONDS);
+		//
+		// SubscribeContextResponse response = new SubscribeContextResponse();
+		//
+		// String file = null;
+		// try {
+		// file = subscribeContextResponseFile;
+		// InputStream is = new FileInputStream(subscribeContextResponseFile);
+		//
+		// JAXBContext context;
+		// context = JAXBContext.newInstance(SubscribeContextResponse.class);
+		//
+		// // Create the marshaller, this is the nifty little thing that
+		// // will actually transform the object into XML
+		// Unmarshaller unmarshaller = context.createUnmarshaller();
+		// response = (SubscribeContextResponse) unmarshaller.unmarshal(is);
+		//
+		// response.setSubscribeResponse(new SubscribeResponse(id.toString(),
+		// response.getSubscribeResponse().getDuration(), null));
+		//
+		// if (logger.isDebugEnabled()) {
+		// logger.debug("NGSI-10 Subscribe response: " + response);
+		// }
+		//
+		// } catch (JAXBException e) {
+		// logger.error("JAXB ERROR!", e);
+		// } catch (FileNotFoundException e) {
+		// logger.error("FILE NOT FOUND!: " + file);
+		// }
+		//
+		// return response;
 
 	}
 
