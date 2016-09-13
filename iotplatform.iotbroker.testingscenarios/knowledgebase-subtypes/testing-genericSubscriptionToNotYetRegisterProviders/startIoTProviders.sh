@@ -1,5 +1,5 @@
 IOTDISCOVERY_URL="http://localhost:8065"
-MOCKS_HOME="/home/cirillo/mycode/eclipseWorkspace/workspace_IoTBroker_git_RemaRepository/IoTBroker-public/eu.neclab.iotplatform.mocks/target/"
+NGSIEMULATOR_HOME="/opt/Aeron/eu.neclab.iotplatform.ngsiemulator/target/"
 VERSION="5.4.1-SNAPSHOT"
 
 #Start First Provider

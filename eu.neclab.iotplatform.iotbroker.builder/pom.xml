@@ -71,6 +71,8 @@
 		<module>../eu.neclab.iotplatform.iotbroker.embeddediotagent.couchdb</module>
 		<module>../eu.neclab.iotplatform.iotbroker.embeddediotagent.indexer</module>
 		<module>../eu.neclab.iotplatform.iotbroker.embeddediotagent.storage</module>
+		<module>../eu.neclab.iotplatform.knowledgebase</module>
+		
 	</modules>
 
 
