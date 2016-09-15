@@ -18,7 +18,18 @@ IoT Broker
 		* [Configure the IoT Broker with setup scripts](#configure-the-iot-broker-with-setup-scripts)
 		* [Configure the IoT Broker manually](#configure-the-iot-broker-manually)
 	* [Quick Start: Using the runtime environment included by this repository](#quick-start-using-the-runtime-environment-included-by-this-repository)
+	* [IoT Broker Installation and Administration guide](#IoT-Broker-Installation-and-Administration-guide)
+	* [IoT Broker User and Programmer Guide](#IoT-Broker-User-and-Programmer-Guide)
 * [Testing: Using the Black Box Test](#testing-using-the-black-box-test)
+* IoT Broker features
+	* [Entity composition](#Entity-composition)
+	* [History Queries](#History-Queries)
+	* [NGSI Deployment Emulator](#NGSI-Deployment-Emulator)
+	* [Semantic Grounding](#Semantic-Grounding)
+	* [Association](#Association)
+* Other IoT Components
+	* [NEC ConfMan](#NEC-ConfMan)
+	* [NEC Knowledge Base](#NEC-Knowledge-Base)
 * [Directory Structure](#directory-structure)
 * [IoT Broker References](#iot-broker-references)
 * [Bugs & Questions](#bugs-&-questions)
@@ -32,42 +43,42 @@ The IoT Broker is an Internet-of-Things middleware based on the FIWARE NGSI stan
 What you get
 ---
 
-IoT Broker is an implementation of the IoT Broker Generic Enabler from FIWARE (http://catalogue.fiware.org/enablers/iot-broker). 
-It is designed as a lightweight and scalable middleware component that separates IoT applications from the underlying device installations. 
+IoT Broker is an implementation of the IoT Broker Generic Enabler from FIWARE (http://catalogue.fiware.org/enablers/iot-broker).
+It is designed as a lightweight and scalable middleware component that separates IoT applications from the underlying device installations.
 This implementation satisfies all properties described in the specification of the FIWARE Generic Enabler (https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/FIWARE.OpenSpecification.IoT.Backend.IoTBroker).
 
 The IoT Broker has unique properties that you will not find in other IoT Platforms:
 
-* While IoT Broker decouples applications from underlying IoT device installations, it achieves this going far beyond the 
-common publish/subscribe paradigm. Instead, the IoT Broker actively communicates simultaneously with multiple IoT gateways 
-and devices in order to obtain exactly the information that is required by the running IoT applications. 
-As a result, information only is generated and exchanged when needed. This is in contrast to the state-of-the-art 
-middleware components where any piece of information - whether needed or not - is stored inside a central 
+* While IoT Broker decouples applications from underlying IoT device installations, it achieves this going far beyond the
+common publish/subscribe paradigm. Instead, the IoT Broker actively communicates simultaneously with multiple IoT gateways
+and devices in order to obtain exactly the information that is required by the running IoT applications.
+As a result, information only is generated and exchanged when needed. This is in contrast to the state-of-the-art
+middleware components where any piece of information - whether needed or not - is stored inside a central
 repository (which is still available as an optional component of the IoT Broker).
-* The IoT Broker has the ability to automatically translate information to the right abstraction level and therefore closes the 
-gap between information-centric applications and device-centric IoT installations. 
-For example, a simple device can typically only deliver values without being aware of the meaning of these values 
-in the application's context. On the other hand, IoT applications have to be written without consideration of the device 
-installations in order to be applicable in more than one specific environment. This gap is closed by IoT Broker by the use 
+* The IoT Broker has the ability to automatically translate information to the right abstraction level and therefore closes the
+gap between information-centric applications and device-centric IoT installations.
+For example, a simple device can typically only deliver values without being aware of the meaning of these values
+in the application's context. On the other hand, IoT applications have to be written without consideration of the device
+installations in order to be applicable in more than one specific environment. This gap is closed by IoT Broker by the use
 of so-called associations between device-level and thing-level information.
-* The IoT Broker is based on the simple and powerful information model standardized in OMA Next Generation Service Interface 
-Context Enabler (FIWARE NGSI). This API has emerged in FIWARE as an important open standard of information 
-exchange, implemented by a considerable number of FIWARE GEs. In FIWARE NGSI, all objects of the real world, 
-being it sensor/actuator devices or arbitrary objects (like tables, rooms, cars, ...) are represented as so-called 
-Context Entities, while information about these objects is expressed in the form of attributes. For more information 
+* The IoT Broker is based on the simple and powerful information model standardized in OMA Next Generation Service Interface
+Context Enabler (FIWARE NGSI). This API has emerged in FIWARE as an important open standard of information
+exchange, implemented by a considerable number of FIWARE GEs. In FIWARE NGSI, all objects of the real world,
+being it sensor/actuator devices or arbitrary objects (like tables, rooms, cars, ...) are represented as so-called
+Context Entities, while information about these objects is expressed in the form of attributes. For more information
 about the FIWARE NGSI information model and the related interfaces, please refer to the Open API Specification (https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/FI-WARE_NGSI_Open_RESTful_API_Specification).
 
-Why you should get it 
+Why you should get it
 ---
 
 The main features of IoT Broker are:
 
-* Offering a single point of contact to the user, hiding the complexity of the multi-provider nature of the 
+* Offering a single point of contact to the user, hiding the complexity of the multi-provider nature of the
   Internet of Things.
 * Collecting and aggregating information about thousands of real-world objects on behalf of the user.
-* Provide means to assemble lower-level device information (device-centric access) into higher-level thing information 
+* Provide means to assemble lower-level device information (device-centric access) into higher-level thing information
   (information-centric access).
-  
+
 
 Minimum System Requirements
 ---
@@ -102,6 +113,9 @@ If you want to run the IoTBroker docker container in background use the followin
 docker run -p 8060:8060 fiware/iotbroker > /dev/null &
 ```
 
+IoT Broker on DockerHub: https://hub.docker.com/r/fiware/iotbroker/
+
+
 Building IoT Broker Source Code
 ---
 
@@ -126,7 +140,7 @@ mvn install
 ```
 
   This command will generate 14 OSGI bundles inside the *eu.neclab.iotplatform.iotbroker.builder\target* folder:
-  
+
   (Note that the version numbers might differ from what is
   written in this document.)
 
@@ -226,12 +240,22 @@ To arrive at a running IoT Broker installation, the following steps need to be c
 
 3. Run the IoT Broker by running one of the startup scripts for Windows or Unix in the *IoTBroker-runner* folder.
 
+IoT Broker Installation and Administration guide
+---
+
+See: https://github.com/Aeronbroker/Aeron/blob/master/doc/installadminguide.md
+
+IoT Broker User and Programmer Guide
+---
+
+See: https://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/IoT_Broker_-_User_and_Programmers_Guide
+
 Testing: Using the Black Box Test
 ---
 While individual classes of the IoT Broker are already tested during compilation with Maven, the project *iotplatform.iotbroker.blackboxtest* is a dedicated black box test for a running instance of the IoT Broker using server mocks. It is based on the JUNIT-Framework.
 These tests assume that the IoT Broker is running and listening to port 80, it produces xml messages and it is set to communicates with an IoT Discovery component at port 8002 on localhost. This corresponds to the default configuration. All those IoTBroker settings can be configured with the setup scripts, see (readme.md#configure-the-iot-broker-with-setup-scripts), respectively through iotbroker_tomcatinitport, iotbroker_producedtype and iotbroker_ngsi9uri variables
 
-To run the tests, navigate to the directory *iotplatform.iotbroker.blackboxtest* and compile the project by the command 
+To run the tests, navigate to the directory *iotplatform.iotbroker.blackboxtest* and compile the project by the command
 
 ```
 mvn test
@@ -248,13 +272,45 @@ mvn test -Dblackboxtest.iotbroker.port=8070 -Dblackboxtest.iotdiscoverymock.port
 ```
 
 
+IoT Broker extension point
+---
+
+See: https://github.com/Aeronbroker/Aeron/blob/master/doc/extensionpoint.md
+
+
+Entity composition
+---
+See: https://github.com/Aeronbroker/Aeron/blob/master/eu.neclab.iotplatform.entitycomposer/README.MD
+
+
+History Queries
+---
+
+See: https://github.com/Aeronbroker/Aeron/blob/master/doc/historyqueries.md
+
+
+NGSI Deployment Emulator
+---
+
+See: https://github.com/Aeronbroker/Aeron/blob/master/eu.neclab.iotplatform.ngsiemulator/README.md
+
+
+Semantic Grounding
+---
+See: https://github.com/Aeronbroker/Aeron/blob/master/doc/semanticgrounding.md
+
+
+Association
+---
+See: https://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/NGSI_association
+
 
 Directory Structure
 ------------------------
 
-Most of the below sub-directories are containing source code for OSGi bundles the IoT Broker 
+Most of the below sub-directories are containing source code for OSGi bundles the IoT Broker
 runs with. Some of these bundles are required for a working installation of IoT Broker; others
-are implementing optional features and do not need to be deployed when these features are not 
+are implementing optional features and do not need to be deployed when these features are not
 needed. In addition, this repository also contains an OSGi runtime environment and pre-configured
 startup script for the IoT Broker, as well as a blackbox test utility for testing a running IoT Broker
 instance.
@@ -285,8 +341,18 @@ instance.
 |├── targetPlatform| Contains the OSGi bundles needed for the IoT Broker at runtime. These bundles are pre-configured to be loaded by the runtime environment in the "IoTBroker-runner" folder.|
 |└── tomcat-configuration-fragment | Required bundle for tomcat server configuration.|
 
-IoT Broker References
+
+NEC ConfMan
 ---
+
+See: https://github.com/Aeronbroker/NEConfMan
+
+NEC Knowledge Base
+---
+
+See: https://github.com/Aeronbroker/NECKnowledgeBase
+
+
 
 | Document                    | Reference                                                                                                        | Contents |
 | --------------------------- | ---------------------------------------------------- | -------------------------------------------|
@@ -308,4 +374,3 @@ IoT Broker References
 Bugs & Questions
 ---
 Please contact iotplatform@neclab.eu, flavio.cirillo@neclab.eu or stefan.gessler@neclab.eu.
-
