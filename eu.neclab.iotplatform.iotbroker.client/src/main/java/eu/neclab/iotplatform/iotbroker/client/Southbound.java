@@ -315,7 +315,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 		return address;
 
 	}
-	
+
 	private Object parseResponse(String body, ContentType contentType,
 			Class<? extends NgsiStructure> clazz) {
 		if (contentType == ContentType.XML) {
@@ -387,7 +387,10 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 			}
 
+		} catch (java.net.NoRouteToHostException noRoutToHostEx) {
+			logger.warn("Impossible to contact: " + url);
 		} catch (Exception e) {
+
 			logger.warn("Exception", e);
 			return fullHttpResponse;
 		}
@@ -1004,8 +1007,8 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 				// contextRegistration.setProvidingApplication(new URI("http://"
 				// + thisIp.getHostAddress() + ":" + tomcatPort
 				// + "/ngsi10/"));
-				contextRegistration
-						.setProvidingApplication(new URI(getNgsi10RefURl()));
+				contextRegistration.setProvidingApplication(new URI(
+						getNgsi10RefURl()));
 			}
 
 			Object response = sendRequest(new URL(ngsi9RemoteUrl), "/"
