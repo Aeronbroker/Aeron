@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<updateContextResponse>
-	<errorCode>
-			<code>200</code>
-			<reasonPhrase>Ok</reasonPhrase>
-			<details>a</details>
-	</errorCode>
-</updateContextResponse>
