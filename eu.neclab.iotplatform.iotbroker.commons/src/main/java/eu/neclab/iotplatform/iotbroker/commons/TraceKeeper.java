@@ -1,11 +1,13 @@
 /*******************************************************************************
- * Copyright (c) 2015, NEC Europe Ltd.
+ * Copyright (c) 2016, NEC Europe Ltd.
  * All rights reserved.
  * 
  * Authors:
- *          * Salvatore Longo - salvatore.longo@neclab.eu
- *          * Tobias Jacobs - tobias.jacobs@neclab.eu
+ *          * NEC IoT Platform Team - iotplatform@neclab.eu
  *          * Flavio Cirillo - flavio.cirillo@neclab.eu
+ *          * Tobias Jacobs - tobias.jacobs@neclab.eu
+ *          * Gurkan Solmaz - gurkan.solmaz@neclab.eu
+ *          * Salvatore Longo
  *          * Raihan Ul-Islam
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +41,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH 
  * DAMAGE.
  ******************************************************************************/
+
 package eu.neclab.iotplatform.iotbroker.commons;
 
 import java.net.InetAddress;
