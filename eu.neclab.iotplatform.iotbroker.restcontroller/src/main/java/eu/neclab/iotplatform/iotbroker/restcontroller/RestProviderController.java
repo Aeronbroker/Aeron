@@ -1420,7 +1420,7 @@ public class RestProviderController {
 	@RequestMapping(value = "/ngsi10/notify", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-	public ResponseEntity<NotifyContextResponse> notifyContext(
+	public ResponseEntity<NotifyContextResponse> notify(
 			HttpServletRequest requester,
 			@RequestBody NotifyContextRequest request) {
 
@@ -1443,6 +1443,26 @@ public class RestProviderController {
 			return new ResponseEntity<NotifyContextResponse>(response,
 					HttpStatus.OK);
 		}
+
+	}
+	
+	/**
+	 * Executes the convenience method for processing a notification.
+	 * 
+	 * @param requester
+	 *            Represents the HTTP request message.
+	 * @param request
+	 *            The notification request body.
+	 * @return The response body.
+	 */
+	@RequestMapping(value = "/ngsi10/notifyContext", method = RequestMethod.POST, consumes = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
+	public ResponseEntity<NotifyContextResponse> notifyContext(
+			HttpServletRequest requester,
+			@RequestBody NotifyContextRequest request) {
+
+		return this.notify(requester, request);
 
 	}
 
