@@ -1445,26 +1445,6 @@ public class RestProviderController {
 
 	}
 
-//	/**
-//	 * Executes the convenience method for processing a notification.
-//	 * 
-//	 * @param requester
-//	 *            Represents the HTTP request message.
-//	 * @param request
-//	 *            The notification request body.
-//	 * @return The response body.
-//	 */
-//	@RequestMapping(value = "/ngsi10/notifyContext", method = RequestMethod.POST, consumes = {
-//			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
-//			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
-//	public ResponseEntity<NotifyContextResponse> notifyContext(
-//			HttpServletRequest requester,
-//			@RequestBody NotifyContextRequest request) {
-//
-//		return this.notify(requester, request);
-//
-//	}
-
 	/**
 	 * Executes the convenience method for processing an NGSI9 notification.
 	 * 

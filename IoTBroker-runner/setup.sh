@@ -218,9 +218,9 @@ fi
 ##ENABLE SEMANTIC BUNDLES
 if [ "$iotbroker_semantic" == "enabled" ]
 then
-	enableBundle knowledgebase
+	enableBundle iotbroker.knowledgebase
 else
-	disableBundle knowledgebase
+	disableBundle iotbroker.knowledgebase
 fi
 
 
