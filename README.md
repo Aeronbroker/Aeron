@@ -29,7 +29,7 @@ IoT Broker
 	* [Association](#Association)
 * Other IoT Components
 	* [NEC ConfMan](#NEC-ConfMan)
-	* [NEC Knowledge Base](#NEC-Knowledge-Base)
+	* [NEC IoT Knowledge](#NEC-IoT-Knowledge)
 * [Directory Structure](#directory-structure)
 * [IoT Broker References](#iot-broker-references)
 * [Bugs & Questions](#bugs-&-questions)
@@ -347,12 +347,14 @@ NEC ConfMan
 
 See: https://github.com/Aeronbroker/NEConfMan
 
-NEC Knowledge Base
+NEC IoT Knowledge
 ---
 
-See: https://github.com/Aeronbroker/NECKnowledgeBase
+See: https://github.com/Aeronbroker/NECIoTKnowledge
 
 
+IoT Broker References
+---
 
 | Document                    | Reference                                                                                                        | Contents |
 | --------------------------- | ---------------------------------------------------- | -------------------------------------------|
