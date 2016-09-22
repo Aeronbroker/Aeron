@@ -122,7 +122,11 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface{
 										.getType().toString(),
 						getAttributeNameFromIsolatedContextElement(isolatedContextElement));
 
-		keyValueStore.updateValue(documentKey, isolatedContextElement);
+		boolean successfullyStored = keyValueStore.updateValue(documentKey, isolatedContextElement);
+		
+		if (successfullyStored){
+			indexer.index(isolatedContextElement);
+		}
 
 	}
 

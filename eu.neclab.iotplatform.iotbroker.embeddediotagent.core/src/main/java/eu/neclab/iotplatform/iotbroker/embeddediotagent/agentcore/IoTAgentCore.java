@@ -134,6 +134,8 @@ public class IoTAgentCore implements IoTAgentInterface {
 
 			// Create a list of ContextElement where each ContextElement has
 			// exactly one ContextAttribute
+			//
+			// TODO change the isolatedContextElement to a new class called AtomicContextElement
 			final List<ContextElement> isolatedContextElementList = this
 					.isolateAttributes(contextElement);
 

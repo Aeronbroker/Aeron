@@ -52,9 +52,9 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 
 public interface KeyValueStoreInterface {
 
-	void updateValue(String key, ContextElement contextElement);
+	boolean updateValue(String key, ContextElement contextElement);
 
-	void storeValue(String key, ContextElement contextElement);
+	boolean storeValue(String key, ContextElement contextElement);
 	
 	public Collection<String> getKeys(String startKey, String endKey);
 	

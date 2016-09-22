@@ -66,11 +66,10 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 
 public class Indexer implements EmbeddedAgentIndexerInterface {
-	
+
 	/** The logger. */
 	private static Logger logger = Logger.getLogger(Indexer.class);
 
-	
 	public final static String LATEST_VALUE_PREFIX = "entity";
 	public final static String HISTORICAL_VALUE_PREFIX = "obs";
 	public final static String PREFIX_TO_ID_SEPARATOR = "__";
@@ -82,9 +81,9 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 
 	private Multimap<String, String> cachedAttributeNamesById = HashMultimap
 			.create();
-	
+
 	private KeyValueStoreInterface keyValueStore;
-	
+
 	public KeyValueStoreInterface getKeyValueStore() {
 		return keyValueStore;
 	}
@@ -94,9 +93,35 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 	}
 
 	@PostConstruct
-	private void postConstruct(){
+	private void postConstruct() {
 		this.cacheIdsByType();
 		this.cacheAttributeNamesById();
+	}
+
+	@Override
+	public boolean index(ContextElement isolatedContextElement) {
+
+		if (isolatedContextElement.getContextAttributeList() == null
+				|| isolatedContextElement.getContextAttributeList().isEmpty()
+				|| isolatedContextElement.getEntityId().getId() == null
+				|| isolatedContextElement.getEntityId().getId().isEmpty()) {
+			return false;
+		}
+
+		String key = generateKeyForLatestValue(isolatedContextElement);
+
+		if (isolatedContextElement.getEntityId().getType() != null) {
+			cachedIdsByType.put(isolatedContextElement.getEntityId().getType()
+					.toString(), key);
+		}
+		
+		String[] entityAndAttributeName = key.split(PREFIX_TO_ID_SEPARATOR)[1]
+				.split(ID_TO_ATTRIBUTENAME_SEPARATOR);
+
+		cachedAttributeNamesById.put(entityAndAttributeName[0],
+				entityAndAttributeName[1]);
+		
+		return true;
 
 	}
 
@@ -105,15 +130,14 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 			List<EntityId> entityIdList, Set<String> attributeNames) {
 
 		Multimap<String, String> idsAndAttributeNames = HashMultimap.create();
-		
-		logger.info("+++++++++++++++++++cachedIdsByType"+cachedIdsByType);
-		logger.info("+++++++++++++++++++cachedAttributeNamesById"+cachedAttributeNamesById);
+
+		// logger.info("+++++++++++++++++++cachedIdsByType"+cachedIdsByType);
+		// logger.info("+++++++++++++++++++cachedAttributeNamesById"+cachedAttributeNamesById);
 
 		for (EntityId entityId : entityIdList) {
 
-			
 			Collection<String> ids;
-		
+
 			/*
 			 * Filter first against the type (if present)
 			 */
@@ -180,14 +204,12 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 	public String generateKeyForHistoricalData(String id, String attributeName,
 			Date timestamp) {
 
-		return HISTORICAL_VALUE_PREFIX
-				+ PREFIX_TO_ID_SEPARATOR + id
+		return HISTORICAL_VALUE_PREFIX + PREFIX_TO_ID_SEPARATOR + id
 				+ ID_TO_ATTRIBUTENAME_SEPARATOR + attributeName
-				+ DOCUMENT_TO_TIMESTAMP_SEPARATOR
-				+ formatDate(timestamp);
+				+ DOCUMENT_TO_TIMESTAMP_SEPARATOR + formatDate(timestamp);
 
 	}
-	
+
 	public String formatDate(Date date) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat(
 				"yyyy-MM-dd'%20'HH:mm:ss.SSS");
@@ -224,8 +246,7 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 	@Override
 	public String generateKeyForLatestValue(String id, String attributeName) {
 
-		return LATEST_VALUE_PREFIX
-				+ PREFIX_TO_ID_SEPARATOR + id
+		return LATEST_VALUE_PREFIX + PREFIX_TO_ID_SEPARATOR + id
 				+ ID_TO_ATTRIBUTENAME_SEPARATOR + attributeName;
 	}
 
@@ -294,11 +315,9 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 
 		// ÿ is the last character of the UTF-8 character table
 
-		for (String key : keyValueStore.getKeys(
-				LATEST_VALUE_PREFIX,
+		for (String key : keyValueStore.getKeys(LATEST_VALUE_PREFIX,
 				LATEST_VALUE_PREFIX + "ÿ")) {
-			String[] entityAndAttributeName = key
-					.split(PREFIX_TO_ID_SEPARATOR)[1]
+			String[] entityAndAttributeName = key.split(PREFIX_TO_ID_SEPARATOR)[1]
 					.split(ID_TO_ATTRIBUTENAME_SEPARATOR);
 
 			cachedAttributeNamesById.put(entityAndAttributeName[0],
@@ -313,4 +332,5 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 				isolatedContextElement.getContextAttributeList(), null)
 				.getName();
 	}
+
 }

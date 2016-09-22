@@ -55,6 +55,9 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 
 public interface EmbeddedAgentIndexerInterface {
 
+	public abstract boolean index(
+			ContextElement isolatedContextElement);
+
 	/**
 	 * This method will calculate a multimap containing all the entities with
 	 * its attributes that are matching the EntityId criteria given as input. It

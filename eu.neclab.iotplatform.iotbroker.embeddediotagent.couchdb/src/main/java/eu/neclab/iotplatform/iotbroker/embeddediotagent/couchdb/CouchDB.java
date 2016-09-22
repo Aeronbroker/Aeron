@@ -201,11 +201,13 @@ public class CouchDB implements KeyValueStoreInterface {
 	}
 
 	@Override
-	public void updateValue(String key, ContextElement contextElement) {
+	public boolean updateValue(String key, ContextElement contextElement) {
 
 		this.checkDB();
 
 		String value = contextElement.toJsonString();
+
+		boolean successful = false;
 
 		/*
 		 * Get the document revision
@@ -227,6 +229,15 @@ public class CouchDB implements KeyValueStoreInterface {
 
 					logger.error("No response from CouchDB!!!");
 
+					successful = false;
+
+				} else if (respFromCouchDB.getStatusLine().getStatusCode() > 299) {
+
+					logger.warn("CouchDB did not created correctly the value. Reason: "
+							+ respFromCouchDB.getStatusLine());
+
+					successful = false;
+
 				} else {
 					// Parse the revision and store it
 					revision = CouchDBUtil
@@ -234,6 +245,8 @@ public class CouchDB implements KeyValueStoreInterface {
 
 					// Update the cache
 					cachedRevisionByKey.put(key, revision);
+
+					successful = true;
 				}
 
 			} else {
@@ -247,10 +260,12 @@ public class CouchDB implements KeyValueStoreInterface {
 						messageBody, "application/json");
 
 				if (respFromCouchDB.getStatusLine().getStatusCode() > 299) {
-					
+
 					logger.warn("CouchDB did not updated correctly the value. Reason: "
 							+ respFromCouchDB.getStatusLine());
-					
+
+					successful = false;
+
 				} else {
 
 					// Parse the revision of the document and update it
@@ -258,6 +273,9 @@ public class CouchDB implements KeyValueStoreInterface {
 							.parseRevisionFromCouchdbResponse(respFromCouchDB);
 					// Put in cache
 					cachedRevisionByKey.put(key, revision);
+
+					successful = true;
+
 				}
 
 			}
@@ -268,6 +286,8 @@ public class CouchDB implements KeyValueStoreInterface {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
+		return successful;
 
 	}
 
@@ -311,18 +331,36 @@ public class CouchDB implements KeyValueStoreInterface {
 	}
 
 	@Override
-	public void storeValue(String key, ContextElement contextElement) {
+	public boolean storeValue(String key, ContextElement contextElement) {
 		this.checkDB();
 
+		boolean successful = false;
+
 		try {
-			HttpRequester.sendPut(new URL(getCouchDB_ip() + couchDB_NAME + "/"
-					+ key), contextElement.toJsonString(), "application/json");
+			FullHttpResponse respFromCouchDB = HttpRequester.sendPut(new URL(
+					getCouchDB_ip() + couchDB_NAME + "/" + key), contextElement
+					.toJsonString(), "application/json");
+			
+			if (respFromCouchDB.getStatusLine().getStatusCode() > 299) {
+
+				logger.warn("CouchDB did not updated correctly the value. Reason: "
+						+ respFromCouchDB.getStatusLine());
+
+				successful = false;
+
+			} else {
+
+				successful = true;
+
+			}
 
 		} catch (MalformedURLException e) {
 			logger.info("Impossible to store information into CouchDB", e);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		return successful;
 	}
 
 	private void cacheRevisionById() {
