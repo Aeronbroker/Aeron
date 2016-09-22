@@ -572,61 +572,6 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	@Override
 	public QueryContextResponse queryContext(QueryContextRequest request) {
 
-		// /*
-		// *
-		// ######################################################################
-		// * Here starts part of code for the ASSOCIATIONS
-		// * ##############################################
-		// */
-		//
-		// /*
-		// * create associations operation scope for discovery
-		// */
-		// OperationScope operationScope = new OperationScope(
-		// "IncludeAssociations", "SOURCES");
-		//
-		// /*
-		// * Create a new restriction with the same attribute expression and
-		// * operation scope as in the request.
-		// */
-		// Restriction restriction = new Restriction();
-		//
-		// if (request.getRestriction() != null) {
-		// if (request.getRestriction().getAttributeExpression() != null) {
-		// restriction.setAttributeExpression(request.getRestriction()
-		// .getAttributeExpression());
-		// }
-		// if (request.getRestriction().getOperationScope() != null) {
-		// restriction.setOperationScope(new ArrayList<OperationScope>(
-		// request.getRestriction().getOperationScope()));
-		// }
-		//
-		// } else {
-		//
-		// restriction.setAttributeExpression("");
-		//
-		// }
-		//
-		// /*
-		// * Add the associations operation scope to the the restriction.
-		// */
-		//
-		// ArrayList<OperationScope> lstOperationScopes = null;
-		//
-		// if (restriction.getOperationScope() == null) {
-		// lstOperationScopes = new ArrayList<OperationScope>();
-		// lstOperationScopes.add(operationScope);
-		// restriction.setOperationScope(lstOperationScopes);
-		// } else {
-		// restriction.getOperationScope().add(operationScope);
-		// }
-		//
-		// /*
-		// *
-		// ######################################################################
-		// * Here finishes part of code for the ASSOCIATIONS
-		// * ################################################
-		// */
 
 		DiscoverContextAvailabilityRequest discoveryRequest = new DiscoverContextAvailabilityRequest(
 				request.getEntityIdList(), request.getAttributeList(),

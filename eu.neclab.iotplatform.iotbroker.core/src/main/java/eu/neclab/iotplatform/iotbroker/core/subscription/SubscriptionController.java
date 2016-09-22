@@ -221,7 +221,7 @@ public class SubscriptionController {
 	 * Used for storage of subscription-related information.
 	 */
 	private AvailabilitySubscriptionInterface availabilitySub;
-	private LinkSubscriptionAvailabilityInterface linkAvSub;
+	private LinkSubscriptionAvailabilityInterface linkAvailabilitySubscription;
 	private SubscriptionStorageInterface subscriptionStorage;
 
 	/**
@@ -332,7 +332,7 @@ public class SubscriptionController {
 	 *         and availability subscriptions.
 	 */
 	public LinkSubscriptionAvailabilityInterface getLinkAvSub() {
-		return linkAvSub;
+		return linkAvailabilitySubscription;
 	}
 
 	/**
@@ -340,7 +340,7 @@ public class SubscriptionController {
 	 * and availability subscriptions.
 	 */
 	public void setLinkAvSub(LinkSubscriptionAvailabilityInterface linkAvSub) {
-		this.linkAvSub = linkAvSub;
+		this.linkAvailabilitySubscription = linkAvSub;
 	}
 
 	/**
@@ -602,7 +602,7 @@ public class SubscriptionController {
 						subscribeContextAvailability,
 						subscribeContextAvailability.getSubscribeId());
 
-				linkAvSub.insert(idSubRequest,
+				linkAvailabilitySubscription.insert(idSubRequest,
 						subscribeContextAvailability.getSubscribeId());
 			}
 
@@ -740,13 +740,13 @@ public class SubscriptionController {
 							null)));
 
 		}
-		List<String> availabilitySubscriptionIDs = linkAvSub.getAvailIDs(uCSreq
-				.getSubscriptionId());
+		List<String> availabilitySubscriptionIDs = linkAvailabilitySubscription
+				.getAvailIDs(uCSreq.getSubscriptionId());
 		String subsAvailId;
 		if (availabilitySubscriptionIDs != null
 				&& !availabilitySubscriptionIDs.isEmpty()) {
-			subsAvailId = linkAvSub.getAvailIDs(uCSreq.getSubscriptionId())
-					.get(0);
+			subsAvailId = linkAvailabilitySubscription.getAvailIDs(
+					uCSreq.getSubscriptionId()).get(0);
 			final UpdateContextAvailabilitySubscriptionRequest uCAReq = new UpdateContextAvailabilitySubscriptionRequest(
 					sCReq.getEntityIdList(), sCReq.getAttributeList(),
 					uCSreq.getDuration(), subsAvailId, uCSreq.getRestriction());
@@ -826,7 +826,7 @@ public class SubscriptionController {
 	 */
 	public void unsubscribeOperation(String subscriptionID) {
 
-		List<String> lSubscriptionIDOriginal = linkAvSub
+		List<String> lSubscriptionIDOriginal = linkAvailabilitySubscription
 				.getAvailIDs(subscriptionID);
 
 		if (logger.isDebugEnabled()) {
@@ -842,7 +842,7 @@ public class SubscriptionController {
 			if (isMaster) {
 
 				availabilitySub.deleteAvalabilitySubscription(tmp);
-				linkAvSub.delete(subscriptionID, tmp);
+				linkAvailabilitySubscription.delete(subscriptionID, tmp);
 
 				// Deleting the subscription, all the linked outgoing
 				// subscription
@@ -878,22 +878,28 @@ public class SubscriptionController {
 	public UnsubscribeContextResponse receiveReqFrmNorthBoundWrapper(
 			UnsubscribeContextRequest uCReq) {
 
-		List<String> lSubscriptionIDOriginal = linkAvSub.getAvailIDs(uCReq
-				.getSubscriptionId());
-
-		if (lSubscriptionIDOriginal.size() != 1) {
+		// Check if such subscription is in the database
+		if (!subscriptionDataIndex.containsKey(uCReq.getSubscriptionId())) {
 			return new UnsubscribeContextResponse(uCReq.getSubscriptionId(),
 					new StatusCode(Code.SUBSCRIPTIONIDNOTFOUND_470.getCode(),
 							ReasonPhrase.SUBSCRIPTIONIDNOTFOUND_470.toString(),
 							null));
-		} else {
-			final String tmp = lSubscriptionIDOriginal.get(0);
+		}
+
+		// Get the Availability Subscription
+		List<String> availabilitySubscriptionIDs = linkAvailabilitySubscription
+				.getAvailIDs(uCReq.getSubscriptionId());
+
+		for (final String availSub : availabilitySubscriptionIDs) {
+
+			// If present delete the corresponding Availability Subscription
+
 			new Thread() {
 				@Override
 				public void run() {
 
 					UnsubscribeContextAvailabilityRequest uCAReq = new UnsubscribeContextAvailabilityRequest(
-							tmp);
+							availSub);
 					UnsubscribeContextAvailabilityResponse uCARes = confManWrapper
 							.receiveReqFrmSubscriptionController(uCAReq);
 					if (uCARes.getStatusCode() != null
@@ -903,21 +909,29 @@ public class SubscriptionController {
 					}
 				}
 			}.start();
-			availabilitySub.deleteAvalabilitySubscription(tmp);
-			linkAvSub.delete(uCReq.getSubscriptionId(), tmp);
-			List<String> lSubscriptionIDAgent = subscriptionStorage
-					.getOutIDs(uCReq.getSubscriptionId());
-			for (String subscriptionAgent : lSubscriptionIDAgent) {
-				final String tmp1 = subscriptionAgent;
-				final URI agentURi = subscriptionStorage
-						.getAgentUri(subscriptionAgent);
-				logger.debug("subscriptionAgent: " + subscriptionAgent
-						+ " agentURi:" + agentURi.toString());
+			availabilitySub.deleteAvalabilitySubscription(availSub);
+			linkAvailabilitySubscription.delete(uCReq.getSubscriptionId(),
+					availSub);
+		}
+
+		// Unsubscribe to all the Agents
+		List<String> outgoingSubscriptionIDs = subscriptionStorage
+				.getOutIDs(uCReq.getSubscriptionId());
+		for (final String outgoingSubscriptionId : outgoingSubscriptionIDs) {
+
+			final URI agentURi = subscriptionStorage
+					.getAgentUri(outgoingSubscriptionId);
+
+			if (agentURi != null) {
+
+				logger.info("Unsubscribing with subscriptionID: "
+						+ outgoingSubscriptionId + " from agentURi:"
+						+ agentURi.toString());
 				new Thread() {
 					@Override
 					public void run() {
 						UnsubscribeContextRequest uCReq = new UnsubscribeContextRequest(
-								tmp1);
+								outgoingSubscriptionId);
 						UnsubscribeContextResponse uCRes = agentWrapper
 								.receiveReqFrmSubscriptionController(uCReq,
 										agentURi);
@@ -929,27 +943,27 @@ public class SubscriptionController {
 						}
 					}
 				}.start();
-
-				// Deleting the subscription, all the linked outgoing
-				// subscription
-				// will be deleted as a cascade effect
-				subscriptionStorage.deleteIncomingSubscription(uCReq
-						.getSubscriptionId());
-
-				SubscriptionData sData = subscriptionDataIndex.get(uCReq
-						.getSubscriptionId());
-				UnsubscribeTask unsubscribeTask = sData.getUnsubscribeTask();
-				if (unsubscribeTask != null) {
-					unsubscribeTask.cancel();
-				}
-				ThrottlingTask throttlingTask = sData.getThrottlingTask();
-				if (throttlingTask != null) {
-					throttlingTask.cancel();
-				}
-				subscriptionDataIndex.remove(tmp);
-
 			}
+
 		}
+
+		// Deleting the subscription, all the linked outgoing
+		// subscription
+		// will be deleted as a cascade effect
+		subscriptionStorage.deleteIncomingSubscription(uCReq
+				.getSubscriptionId());
+
+		SubscriptionData sData = subscriptionDataIndex.get(uCReq
+				.getSubscriptionId());
+		UnsubscribeTask unsubscribeTask = sData.getUnsubscribeTask();
+		if (unsubscribeTask != null) {
+			unsubscribeTask.cancel();
+		}
+		ThrottlingTask throttlingTask = sData.getThrottlingTask();
+		if (throttlingTask != null) {
+			throttlingTask.cancel();
+		}
+		subscriptionDataIndex.remove(uCReq.getSubscriptionId());
 
 		return new UnsubscribeContextResponse(uCReq.getSubscriptionId(),
 				new StatusCode(Code.OK_200.getCode(),
@@ -1248,7 +1262,7 @@ public class SubscriptionController {
 		 * incoming subscription.
 		 */
 
-		List<String> availId = linkAvSub.getAvailIDs(inID);
+		List<String> availId = linkAvailabilitySubscription.getAvailIDs(inID);
 
 		/*
 		 * It is again assumed that exactly one availability subscription id is
@@ -1609,7 +1623,7 @@ public class SubscriptionController {
 		 * Now the id of the incoming subscription corresponding to this
 		 * availability notification is retrieved from storage.
 		 */
-		List<String> inIDs = linkAvSub
+		List<String> inIDs = linkAvailabilitySubscription
 				.getInIDs(notifyContextAvailabilityRequest.getSubscribeId());
 
 		logger.info("List Incoming Subscription Id ------------------>" + inIDs);
