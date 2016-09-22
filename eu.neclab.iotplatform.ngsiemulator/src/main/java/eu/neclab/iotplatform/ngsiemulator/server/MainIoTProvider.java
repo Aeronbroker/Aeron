@@ -61,6 +61,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
@@ -103,8 +104,9 @@ public class MainIoTProvider {
 	// Get the IoT Discovery URL
 	private static String exposedURL;
 
-	// Get the IoT Discovery URL
+	// ContentTypes
 	private static ContentType outgoingContentType;
+	private static ContentType incomingContentType;
 
 	private static boolean doRegistration;
 
@@ -123,10 +125,10 @@ public class MainIoTProvider {
 	// Configurations map
 	private static Map<String, String> configurations;
 
+	private static Properties properties;
+
 	// Get the IoT Discovery URL
-	private static String iotDiscoveryURL = System.getProperty(
-			"eu.neclab.ioplatform.ngsiemulator.iotDiscoveryUrl",
-			"http://localhost:8065/");
+	private static String iotDiscoveryURL;
 
 	private static Set<Integer> portSet;
 
@@ -134,10 +136,9 @@ public class MainIoTProvider {
 
 		if (configurationFile != null) {
 			readConfigurations(configurationFile);
-		} else {
-			logger.warn("Impossible to read configuration file: "
-					+ configurationFile);
 		}
+
+		properties = System.getProperties();
 
 		setBasicConfigurations();
 
@@ -158,54 +159,15 @@ public class MainIoTProvider {
 
 		for (int portNumber : portSet) {
 
-			/*
-			 * Specific configuration for a specific server
-			 */
-			Mode serverMode;
-			String serverQueryContextResponseFile;
-			String serverNotifyContextRequestFile;
-			int serverNotificationPeriod;
-			if (configurations != null) {
-				serverMode = (Mode.fromString(configurations
-						.get("eu.neclab.ioplatform.ngsiemulator.iotprovider."
-								+ portNumber + ".mode"), mode));
-
-				serverQueryContextResponseFile = configurations.getOrDefault(
-						"eu.neclab.ioplatform.ngsiemulator.iotprovider."
-								+ portNumber + ".queryContextResponseFile",
-						queryContextResponseFile);
-
-				serverNotifyContextRequestFile = configurations.getOrDefault(
-						"eu.neclab.ioplatform.ngsiemulator.iotprovider."
-								+ portNumber + ".notifyContextRequestFile",
-						queryContextResponseFile);
-
-				serverNotificationPeriod = Integer.parseInt(configurations
-						.get("eu.neclab.ioplatform.ngsiemulator.iotprovider."
-								+ portNumber + ".notificationPeriod"),
-						notificationPeriod);
-			} else {
-				serverMode = mode;
-				serverQueryContextResponseFile = queryContextResponseFile;
-				serverNotifyContextRequestFile = notifyContextRequestFile;
-				serverNotificationPeriod = notificationPeriod;
-			}
+			ServerConfiguration serverConfiguration = getSpecificServerConfiguration(portNumber);
 
 			ServerDummy server = new ServerDummy();
-
-			ServerConfiguration serverConfigurations = new ServerConfiguration();
-			serverConfigurations.setPort(portNumber);
-			serverConfigurations.setMode(serverMode);
-			serverConfigurations
-					.setQueryContextResponseFile(serverQueryContextResponseFile);
-			serverConfigurations
-					.setNotifyContextRequestFile(serverNotifyContextRequestFile);
 
 			try {
 
 				server.startServer(portNumber,
 						"eu.neclab.iotplatform.ngsiemulator.iotprovider",
-						serverConfigurations);
+						serverConfiguration);
 
 			} catch (BindException e) {
 				// TODO Auto-generated catch block
@@ -217,7 +179,7 @@ public class MainIoTProvider {
 			}
 
 			if (doRegistration) {
-				if (serverMode == Mode.RANDOM) {
+				if (serverConfiguration.getMode() == Mode.RANDOM) {
 
 					Set<String> entityNames = chooseEntityNames();
 					Set<String> attributes = chooseAttributes();
@@ -226,7 +188,8 @@ public class MainIoTProvider {
 							entityNames, attributes, portNumber);
 
 					// TODO use the SouthBound class
-					ngsiRequester.doRegistration(registration, ContentType.XML);
+					ngsiRequester.doRegistration(registration, ContentType.XML,
+							iotDiscoveryURL);
 
 				} else {
 					if (registerContextAvailabilityFile != null) {
@@ -301,8 +264,10 @@ public class MainIoTProvider {
 					configurations.put(keyValue[0],
 							keyValue[1].replace("\"", ""));
 				} else {
-					logger.warn("Wrong property in the configuration file: "
-							+ line);
+					if (!line.trim().isEmpty()) {
+						logger.warn("Wrong property in the configuration file: "
+								+ line);
+					}
 				}
 			}
 		} catch (FileNotFoundException e) {
@@ -315,17 +280,153 @@ public class MainIoTProvider {
 
 	}
 
+	private static ServerConfiguration getSpecificServerConfiguration(
+			int portNumber) {
+		/*
+		 * Specific configuration for a specific server
+		 */
+		Mode serverMode;
+		String serverQueryContextResponseFile;
+		String serverNotifyContextRequestFile;
+		int serverNotificationPeriod;
+		ContentType serverOutgoingContentType;
+		ContentType serverIncomingContentType;
+
+		if (configurations != null) {
+			serverMode = Mode
+					.fromString(
+							configurations
+									.get("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+											+ portNumber + ".mode"),
+							Mode.fromString(
+									properties
+											.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+													+ portNumber + ".mode"),
+									mode));
+
+			serverQueryContextResponseFile = configurations.getOrDefault(
+					"eu.neclab.ioplatform.ngsiemulator.iotprovider."
+							+ portNumber + ".queryContextResponseFile",
+					properties.getProperty(
+							"eu.neclab.ioplatform.ngsiemulator.iotprovider."
+									+ portNumber + ".queryContextResponseFile",
+							queryContextResponseFile));
+
+			serverNotifyContextRequestFile = configurations.getOrDefault(
+					"eu.neclab.ioplatform.ngsiemulator.iotprovider"
+							+ portNumber + ".notifyContextRequestFile",
+					properties.getProperty(
+							"eu.neclab.ioplatform.ngsiemulator.iotprovider"
+									+ portNumber + ".notifyContextRequestFile",
+							notifyContextRequestFile));
+
+			serverNotificationPeriod = parseOrDefault(
+					configurations.get("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+							+ portNumber + ".notificationPeriod"),
+					parseOrDefault(
+							properties
+									.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+											+ portNumber
+											+ ".notificationPeriod"),
+							notificationPeriod));
+
+			serverIncomingContentType = ContentType
+					.fromString(
+							configurations
+									.get("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+											+ portNumber
+											+ ".incomingContentType"),
+							ContentType.fromString(
+									properties
+											.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+													+ portNumber
+													+ ".incomingContentType"),
+									incomingContentType));
+
+			serverOutgoingContentType = ContentType
+					.fromString(
+							configurations
+									.get("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+											+ portNumber
+											+ ".outgoingContentType"),
+							ContentType.fromString(
+									properties
+											.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+													+ portNumber
+													+ ".outgoingContentType"),
+									outgoingContentType));
+
+		} else {
+			serverMode = Mode
+					.fromString(
+							properties
+									.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+											+ portNumber + ".mode"), mode);
+
+			serverQueryContextResponseFile = properties.getProperty(
+					"eu.neclab.ioplatform.ngsiemulator.iotprovider."
+							+ portNumber + ".queryContextResponseFile",
+					queryContextResponseFile);
+
+			serverNotifyContextRequestFile = properties.getProperty(
+					"eu.neclab.ioplatform.ngsiemulator.iotprovider"
+							+ portNumber + ".notifyContextRequestFile",
+					notifyContextRequestFile);
+
+			serverNotificationPeriod = parseOrDefault(
+					properties.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+							+ portNumber + ".notificationPeriod"),
+					notificationPeriod);
+
+			serverIncomingContentType = ContentType
+					.fromString(
+							properties
+									.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+											+ portNumber
+											+ ".incomingContentType"),
+							ServerConfiguration.DEFAULT_INCOMINGCONTENTTYPE);
+
+			serverOutgoingContentType = ContentType
+					.fromString(
+							properties
+									.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+											+ portNumber
+											+ ".outgoingContentType"),
+							ServerConfiguration.DEFAULT_OUTGOINGCONTENTTYPE);
+		}
+
+		ServerConfiguration serverConfigurations = new ServerConfiguration();
+		serverConfigurations.setPort(portNumber);
+		serverConfigurations.setMode(serverMode);
+		serverConfigurations
+				.setQueryContextResponseFile(serverQueryContextResponseFile);
+		serverConfigurations
+				.setNotifyContextRequestFile(serverNotifyContextRequestFile);
+		serverConfigurations.setNotificationPeriod(serverNotificationPeriod);
+		serverConfigurations.setIncomingContentType(serverIncomingContentType);
+		serverConfigurations.setOutgoingContentType(serverOutgoingContentType);
+
+		return serverConfigurations;
+	}
+
 	private static void setBasicConfigurations() {
 
 		/*
 		 * Port Numbers
 		 */
 		if (configurations != null) {
-			portNumbers = configurations.getOrDefault(
+
+			portNumbers = configurations
+					.getOrDefault(
+							"eu.neclab.ioplatform.ngsiemulator.iotprovider.ports",
+							properties
+									.getProperty(
+											"eu.neclab.ioplatform.ngsiemulator.iotprovider.ports",
+											ServerConfiguration.DEFAULT_PORTNUMBERS));
+		} else {
+			portNumbers = properties.getProperty(
 					"eu.neclab.ioplatform.ngsiemulator.iotprovider.ports",
 					ServerConfiguration.DEFAULT_PORTNUMBERS);
-		} else {
-			portNumbers = ServerConfiguration.DEFAULT_PORTNUMBERS;
 		}
 		portSet = RangesUtil.rangesToSet(portNumbers);
 
@@ -333,11 +434,37 @@ public class MainIoTProvider {
 		 * defaultMode
 		 */
 		if (configurations != null) {
-			mode = Mode.fromString(configurations
-					.get("eu.neclab.ioplatform.ngsiemulator.iotprovider.mode"),
-					ServerConfiguration.DEFAULT_MODE);
+			mode = Mode
+					.fromString(
+							configurations
+									.get("eu.neclab.ioplatform.ngsiemulator.iotprovider.mode"),
+							Mode.fromString(
+									properties
+											.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.mode"),
+									ServerConfiguration.DEFAULT_MODE));
 		} else {
-			mode = ServerConfiguration.DEFAULT_MODE;
+			mode = Mode
+					.fromString(
+							properties
+									.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.mode"),
+							ServerConfiguration.DEFAULT_MODE);
+		}
+
+		/*
+		 * IoT Discovery URL
+		 */
+		if (configurations != null) {
+			iotDiscoveryURL = configurations
+					.getOrDefault(
+							"eu.neclab.ioplatform.ngsiemulator.iotDiscoveryUrl",
+							properties
+									.getProperty(
+											"eu.neclab.ioplatform.ngsiemulator.iotDiscoveryUrl",
+											ServerConfiguration.DEFAULT_IOTDISCOVERYURL));
+		} else {
+			iotDiscoveryURL = properties.getProperty(
+					"eu.neclab.ioplatform.ngsiemulator.iotDiscoveryUrl",
+					ServerConfiguration.DEFAULT_IOTDISCOVERYURL);
 		}
 
 		/*
@@ -347,23 +474,33 @@ public class MainIoTProvider {
 			rangesOfEntityIds = configurations
 					.getOrDefault(
 							"eu.neclab.ioplatform.ngsiemulator.iotprovider.rangesOfEntityIds",
-							ServerConfiguration.DEFAULT_RANGESOFENTITYIDS);
+							properties
+									.getProperty(
+											"eu.neclab.ioplatform.ngsiemulator.iotprovider.rangesOfEntityIds",
+											ServerConfiguration.DEFAULT_RANGESOFENTITYIDS));
 		} else {
-			rangesOfEntityIds = ServerConfiguration.DEFAULT_RANGESOFENTITYIDS;
+			rangesOfEntityIds = properties
+					.getProperty(
+							"eu.neclab.ioplatform.ngsiemulator.iotprovider.rangesOfEntityIds",
+							ServerConfiguration.DEFAULT_RANGESOFENTITYIDS);
 		}
 
 		/*
 		 * Number of EntityIds to select amongst the EntityIds.
 		 */
 		if (configurations != null) {
-			numberOfEntityIdsToSelect = Integer
-					.parseInt(configurations
-							.getOrDefault(
-									"eu.neclab.ioplatform.ngsiemulator.iotprovider.numberOfEntityIdsToSelect",
-									ServerConfiguration.DEFAULT_RANGESOFENTITYIDSTOSELECT));
+			numberOfEntityIdsToSelect = parseOrDefault(
+					configurations
+							.get("eu.neclab.ioplatform.ngsiemulator.iotprovider.numberOfEntityIdsToSelect"),
+					parseOrDefault(
+							properties
+									.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.numberOfEntityIdsToSelect"),
+							ServerConfiguration.DEFAULT_NUMBEROFENTITYIDSTOSELECT));
 		} else {
-			numberOfEntityIdsToSelect = Integer
-					.parseInt(ServerConfiguration.DEFAULT_RANGESOFENTITYIDSTOSELECT);
+			numberOfEntityIdsToSelect = parseOrDefault(
+					properties
+							.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.numberOfEntityIdsToSelect"),
+					ServerConfiguration.DEFAULT_NUMBEROFENTITYIDSTOSELECT);
 		}
 
 		/*
@@ -373,34 +510,50 @@ public class MainIoTProvider {
 			rangesOfAttributes = configurations
 					.getOrDefault(
 							"eu.neclab.ioplatform.ngsiemulator.iotprovider.rangesOfAttributes",
-							ServerConfiguration.DEFAULT_RANGESOFATTRIBUTES);
+							properties
+									.getProperty(
+											"eu.neclab.ioplatform.ngsiemulator.iotprovider.rangesOfAttributes",
+											ServerConfiguration.DEFAULT_RANGESOFATTRIBUTES));
 		} else {
-			rangesOfAttributes = ServerConfiguration.DEFAULT_RANGESOFATTRIBUTES;
+			rangesOfAttributes = properties
+					.getProperty(
+							"eu.neclab.ioplatform.ngsiemulator.iotprovider.rangesOfAttributes",
+							ServerConfiguration.DEFAULT_RANGESOFATTRIBUTES);
 		}
 
 		/*
 		 * Number of Attributes to select amongst the Attributes.
 		 */
 		if (configurations != null) {
-			numberOfAttributesToSelect = Integer
-					.parseInt(configurations
-							.getOrDefault(
-									"eu.neclab.ioplatform.ngsiemulator.iotprovider.numberOfAttributesToSelect",
-									ServerConfiguration.DEFAULT_RANGESOFATTRIBUTESTOSELECT));
+			numberOfAttributesToSelect = parseOrDefault(
+					configurations
+							.get("eu.neclab.ioplatform.ngsiemulator.iotprovider.numberOfAttributesToSelect"),
+					parseOrDefault(
+							properties
+									.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.numberOfAttributesToSelect"),
+							ServerConfiguration.DEFAULT_NUMBEROFATTRIBUTESTOSELECT));
 		} else {
-			numberOfAttributesToSelect = Integer
-					.parseInt(ServerConfiguration.DEFAULT_RANGESOFATTRIBUTESTOSELECT);
+			numberOfAttributesToSelect = parseOrDefault(
+					properties
+							.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.numberOfAttributesToSelect"),
+					ServerConfiguration.DEFAULT_NUMBEROFATTRIBUTESTOSELECT);
 		}
 
 		/*
 		 * ExposedUrl
 		 */
 		if (configurations != null) {
-			exposedURL = configurations.getOrDefault(
+			exposedURL = configurations
+					.getOrDefault(
+							"eu.neclab.ioplatform.ngsiemulator.iotprovider.exposedURL",
+							properties
+									.getProperty(
+											"eu.neclab.ioplatform.ngsiemulator.iotprovider.exposedURL",
+											ServerConfiguration.DEFAULT_EXPOSEDURL));
+		} else {
+			exposedURL = properties.getProperty(
 					"eu.neclab.ioplatform.ngsiemulator.iotprovider.exposedURL",
 					ServerConfiguration.DEFAULT_EXPOSEDURL);
-		} else {
-			exposedURL = ServerConfiguration.DEFAULT_EXPOSEDURL;
 		}
 
 		/*
@@ -411,23 +564,34 @@ public class MainIoTProvider {
 					.parseBoolean(configurations
 							.getOrDefault(
 									"eu.neclab.ioplatform.ngsiemulator.iotprovider.doRegistration",
-									ServerConfiguration.DEFAULT_DOREGISTRATION));
+									properties
+											.getProperty(
+													"eu.neclab.ioplatform.ngsiemulator.iotprovider.doRegistration",
+													ServerConfiguration.DEFAULT_DOREGISTRATION)));
 		} else {
 			doRegistration = Boolean
-					.parseBoolean(ServerConfiguration.DEFAULT_DOREGISTRATION);
+					.parseBoolean(properties
+							.getProperty(
+									"eu.neclab.ioplatform.ngsiemulator.iotprovider.doRegistration",
+									ServerConfiguration.DEFAULT_DOREGISTRATION));
 		}
 
 		/*
-		 * doRegistration
+		 * notificationPeriod
 		 */
 		if (configurations != null) {
-			notificationPeriod = Integer
-					.parseInt(
-							configurations
-									.get("eu.neclab.ioplatform.ngsiemulator.iotprovider.notificationPeriod"),
-							ServerConfiguration.DEFAULT_NOTIFICATIONPERIOD);
+			notificationPeriod = parseOrDefault(
+					configurations
+							.get("eu.neclab.ioplatform.ngsiemulator.iotprovider.notificationPeriod"),
+					parseOrDefault(
+							properties
+									.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.notificationPeriod"),
+							ServerConfiguration.DEFAULT_NOTIFICATIONPERIOD));
 		} else {
-			notificationPeriod = ServerConfiguration.DEFAULT_NOTIFICATIONPERIOD;
+			notificationPeriod = parseOrDefault(
+					properties
+							.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.notificationPeriod"),
+					ServerConfiguration.DEFAULT_NOTIFICATIONPERIOD);
 		}
 
 		/*
@@ -437,9 +601,15 @@ public class MainIoTProvider {
 			queryContextResponseFile = configurations
 					.getOrDefault(
 							"eu.neclab.ioplatform.ngsiemulator.iotprovider.queryContextResponseFile",
-							ServerConfiguration.DEFAULT_QUERYCONTEXTRESPONSEFILE);
+							properties
+									.getProperty(
+											"eu.neclab.ioplatform.ngsiemulator.iotprovider.queryContextResponseFile",
+											ServerConfiguration.DEFAULT_QUERYCONTEXTRESPONSEFILE));
 		} else {
-			queryContextResponseFile = ServerConfiguration.DEFAULT_QUERYCONTEXTRESPONSEFILE;
+			queryContextResponseFile = properties
+					.getProperty(
+							"eu.neclab.ioplatform.ngsiemulator.iotprovider.queryContextResponseFile",
+							ServerConfiguration.DEFAULT_QUERYCONTEXTRESPONSEFILE);
 		}
 
 		/*
@@ -449,18 +619,85 @@ public class MainIoTProvider {
 			notifyContextRequestFile = configurations
 					.getOrDefault(
 							"eu.neclab.ioplatform.ngsiemulator.iotprovider.notifyContextRequestFile",
-							ServerConfiguration.DEFAULT_NOTIFYCONTEXTREQUESTFILE);
+							properties
+									.getProperty(
+											"eu.neclab.ioplatform.ngsiemulator.iotprovider.notifyContextRequestFile",
+											ServerConfiguration.DEFAULT_NOTIFYCONTEXTREQUESTFILE));
 		} else {
-			notifyContextRequestFile = ServerConfiguration.DEFAULT_NOTIFYCONTEXTREQUESTFILE;
+			notifyContextRequestFile = properties
+					.getProperty(
+							"eu.neclab.ioplatform.ngsiemulator.iotprovider.notifyContextRequestFile",
+							ServerConfiguration.DEFAULT_NOTIFYCONTEXTREQUESTFILE);
 		}
 
 		/*
-		 * queryContextResponseFile
+		 * registerContextAvailabilityFile
 		 */
 		if (configurations != null) {
 			registerContextAvailabilityFile = configurations
-					.get("eu.neclab.ioplatform.ngsiemulator.iotprovider.registerContextAvailabilityFile");
+					.getOrDefault(
+							"eu.neclab.ioplatform.ngsiemulator.iotprovider.registerContextAvailabilityFile",
+							properties
+									.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.registerContextAvailabilityFile"));
+		} else {
+			registerContextAvailabilityFile = properties
+					.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.registerContextAvailabilityFile");
 		}
+
+		/*
+		 * outgoingContentType
+		 */
+		if (configurations != null) {
+			outgoingContentType = ContentType
+					.fromString(
+							configurations
+									.get("eu.neclab.ioplatform.ngsiemulator.iotprovider.outgoingContentType"),
+							ContentType.fromString(
+									properties
+											.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.outgoingContentType"),
+									ServerConfiguration.DEFAULT_OUTGOINGCONTENTTYPE));
+		} else {
+			outgoingContentType = ContentType
+					.fromString(
+							properties
+									.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.outgoingContentType"),
+							ServerConfiguration.DEFAULT_OUTGOINGCONTENTTYPE);
+		}
+
+		/*
+		 * incomingContentType
+		 */
+		if (configurations != null) {
+			incomingContentType = ContentType
+					.fromString(
+							configurations
+									.get("eu.neclab.ioplatform.ngsiemulator.iotprovider.incomingContentType"),
+							ContentType.fromString(
+									properties
+											.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.incomingContentType"),
+									ServerConfiguration.DEFAULT_INCOMINGCONTENTTYPE));
+		} else {
+			incomingContentType = ContentType
+					.fromString(
+							properties
+									.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.incomingContentType"),
+							ServerConfiguration.DEFAULT_INCOMINGCONTENTTYPE);
+		}
+
+	}
+
+	private static Integer parseOrDefault(String string, Integer defaultValue) {
+
+		Integer integer;
+
+		try {
+			integer = Integer.parseInt(string);
+
+		} catch (NumberFormatException e) {
+			integer = defaultValue;
+		}
+
+		return integer;
 
 	}
 

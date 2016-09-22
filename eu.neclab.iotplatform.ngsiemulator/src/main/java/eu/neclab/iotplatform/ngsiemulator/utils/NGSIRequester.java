@@ -66,13 +66,8 @@ public class NGSIRequester {
 	/** The logger. */
 	private static Logger logger = Logger.getLogger(NGSIRequester.class);
 
-	// Get the IoT Discovery URL
-	private static String iotDiscoveryURL = System.getProperty(
-			"eu.neclab.ioplatform.mocks.iotDiscoveryUrl",
-			"http://localhost:8065/");
-
 	public void doRegistration(RegisterContextRequest registration,
-			ContentType preferredContentType) {
+			ContentType preferredContentType, String iotDiscoveryURL) {
 
 		RegisterContextResponse output = new RegisterContextResponse();
 
@@ -113,7 +108,8 @@ public class NGSIRequester {
 	 * 
 	 */
 	private Object sendRequest(URL url, String resource, NgsiStructure request,
-			Class<? extends NgsiStructure> expectedResponseClazz, ContentType preferredContentType) {
+			Class<? extends NgsiStructure> expectedResponseClazz,
+			ContentType preferredContentType) {
 
 		Object output;
 

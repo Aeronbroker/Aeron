@@ -3,6 +3,10 @@ NGSI Emulator
 
 The Aeron project is including also a NGSI emulator which allows to easily emulate NGSI components in order to let them interworking with IoT Broker and the ConfMan. The puropose of this emulator is two-fold: testing the IoT Broker functionalities and example of implementation of NGSI players.
 
+Requirements
+---
+JDK: Java 8
+
 NGSI players
 ----------
 The NGSI emulator is implementing and offering three different elements which are playing three different roles:

@@ -55,16 +55,19 @@ public class ServerConfiguration {
 	public final static String DEFAULT_PORTNUMBERS = "8001";
 	public final static Mode DEFAULT_MODE = Mode.RANDOM;
 	public final static String DEFAULT_RANGESOFENTITYIDS = "1-100";
-	public final static String DEFAULT_RANGESOFENTITYIDSTOSELECT = "10";
+	public final static int DEFAULT_NUMBEROFENTITYIDSTOSELECT = 10;
 	public final static String DEFAULT_RANGESOFATTRIBUTES = "1-100";
-	public final static String DEFAULT_RANGESOFATTRIBUTESTOSELECT = "10";
+	public final static int DEFAULT_NUMBEROFATTRIBUTESTOSELECT = 10;
 	public final static String DEFAULT_EXPOSEDURL = "http://localhost";
+	public final static String DEFAULT_IOTDISCOVERYURL = "http://localhost:8065/";
 	public final static String DEFAULT_DOREGISTRATION = "true";
 	public final static String DEFAULT_QUERYCONTEXTRESPONSEFILE = "queryContextResponse.xml";
 	public final static String DEFAULT_NOTIFYCONTEXTREQUESTFILE = "notifyContextRequest.xml";
 	public final static String DEFAULT_REGISTERCONTEXTAVAILABILITY = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><registerContextRequest><contextRegistrationList><contextRegistration><entityIdList><entityId isPattern=\"true\"><id>.*</id></entityId></entityIdList><providingApplication>PROVIDINGAPPLICATION_PLACEHOLDER</providingApplication></contextRegistration></contextRegistrationList></registerContextRequest>";
 	public final static int DEFAULT_NOTIFICATIONPERIOD = 5;
-	
+	public final static ContentType DEFAULT_OUTGOINGCONTENTTYPE = ContentType.XML;
+	public final static ContentType DEFAULT_INCOMINGCONTENTTYPE = ContentType.XML;
+
 	private int port;
 	private Mode mode;
 	private String queryContextResponseFile;
@@ -72,7 +75,6 @@ public class ServerConfiguration {
 	private ContentType incomingContentType;
 	private ContentType outgoingContentType;
 	private int notificationPeriod;
-
 
 	public int getNotificationPeriod() {
 		return notificationPeriod;
@@ -129,7 +131,6 @@ public class ServerConfiguration {
 	public void setNotifyContextRequestFile(String notifyContextRequestFile) {
 		this.notifyContextRequestFile = notifyContextRequestFile;
 	}
-
 
 	public Map<String, String> toMap() {
 		Map<String, String> map = new HashMap<String, String>();
