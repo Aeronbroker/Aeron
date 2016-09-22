@@ -10,7 +10,8 @@
 		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.ResultFilterInterface" />
 
 	<osgi:reference id="KnowledgeBase"
-		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.KnowledgeBaseInterface"></osgi:reference>
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.KnowledgeBaseInterface"
+		cardinality="0..1" timeout="0"></osgi:reference>
 
 
 
