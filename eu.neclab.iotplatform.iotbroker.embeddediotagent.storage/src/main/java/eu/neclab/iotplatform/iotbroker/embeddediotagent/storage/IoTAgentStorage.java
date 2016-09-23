@@ -73,7 +73,7 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Interface;
 
-public class IoTAgentStorage implements EmbeddedAgentStorageInterface{
+public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 
 	/** The logger. */
 	private static Logger logger = Logger.getLogger(IoTAgentStorage.class);
@@ -84,12 +84,11 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface{
 	private EmbeddedAgentIndexerInterface indexer;
 
 	private KeyValueStoreInterface keyValueStore;
-	
+
 	@Override
 	public Ngsi10Interface getNgsi10Callback() {
 		return ngsi10Callback;
 	}
-
 
 	@Override
 	public void setNgsi10Callback(Ngsi10Interface ngsi10Callback) {
@@ -111,7 +110,7 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface{
 	public void setKeyValueStore(KeyValueStoreInterface keyValueStore) {
 		this.keyValueStore = keyValueStore;
 	}
-	
+
 	@Override
 	public void storeLatestData(ContextElement isolatedContextElement) {
 		String documentKey = indexer
@@ -122,9 +121,10 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface{
 										.getType().toString(),
 						getAttributeNameFromIsolatedContextElement(isolatedContextElement));
 
-		boolean successfullyStored = keyValueStore.updateValue(documentKey, isolatedContextElement);
-		
-		if (successfullyStored){
+		boolean successfullyStored = keyValueStore.updateValue(documentKey,
+				isolatedContextElement);
+
+		if (successfullyStored) {
 			indexer.index(isolatedContextElement);
 		}
 
@@ -162,7 +162,6 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface{
 				isolatedContextElement.getContextAttributeList(), null)
 				.getName();
 	}
-
 
 	private Date extractTimestamp(ContextAttribute contextAttribute) {
 
@@ -279,7 +278,6 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface{
 				attributeName, endDate);
 		historicalContextElement = keyValueStore.getValues(startKey, endKey);
 
-
 		return historicalContextElement;
 	}
 
@@ -299,8 +297,8 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface{
 		Set<String> attributeNamesSet = new HashSet<String>();
 		attributeNamesSet.addAll(attributeNames);
 
-		Multimap<String, String> idsAndAttributeNames = indexer.matchingIdsAndAttributeNames(
-				entityIdList, attributeNamesSet);
+		Multimap<String, String> idsAndAttributeNames = indexer
+				.matchingIdsAndAttributeNames(entityIdList, attributeNamesSet);
 
 		// List of Task
 		List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
@@ -402,8 +400,8 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface{
 		Set<String> attributeNamesSet = new HashSet<String>();
 		attributeNamesSet.addAll(attributeNames);
 
-		final Multimap<String, String> idsAndAttributeNames = indexer.matchingIdsAndAttributeNames(
-				entityIdList, attributeNamesSet);
+		final Multimap<String, String> idsAndAttributeNames = indexer
+				.matchingIdsAndAttributeNames(entityIdList, attributeNamesSet);
 
 		// List of Task
 		List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();

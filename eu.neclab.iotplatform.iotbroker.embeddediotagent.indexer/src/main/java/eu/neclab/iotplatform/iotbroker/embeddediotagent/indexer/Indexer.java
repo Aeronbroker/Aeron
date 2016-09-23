@@ -77,8 +77,15 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 	public final static String ID_TO_ATTRIBUTENAME_SEPARATOR = ":::";
 	public final static String DOCUMENT_TO_TIMESTAMP_SEPARATOR = "|";
 
+	/*
+	 * Here it is mapped EntityId.id by each type: [type1:[key1, key2,...],...
+	 */
 	private Multimap<String, String> cachedIdsByType = HashMultimap.create();
 
+	/*
+	 * Here is mapped attributeNames by EntityId (id + potentially type) 
+	 * [id1:[attributeName1, attributeName2,...],...
+	 */
 	private Multimap<String, String> cachedAttributeNamesById = HashMultimap
 			.create();
 
@@ -108,19 +115,40 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 			return false;
 		}
 
-		String key = generateKeyForLatestValue(isolatedContextElement);
+		// String key = generateKeyForLatestValue(isolatedContextElement);
 
-		if (isolatedContextElement.getEntityId().getType() != null) {
-			cachedIdsByType.put(isolatedContextElement.getEntityId().getType()
-					.toString(), key);
+		String id = generateId(isolatedContextElement.getEntityId());
+
+		if (isolatedContextElement.getEntityId().getType() != null
+				&& !isolatedContextElement.getEntityId().getType().toString()
+						.isEmpty()) {
+
+			boolean put = cachedIdsByType.put(isolatedContextElement
+					.getEntityId().getType().toString(), id);
+
+			if (logger.isDebugEnabled()) {
+				logger.debug(String
+						.format("EntityId '%s' of type '%s' %s indexed in cachedIdsByType: %s",
+								id, isolatedContextElement.getEntityId()
+										.getType().toString(),
+								put ? "successfully" : "already",
+								cachedIdsByType.toString()));
+			}
 		}
-		
-		String[] entityAndAttributeName = key.split(PREFIX_TO_ID_SEPARATOR)[1]
-				.split(ID_TO_ATTRIBUTENAME_SEPARATOR);
 
-		cachedAttributeNamesById.put(entityAndAttributeName[0],
-				entityAndAttributeName[1]);
-		
+		boolean put = cachedAttributeNamesById.put(id, isolatedContextElement
+				.getContextAttributeList().iterator().next().getName());
+
+		if (logger.isDebugEnabled()) {
+			logger.debug(String
+					.format("EntityId '%s' having attribute '%s' %s indexed in cachedKeysByAttributeName: %s",
+							id, isolatedContextElement
+									.getContextAttributeList().iterator()
+									.next().getName(), put ? "successfully"
+									: "already", cachedAttributeNamesById
+									.toString()));
+		}
+
 		return true;
 
 	}
@@ -274,7 +302,7 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 
 		} else {
 
-			return entityId + ENTITY_TO_TYPE_SEPARATOR
+			return entityId.getId() + ENTITY_TO_TYPE_SEPARATOR
 					+ entityId.getType().toString();
 		}
 
