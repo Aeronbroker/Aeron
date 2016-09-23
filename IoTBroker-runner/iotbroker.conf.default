@@ -88,3 +88,4 @@ iotbroker_embeddedagent_couchdbcreatedb=true
 iotbroker_embeddedagent_couchdbprotocol="http"
 iotbroker_embeddedagent_couchdbhost="127.0.0.1"
 iotbroker_embeddedagent_couchdbport=5984
+iotbroker_embeddedagent_historicallyTrackQueryResponseAndNotifications=false

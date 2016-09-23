@@ -172,8 +172,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	 * This flag enables storage of all the QueryResponses and NotifyContext
 	 * into the big data repository
 	 */
-	@Value("${storeQueryResponseAndNotifications:false}")
-	private boolean storeQueryResponseAndNotifications;
+	@Value("${historicallyTrackQueryResponseAndNotifications:false}")
+	private boolean historicallyTrackQueryResponseAndNotifications;
 
 	// private final String CONFMAN_REG_URL = System.getProperty("confman.ip");
 
@@ -842,8 +842,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		final QueryContextResponse queryContextRespListAfterMerge = mergerResponse;
 
-		logger.info("Checking if Big Data Repository is present");
-		if (storeQueryResponseAndNotifications) {
+		if (historicallyTrackQueryResponseAndNotifications) {
 
 			logger.info("Trying to access Big Data repository");
 
@@ -881,8 +880,6 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 				logger.warn("Not possible to store in the Big Data Repository: osgi service not registered");
 			}
 
-		} else {
-			logger.info("No Big Data Repository");
 		}
 
 		/**
@@ -1534,7 +1531,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		/**
 		 * The code snippet below is for dumping the data in a Historical Agent.
 		 */
-		if (storeQueryResponseAndNotifications
+		if (historicallyTrackQueryResponseAndNotifications
 				&& !this.toString().equals(request.getOriginator())
 				&& embeddedIoTAgent != null) {
 

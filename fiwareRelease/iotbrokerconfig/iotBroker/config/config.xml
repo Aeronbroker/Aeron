@@ -26,7 +26,7 @@
 
 <entry key="associationsEnabled">false</entry>
 
-<entry key="storeQueryResponseAndNotifications">false</entry>
+<entry key="historicallyTrackQueryResponseAndNotifications">false</entry>
 
 <entry key="timestampContextElement">false</entry>
 <entry key="trackContextSource">false</entry>

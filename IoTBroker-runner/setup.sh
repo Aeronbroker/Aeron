@@ -152,6 +152,7 @@ setPropertyIntoXML "pub_sub_addr" "$iotbroker_consumers" "$iotbroker_configxml"
 setPropertyIntoXML "timestampContextElement" "$iotbroker_timestampcontextelement" "$iotbroker_configxml"
 setPropertyIntoXML "trackContextSource" "$iotbroker_trackcontextsource" "$iotbroker_configxml"
 setPropertyIntoXML "exposedAddress" "$iotbroker_exposedAddress" "$iotbroker_configxml"
+setPropertyIntoXML "historicallyTrackQueryResponseAndNotifications" "$iotbroker_embeddedagent_historicallyTrackQueryResponseAndNotifications" "$iotbroker_configxml"
 
 setPropertyIntoXML "couchdb_name" "$iotbroker_embeddedagent_couchdbname" "$iotbroker_embeddedagent_couchdbxml"
 setPropertyIntoXML "couchdb_createdb" "$iotbroker_embeddedagent_couchdbcreatedb" "$iotbroker_embeddedagent_couchdbxml"
