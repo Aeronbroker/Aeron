@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>IoTbrokerParent</artifactId>
 		<groupId>eu.neclab.iotplatform</groupId>
-		<version>5.4.1-SNAPSHOT</version>
+		<version>5.4.3</version>
 		<relativePath>../IoTbrokerParent</relativePath>
 	</parent>
 

@@ -49,7 +49,7 @@ cd neclab.iotplatform.ngsiemulator/
 mvn clean install
 ```
 
-This will produce the *ngsiemulator-5.4.1-SNAPSHOT-jar-with-dependencies.jar* executable jar and placed into the *eu.neclab.iotplatform.ngsiemulator/target/* folder.
+This will produce the *ngsiemulator-{version}-jar-with-dependencies.jar* executable jar and placed into the *eu.neclab.iotplatform.ngsiemulator/target/* folder.
 
 Usage of the NGSI emulator
 -----------
