@@ -172,7 +172,7 @@ eu.neclab.ioplatform.ngsiemulator.iotprovider.notifyContextRequestFile="/path/to
 ```
 
 ### IoT Application ###
-The IoT Application is a component which is open a server on a specified port and expose a reseource for NGSI-10 *NotifyContext*: /ngsi10/notifyContext.
+The IoT Application is a component which opens a server on a specified port and exposes a resource for NGSI-10 *NotifyContext*: /ngsi10/notifyContext.
 Currently it is still in an embryonic stage of development. Its behaviour is to simply accept NGSI-10 *NotifyContext* and print the content in the console.
 To start an IoT Application it is simply necessary to run the following in a command line:
 ```

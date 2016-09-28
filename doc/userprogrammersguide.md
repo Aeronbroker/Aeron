@@ -13,7 +13,7 @@ FIWARE NGSI 10
 
 The IoT Broker GE is a middleware making data from multiple providers accessible for data consumers. The interaction with both data providers and data consumers is taking place via the FIWARE NGSI 10 API (the context data API of FIWARE NGSI).
 
-For using the IoT Broker, the API needs to be contacted via HTTP  on port 80 (if default configuration applies) with one of the HTTP methods (GET, POST, PUT, DELETE) according to the NGSI-10 specification.
+For using the IoT Broker, the API needs to be contacted via HTTP  on port 8060 (if default configuration applies) with one of the HTTP methods (GET, POST, PUT, DELETE) according to the NGSI-10 specification.
 
 The FIWARE NGSI-10 interactions are
 
@@ -44,11 +44,13 @@ Data consumers can retrieve context data from the IoT Broker via the FIWARE NGSI
 
 Additionally, the IoT Broker offers a simple web interface, which can be accessed by a web browser under the URL of the hosting machine of the IoT Broker (e.g. "localhost" when accessing from the machine where the IoT Broker is running). From the home page the user can also access a query interface for basic NGSI queries.
 
+In case the BigDataRepository and/or the Embedded Historical Agent is enabled, data can be seen also through the CouchDB interface (if the latter is exposed).
+
 Developer Guide
 ==
 
 
-The IoT Broker is based on the OSGi framework and is composed of a number of different plugins. The role of the individual plugins is described in the [README](https://github.com/Aeronbroker/Aeron/blob/master/README.md).
+The IoT Broker is based on the OSGi framework and is composed of a number of different plugins. The role of the individual plugins is described in the [README](https://github.com/Aeronbroker/Aeron#directory-structure).
 
 Importantly, the IoT broker core has a dedicated extension point for custom data retrieval and data processing plugins. Please see [here](https://github.com/Aeronbroker/Aeron/blob/master/doc/extensionpoint.md) for details on how to write custom plugins.
 

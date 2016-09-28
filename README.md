@@ -317,7 +317,9 @@ instance.
 
 |Directory            | Contents|
 |---------------------|---------|
-| ├── eu.neclab.iotplatform.couchdb		|	 Optional bundle for connection with a couchDB database for dumping context information in a Big Data Repository.|										
+| ├── doc		|	 Documentation rearding several aspects of the IoT Broker. |
+| ├── docker		|	 Docker file useful for building a docker image. |
+| ├── eu.neclab.iotplatform.couchdb		|	 Optional bundle for connection with a couchDB database for dumping context information in a Big Data Repository.|
 | ├── eu.neclab.iotplatform.entitycomposer |	Optional bundle handling the composition of entities. |
 |├── eu.neclab.iotplatform.iotbroker.builder | Maven builder project compiling all required and optional IoT Broker OSGi bundles.|
 |├── eu.neclab.iotplatform.iotbroker.client | Required bundle for the HTTP client used by IoT Broker. |
@@ -327,15 +329,19 @@ instance.
 |├── eu.neclab.iotplatform.iotbroker.embeddediotagent.couchdb | Optional bundle for enabling the storage of the (historical) context information into CouchDB. (This bundle must be activated if eu.neclab.iotplatform.iotbroker.embeddediotagent.core is active).|
 |├── eu.neclab.iotplatform.iotbroker.embeddediotagent.indexer | Optional bundle for indexing the (historical) context information (This bundle must be activated if eu.neclab.iotplatform.iotbroker.embeddediotagent.core is active).|
 |├── eu.neclab.iotplatform.iotbroker.embeddediotagent.storage | Optional bundle for handling the serialiation of the (historical) context information(This bundle must be activated if eu.neclab.iotplatform.iotbroker.embeddediotagent.core is active).|
-|├── eu.neclab.iotplatform.iotbroker.ext.resultfilter |Optional bundle for filtering results. Deploying this bundle  will effectuate that faulty query responses from IoT data sources are not forwarded to IoT applications.|
+|├── eu.neclab.iotplatform.iotbroker.ext.resultfilter | Required bundle for filtering results. Deploying this bundle  will effectuate that faulty query responses from IoT data sources are not forwarded to IoT applications.|
 |├── eu.neclab.iotplatform.iotbroker.restcontroller | Required bundle implementing the HTTP REST interface of the IoT Broker.|
 |├── eu.neclab.iotplatform.iotbroker.storage | Required bundle to setup and connect to an internal database. Note that this	database only used to store state information on data subscriptions and does not store any context data. For storing context data, please use the optional bundle eu.neclab.iotplatform.couchdb.|
+|├── eu.neclab.iotplatform.knowledgebase | Optional bundle for interacting with the NEC IoT Knowledge server|
 |├── eu.neclab.iotplatform.ngsi.api | Required bundle containing the libraries implementing the FIWARE NGSI data model.|
-|├── fiwareRelease | Configuration folder used by IoT Broker bundles at runtime. This folder is referenced by the runtime environment in the "IoTBroker-runner" folder.|			 
-| ├── IoTbrokerParent |Maven parent project.|
+|├── eu.neclab.iotplatform.ngsiemulator | Library used for emulating NGSI deployment (IoT Provider, IoT Consumer, IoT Application) |
+|├── fiwareRelease | Configuration folder used by IoT Broker bundles at runtime. This folder is referenced by the runtime environment in the "IoTBroker-runner" folder.|
+|├── IoTbrokerParent | Maven parent of the IoT Broker Maven project (used only at compilation time).|
 |├── IoTBroker-runner | Pre-configured runtime environment for IoT Broker, based on the Equinox OSGi implementation.|
 |├── iotplatform.iotbroker.blackboxtest | Maven project for a blackbox test based on JUNIT. This can be used to test a running instance of IoT Broker. The tests require the running instance to include some optional bundles included by this release.|
-|├── lib |Folder contains some OSGI bundles needed by IoT Broker to run.|
+|├── iotplatform.iotbroker.testingscenario | Repository containing testing scenarios for the IoT Broker and its features. |
+|├── lib | Folder containing some OSGI bundles needed by IoT Broker to run.|
+|├── linuxPackages | Repository containing files useful for creating Linux packages.|
 |├── puppet |Puppet scripts for installing, starting, stopping, and uninstalling the IoT Broker.|
 |├── SQL_database | HSQLDB folder containing internal IoT Broker database files.|
 |├── targetPlatform| Contains the OSGi bundles needed for the IoT Broker at runtime. These bundles are pre-configured to be loaded by the runtime environment in the "IoTBroker-runner" folder.|

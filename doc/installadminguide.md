@@ -20,19 +20,28 @@ For installing the IoT Broker are two basic possibilities.
 Deployment of IoT Broker Docker Image
 --
 
-The easiest way to come to a running version of the IoT Broker is to run it as a Docker Container. The image is published at DockerHub as *fiware/iotbroker*. To pull the docker container onto your local system, enter the command 
+The easiest way to come to a running version of the IoT Broker is to run it as a Docker Container. The image is published at DockerHub as *fiware/iotbroker*. To pull the docker container onto your local system, enter the command (for the developement and most advanced IoT Broker)
 
 ```
- docker pull fiware/iotbroker
+docker pull fiware/iotbroker:standalone-dev
 ```
 
-and for running it the command 
+and for running it use the command 
 
 ```
- docker run -d -p 80:80 fiware/iotbroker
+docker run -t -p 8065:8065 -p 8060:8060 -p 5984:5984 fiware/iotbroker:internal-standalone-dev
 ```
  
-will do.
+and both the IoT Broker GEri and NEConfMan will be accessible respectively at port 8060 and 8065. In addition CouchDB will be exposed to the port 5984.
+
+In order to configure the IoT Broker and/or the NEConfMan, run the docker with the following command:
+
+```
+docker run -t -p 8065:8065 -p 8060:8060 fiware/iotbroker:standalone-dev -p <iotbroker_key>="<value>" -p <confman_key>="<value>" [-p ...]
+```
+
+where *iotbroker_key* is one of the parameters available in the *IoTBroker_Runner/iotbroker.conf.default* and *confman_key* one of the parameters available in the *ConfMan_Runner/confman.conf.default*.
+Please note that such configurations are runtime properties and they will be forgotten the next time the docker is run.
 
 Building IoT Broker from Source
 --
@@ -44,25 +53,39 @@ Get the IoT Broker GitHub project onto your machine. If git is installed, then t
 ```
 
 Alternatively, the project can be downloaded as a [zip file](https://github.com/Aeronbroker/Aeron/archive/master.zip).
-Please follow the compilation instructions in the [README](https://github.com/Aeronbroker/Aeron/blob/master/README.md).
+Please follow the compilation instructions in the [README](https://github.com/Aeronbroker/Aeron#building-iot-broker-source-code).
 
-After having compiled the sources, the resulting jar files can either be run by the pre-configured OSGi platform included by the IoT Broker project (see [README](https://github.com/Aeronbroker/Aeron/blob/master/README.md)), or by setting up a custom OSGi environment and deploying the compiled IoT Broker bundles and their dependencies there.
+After having compiled the sources, the resulting jar files can either be run by the pre-configured OSGi platform included by the IoT Broker project (see [README](https://github.com/Aeronbroker/Aeron#quick-start-using-the-runtime-environment-included-by-this-repository)), or by setting up a custom OSGi environment and deploying the compiled IoT Broker bundles and their dependencies there.
 
 IoT Broker System Configuration
 ==
 
-The basic configuration of the IoT Broker is done via configuration of the OSGi runtime environment. In the pre-configured Equinox environment included by this release (*IoTBroker-runner* folder), this is done by the file */configuration/config.ini*. The most important parameters to specify here are
+The configuration of the IoT Broker is done via configuration scripts which available in the (*IoTBroker-runner* folder), see [README](https://github.com/Aeronbroker/Aeron#configure-the-iot-broker-with-setup-scripts).
 
-* The port the IoT Broker NGSI interface listens to. The default is port 80.
-* The location of the *fiwareRelease* folder where further configuration information is found. As this needs to be an absolute path, setting this parameter is for most installations necessary in order to get the IoT Broker running.
+The provided scripts are setting parameters in several files:
 
-Further configuration is done by files in the *fiwareRelease* folder. The most important configuration file is found in
+- *IoTBroker-runner/configuration/config.ini*: OSGI environment configuration file. Amongst the other parameters:
 
-* fiwareRelease/iotbrokerconfig/iotBroker/config/config.xml*. Here the user can set
-* **ngsi9Uri** and **pathPreFix_ngsi9:** The URL of the Iot Discovery GE instance the IoT Broker communicates with in order to retrieve the Context Registrations it needs.
-* **pathPreFix_ngsi10:** The root of the FIWARE NGSI resource tree the IoT Broker exposes.
-* **pub_sub_addr:** The address of an NGSI component where updates are forwarded to (e.g. a FIWARE Context Broker GE instance).
-* **X-Auth-Token:** The security token for connecting to components secured by the FIWARE access control mechanisms.
+	- The port the IoT Broker NGSI interface listens to. The default is port 8060.
+	- The location of the *fiwareRelease* folder where further configuration information is found. As this needs to be an absolute path, setting this parameter is for most installations necessary in order to get the IoT Broker running.
+
+- *fiwareRelease/iotbrokerconfig/iotBroker/config/config.xml*: properties regarding the IoT Broker core behaviour. Amongst the other parameters:
+   
+	-  **ngsi9Uri** and **pathPreFix_ngsi9:** The URL of the Iot Discovery GE instance the IoT Broker communicates with in order to retrieve the Context Registrations it needs.
+ 	- **pathPreFix_ngsi10:** The root of the FIWARE NGSI resource tree the IoT Broker exposes.
+ 	- **pub_sub_addr:** The address of an NGSI component where updates are forwarded to (e.g. a FIWARE Context Broker GE instance).
+	- **X-Auth-Token:** The security token for connecting to components secured by the FIWARE access control mechanisms.
+
+- *fiwareRelease/bundleConfigurations/services/org.ops4j.pax.logging.properties*: logging 
+properties
+
+- *fiwareRelease/iotbrokerconfig/bigDataRepository/couchdb.xml*: properties regarding the 
+BigDataRepository optional feature
+
+- *fiwareRelease/iotbrokerconfig/embeddedAgent/couchdb.xml*: properties regarding the Embedded Historical Agent optional feature.
+
+- *fiwareRelease//iotbrokerconfig/knowledgeBase/knowledgeBase.properties*: properties regarding the Semantic Grounding optiona feature
+
 
 Please note that the Iot Broker needs to be restarted before any changes will take effect.
 
@@ -120,7 +143,7 @@ The Sanity Check Procedures are the steps that a System Administrator will take 
 First Sanity Check
 --
 
-To verify that the IoT Broker is running, access the URL of its hosting machine on the IoT Broker port (default:80) using a web browser; e.g. *localhost:80* on the hosting machine. If the IoT Broker home page is not shown, it means that the IoT Broker does not run correctly.
+To verify that the IoT Broker is running, access the URL of its hosting machine on the IoT Broker port (default:8060) using a web browser; e.g. *localhost:8060* on the hosting machine. If the IoT Broker home page is not shown, it means that the IoT Broker does not run correctly.
 
 End to End testing
 --
@@ -171,7 +194,7 @@ List of Running Processes
 Network interfaces Up & Open
 --
 
-* HTPP standard port (80) should be accessible.
+* HTPP standard port (8060) should be accessible.
 * HTPPS port (9443) should be accessible.
 
 Databases
@@ -220,7 +243,7 @@ Depending on the setup, the IoT Broker communicates via the FIWARE NGSI interfac
 * A default NGSI data consumer/broker where NGSI data updates are forwarded to. This is typically an instance of the Context Broker GE. However, this can be in principle any FIWARE NGSI-compliant component, and such a component is not present in all installations. The address of this component is configurable in the IoT Broker config files (see above).
 * One or more NGSI-compliant data sources, e.g. instances of the Data Handling GE, or Context Broker GE instances. 
 
-**Please make sure port 80 is accessible.**
+**Please make sure port 8060 is accessible.**
 
 Resource consumption
 --
@@ -235,7 +258,7 @@ If the IoT Broker process uses more then 500MB and the CPU usage is above 40% in
 
 I/O flows
 --
-The only expected I/O flow is of type HTTP, on standard port 80 (Tomcat Server).
+The only expected I/O flow is of type HTTP, on standard port 8060 (Tomcat Server).
 
 Black Box Testing
 --
