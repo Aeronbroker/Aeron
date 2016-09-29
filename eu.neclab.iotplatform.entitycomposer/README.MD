@@ -9,7 +9,30 @@ The plugin is compiled by MAVEN 3 using JDK 7. As it is included by the [IoT Bro
 
 Activating and deactivating the plugin
 --
-The plugin is activated by deploying it in the OSGi container where the IoT Broker runs. It is already deployed by the [pre-configured runtime environment](../IoTBroker-runner) included by the IoT Broker release. No additional configuration is necessary.
+The plugin is enabled by adding the following line into the `IoTBroker-runner/iotbroker.conf.local`:
+```
+iotbroker_entitycomposer="enabled"
+```
+then run
+```
+cd IoTBroker-runner/
+./setup.sh
+```
+and then restart the IoT Broker.
+
+No additional configuration is necessary.
+
+In order to disable it simply change the line in the `IoTBroker-runner/iotbroker.conf.local`to:
+```
+iotbroker_entitycomposer="disabled"
+```
+and then 
+```
+cd IoTBroker-runner/
+./setup.sh
+```
+and restart the IoT Broker.
+
 
 Entity Composition Workflow
 --
