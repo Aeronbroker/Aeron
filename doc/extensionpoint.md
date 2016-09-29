@@ -1,7 +1,7 @@
  IoT Broker Extension Point
 ============================
 
-This document describes how to extend the IoT Broker with custom plugins for  connecting to new kinds of data sources, and for generating FIWARE NGSI entities by means of processing functions.
+This document describes how to extend the IoT Broker with custom plugins for  connecting to new kinds of data sources, and for generating FIWARE NGSI entities by means of processing functions. The content of this document applies from an IoT Broker version at least 5.3.3 or later.
  
 
 General Principle

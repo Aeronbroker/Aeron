@@ -1,7 +1,7 @@
 Semantic in the IoT Broker
 ==================
 
-The IoT Broker has an optional feature for having semantic capabilities. The current status is the support for checking **subtypes** of a certain type when a query or subscription is done.
+From version 5.4.3 the IoT Broker has an optional feature which brings semantic capabilities. The current status is the support for checking **subtypes** of a certain type when a query or subscription is done.
 
 NOTE: This feature will work only if the same feature is enable in the NEConfMan: https://github.com/Aeronbroker/NEConfMan/doc/semanticgrounding.md
 

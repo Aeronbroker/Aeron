@@ -1,16 +1,36 @@
 Historical Queries  on the IoT Broker
 ==================
 
-The IoT Broker has an optional feature for saving NGSI data to a database and answering historical queries on that data.
+From version 5.3.3 the IoT Broker has an optional feature for saving NGSI data to a database and responding to historical queries on that data.
 
 The following workflow explains how to enable and use this feature.
 
 Enable historical queries
 -----------
 For enabling historical queries, the IoT Broker needs to be connected to an instance of couchDB. This is achieved by the following steps.
+
 * The couchDB database needs to be installed either on the machine where the IoT Broker is running, or on a remote machine.
-* The IoT Broker plugin eu.neclab.iotplatform.couchdb needs to be activated. This is done in the OSGi runtime environment; please refer to the [Installation and Administration guide](installadminguide.md) for details.
-* The above plugin needs to be configured such that it knows the address and credentials of couchDB. This is done in the file `fiwareRelease/iotbrokerconfig/iotBroker/config/couchdb.properties`.
+
+* The Historical Agent feature of the IoT Broker must be enabled. For doing so add the following line into the `IoTBroker-runner/iotbroker.conf.local`:
+```
+iotbroker_historicalagent="enabled"
+```
+then run
+```
+cd IoTBroker-runner/
+./setup.sh
+```
+and then restart the IoT Broker.
+
+* The above feature needs to be configured such that it knows the address and credentials of couchDB. In order to do so, add the following line in the file `IoTBroker-runner/iotbroker.conf.local`, and change them accordingly:
+```
+iotbroker_embeddedagent_couchdbname="historicalrepository"
+iotbroker_embeddedagent_couchdbcreatedb=true
+iotbroker_embeddedagent_couchdbprotocol="http"
+iotbroker_embeddedagent_couchdbhost="127.0.0.1"
+iotbroker_embeddedagent_couchdbport=5984
+iotbroker_embeddedagent_historicallyTrackQueryResponseAndNotifications=false
+```
 
 
 Send some updates
