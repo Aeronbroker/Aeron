@@ -277,7 +277,7 @@ public class RestProviderController {
 	 * 
 	 * @return the response entity
 	 */
-	@RequestMapping(value = "/ngsi10/sanityCheck", method = RequestMethod.GET, consumes = { "*/*" }, produces = {
+	@RequestMapping(value = { "/ngsi10/sanityCheck", "/sanityCheck" } , method = RequestMethod.GET, consumes = { "*/*" }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public ResponseEntity<SanityCheck> sanityCheck() {
 
