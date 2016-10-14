@@ -42,7 +42,6 @@
  * DAMAGE.
  ******************************************************************************/
 
-
 package eu.neclab.iotplatform.iotbroker.commons;
 
 import java.io.BufferedReader;
@@ -54,6 +53,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.HttpVersion;
@@ -73,18 +75,31 @@ public class FullHttpRequester {
 	public static FullHttpResponse sendPost(URL url, String data,
 			String contentType, String xAuthToken) throws Exception {
 
+		Map<String, String> headers = new HashMap<String, String>();
+
+		if (contentType != null && !contentType.equals("")) {
+			headers.put("Accept", contentType);
+			headers.put("Content-Type", contentType);
+		}
+		if (xAuthToken != null && !xAuthToken.equals("")) {
+			headers.put("X-Auth-Token", xAuthToken);
+		}
+
+		return sendPost(url, data, headers);
+	}
+
+	public static FullHttpResponse sendPost(URL url, String data,
+			Map<String, String> headers) throws Exception {
+
 		try {
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
 			// add request header
 			con.setRequestMethod("POST");
 			con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-			if (contentType != null && !contentType.equals("")) {
-				con.setRequestProperty("Accept", contentType);
-				con.setRequestProperty("Content-Type", contentType);
-			}
-			if (xAuthToken != null && !xAuthToken.equals("")) {
-				con.setRequestProperty("X-Auth-Token", xAuthToken);
+
+			for (Entry<String, String> entry : headers.entrySet()) {
+				con.setRequestProperty(entry.getKey(), entry.getValue());
 			}
 
 			logger.info("\nSending 'POST' request to URL : " + url + "\n"
@@ -359,52 +374,52 @@ public class FullHttpRequester {
 
 	}
 
-//	public static void sendRequest(URL url, String method, String data,
-//			String contentType, String xAuthToken) throws Exception {
-//
-//		HttpURLConnection con = (HttpURLConnection) url.openConnection();
-//
-//		// add request header
-//		con.setRequestMethod(method);
-//		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-//		con.setRequestProperty("Accept", contentType);
-//		con.setRequestProperty("Content-Type", contentType);
-//		if (xAuthToken != null && !xAuthToken.equals("")) {
-//			con.setRequestProperty("X-Auth-Token", xAuthToken);
-//		}
-//
-//		// Send put request
-//		con.setDoOutput(true);
-//		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-//		wr.writeBytes(data);
-//		wr.flush();
-//		wr.close();
-//
-//		int responseCode = con.getResponseCode();
-//		logger.info("\nSending 'PUT' request to URL : " + url);
-//		logger.info("Post parameters : " + data);
-//		logger.info("Response Code : " + responseCode);
-//
-//		BufferedReader in = new BufferedReader(new InputStreamReader(
-//				con.getInputStream()));
-//		String inputLine;
-//		StringBuffer response = new StringBuffer();
-//
-//		while ((inputLine = in.readLine()) != null) {
-//			response.append(inputLine);
-//		}
-//		in.close();
-//		con.disconnect();
-//		// print result
-//		logger.info("Response : " + response.toString());
-//
-//	}
-//
-//	public static void sendRequest(URL url, String method, String data,
-//			String contentType) throws Exception {
-//
-//		sendRequest(url, method, data, contentType, null);
-//
-//	}
+	// public static void sendRequest(URL url, String method, String data,
+	// String contentType, String xAuthToken) throws Exception {
+	//
+	// HttpURLConnection con = (HttpURLConnection) url.openConnection();
+	//
+	// // add request header
+	// con.setRequestMethod(method);
+	// con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+	// con.setRequestProperty("Accept", contentType);
+	// con.setRequestProperty("Content-Type", contentType);
+	// if (xAuthToken != null && !xAuthToken.equals("")) {
+	// con.setRequestProperty("X-Auth-Token", xAuthToken);
+	// }
+	//
+	// // Send put request
+	// con.setDoOutput(true);
+	// DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+	// wr.writeBytes(data);
+	// wr.flush();
+	// wr.close();
+	//
+	// int responseCode = con.getResponseCode();
+	// logger.info("\nSending 'PUT' request to URL : " + url);
+	// logger.info("Post parameters : " + data);
+	// logger.info("Response Code : " + responseCode);
+	//
+	// BufferedReader in = new BufferedReader(new InputStreamReader(
+	// con.getInputStream()));
+	// String inputLine;
+	// StringBuffer response = new StringBuffer();
+	//
+	// while ((inputLine = in.readLine()) != null) {
+	// response.append(inputLine);
+	// }
+	// in.close();
+	// con.disconnect();
+	// // print result
+	// logger.info("Response : " + response.toString());
+	//
+	// }
+	//
+	// public static void sendRequest(URL url, String method, String data,
+	// String contentType) throws Exception {
+	//
+	// sendRequest(url, method, data, contentType, null);
+	//
+	// }
 
 }

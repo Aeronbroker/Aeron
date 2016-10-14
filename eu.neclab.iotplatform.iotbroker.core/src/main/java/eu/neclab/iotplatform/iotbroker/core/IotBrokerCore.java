@@ -792,33 +792,35 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			if (logger.isDebugEnabled()) {
 				logger.debug("-----------++++++++++++++++++++++ Begin Filter");
 			}
-			List<QueryContextRequest> lqcReq = new ArrayList<QueryContextRequest>();
-			lqcReq.add(request);
-			List<ContextElementResponse> lceRes = mergerResponse
+			
+			List<QueryContextRequest> listQueryContextRequests = new ArrayList<QueryContextRequest>();
+			listQueryContextRequests.add(request);
+			
+			List<ContextElementResponse> listContextElementResponses = mergerResponse
 					.getListContextElementResponse();
 
 			if (logger.isDebugEnabled()) {
 				logger.debug("-----------++++++++++++++++++++++ QueryContextRequest:"
-						+ lqcReq.toString()
+						+ listQueryContextRequests.toString()
 						+ " ContextElementResponse:"
-						+ lceRes.toString());
+						+ listContextElementResponses.toString());
 
-				logger.debug(lqcReq.size());
-				logger.debug(lceRes.size());
+				logger.debug(listQueryContextRequests.size());
+				logger.debug(listContextElementResponses.size());
 			}
 
-			List<QueryContextResponse> lqcRes = resultFilter.filterResult(
-					lceRes, lqcReq);
+			List<QueryContextResponse> listQueryContextResponses = resultFilter.filterResult(
+					listContextElementResponses, listQueryContextRequests);
 
-			if (lqcRes.size() == 1) {
-				mergerResponse = lqcRes.get(0);
+			if (listQueryContextResponses.size() == 1) {
+				mergerResponse = listQueryContextResponses.get(0);
 			}
 
 			if (logger.isDebugEnabled()) {
 				logger.debug("-----------++++++++++++++++++++++ After Filter ListContextElementResponse:"
-						+ lqcRes.toString()
+						+ listQueryContextResponses.toString()
 						+ " ContextElementResponse:"
-						+ lqcRes.toString());
+						+ listQueryContextResponses.toString());
 				logger.debug("-----------++++++++++++++++++++++End Filter");
 			}
 			logger.info("Result filter found and applied.");
