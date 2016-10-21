@@ -572,10 +572,11 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	@Override
 	public QueryContextResponse queryContext(QueryContextRequest request) {
 
-
 		DiscoverContextAvailabilityRequest discoveryRequest = new DiscoverContextAvailabilityRequest(
 				request.getEntityIdList(), request.getAttributeList(),
 				request.getRestriction());
+
+		List<ContextRegistration> embeddedAgentContextRegistrations = null;
 
 		if (associationsEnabled == true) {
 			AssociationsHandler.insertAssociationScope(discoveryRequest);
@@ -624,6 +625,15 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		if ((discoveryResponse.getErrorCode() == null || discoveryResponse
 				.getErrorCode().getCode() == 200)
 				&& discoveryResponse.getContextRegistrationResponse() != null) {
+			
+			// Extract ContextRegistrations which belong to the embeddedAgent
+			// (in order to avoid loop)
+			if (BundleUtils.isServiceRegistered(this, embeddedIoTAgent)) {
+
+				embeddedAgentContextRegistrations = embeddedIoTAgent
+						.extractOwnContextRegistrations(discoveryResponse);
+
+			}
 
 			List<ContextRegistrationResponse> contextRegistrationToQuery = new ArrayList<ContextRegistrationResponse>();
 			contextRegistrationToQuery.addAll(discoveryResponse
@@ -638,6 +648,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 				contextRegistrationToQuery.addAll(AssociationsHandler
 						.getAssociatedContextRegistrations(transitiveList));
 			}
+
 
 			// Create the query list of IoT Providers
 			List<Pair<QueryContextRequest, URI>> queryList = createQueryRequestList(
@@ -670,7 +681,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 				logger.info("Historical Agent present: fowarding the query");
 				tasks.add(Executors.callable(new EmbeddedIoTAgentRequestThread(
-						embeddedIoTAgent, request, merger)));
+						embeddedIoTAgent, request, merger,
+						embeddedAgentContextRegistrations)));
 			}
 		} catch (org.springframework.osgi.service.ServiceUnavailableException e) {
 			logger.warn("Not possible to query the Big Data Repository: osgi service not registered");
@@ -792,10 +804,10 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			if (logger.isDebugEnabled()) {
 				logger.debug("-----------++++++++++++++++++++++ Begin Filter");
 			}
-			
+
 			List<QueryContextRequest> listQueryContextRequests = new ArrayList<QueryContextRequest>();
 			listQueryContextRequests.add(request);
-			
+
 			List<ContextElementResponse> listContextElementResponses = mergerResponse
 					.getListContextElementResponse();
 
@@ -809,8 +821,9 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 				logger.debug(listContextElementResponses.size());
 			}
 
-			List<QueryContextResponse> listQueryContextResponses = resultFilter.filterResult(
-					listContextElementResponses, listQueryContextRequests);
+			List<QueryContextResponse> listQueryContextResponses = resultFilter
+					.filterResult(listContextElementResponses,
+							listQueryContextRequests);
 
 			if (listQueryContextResponses.size() == 1) {
 				mergerResponse = listQueryContextResponses.get(0);
@@ -1312,7 +1325,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			updateContextRequest = request;
 		}
 
-		/**
+		/*
 		 * Dump data in Historical Agent if present.
 		 */
 		if (request.getUpdateAction() != UpdateActionType.DELETE

@@ -60,6 +60,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
+import eu.neclab.iotplatform.iotbroker.commons.Pair;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.EmbeddedAgentIndexerInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.KeyValueStoreInterface;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
@@ -83,7 +84,7 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 	private Multimap<String, String> cachedIdsByType = HashMultimap.create();
 
 	/*
-	 * Here is mapped attributeNames by EntityId (id + potentially type) 
+	 * Here is mapped attributeNames by EntityId (id + potentially type)
 	 * [id1:[attributeName1, attributeName2,...],...
 	 */
 	private Multimap<String, String> cachedAttributeNamesById = HashMultimap
@@ -359,6 +360,15 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 		return Iterables.getFirst(
 				isolatedContextElement.getContextAttributeList(), null)
 				.getName();
+	}
+
+	public Pair<String, String> generateStartAndEndKeyForLatestValues() {
+
+		String startKey = LATEST_VALUE_PREFIX;
+		String endKey = LATEST_VALUE_PREFIX + "ÿ";
+
+		return new Pair<String, String>(startKey, endKey);
+
 	}
 
 }

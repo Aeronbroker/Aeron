@@ -97,10 +97,12 @@ public class OperationScope extends NgsiStructure {
 		this.scopeType = scopeType;
 	}
 
+	@JsonSerialize(using = MetadataObjectValueSerializer.class)
 	public Object getScopeValue() {
 		return scopeValue;
 	}
 
+	@JsonDeserialize(using = MetadataValueDeserializer.class)
 	public void setScopeValue(Object scopeValue) {
 		this.scopeValue = scopeValue;
 	}

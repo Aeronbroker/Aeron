@@ -50,6 +50,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -68,11 +69,14 @@ import com.google.gson.JsonParser;
 
 import eu.neclab.iotplatform.iotbroker.commons.FullHttpResponse;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.KeyValueStoreInterface;
+import eu.neclab.iotplatform.iotbroker.commons.interfaces.PermanentRegistryInterface;
 import eu.neclab.iotplatform.iotbroker.embeddediotagent.storage.commons.StorageUtil;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NgsiStructure;
+import eu.neclab.iotplatform.ngsi.api.datamodel.RegisterContextRequest;
 
-public class CouchDB implements KeyValueStoreInterface {
+public class CouchDB implements KeyValueStoreInterface,
+		PermanentRegistryInterface {
 
 	/** The logger. */
 	private static Logger logger = Logger.getLogger(CouchDB.class);
@@ -80,6 +84,8 @@ public class CouchDB implements KeyValueStoreInterface {
 	private String keyToCachePrefix = StorageUtil.LATEST_VALUE_PREFIX;
 
 	private Map<String, String> cachedRevisionByKey = new HashMap<String, String>();
+
+	private Map<String, String> permanentRegistryRevById = new HashMap<String, String>();
 
 	private String couchDB_ip = null;
 
@@ -93,12 +99,15 @@ public class CouchDB implements KeyValueStoreInterface {
 	private String couchDB_PROTOCOL;
 	@Value("${couchdb_port:5984}")
 	private String couchDB_PORT;
-	@Value("${couchdb_name:iotbrokerdb}")
+	@Value("${couchdb_name:embeddedagentdb}")
 	private String couchDB_NAME;
 	@Value("${couchdb_username:null}")
 	private String couchDB_USERNAME;
 	@Value("${couchdb_password:null}")
 	private String couchDB_PASSWORD;
+
+	@Value("${registryDB_NAME:embeddedagentregistrydb}")
+	private String registryDB_NAME;
 
 	public String getCouchDB_HOST() {
 		return couchDB_HOST;
@@ -172,6 +181,7 @@ public class CouchDB implements KeyValueStoreInterface {
 	@PostConstruct
 	private void postConstruct() {
 		try {
+
 			if (CouchDBUtil.checkDB(getCouchDB_ip(), couchDB_NAME,
 					authentication)) {
 
@@ -192,6 +202,25 @@ public class CouchDB implements KeyValueStoreInterface {
 			}
 
 			CouchDBUtil.checkViews(getCouchDB_ip(), couchDB_NAME);
+
+			if (CouchDBUtil.checkDB(getCouchDB_ip(), registryDB_NAME,
+					authentication)) {
+
+				if (Boolean.parseBoolean(System.getProperty("agent.reset"))) {
+					CouchDBUtil.deleteDb(getCouchDB_ip(), registryDB_NAME,
+							authentication);
+					CouchDBUtil.createDb(getCouchDB_ip(), registryDB_NAME,
+							authentication);
+				}
+
+				databaseExist = true;
+
+			} else {
+
+				CouchDBUtil.createDb(getCouchDB_ip(), registryDB_NAME,
+						authentication);
+				databaseExist = true;
+			}
 
 			this.cacheRevisionById();
 
@@ -340,7 +369,7 @@ public class CouchDB implements KeyValueStoreInterface {
 			FullHttpResponse respFromCouchDB = HttpRequester.sendPut(new URL(
 					getCouchDB_ip() + couchDB_NAME + "/" + key), contextElement
 					.toJsonString(), "application/json");
-			
+
 			if (respFromCouchDB.getStatusLine().getStatusCode() > 299) {
 
 				logger.warn("CouchDB did not updated correctly the value. Reason: "
@@ -359,7 +388,7 @@ public class CouchDB implements KeyValueStoreInterface {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return successful;
 	}
 
@@ -575,6 +604,57 @@ public class CouchDB implements KeyValueStoreInterface {
 		return historicalContextElement;
 	}
 
+	public List<ContextElement> getAllValues(String startKey, String endKey) {
+		List<ContextElement> contextElements = new ArrayList<ContextElement>();
+
+		this.checkDB();
+
+		// If here, an historical range is wanted
+		// EXAMPLE:
+		// http://localhost:5984/santander-nz-ccoc/_all_docs?startkey=%22obs_urn:x-iot:smartsantander:1:10006|2015-05-08%2016:00:00%22&endkey=%22obs_urn:x-iot:smartsantander:1:10006|2015-05-08%2017:00:00%22&include_docs=true
+
+		// TODO A check if the key are referring to only one contextElement
+
+		String url = getCouchDB_ip() + "/" + couchDB_NAME + "/_all_docs?"
+				+ generateRangeQueryString(startKey, endKey);
+
+		try {
+			FullHttpResponse response = HttpRequester.sendGet(new URL(url));
+			if (response == null) {
+
+				logger.error("No response from CouchDB!!!");
+
+			} else {
+
+				JsonElement jelement = new JsonParser().parse(response
+						.getBody());
+				if (!jelement.isJsonNull()) {
+
+					JsonObject jobject = jelement.getAsJsonObject();
+
+					JsonArray rows = jobject.getAsJsonArray("rows");
+
+					// Parse each row of the response
+					for (JsonElement jsonElement : rows) {
+						JsonObject row = jsonElement.getAsJsonObject();
+
+						// Parse the ContextElement
+						ContextElement contextElement = (ContextElement) NgsiStructure
+								.parseStringToJson(row.get("doc").toString(),
+										ContextElement.class);
+						contextElements.add(contextElement);
+
+					}
+				}
+			}
+
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+
+		return contextElements;
+	}
+
 	private String generateRangeQueryString(String startKey, String endKey) {
 
 		// "startkey=%22obs_urn:x-iot:smartsantander:1:10006|2015-05-08%2016:00:00%22&endkey=%22obs_urn:x-iot:smartsantander:1:10006|2015-05-08%2017:00:00%22&include_docs=true"
@@ -617,6 +697,126 @@ public class CouchDB implements KeyValueStoreInterface {
 		}
 
 		return historicalContextElement;
+	}
+
+	@Override
+	public Map<String, RegisterContextRequest> getAllRegistrations() {
+
+		Map<String, RegisterContextRequest> registrations = new HashMap<String, RegisterContextRequest>();
+
+		try {
+			FullHttpResponse response = HttpRequester.sendGet(new URL(
+					getCouchDB_ip() + registryDB_NAME + "/"
+							+ "_all_docs?include_docs=true"));
+
+			if (response == null) {
+
+				logger.error("No response from CouchDB!!!");
+
+			} else if (response.getStatusLine().getStatusCode() == 200
+					&& response.getBody() != null
+					&& !response.getBody().isEmpty()) {
+				JsonElement jelement = new JsonParser().parse(response
+						.getBody());
+				if (!jelement.isJsonNull()) {
+
+					JsonObject jobject = jelement.getAsJsonObject();
+
+					JsonArray rows = jobject.getAsJsonArray("rows");
+
+					// Parse each row of the response
+					for (JsonElement jsonElement : rows) {
+						JsonObject row = jsonElement.getAsJsonObject();
+
+						registrations.put(row.get("key").getAsString(),
+								(RegisterContextRequest) NgsiStructure
+										.convertStringToXml(
+												row.getAsJsonObject("doc")
+														.get("registration")
+														.getAsString(),
+												RegisterContextRequest.class));
+
+						permanentRegistryRevById.put(row.get("key")
+								.getAsString(),
+								row.getAsJsonObject("doc").get("_rev")
+										.getAsString());
+					}
+				}
+			}
+
+		} catch (MalformedURLException e) {
+			logger.info("Impossible to get data from CouchDB", e);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return registrations;
+	}
+
+	@Override
+	public void storeRegistration(String id, RegisterContextRequest registration) {
+
+		// boolean successful = false;
+
+		try {
+
+			String registrationString = registration.toString();
+			registrationString = registrationString.replaceAll("\"", "\\\\\"");
+			registrationString = registrationString.replace("\n", "");
+			registrationString = "{\"registration\":\"" + registrationString
+					+ "\"}";
+
+			FullHttpResponse respFromCouchDB = HttpRequester.sendPut(new URL(
+					getCouchDB_ip() + registryDB_NAME + "/" + id),
+					registrationString, "application/json");
+
+			if (respFromCouchDB.getStatusLine().getStatusCode() > 299) {
+
+				logger.warn("CouchDB did not updated correctly the value. Reason: "
+						+ respFromCouchDB.getStatusLine());
+
+			} else {
+				// Parse the revision and store it
+				String revision = CouchDBUtil
+						.parseRevisionFromCouchdbResponse(respFromCouchDB);
+
+				permanentRegistryRevById.put(id, revision);
+			}
+
+		} catch (MalformedURLException e) {
+			logger.info("Impossible to store information into CouchDB", e);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		// return successful;
+
+	}
+
+	@Override
+	public void deleteRegistration(String id) {
+		try {
+
+			FullHttpResponse response = HttpRequester.sendDelete(new URL(
+					getCouchDB_ip() + registryDB_NAME + "/" + id + "?rev="
+							+ permanentRegistryRevById.get(id)));
+
+			if (response == null) {
+
+				logger.error("No response from CouchDB!!!");
+
+			} else if (response.getStatusLine().getStatusCode() == 200
+					&& response.getBody() != null
+					&& !response.getBody().isEmpty()) {
+
+				logger.info("Delete from internal registryDB : " + id);
+			}
+
+		} catch (MalformedURLException e) {
+			logger.info("Impossible to delete data from CouchDB", e);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }

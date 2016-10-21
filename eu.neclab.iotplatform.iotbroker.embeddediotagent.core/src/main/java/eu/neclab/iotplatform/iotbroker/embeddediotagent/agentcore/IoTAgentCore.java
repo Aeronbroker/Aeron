@@ -64,6 +64,8 @@ import eu.neclab.iotplatform.iotbroker.commons.interfaces.EmbeddedAgentSubscript
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.IoTAgentInterface;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
+import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextRequest;
 import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Interface;
@@ -112,17 +114,45 @@ public class IoTAgentCore implements IoTAgentInterface {
 	@PostConstruct
 	public void postConstruct() {
 
+		// /*
+		// * Make a generic registration
+		// */
+		// if (BundleUtils.isServiceRegistered(this, registrationHandler)) {
+		// registrationHandler.makeGenericRegistration();
+		// }
+
 		/*
-		 * Make a generic registration
+		 * Get all last observations
+		 */
+		final List<ContextElement> allLastObservations = iotAgentStorage
+				.getAllLatestValues();
+
+		List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
+		/*
+		 * Check registration
 		 */
 		if (BundleUtils.isServiceRegistered(this, registrationHandler)) {
-			registrationHandler.makeGenericRegistration();
+			tasks.add(Executors.callable(new Runnable() {
+
+				@Override
+				public void run() {
+					registrationHandler.checkRegistration(allLastObservations);
+
+				}
+
+			}));
+			ExecutorService taskExecutor = Executors.newCachedThreadPool();
+			try {
+				taskExecutor.invokeAll(tasks);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 
 	}
 
 	@Override
-	public void storeData(List<ContextElement> contextElementList) {
+	public void storeData(final List<ContextElement> contextElementList) {
 
 		// List of Task
 		List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
@@ -135,7 +165,8 @@ public class IoTAgentCore implements IoTAgentInterface {
 			// Create a list of ContextElement where each ContextElement has
 			// exactly one ContextAttribute
 			//
-			// TODO change the isolatedContextElement to a new class called AtomicContextElement
+			// TODO change the isolatedContextElement to a new class called
+			// AtomicContextElement
 			final List<ContextElement> isolatedContextElementList = this
 					.isolateAttributes(contextElement);
 
@@ -180,6 +211,27 @@ public class IoTAgentCore implements IoTAgentInterface {
 			taskExecutor.invokeAll(tasks);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+		}
+
+		/*
+		 * Check registration
+		 */
+		if (BundleUtils.isServiceRegistered(this, registrationHandler)) {
+			tasks.add(Executors.callable(new Runnable() {
+
+				@Override
+				public void run() {
+					registrationHandler.checkRegistration(contextElementList);
+
+				}
+
+			}));
+			taskExecutor = Executors.newCachedThreadPool();
+			try {
+				taskExecutor.invokeAll(tasks);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 
 	}
@@ -311,4 +363,24 @@ public class IoTAgentCore implements IoTAgentInterface {
 		return BundleUtils.isServiceRegistered(this, subscriptionHandler);
 	}
 
+	@Override
+	public List<ContextRegistration> extractOwnContextRegistrations(
+			DiscoverContextAvailabilityResponse discoveryResponse) {
+
+		/*
+		 * If there is no registry, just return null without any alteration of
+		 * the DiscoverContextAvailabilityResponse
+		 */
+		if (!BundleUtils.isServiceRegistered(this, registrationHandler)) {
+			return null;
+		}
+
+		/*
+		 * Check registration
+		 */
+
+		return registrationHandler
+				.extractOwnContextRegistrations(discoveryResponse);
+
+	}
 }

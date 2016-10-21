@@ -57,13 +57,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.log4j.Logger;
+import org.springframework.expression.spel.ast.Indexer;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
+import eu.neclab.iotplatform.iotbroker.commons.Pair;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.EmbeddedAgentIndexerInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.EmbeddedAgentStorageInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.KeyValueStoreInterface;
@@ -166,6 +166,9 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 	private Date extractTimestamp(ContextAttribute contextAttribute) {
 
 		Date timestamp = null;
+
+		// TODO encapsulate this things in a Timestamp class, or create a
+		// ContextMetadataFactory
 
 		if (contextAttribute.getMetadata() != null
 				&& !contextAttribute.getMetadata().isEmpty()) {
@@ -294,8 +297,13 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 
 		List<ContextElement> contextElementList = new ArrayList<ContextElement>();
 
-		Set<String> attributeNamesSet = new HashSet<String>();
-		attributeNamesSet.addAll(attributeNames);
+		Set<String> attributeNamesSet;
+		if (attributeNames != null && !attributeNames.isEmpty()){
+			attributeNamesSet= new HashSet<String>();
+			attributeNamesSet.addAll(attributeNames);
+		} else {
+			attributeNamesSet = null;
+		}
 
 		Multimap<String, String> idsAndAttributeNames = indexer
 				.matchingIdsAndAttributeNames(entityIdList, attributeNamesSet);
@@ -462,5 +470,14 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 		}
 
 		return contextElementList;
+	}
+
+	@Override
+	public List<ContextElement> getAllLatestValues() {
+		Pair<String, String> startAndEndKey = indexer
+				.generateStartAndEndKeyForLatestValues();
+		return keyValueStore.getAllValues(startAndEndKey.getLeft(),
+				startAndEndKey.getRight());
+
 	}
 }

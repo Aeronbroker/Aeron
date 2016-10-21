@@ -49,7 +49,10 @@ import java.util.Date;
 import java.util.List;
 
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
+import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
+import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextRequest;
 import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Interface;
 
@@ -78,10 +81,9 @@ public interface IoTAgentInterface {
 			Date startDate, Date endDate);
 
 	boolean isSubscriptionEnabled();
-	
-	void subscribe(String subscriptionId,
-			SubscribeContextRequest subscription);
-	
+
+	void subscribe(String subscriptionId, SubscribeContextRequest subscription);
+
 	void unsubscribe(String subscriptionId);
 
 	Ngsi10Interface getNgsi10Callback();
@@ -92,5 +94,17 @@ public interface IoTAgentInterface {
 	 *            Ngsi10Interface to call when a notification needs to be issued
 	 */
 	void setNgsi10Callback(Ngsi10Interface ngsi10Callback);
+
+	/**
+	 * It modifies the DiscoveryResponse and extract the ContextRegistrations
+	 * owned by the embeddedAgent which are returned. If the embeddedAgent does
+	 * not have registry system, the returned list will be null and the
+	 * discoveryResponse not alterated.
+	 * 
+	 * @param discoveryResponse
+	 * @return
+	 */
+	List<ContextRegistration> extractOwnContextRegistrations(
+			DiscoverContextAvailabilityResponse discoveryResponse);
 
 }

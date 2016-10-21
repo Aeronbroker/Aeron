@@ -583,6 +583,16 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	}
 
+	public static void main(String[] args) {
+		DiscoverContextAvailabilityRequest disc = (DiscoverContextAvailabilityRequest)NgsiStructure
+				.convertStringToXml(
+						"<?xml version=\"1.0\" encoding=\"UTF-8\"?><discoverContextAvailabilityRequest>   <entityIdList>            <entityId type='Room'>                 <id>ConferenceRoom</id>      </entityId>                      </entityIdList>       <attributeList>            <attribute>temperature</attribute>                       </attributeList>       <restriction>       <attributeExpression></attributeExpression>      <scope>            <operationScope>                <scopeType>SimpleGeoLocation</scopeType>                <scopeValue><segment>                        <NW_Corner>7.5 , 2.0</NW_Corner>                        <SE_Corner>5.5 , 11.0</SE_Corner>                     </segment></scopeValue>            </operationScope>        </scope>   </restriction></discoverContextAvailabilityRequest>",
+						DiscoverContextAvailabilityRequest.class);
+		
+		System.out.println(disc.toJsonString());
+
+	}
+
 	/**
 	 * 
 	 * 
