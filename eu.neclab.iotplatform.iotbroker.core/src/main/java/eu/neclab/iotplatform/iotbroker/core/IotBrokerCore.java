@@ -625,15 +625,6 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		if ((discoveryResponse.getErrorCode() == null || discoveryResponse
 				.getErrorCode().getCode() == 200)
 				&& discoveryResponse.getContextRegistrationResponse() != null) {
-			
-			// Extract ContextRegistrations which belong to the embeddedAgent
-			// (in order to avoid loop)
-			if (BundleUtils.isServiceRegistered(this, embeddedIoTAgent)) {
-
-				embeddedAgentContextRegistrations = embeddedIoTAgent
-						.extractOwnContextRegistrations(discoveryResponse);
-
-			}
 
 			List<ContextRegistrationResponse> contextRegistrationToQuery = new ArrayList<ContextRegistrationResponse>();
 			contextRegistrationToQuery.addAll(discoveryResponse
@@ -669,6 +660,15 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 						pair.getLeft(), pair.getRight(), merger, transitiveList)));
 
 			}
+
+		}
+		
+		// Extract ContextRegistrations which belong to the embeddedAgent
+		// (in order to avoid loop)
+		if (BundleUtils.isServiceRegistered(this, embeddedIoTAgent)) {
+
+			embeddedAgentContextRegistrations = embeddedIoTAgent
+					.extractOwnContextRegistrations(discoveryResponse);
 
 		}
 

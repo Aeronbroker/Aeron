@@ -268,7 +268,7 @@
 				maxOccurs="1" />
 			<xs:element name="isDomain" type="xs:boolean" minOccurs="1"
 				maxOccurs="1" />
-			<xs:element name="metaData" type="ContextMetadataList"
+			<xs:element name="metadata" type="ContextMetadataList"
 				minOccurs="0" maxOccurs="1" />
 		</xs:sequence>
 	</xs:complexType>

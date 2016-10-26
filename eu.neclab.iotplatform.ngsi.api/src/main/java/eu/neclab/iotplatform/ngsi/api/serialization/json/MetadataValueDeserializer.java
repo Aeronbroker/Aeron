@@ -94,22 +94,23 @@ public class MetadataValueDeserializer extends JsonDeserializer<Object> {
 			token = jp.nextToken();
 			if (token.equals(JsonToken.FIELD_NAME)) {
 				String name = jp.getCurrentName();
+				name = name.toLowerCase();
 				try {
-					if (name.equals("vertices")) {
+					if ("vertices".equals(name)) {
 						return getPolygon(jp);
-					} else if (name.equals("centerLatitude")
-							|| name.equals("centerLongitude")
-							|| name.equals("radius")) {
+					} else if ("centerlatitude".equals(name)
+							|| "centerlongitude".equals(name)
+							|| "radius".equals(name)) {
 						return getCircle(jp);
-					} else if (name.equals("height")
-							|| name.equals("nw_Corner")
-							|| name.equals("se_Corner")) {
+					} else if ("height".equals(name)
+							|| "nw_corner".equals(name)
+							|| "se_corner".equals(name)) {
 						return getSegment(jp);
-					} else if (name.equals("username")
-							|| name.equals("password")) {
+					} else if ("username".equals(name)
+							|| "password".equals(name)) {
 						return getPEPCredentials(jp);
-					} else if (name.equals("latitude")
-							|| name.equals("longitude")) {
+					} else if ("latitude".equals(name)
+							|| "longitude".equals(name)) {
 						return getPoint(jp);
 					} else {
 						return getAsJsonString(jp);

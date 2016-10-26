@@ -50,10 +50,21 @@ import java.net.URISyntaxException;
 public enum MetadataTypes {
 
 	NotificationHandler("NotificationHandler"), 
-	EmbeddedAgentIdentifier("HistoricalAgentId"), 
-	SimpleGeolocation("SimpleGeoLocation");
+	EmbeddedAgentIdentifier(
+			"HistoricalAgentId"), 
+	SimpleGeolocation("SimpleGeoLocation"),
+	NgsiHierarchy("NgsiHierarchy");
 
 	private String string;
+
+	public static MetadataTypes fromString(String string) {
+		for (MetadataTypes type : MetadataTypes.values()) {
+			if (type.getName().toLowerCase().equals(string.toLowerCase())) {
+				return type;
+			}
+		}
+		return null;
+	}
 
 	private MetadataTypes(String string) {
 
