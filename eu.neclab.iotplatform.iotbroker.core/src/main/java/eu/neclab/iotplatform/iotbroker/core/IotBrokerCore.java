@@ -617,6 +617,15 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 * the data retrieval tasks all in parallel.
 		 */
 		List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
+		
+		// Extract ContextRegistrations which belong to the embeddedAgent
+		// (in order to avoid loop)
+		if (BundleUtils.isServiceRegistered(this, embeddedIoTAgent)) {
+
+			embeddedAgentContextRegistrations = embeddedIoTAgent
+					.extractOwnContextRegistrations(discoveryResponse);
+
+		}
 
 		/*
 		 * Now check if the discovery response is useful; if yes, then we
@@ -663,14 +672,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		}
 		
-		// Extract ContextRegistrations which belong to the embeddedAgent
-		// (in order to avoid loop)
-		if (BundleUtils.isServiceRegistered(this, embeddedIoTAgent)) {
 
-			embeddedAgentContextRegistrations = embeddedIoTAgent
-					.extractOwnContextRegistrations(discoveryResponse);
-
-		}
 
 		/*
 		 * Now we query also the Embedded IoT Agent
@@ -744,7 +746,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 */
 		List<ContextRegistration> registrationList = new ArrayList<ContextRegistration>(
 				discoveryResponse.getContextRegistrationResponse().size());
-		if (discoveryResponse.getContextRegistrationResponse() != null) {
+		if (discoveryResponse.getContextRegistrationResponse() != null && !discoveryResponse.getContextRegistrationResponse().isEmpty()) {
 			for (ContextRegistrationResponse cRR : discoveryResponse
 					.getContextRegistrationResponse()) {
 				registrationList.add(cRR.getContextRegistration());
