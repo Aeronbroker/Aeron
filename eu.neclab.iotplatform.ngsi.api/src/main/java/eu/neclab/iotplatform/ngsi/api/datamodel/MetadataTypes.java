@@ -53,7 +53,10 @@ public enum MetadataTypes {
 	EmbeddedAgentIdentifier(
 			"HistoricalAgentId"), 
 	SimpleGeolocation("SimpleGeoLocation"),
-	NgsiHierarchy("NgsiHierarchy");
+	NgsiHierarchy("NgsiHierarchy"),
+	CreationTime("creation_time"),
+	AbstractionLevel("AbstractionLevel"),
+	Unit("Unit");
 
 	private String string;
 
