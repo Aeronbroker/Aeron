@@ -249,6 +249,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	 */
 	private OnTimeIntervalHandlerInterface onTimeIntervalHandler;
 
+	private ExecutorService executor = Executors.newFixedThreadPool(20);
+
 	/**
 	 * Interface for hierarchies of IoT Broker instances; extra bundle not
 	 * included in this release needed.
@@ -617,7 +619,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 * the data retrieval tasks all in parallel.
 		 */
 		List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
-		
+
 		// Extract ContextRegistrations which belong to the embeddedAgent
 		// (in order to avoid loop)
 		if (BundleUtils.isServiceRegistered(this, embeddedIoTAgent)) {
@@ -649,7 +651,6 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 						.getAssociatedContextRegistrations(transitiveList));
 			}
 
-
 			// Create the query list of IoT Providers
 			List<Pair<QueryContextRequest, URI>> queryList = createQueryRequestList(
 					contextRegistrationToQuery, request);
@@ -671,8 +672,6 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			}
 
 		}
-		
-
 
 		/*
 		 * Now we query also the Embedded IoT Agent
@@ -746,7 +745,9 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 */
 		List<ContextRegistration> registrationList = new ArrayList<ContextRegistration>(
 				discoveryResponse.getContextRegistrationResponse().size());
-		if (discoveryResponse.getContextRegistrationResponse() != null && !discoveryResponse.getContextRegistrationResponse().isEmpty()) {
+		if (discoveryResponse.getContextRegistrationResponse() != null
+				&& !discoveryResponse.getContextRegistrationResponse()
+						.isEmpty()) {
 			for (ContextRegistrationResponse cRR : discoveryResponse
 					.getContextRegistrationResponse()) {
 				registrationList.add(cRR.getContextRegistration());
@@ -1333,7 +1334,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		if (request.getUpdateAction() != UpdateActionType.DELETE
 				&& BundleUtils.isServiceRegistered(this, embeddedIoTAgent)) {
 
-			new Thread() {
+			executor.execute(new Thread() {
 
 				@Override
 				public void run() {
@@ -1345,7 +1346,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 					}
 
 				}
-			}.start();
+			});
 
 		}
 

@@ -52,6 +52,7 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -232,6 +233,8 @@ public class FullHttpRequester {
 			e.printStackTrace();
 			return new FullHttpResponse(HttpVersion.HTTP_1_0,
 					HttpStatus.SC_INTERNAL_SERVER_ERROR, "");
+		} catch (SocketTimeoutException e) {
+			logger.warn("Time out requesting: " + url);
 		} catch (ProtocolException e) {
 			e.printStackTrace();
 			return new FullHttpResponse(HttpVersion.HTTP_1_0,
