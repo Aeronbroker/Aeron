@@ -48,6 +48,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -109,9 +110,12 @@ public class FullHttpRequester {
 			if (data != null && !data.equals("")) {
 				// Send put request
 				con.setDoOutput(true);
-				DataOutputStream wr = new DataOutputStream(
-						con.getOutputStream());
-				wr.writeBytes(data);
+//				 DataOutputStream wr = new DataOutputStream(
+//				 con.getOutputStream());
+				OutputStreamWriter wr = new OutputStreamWriter(
+						con.getOutputStream(), "UTF-8");
+//				wr.writeBytes(data);
+				wr.write(data);
 				wr.flush();
 				wr.close();
 			} else {
@@ -144,7 +148,7 @@ public class FullHttpRequester {
 				httpResponse.setBody(response.toString());
 
 				// logger.info("Response Code : " + responseCode);
-				logger.info("\nResponse Code : " + responseCode + "\n"
+				logger.info("\nPOST to URL : "+url+"\nResponse Code : " + responseCode + "\n"
 						+ "Response : " + response.toString());
 
 				con.disconnect();
@@ -214,7 +218,7 @@ public class FullHttpRequester {
 
 					// logger.info("Response Code : " + responseCode);
 					if (logger.isDebugEnabled()) {
-						logger.debug("\nResponse Code : " + responseCode + "\n"
+						logger.debug("\nGET to URL : "+url+"\nResponse Code : " + responseCode + "\n"
 								+ "Response : " + response.toString());
 					}
 
@@ -282,9 +286,12 @@ public class FullHttpRequester {
 			if (data != null && !data.equals("")) {
 				// Send put request
 				con.setDoOutput(true);
-				DataOutputStream wr = new DataOutputStream(
-						con.getOutputStream());
-				wr.writeBytes(data);
+//				 DataOutputStream wr = new DataOutputStream(
+//				 con.getOutputStream());
+				OutputStreamWriter wr = new OutputStreamWriter(
+						con.getOutputStream(), "UTF-8");
+//				wr.writeBytes(data);
+				wr.write(data);
 				wr.flush();
 				wr.close();
 			} else {
@@ -318,7 +325,7 @@ public class FullHttpRequester {
 				httpResponse.setBody(response.toString());
 
 				// logger.info("Response Code : " + responseCode);
-				logger.info("\nResponse Code : " + responseCode + "\n"
+				logger.info("\nPUT to URL : "+url+"\nResponse Code : " + responseCode + "\n"
 						+ "Response : " + response.toString());
 
 				con.disconnect();
@@ -357,7 +364,7 @@ public class FullHttpRequester {
 			logger.info("\nSending 'DELETE' request to URL : " + url);
 
 			int responseCode = con.getResponseCode();
-			logger.info("\nResponse Code : " + responseCode + "\n");
+			logger.info("\nDELETE to URL : "+url+"\nResponse Code : " + responseCode + "\n");
 
 			httpResponse = new FullHttpResponse(HttpVersion.HTTP_1_0,
 					con.getResponseCode(), con.getResponseMessage());
