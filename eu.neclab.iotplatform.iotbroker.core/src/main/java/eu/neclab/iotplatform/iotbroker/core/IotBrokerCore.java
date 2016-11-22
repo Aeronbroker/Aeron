@@ -52,6 +52,9 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.xml.xpath.XPath;
@@ -178,8 +181,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	// private final String CONFMAN_REG_URL = System.getProperty("confman.ip");
 
 	/** Executor for asynchronous tasks */
-	private final ExecutorService taskExecutor = Executors
-			.newCachedThreadPool();
+	private final ExecutorService taskExecutor = new ThreadPoolExecutor(0,
+			1500, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
 
 	/** The implementation of the NGSI 9 interface */
 	private Ngsi9Interface ngsi9Impl;

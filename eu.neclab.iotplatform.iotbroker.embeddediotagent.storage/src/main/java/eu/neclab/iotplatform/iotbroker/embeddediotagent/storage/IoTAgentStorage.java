@@ -56,9 +56,11 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
-import org.springframework.expression.spel.ast.Indexer;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -80,6 +82,9 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 
 	// Ngsi10Interface to call when a notification needs to be issued
 	private Ngsi10Interface ngsi10Callback;
+
+	private ExecutorService taskExecutor = new ThreadPoolExecutor(0, 1500, 60L,
+			TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
 
 	private EmbeddedAgentIndexerInterface indexer;
 
@@ -298,8 +303,8 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 		List<ContextElement> contextElementList = new ArrayList<ContextElement>();
 
 		Set<String> attributeNamesSet;
-		if (attributeNames != null && !attributeNames.isEmpty()){
-			attributeNamesSet= new HashSet<String>();
+		if (attributeNames != null && !attributeNames.isEmpty()) {
+			attributeNamesSet = new HashSet<String>();
 			attributeNamesSet.addAll(attributeNames);
 		} else {
 			attributeNamesSet = null;
@@ -376,7 +381,6 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 
 		}
 
-		ExecutorService taskExecutor = Executors.newCachedThreadPool();
 		try {
 			taskExecutor.invokeAll(tasks);
 		} catch (InterruptedException e) {
@@ -462,7 +466,6 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 
 		}
 
-		ExecutorService taskExecutor = Executors.newCachedThreadPool();
 		try {
 			taskExecutor.invokeAll(tasks);
 		} catch (InterruptedException e) {
