@@ -1,6 +1,6 @@
 
 {
-    "id":"#",
+    "id":"ngsi.jsonschema#",
     "definitions":{
         "SubscribeContextAvailabilityResponse":{
             "type":"object",
@@ -48,17 +48,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"SubscribeContextAvailabilityResponse",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "subscriptionId",
-                "duration",
-                "errorCode"
-            ]
+            }
         },
         "Point":{
             "type":"object",
@@ -94,16 +84,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"point",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "latitude",
-                "longitude"
-            ]
+            }
         },
         "ContextMetadataList":{
             "type":"object",
@@ -126,15 +107,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"ContextMetadataList",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "contextMetadata"
-            ]
+            }
         },
         "UpdateContextElementResponse":{
             "type":"object",
@@ -166,16 +139,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"UpdateContextElementResponse",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "errorCode",
-                "contextResponseList"
-            ]
+            }
         },
         "ContextRegistration":{
             "type":"object",
@@ -236,18 +200,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"ContextRegistration",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "entityIdList",
-                "contextRegistrationAttributeList",
-                "registrationMetadata",
-                "providingApplication"
-            ]
+            }
         },
         "ContextRegistrationAttribute":{
             "type":"object",
@@ -309,18 +262,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"ContextRegistrationAttribute",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "name",
-                "type",
-                "isDomain",
-                "metadata"
-            ]
+            }
         },
         "Circle":{
             "type":"object",
@@ -370,17 +312,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"circle",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "centerLatitude",
-                "centerLongitude",
-                "radius"
-            ]
+            }
         },
         "UnsubscribeContextAvailabilityRequest":{
             "type":"object",
@@ -402,15 +334,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"UnsubscribeContextAvailabilityRequest",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "subscriptionId"
-            ]
+            }
         },
         "RegisterContextRequest":{
             "type":"object",
@@ -455,17 +379,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"RegisterContextRequest",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "contextRegistrationList",
-                "duration",
-                "registrationId"
-            ]
+            }
         },
         "ContextRegistrationResponseList":{
             "type":"object",
@@ -488,15 +402,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"ContextRegistrationResponseList",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "contextRegistrationResponse"
-            ]
+            }
         },
         "UpdateContextRequest":{
             "type":"object",
@@ -532,16 +438,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"UpdateContextRequest",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "contextElementList",
-                "updateAction"
-            ]
+            }
         },
         "QueryContextResponse":{
             "type":"object",
@@ -573,16 +470,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"QueryContextResponse",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "contextResponseList",
-                "errorCode"
-            ]
+            }
         },
         "RegisterContextResponse":{
             "type":"object",
@@ -627,17 +515,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"RegisterContextResponse",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "duration",
-                "registrationId",
-                "errorCode"
-            ]
+            }
         },
         "ContextAttributeList":{
             "type":"object",
@@ -660,15 +538,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"ContextAttributeList",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "contextAttribute"
-            ]
+            }
         },
         "DiscoveryContextAvailabilityResponse":{
             "type":"object",
@@ -700,16 +570,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"DiscoveryContextAvailabilityResponse",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "contextRegistrationResponseList",
-                "errorCode"
-            ]
+            }
         },
         "UpdateContextAvailabilitySubscriptionRequest":{
             "type":"object",
@@ -784,19 +645,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"UpdateContextAvailabilitySubscriptionRequest",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "entityIdList",
-                "attributeList",
-                "duration",
-                "subscriptionId",
-                "restriction"
-            ]
+            }
         },
         "ContextMetadata":{
             "type":"object",
@@ -845,17 +694,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"ContextMetadata",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "name",
-                "type",
-                "value"
-            ]
+            }
         },
         "UpdateContextAvailabilitySubscriptionResponse":{
             "type":"object",
@@ -903,17 +742,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"UpdateContextAvailabilitySubscriptionResponse",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "subscriptionId",
-                "duration",
-                "errorCode"
-            ]
+            }
         },
         "ContextRegistrationResponse":{
             "type":"object",
@@ -948,16 +777,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"ContextRegistrationResponse",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "contextRegistration",
-                "errorCode"
-            ]
+            }
         },
         "SubscribeContextResponse":{
             "type":"object",
@@ -989,16 +809,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"SubscribeContextResponse",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "subscribeResponse",
-                "subscribeError"
-            ]
+            }
         },
         "NotifyCondition":{
             "type":"object",
@@ -1046,17 +857,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"NotifyCondition",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "type",
-                "condValueList",
-                "restriction"
-            ]
+            }
         },
         "Restriction":{
             "type":"object",
@@ -1091,16 +892,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"Restriction",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "attributeExpression",
-                "scope"
-            ]
+            }
         },
         "DiscoveryContextAvailabilityRequest":{
             "type":"object",
@@ -1148,17 +940,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"DiscoveryContextAvailabilityRequest",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "entityIdList",
-                "attributeList",
-                "restriction"
-            ]
+            }
         },
         "NotifyContextAvailabilityResponse":{
             "type":"object",
@@ -1180,15 +962,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"NotifyContextAvailabilityResponse",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "responseCode"
-            ]
+            }
         },
         "EntityIdList":{
             "type":"object",
@@ -1211,15 +985,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"EntityIdList",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "entityId"
-            ]
+            }
         },
         "NotifyContextAvailabilityRequest":{
             "type":"object",
@@ -1267,17 +1033,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"NotifyContextAvailabilityRequest",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "subscriptionId",
-                "contextRegistrationResponseList",
-                "errorCode"
-            ]
+            }
         },
         "SubscribeContextAvailabilityRequest":{
             "type":"object",
@@ -1365,20 +1121,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"SubscribeContextAvailabilityRequest",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "entityIdList",
-                "attributeList",
-                "reference",
-                "duration",
-                "subscriptionId",
-                "restriction"
-            ]
+            }
         },
         "ContextElement":{
             "type":"object",
@@ -1439,18 +1182,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"ContextElement",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "entityId",
-                "attributeDomainName",
-                "contextAttributeList",
-                "domainMetadata"
-            ]
+            }
         },
         "NotifyContextResponse":{
             "type":"object",
@@ -1472,15 +1204,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"NotifyContextResponse",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "responseCode"
-            ]
+            }
         },
         "OperationScopeList":{
             "type":"object",
@@ -1503,15 +1227,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"OperationScopeList",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "operationScope"
-            ]
+            }
         },
         "UpdateContextSubscriptionRequest":{
             "type":"object",
@@ -1585,19 +1301,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"UpdateContextSubscriptionRequest",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "duration",
-                "restriction",
-                "subscriptionId",
-                "notifyConditions",
-                "throttling"
-            ]
+            }
         },
         "NotifyContextRequest":{
             "type":"object",
@@ -1646,17 +1350,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"NotifyContextRequest",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "subscriptionId",
-                "originator",
-                "contextResponseList"
-            ]
+            }
         },
         "UnsubscribeContextRequest":{
             "type":"object",
@@ -1678,15 +1372,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"UnsubscribeContextRequest",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "subscriptionId"
-            ]
+            }
         },
         "UpdateContextAttributeRequest":{
             "type":"object",
@@ -1734,17 +1420,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"UpdateContextAttributeRequest",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "type",
-                "contextValue",
-                "metadata"
-            ]
+            }
         },
         "StatusCode":{
             "type":"object",
@@ -1793,17 +1469,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"StatusCode",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "code",
-                "reasonPhrase",
-                "details"
-            ]
+            }
         },
         "AppendContextElementRequest":{
             "type":"object",
@@ -1848,17 +1514,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"AppendContextElementRequest",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "attributeDomainName",
-                "contextAttributeList",
-                "domainMetadata"
-            ]
+            }
         },
         "VertexList":{
             "type":"object",
@@ -1884,15 +1540,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"vertexList",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "vertex"
-            ]
+            }
         },
         "ContextElementResponse":{
             "type":"object",
@@ -1928,16 +1576,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"ContextElementResponse",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "contextElement",
-                "statusCode"
-            ]
+            }
         },
         "Vertex":{
             "type":"object",
@@ -1973,16 +1612,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"vertex",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "latitude",
-                "longitude"
-            ]
+            }
         },
         "QueryContextRequest":{
             "type":"object",
@@ -2030,17 +1660,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"QueryContextRequest",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "entityIdList",
-                "attributeList",
-                "restriction"
-            ]
+            }
         },
         "UpdateContextResponse":{
             "type":"object",
@@ -2072,16 +1692,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"UpdateContextResponse",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "errorCode",
-                "contextResponseList"
-            ]
+            }
         },
         "ContextAttribute":{
             "type":"object",
@@ -2143,18 +1754,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"ContextAttribute",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "name",
-                "type",
-                "contextValue",
-                "metadata"
-            ]
+            }
         },
         "ContextRegistrationAttributeList":{
             "type":"object",
@@ -2177,15 +1777,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"ContextRegistrationAttributeList",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "contextRegistrationAttribute"
-            ]
+            }
         },
         "OperationScope":{
             "type":"object",
@@ -2221,16 +1813,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"OperationScope",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "scopeType",
-                "scopeValue"
-            ]
+            }
         },
         "ContextAttributeResponse":{
             "type":"object",
@@ -2266,16 +1849,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"ContextAttributeResponse",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "contextAttributeList",
-                "statusCode"
-            ]
+            }
         },
         "SubscribeContextRequest":{
             "type":"object",
@@ -2376,21 +1950,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"SubscribeContextRequest",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "entityIdList",
-                "attributeList",
-                "reference",
-                "duration",
-                "restriction",
-                "notifyConditions",
-                "throttling"
-            ]
+            }
         },
         "Segment":{
             "type":"object",
@@ -2439,17 +1999,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"segment",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "nwCorner",
-                "seCorner",
-                "height"
-            ]
+            }
         },
         "UpdateContextElementRequest":{
             "type":"object",
@@ -2494,17 +2044,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"UpdateContextElementRequest",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "attributeDomainName",
-                "contextAttributeList",
-                "domainMetadata"
-            ]
+            }
         },
         "UnsubscribeContextAvailabilityResponse":{
             "type":"object",
@@ -2540,16 +2080,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"UnsubscribeContextAvailabilityResponse",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "subscriptionId",
-                "statusCode"
-            ]
+            }
         },
         "Polygon":{
             "type":"object",
@@ -2571,15 +2102,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"polygon",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "vertexList"
-            ]
+            }
         },
         "SubscribeResponse":{
             "type":"object",
@@ -2627,17 +2150,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"SubscribeResponse",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "subscriptionId",
-                "duration",
-                "throttling"
-            ]
+            }
         },
         "AttributeList":{
             "type":"object",
@@ -2660,15 +2173,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"AttributeList",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "attribute"
-            ]
+            }
         },
         "ContextElementList":{
             "type":"object",
@@ -2694,15 +2199,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"ContextElementList",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "contextElement"
-            ]
+            }
         },
         "UnsubscribeContextResponse":{
             "type":"object",
@@ -2738,16 +2235,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"UnsubscribeContextResponse",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "subscriptionId",
-                "statusCode"
-            ]
+            }
         },
         "UpdateContextSubscriptionResponse":{
             "type":"object",
@@ -2779,16 +2267,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"UpdateContextSubscriptionResponse",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "subscribeResponse",
-                "subscribeError"
-            ]
+            }
         },
         "ContextAttributeResponseList":{
             "type":"object",
@@ -2811,15 +2290,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"ContextAttributeResponseList",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "contextAttributeResponse"
-            ]
+            }
         },
         "CondValueList":{
             "type":"object",
@@ -2842,15 +2313,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"CondValueList",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "condValue"
-            ]
+            }
         },
         "PepCredentials":{
             "type":"object",
@@ -2886,16 +2349,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"pepCredentials",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "userName",
-                "password"
-            ]
+            }
         },
         "SubscribeError":{
             "type":"object",
@@ -2930,16 +2384,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"SubscribeError",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "subscriptionId",
-                "errorCode"
-            ]
+            }
         },
         "RegistrationMetadata":{
             "type":"object",
@@ -2962,15 +2407,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"RegistrationMetadata",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "contextMetadata"
-            ]
+            }
         },
         "EntityId":{
             "type":"object",
@@ -3018,17 +2455,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"EntityId",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "id",
-                "type",
-                "isPattern"
-            ]
+            }
         },
         "ContextElementResponseList":{
             "type":"object",
@@ -3051,15 +2478,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"ContextElementResponseList",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "contextElementResponse"
-            ]
+            }
         },
         "NotifyConditionList":{
             "type":"object",
@@ -3082,15 +2501,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"NotifyConditionList",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "notifyCondition"
-            ]
+            }
         },
         "ContextRegistrationList":{
             "type":"object",
@@ -3113,15 +2524,7 @@
                         "namespaceURI":""
                     }
                 }
-            },
-            "typeType":"classInfo",
-            "typeName":{
-                "localPart":"ContextRegistrationList",
-                "namespaceURI":""
-            },
-            "propertiesOrder":[
-                "contextRegistration"
-            ]
+            }
         },
         "UpdateActionType":{
             "allOf":[
@@ -3135,12 +2538,7 @@
                         "DELETE"
                     ]
                 }
-            ],
-            "typeType":"enumInfo",
-            "typeName":{
-                "localPart":"UpdateActionType",
-                "namespaceURI":""
-            }
+            ]
         },
         "NotifyConditionType":{
             "allOf":[
@@ -3154,12 +2552,7 @@
                         "ONCHANGE"
                     ]
                 }
-            ],
-            "typeType":"enumInfo",
-            "typeName":{
-                "localPart":"NotifyConditionType",
-                "namespaceURI":""
-            }
+            ]
         }
     },
     "anyOf":[
