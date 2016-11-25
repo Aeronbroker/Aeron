@@ -1389,7 +1389,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		}
 
-		if (pubSubUrlList != null) {
+		if (pubSubUrlList != null && !pubSubUrlList.isEmpty()) {
 			for (String url : pubSubUrlList) {
 
 				if (url != null) {
@@ -1411,7 +1411,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 				// necessary to have some rule (for example, ALL,
 				// ATLEASTONE, MOST, NOONE fault tolerant)
 			}
-		} else if (pubSubUrl != null) {
+		} else if (pubSubUrl != null && !pubSubUrl.isEmpty()) {
 			logger.info("Started Contact pub/sub broker: " + pubSubUrl);
 
 			try {
