@@ -26,7 +26,7 @@
 
   <xs:complexType name="RegisterContextRequest">
     <xs:sequence>
-      <xs:element name="contextRegistrationList" type="ContextRegistrationList" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="contextRegistrationList" type="ContextRegistrationList" minOccurs="1" maxOccurs="1"/>
       <xs:element name="duration" type="xs:duration" minOccurs="0" maxOccurs="1"/>
       <xs:element name="registrationId" type="xs:string" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
@@ -116,7 +116,7 @@
   <xs:complexType name="NotifyContextAvailabilityRequest">
     <xs:sequence>
       <xs:element name="subscriptionId" type="xs:string" minOccurs="1" maxOccurs="1"/>  
-      <xs:element name="contextRegistrationResponseList" type="ContextRegistrationResponseList" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="contextRegistrationResponseList" type="ContextRegistrationResponseList" minOccurs="1" maxOccurs="1"/>
 	  <xs:element name="errorCode" type="StatusCode" minOccurs="0" maxOccurs="1"/>              
     </xs:sequence>
   </xs:complexType> 

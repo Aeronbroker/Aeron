@@ -63,23 +63,12 @@
             }
         },
         "ContextMetadataList":{
-            "type":"object",
-			"additionalProperties": false,
             "title":"ContextMetadataList",
-            "properties":{
-                "contextMetadata":{
-                    "title":"contextMetadata",
-                    "allOf":[
-                        {
-                            "type":"array",
-                            "items":{
-                                "$ref":"#/definitions/ContextMetadata"
-                            },
-                            "minItems":0
-                        }
-                    ]
-                }
-            }
+            "type":"array",
+			"items":{
+				"$ref":"#/definitions/ContextMetadata"
+			},
+			"minItems":0
         },
         "UpdateContextElementResponse":{
             "type":"object",
@@ -94,11 +83,11 @@
                         }
                     ]
                 },
-                "contextResponseList":{
-                    "title":"contextResponseList",
+                "contextResponses":{
+                    "title":"contextResponses",
                     "allOf":[
                         {
-                            "$ref":"#/definitions/ContextAttributeResponseList"
+                            "$ref":"#/definitions/ContextAttributeResponse"
                         }
                     ]
                 }
@@ -128,11 +117,11 @@
                         }
                     ]
                 },
-                "registrationMetadata":{
-                    "title":"registrationMetadata",
+                "contextMetadata":{
+                    "title":"contextMetadata",
                     "allOf":[
                         {
-                            "$ref":"#/definitions/RegistrationMetadata"
+                            "$ref":"#/definitions/ContextMetadataList"
                         }
                     ]
                 },
@@ -276,23 +265,20 @@
             }
         },
         "ContextRegistrationResponseList":{
-            "type":"object",
-			"additionalProperties": false,
             "title":"ContextRegistrationResponseList",
-            "properties":{
-                "contextRegistrationResponse":{
-                    "title":"contextRegistrationResponse",
-                    "allOf":[
-                        {
-                            "type":"array",
-                            "items":{
-                                "$ref":"#/definitions/ContextRegistrationResponse"
-                            },
-                            "minItems":0
-                        }
-                    ]
-                }
-            }
+            "type":"array",
+			"items":{
+				"$ref":"#/definitions/ContextRegistrationResponse"
+			},
+			"minItems":0
+        },
+        "ContextRegistrationResponseListNotEmpty":{
+            "title":"ContextRegistrationResponseList",
+            "type":"array",
+			"items":{
+				"$ref":"#/definitions/ContextRegistrationResponse"
+			},
+			"minItems":1
         },
         "UpdateContextRequest":{
             "type":"object",
@@ -376,23 +362,12 @@
             }
         },
         "ContextAttributeList":{
-            "type":"object",
-			"additionalProperties": false,
             "title":"ContextAttributeList",
-            "properties":{
-                "contextAttribute":{
-                    "title":"contextAttribute",
-                    "allOf":[
-                        {
-                            "type":"array",
-                            "items":{
-                                "$ref":"#/definitions/ContextAttribute"
-                            },
-                            "minItems":0
-                        }
-                    ]
-                }
-            }
+            "type":"array",
+			"items":{
+				"$ref":"#/definitions/ContextAttribute"
+			},
+			"minItems":0
         },
         "DiscoveryContextAvailabilityResponse":{
             "type":"object",
@@ -400,7 +375,7 @@
             "title":"DiscoveryContextAvailabilityResponse",
             "properties":{
                 "contextRegistrationResponseList":{
-                    "title":"contextRegistrationResponseList",
+                    "title":"contextRegistrationResponses",
                     "allOf":[
                         {
                             "$ref":"#/definitions/ContextRegistrationResponseList"
@@ -434,8 +409,8 @@
                         }
                     ]
                 },
-                "attributeList":{
-                    "title":"attributeList",
+                "attributes":{
+                    "title":"attributes",
                     "allOf":[
                         {
                             "$ref":"#/definitions/AttributeList"
@@ -636,8 +611,8 @@
                         }
                     ]
                 },
-                "scope":{
-                    "title":"scope",
+                "scopes":{
+                    "title":"scopes",
                     "allOf":[
                         {
                             "$ref":"#/definitions/OperationScopeList"
@@ -662,8 +637,8 @@
                         }
                     ]
                 },
-                "attributeList":{
-                    "title":"attributeList",
+                "attributes":{
+                    "title":"attributes",
                     "allOf":[
                         {
                             "$ref":"#/definitions/AttributeList"
@@ -704,14 +679,15 @@
 			"items":{
 				"$ref":"#/definitions/EntityId"
 			},
-			"minItems":0
+			"minItems":1
         },
         "NotifyContextAvailabilityRequest":{
             "type":"object",
 			"additionalProperties": false,
             "title":"NotifyContextAvailabilityRequest",
             "required":[
-                "subscriptionId"
+                "subscriptionId",
+                "contextRegistrationResponses"
             ],
             "properties":{
                 "subscriptionId":{
@@ -722,11 +698,11 @@
                         }
                     ]
                 },
-                "contextRegistrationResponseList":{
-                    "title":"contextRegistrationResponseList",
+                "contextRegistrationResponses":{
+                    "title":"contextRegistrationResponses",
                     "allOf":[
                         {
-                            "$ref":"#/definitions/ContextRegistrationResponseList"
+                            "$ref":"#/definitions/ContextRegistrationResponseListNotEmpty"
                         }
                     ]
                 },
@@ -757,8 +733,8 @@
                         }
                     ]
                 },
-                "attributeList":{
-                    "title":"attributeList",
+                "attributes":{
+                    "title":"attributes",
                     "allOf":[
                         {
                             "$ref":"#/definitions/AttributeList"
@@ -823,8 +799,8 @@
                         }
                     ]
                 },
-                "contextAttributeList":{
-                    "title":"contextAttributeList",
+                "attributes":{
+                    "title":"attributes",
                     "allOf":[
                         {
                             "$ref":"#/definitions/ContextAttributeList"
@@ -860,23 +836,12 @@
             }
         },
         "OperationScopeList":{
-            "type":"object",
-			"additionalProperties": false,
             "title":"OperationScopeList",
-            "properties":{
-                "operationScope":{
-                    "title":"operationScope",
-                    "allOf":[
-                        {
-                            "type":"array",
-                            "items":{
-                                "$ref":"#/definitions/OperationScope"
-                            },
-                            "minItems":0
-                        }
-                    ]
-                }
-            }
+            "type":"array",
+			"items":{
+				"$ref":"#/definitions/OperationScope"
+			},
+			"minItems":0
         },
         "UpdateContextSubscriptionRequest":{
             "type":"object",
@@ -1063,8 +1028,8 @@
                         }
                     ]
                 },
-                "contextAttributeList":{
-                    "title":"contextAttributeList",
+                "attributes":{
+                    "title":"attributes",
                     "allOf":[
                         {
                             "$ref":"#/definitions/ContextAttributeList"
@@ -1082,26 +1047,12 @@
             }
         },
         "VertexList":{
-            "type":"object",
-			"additionalProperties": false,
             "title":"VertexList",
-            "required":[
-                "vertex"
-            ],
-            "properties":{
-                "vertex":{
-                    "title":"vertex",
-                    "allOf":[
-                        {
-                            "type":"array",
-                            "items":{
-                                "$ref":"#/definitions/Vertex"
-                            },
-                            "minItems":1
-                        }
-                    ]
-                }
-            }
+            "type":"array",
+			"items":{
+				"$ref":"#/definitions/Vertex"
+			},
+			"minItems":4
         },
         "ContextElementResponse":{
             "type":"object",
@@ -1173,8 +1124,8 @@
                         }
                     ]
                 },
-                "attributeList":{
-                    "title":"attributeList",
+                "attributes":{
+                    "title":"attributes",
                     "allOf":[
                         {
                             "$ref":"#/definitions/AttributeList"
@@ -1297,12 +1248,12 @@
 			"additionalProperties": false,
             "title":"ContextAttributeResponse",
             "required":[
-                "contextAttributeList",
+                "attributes",
                 "statusCode"
             ],
             "properties":{
-                "contextAttributeList":{
-                    "title":"contextAttributeList",
+                "attributes":{
+                    "title":"attributes",
                     "allOf":[
                         {
                             "$ref":"#/definitions/ContextAttributeList"
@@ -1336,8 +1287,8 @@
                         }
                     ]
                 },
-                "attributeList":{
-                    "title":"attributeList",
+                "attributes":{
+                    "title":"attributes",
                     "allOf":[
                         {
                             "$ref":"#/definitions/AttributeList"
@@ -1434,8 +1385,8 @@
                         }
                     ]
                 },
-                "contextAttributeList":{
-                    "title":"contextAttributeList",
+                "attributes":{
+                    "title":"attributes",
                     "allOf":[
                         {
                             "$ref":"#/definitions/ContextAttributeList"
@@ -1532,45 +1483,20 @@
             }
         },
         "AttributeList":{
-            "type":"object",
-			"additionalProperties": false,
             "title":"AttributeList",
-            "properties":{
-                "attribute":{
-                    "title":"attribute",
-                    "allOf":[
-                        {
-                            "type":"array",
-                            "items":{
-                                "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/string"
-                            },
-                            "minItems":0
-                        }
-                    ]
-                }
-            }
+            "type":"array",
+			"items":{
+				"$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/string"
+			},
+			"minItems":0
         },
         "ContextElementList":{
-            "type":"object",
-			"additionalProperties": false,
             "title":"ContextElementList",
-            "required":[
-                "contextElement"
-            ],
-            "properties":{
-                "contextElement":{
-                    "title":"contextElement",
-                    "allOf":[
-                        {
-                            "type":"array",
-                            "items":{
-                                "$ref":"#/definitions/ContextElement"
-                            },
-                            "minItems":1
-                        }
-                    ]
-                }
-            }
+            "type":"array",
+			"items":{
+				"$ref":"#/definitions/ContextElement"
+			},
+			"minItems":0
         },
         "UnsubscribeContextResponse":{
             "type":"object",
@@ -1623,42 +1549,20 @@
             }
         },
         "ContextAttributeResponseList":{
-            "type":"object",
-			"additionalProperties": false,
             "title":"ContextAttributeResponseList",
-            "properties":{
-                "contextAttributeResponse":{
-                    "title":"contextAttributeResponse",
-                    "allOf":[
-                        {
-                            "type":"array",
-                            "items":{
-                                "$ref":"#/definitions/ContextAttributeResponse"
-                            },
-                            "minItems":0
-                        }
-                    ]
-                }
-            }
+            "type":"array",
+			"items":{
+				"$ref":"#/definitions/ContextAttributeResponse"
+			},
+			"minItems":0
         },
         "CondValueList":{
-            "type":"object",
-			"additionalProperties": false,
             "title":"CondValueList",
-            "properties":{
-                "condValue":{
-                    "title":"condValue",
-                    "allOf":[
-                        {
-                            "type":"array",
-                            "items":{
-                                "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/string"
-                            },
-                            "minItems":0
-                        }
-                    ]
-                }
-            }
+            "type":"array",
+			"items":{
+				"$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/string"
+			},
+			"minItems":0
         },
         "PepCredentials":{
             "type":"object",
@@ -1713,25 +1617,6 @@
                 }
             }
         },
-        "RegistrationMetadata":{
-            "type":"object",
-			"additionalProperties": false,
-            "title":"RegistrationMetadata",
-            "properties":{
-                "contextMetadata":{
-                    "title":"contextMetadata",
-                    "allOf":[
-                        {
-                            "type":"array",
-                            "items":{
-                                "$ref":"#/definitions/ContextMetadata"
-                            },
-                            "minItems":0
-                        }
-                    ]
-                }
-            }
-        },
         "EntityId":{
             "type":"object",
 			"additionalProperties": false,
@@ -1767,42 +1652,20 @@
             }
         },
         "ContextElementResponseList":{
-            "type":"object",
-			"additionalProperties": false,
             "title":"ContextElementResponseList",
-            "properties":{
-                "contextElementResponse":{
-                    "title":"contextElementResponse",
-                    "allOf":[
-                        {
-                            "type":"array",
-                            "items":{
-                                "$ref":"#/definitions/ContextElementResponse"
-                            },
-                            "minItems":0
-                        }
-                    ]
-                }
-            }
+            "type":"array",
+			"items":{
+				"$ref":"#/definitions/ContextElementResponse"
+			},
+			"minItems":0
         },
         "NotifyConditionList":{
-            "type":"object",
-			"additionalProperties": false,
             "title":"NotifyConditionList",
-            "properties":{
-                "notifyCondition":{
-                    "title":"notifyCondition",
-                    "allOf":[
-                        {
-                            "type":"array",
-                            "items":{
-                                "$ref":"#/definitions/NotifyCondition"
-                            },
-                            "minItems":0
-                        }
-                    ]
-                }
-            }
+            "type":"array",
+			"items":{
+				"$ref":"#/definitions/NotifyCondition"
+			},
+			"minItems":0
         },
         "ContextRegistrationList":{
             "title":"ContextRegistrationList",

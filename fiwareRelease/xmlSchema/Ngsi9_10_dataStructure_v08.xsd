@@ -87,7 +87,7 @@
 
 	<xs:complexType name="EntityIdList">
 		<xs:sequence>
-			<xs:element name="entityId" type="EntityId" minOccurs="0"
+			<xs:element name="entityId" type="EntityId" minOccurs="1"
 				maxOccurs="unbounded" />
 		</xs:sequence>
 	</xs:complexType>
@@ -217,7 +217,7 @@
 	</xs:complexType>
 		<xs:complexType name="vertexList">
 		<xs:sequence>
-			<xs:element name="vertex" type="vertex" minOccurs="1" maxOccurs="unbounded"/>
+			<xs:element name="vertex" type="vertex" minOccurs="4" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
 

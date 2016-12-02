@@ -144,7 +144,7 @@
   <xs:complexType name="UpdateContextElementResponse">
     <xs:sequence>
       <xs:element name="errorCode"  type="StatusCode" minOccurs="0" maxOccurs="1"/>
-      <xs:element name="contextResponseList" type="ContextAttributeResponseList" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="contextResponse" type="ContextAttributeResponse" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
   </xs:complexType>
   
