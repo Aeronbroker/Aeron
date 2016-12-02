@@ -3,6 +3,7 @@
     "definitions":{
         "SubscribeContextAvailabilityResponse":{
             "type":"object",
+			"additionalProperties": false,
             "title":"SubscribeContextAvailabilityResponse",
             "required":[
                 "subscriptionId"
@@ -36,6 +37,7 @@
         },
         "Point":{
             "type":"object",
+			"additionalProperties": false,
             "title":"Point",
             "required":[
                 "latitude",
@@ -62,6 +64,7 @@
         },
         "ContextMetadataList":{
             "type":"object",
+			"additionalProperties": false,
             "title":"ContextMetadataList",
             "properties":{
                 "contextMetadata":{
@@ -80,6 +83,7 @@
         },
         "UpdateContextElementResponse":{
             "type":"object",
+			"additionalProperties": false,
             "title":"UpdateContextElementResponse",
             "properties":{
                 "errorCode":{
@@ -102,6 +106,7 @@
         },
         "ContextRegistration":{
             "type":"object",
+			"additionalProperties": false,
             "title":"ContextRegistration",
             "required":[
                 "providingApplication"
@@ -115,8 +120,8 @@
                         }
                     ]
                 },
-                "contextRegistrationAttributeList":{
-                    "title":"contextRegistrationAttributeList",
+                "attributes":{
+                    "title":"attributes",
                     "allOf":[
                         {
                             "$ref":"#/definitions/ContextRegistrationAttributeList"
@@ -143,6 +148,7 @@
         },
         "ContextRegistrationAttribute":{
             "type":"object",
+			"additionalProperties": false,
             "title":"ContextRegistrationAttribute",
             "required":[
                 "name",
@@ -185,6 +191,7 @@
         },
         "Circle":{
             "type":"object",
+			"additionalProperties": false,
             "title":"Circle",
             "required":[
                 "centerLatitude",
@@ -220,6 +227,7 @@
         },
         "UnsubscribeContextAvailabilityRequest":{
             "type":"object",
+			"additionalProperties": false,
             "title":"UnsubscribeContextAvailabilityRequest",
             "required":[
                 "subscriptionId"
@@ -237,10 +245,12 @@
         },
         "RegisterContextRequest":{
             "type":"object",
+			"additionalProperties": false,
             "title":"RegisterContextRequest",
+            "required":["contextRegistrationList"],
             "properties":{
-                "contextRegistrationList":{
-                    "title":"contextRegistrationList",
+                "contextRegistrations":{
+                    "title":"contextRegistrations",
                     "allOf":[
                         {
                             "$ref":"#/definitions/ContextRegistrationList"
@@ -267,6 +277,7 @@
         },
         "ContextRegistrationResponseList":{
             "type":"object",
+			"additionalProperties": false,
             "title":"ContextRegistrationResponseList",
             "properties":{
                 "contextRegistrationResponse":{
@@ -285,6 +296,7 @@
         },
         "UpdateContextRequest":{
             "type":"object",
+			"additionalProperties": false,
             "title":"UpdateContextRequest",
             "required":[
                 "contextElementList",
@@ -311,6 +323,7 @@
         },
         "QueryContextResponse":{
             "type":"object",
+			"additionalProperties": false,
             "title":"QueryContextResponse",
             "properties":{
                 "contextResponseList":{
@@ -333,6 +346,7 @@
         },
         "RegisterContextResponse":{
             "type":"object",
+			"additionalProperties": false,
             "title":"RegisterContextResponse",
             "properties":{
                 "duration":{
@@ -363,6 +377,7 @@
         },
         "ContextAttributeList":{
             "type":"object",
+			"additionalProperties": false,
             "title":"ContextAttributeList",
             "properties":{
                 "contextAttribute":{
@@ -381,6 +396,7 @@
         },
         "DiscoveryContextAvailabilityResponse":{
             "type":"object",
+			"additionalProperties": false,
             "title":"DiscoveryContextAvailabilityResponse",
             "properties":{
                 "contextRegistrationResponseList":{
@@ -403,6 +419,7 @@
         },
         "UpdateContextAvailabilitySubscriptionRequest":{
             "type":"object",
+			"additionalProperties": false,
             "title":"UpdateContextAvailabilitySubscriptionRequest",
             "required":[
                 "entities",
@@ -453,6 +470,7 @@
         },
         "ContextMetadata":{
             "type":"object",
+			"additionalProperties": false,
             "title":"ContextMetadata",
             "required":[
                 "name",
@@ -487,6 +505,7 @@
         },
         "UpdateContextAvailabilitySubscriptionResponse":{
             "type":"object",
+			"additionalProperties": false,
             "title":"UpdateContextAvailabilitySubscriptionResponse",
             "required":[
                 "subscriptionId"
@@ -520,6 +539,7 @@
         },
         "ContextRegistrationResponse":{
             "type":"object",
+			"additionalProperties": false,
             "title":"ContextRegistrationResponse",
             "required":[
                 "contextRegistration"
@@ -545,6 +565,7 @@
         },
         "SubscribeContextResponse":{
             "type":"object",
+			"additionalProperties": false,
             "title":"SubscribeContextResponse",
             "properties":{
                 "subscribeResponse":{
@@ -567,6 +588,7 @@
         },
         "NotifyCondition":{
             "type":"object",
+			"additionalProperties": false,
             "title":"NotifyCondition",
             "required":[
                 "type"
@@ -600,6 +622,7 @@
         },
         "Restriction":{
             "type":"object",
+			"additionalProperties": false,
             "title":"Restriction",
             "required":[
                 "attributeExpression"
@@ -625,6 +648,7 @@
         },
         "DiscoveryContextAvailabilityRequest":{
             "type":"object",
+			"additionalProperties": false,
             "title":"DiscoveryContextAvailabilityRequest",
             "required":[
                 "entities"
@@ -658,6 +682,7 @@
         },
         "NotifyContextAvailabilityResponse":{
             "type":"object",
+			"additionalProperties": false,
             "title":"NotifyContextAvailabilityResponse",
             "required":[
                 "responseCode"
@@ -683,6 +708,7 @@
         },
         "NotifyContextAvailabilityRequest":{
             "type":"object",
+			"additionalProperties": false,
             "title":"NotifyContextAvailabilityRequest",
             "required":[
                 "subscriptionId"
@@ -716,6 +742,7 @@
         },
         "SubscribeContextAvailabilityRequest":{
             "type":"object",
+			"additionalProperties": false,
             "title":"SubscribeContextAvailabilityRequest",
             "required":[
                 "entities",
@@ -774,6 +801,7 @@
         },
         "ContextElement":{
             "type":"object",
+			"additionalProperties": false,
             "title":"ContextElement",
             "required":[
                 "entityId"
@@ -815,6 +843,7 @@
         },
         "NotifyContextResponse":{
             "type":"object",
+			"additionalProperties": false,
             "title":"NotifyContextResponse",
             "required":[
                 "responseCode"
@@ -832,6 +861,7 @@
         },
         "OperationScopeList":{
             "type":"object",
+			"additionalProperties": false,
             "title":"OperationScopeList",
             "properties":{
                 "operationScope":{
@@ -850,6 +880,7 @@
         },
         "UpdateContextSubscriptionRequest":{
             "type":"object",
+			"additionalProperties": false,
             "title":"UpdateContextSubscriptionRequest",
             "required":[
                 "subscriptionId"
@@ -899,6 +930,7 @@
         },
         "NotifyContextRequest":{
             "type":"object",
+			"additionalProperties": false,
             "title":"NotifyContextRequest",
             "required":[
                 "subscriptionId",
@@ -933,6 +965,7 @@
         },
         "UnsubscribeContextRequest":{
             "type":"object",
+			"additionalProperties": false,
             "title":"UnsubscribeContextRequest",
             "required":[
                 "subscriptionId"
@@ -950,6 +983,7 @@
         },
         "UpdateContextAttributeRequest":{
             "type":"object",
+			"additionalProperties": false,
             "title":"UpdateContextAttributeRequest",
             "required":[
                 "contextValue"
@@ -983,6 +1017,7 @@
         },
         "StatusCode":{
             "type":"object",
+			"additionalProperties": false,
             "title":"StatusCode",
             "required":[
                 "code",
@@ -1017,6 +1052,7 @@
         },
         "AppendContextElementRequest":{
             "type":"object",
+			"additionalProperties": false,
             "title":"AppendContextElementRequest",
             "properties":{
                 "attributeDomainName":{
@@ -1047,6 +1083,7 @@
         },
         "VertexList":{
             "type":"object",
+			"additionalProperties": false,
             "title":"VertexList",
             "required":[
                 "vertex"
@@ -1068,6 +1105,7 @@
         },
         "ContextElementResponse":{
             "type":"object",
+			"additionalProperties": false,
             "title":"ContextElementResponse",
             "required":[
                 "contextElement",
@@ -1094,6 +1132,7 @@
         },
         "Vertex":{
             "type":"object",
+			"additionalProperties": false,
             "title":"Vertex",
             "required":[
                 "latitude",
@@ -1120,6 +1159,7 @@
         },
         "QueryContextRequest":{
             "type":"object",
+			"additionalProperties": false,
             "title":"QueryContextRequest",
             "required":[
                 "entities"
@@ -1153,6 +1193,7 @@
         },
         "UpdateContextResponse":{
             "type":"object",
+			"additionalProperties": false,
             "title":"UpdateContextResponse",
             "properties":{
                 "errorCode":{
@@ -1175,6 +1216,7 @@
         },
         "ContextAttribute":{
             "type":"object",
+			"additionalProperties": false,
             "title":"ContextAttribute",
             "required":[
                 "name",
@@ -1216,25 +1258,16 @@
             }
         },
         "ContextRegistrationAttributeList":{
-            "type":"object",
             "title":"ContextRegistrationAttributeList",
-            "properties":{
-                "contextRegistrationAttribute":{
-                    "title":"contextRegistrationAttribute",
-                    "allOf":[
-                        {
-                            "type":"array",
-                            "items":{
-                                "$ref":"#/definitions/ContextRegistrationAttribute"
-                            },
-                            "minItems":0
-                        }
-                    ]
-                }
-            }
+            "type":"array",
+			"items":{
+				"$ref":"#/definitions/ContextRegistrationAttribute"
+			},
+			"minItems":0
         },
         "OperationScope":{
             "type":"object",
+			"additionalProperties": false,
             "title":"OperationScope",
             "required":[
                 "scopeType",
@@ -1261,6 +1294,7 @@
         },
         "ContextAttributeResponse":{
             "type":"object",
+			"additionalProperties": false,
             "title":"ContextAttributeResponse",
             "required":[
                 "contextAttributeList",
@@ -1287,6 +1321,7 @@
         },
         "SubscribeContextRequest":{
             "type":"object",
+			"additionalProperties": false,
             "title":"SubscribeContextRequest",
             "required":[
                 "entities",
@@ -1353,6 +1388,7 @@
         },
         "Segment":{
             "type":"object",
+			"additionalProperties": false,
             "title":"Segment",
             "required":[
                 "nwCorner",
@@ -1387,6 +1423,7 @@
         },
         "UpdateContextElementRequest":{
             "type":"object",
+			"additionalProperties": false,
             "title":"UpdateContextElementRequest",
             "properties":{
                 "attributeDomainName":{
@@ -1417,6 +1454,7 @@
         },
         "UnsubscribeContextAvailabilityResponse":{
             "type":"object",
+			"additionalProperties": false,
             "title":"UnsubscribeContextAvailabilityResponse",
             "required":[
                 "subscriptionId",
@@ -1443,6 +1481,7 @@
         },
         "Polygon":{
             "type":"object",
+			"additionalProperties": false,
             "title":"Polygon",
             "required":[
                 "vertexList"
@@ -1460,6 +1499,7 @@
         },
         "SubscribeResponse":{
             "type":"object",
+			"additionalProperties": false,
             "title":"SubscribeResponse",
             "required":[
                 "subscriptionId"
@@ -1493,6 +1533,7 @@
         },
         "AttributeList":{
             "type":"object",
+			"additionalProperties": false,
             "title":"AttributeList",
             "properties":{
                 "attribute":{
@@ -1511,6 +1552,7 @@
         },
         "ContextElementList":{
             "type":"object",
+			"additionalProperties": false,
             "title":"ContextElementList",
             "required":[
                 "contextElement"
@@ -1532,6 +1574,7 @@
         },
         "UnsubscribeContextResponse":{
             "type":"object",
+			"additionalProperties": false,
             "title":"UnsubscribeContextResponse",
             "required":[
                 "subscriptionId",
@@ -1558,6 +1601,7 @@
         },
         "UpdateContextSubscriptionResponse":{
             "type":"object",
+			"additionalProperties": false,
             "title":"UpdateContextSubscriptionResponse",
             "properties":{
                 "subscribeResponse":{
@@ -1580,6 +1624,7 @@
         },
         "ContextAttributeResponseList":{
             "type":"object",
+			"additionalProperties": false,
             "title":"ContextAttributeResponseList",
             "properties":{
                 "contextAttributeResponse":{
@@ -1598,6 +1643,7 @@
         },
         "CondValueList":{
             "type":"object",
+			"additionalProperties": false,
             "title":"CondValueList",
             "properties":{
                 "condValue":{
@@ -1616,6 +1662,7 @@
         },
         "PepCredentials":{
             "type":"object",
+			"additionalProperties": false,
             "title":"PepCredentials",
             "required":[
                 "userName",
@@ -1642,6 +1689,7 @@
         },
         "SubscribeError":{
             "type":"object",
+			"additionalProperties": false,
             "title":"SubscribeError",
             "required":[
                 "errorCode"
@@ -1667,6 +1715,7 @@
         },
         "RegistrationMetadata":{
             "type":"object",
+			"additionalProperties": false,
             "title":"RegistrationMetadata",
             "properties":{
                 "contextMetadata":{
@@ -1685,6 +1734,7 @@
         },
         "EntityId":{
             "type":"object",
+			"additionalProperties": false,
             "title":"EntityId",
             "required":[
                 "id"
@@ -1718,6 +1768,7 @@
         },
         "ContextElementResponseList":{
             "type":"object",
+			"additionalProperties": false,
             "title":"ContextElementResponseList",
             "properties":{
                 "contextElementResponse":{
@@ -1736,6 +1787,7 @@
         },
         "NotifyConditionList":{
             "type":"object",
+			"additionalProperties": false,
             "title":"NotifyConditionList",
             "properties":{
                 "notifyCondition":{
@@ -1753,22 +1805,12 @@
             }
         },
         "ContextRegistrationList":{
-            "type":"object",
             "title":"ContextRegistrationList",
-            "properties":{
-                "contextRegistration":{
-                    "title":"contextRegistration",
-                    "allOf":[
-                        {
-                            "type":"array",
-                            "items":{
-                                "$ref":"#/definitions/ContextRegistration"
-                            },
-                            "minItems":0
-                        }
-                    ]
-                }
-            }
+            "type":"array",
+			"items":{
+				"$ref":"#/definitions/ContextRegistration"
+			},
+			"minItems":1
         },
         "UpdateActionType":{
             "allOf":[
@@ -1800,37 +1842,37 @@
         }
     },
     "oneOf":[
-		{ "type":"object", "required":["queryContextRequest"],"properties":{"queryContextRequest":{"$ref": "#/definitions/QueryContextRequest"}}},
-		{ "type":"object", "required":["queryContextResponse"],"properties":{"queryContextResponse":{"$ref": "#/definitions/QueryContextResponse"}}},
-		{ "type":"object", "required":["subscribeContextRequest"],"properties":{"subscribeContextRequest":{"$ref": "#/definitions/SubscribeContextRequest"}}},
-		{ "type":"object", "required":["subscribeContextResponse"],"properties":{"subscribeContextResponse":{"$ref": "#/definitions/SubscribeContextResponse"}}},
-		{ "type":"object", "required":["updateContextSubscriptionRequest"],"properties":{"updateContextSubscriptionRequest":{"$ref": "#/definitions/UpdateContextSubscriptionRequest"}}},
-		{ "type":"object", "required":["updateContextSubscriptionResponse"],"properties":{"updateContextSubscriptionResponse":{"$ref": "#/definitions/UpdateContextSubscriptionResponse"}}},
-		{ "type":"object", "required":["unsubscribeContextRequest"],"properties":{"unsubscribeContextRequest":{"$ref": "#/definitions/UnsubscribeContextRequest"}}},
-		{ "type":"object", "required":["unsubscribeContextResponse"],"properties":{"unsubscribeContextResponse":{"$ref": "#/definitions/UnsubscribeContextResponse"}}},
-		{ "type":"object", "required":["notifyContextRequest"],"properties":{"notifyContextRequest":{"$ref": "#/definitions/NotifyContextRequest"}}},
-		{ "type":"object", "required":["notifyContextResponse"],"properties":{"notifyContextResponse":{"$ref": "#/definitions/NotifyContextResponse"}}},
-		{ "type":"object", "required":["updateContextRequest"],"properties":{"updateContextRequest":{"$ref": "#/definitions/UpdateContextRequest"}}},
-		{ "type":"object", "required":["updateContextResponse"],"properties":{"updateContextResponse":{"$ref": "#/definitions/UpdateContextResponse"}}},
+		{"$ref": "#/definitions/QueryContextRequest"},
+		{"$ref": "#/definitions/QueryContextResponse"},
+		{"$ref": "#/definitions/SubscribeContextRequest"},
+		{"$ref": "#/definitions/SubscribeContextResponse"},
+		{"$ref": "#/definitions/UpdateContextSubscriptionRequest"},
+		{"$ref": "#/definitions/UpdateContextSubscriptionResponse"},
+		{"$ref": "#/definitions/UnsubscribeContextRequest"},
+		{"$ref": "#/definitions/UnsubscribeContextResponse"},
+		{"$ref": "#/definitions/NotifyContextRequest"},
+		{"$ref": "#/definitions/NotifyContextResponse"},
+		{"$ref": "#/definitions/UpdateContextRequest"},
+		{"$ref": "#/definitions/UpdateContextResponse"},
 				
-		{ "type":"object", "required":["updateContextElementRequest"],"properties":{"updateContextElementRequest":{"$ref": "#/definitions/UpdateContextElementRequest"}}},
-		{ "type":"object", "required":["updateContextElementResponse"],"properties":{"updateContextElementResponse":{"$ref": "#/definitions/UpdateContextElementResponse"}}},
-		{ "type":"object", "required":["appendContextElementRequest"],"properties":{"appendContextElementRequest":{"$ref": "#/definitions/AppendContextElementRequest"}}},
-		{ "type":"object", "required":["updateContextAttributeRequest"],"properties":{"updateContextAttributeRequest":{"$ref": "#/definitions/UpdateContextAttributeRequest"}}},
-		{ "type":"object", "required":["contextAttributeResponse"],"properties":{"contextAttributeResponse":{"$ref": "#/definitions/ContextAttributeResponse"}}},
+		{"$ref": "#/definitions/UpdateContextElementRequest"},
+		{"$ref": "#/definitions/UpdateContextElementResponse"},
+		{"$ref": "#/definitions/AppendContextElementRequest"},
+		{"$ref": "#/definitions/UpdateContextAttributeRequest"},
+		{"$ref": "#/definitions/ContextAttributeResponse"},
 		
-		{ "type":"object", "required":["registerContextRequest"],"properties":{"registerContextRequest":{"$ref": "#/definitions/RegisterContextRequest"}}},
-		{ "type":"object", "required":["registerContextResponse"],"properties":{"registerContextResponse":{"$ref": "#/definitions/RegisterContextResponse"}}},
-		{ "type":"object", "required":["discoveryContextAvailabilityRequest"],"properties":{"discoveryContextAvailabilityRequest":{"$ref": "#/definitions/DiscoveryContextAvailabilityRequest"}}},
-		{ "type":"object", "required":["discoveryContextAvailabilityResponse"],"properties":{"discoveryContextAvailabilityResponse":{"$ref": "#/definitions/DiscoveryContextAvailabilityResponse"}}},
-		{ "type":"object", "required":["subscribeContextAvailabilityRequest"],"properties":{"subscribeContextAvailabilityRequest":{"$ref": "#/definitions/SubscribeContextAvailabilityRequest"}}},
-		{ "type":"object", "required":["subscribeContextAvailabilityResponse"],"properties":{"subscribeContextAvailabilityResponse":{"$ref": "#/definitions/SubscribeContextAvailabilityResponse"}}},
-		{ "type":"object", "required":["updateContextAvailabilitySubscriptionRequest"],"properties":{"updateContextAvailabilitySubscriptionRequest":{"$ref": "#/definitions/UpdateContextAvailabilitySubscriptionRequest"}}},
-		{ "type":"object", "required":["updateContextAvailabilitySubscriptionResponse"],"properties":{"updateContextAvailabilitySubscriptionResponse":{"$ref": "#/definitions/UpdateContextAvailabilitySubscriptionResponse"}}},
-		{ "type":"object", "required":["unsubscribeContextAvailabilityRequest"],"properties":{"unsubscribeContextAvailabilityRequest":{"$ref": "#/definitions/UnsubscribeContextAvailabilityRequest"}}},
-		{ "type":"object", "required":["unsubscribeContextAvailabilityResponse"],"properties":{"unsubscribeContextAvailabilityResponse":{"$ref": "#/definitions/UnsubscribeContextAvailabilityResponse"}}},
-		{ "type":"object", "required":["notifyContextAvailabilityRequest"],"properties":{"notifyContextAvailabilityRequest":{"$ref": "#/definitions/NotifyContextAvailabilityRequest"}}},
-		{ "type":"object", "required":["notifyContextAvailabilityResponse"],"properties":{"notifyContextAvailabilityResponse":{"$ref": "#/definitions/NotifyContextAvailabilityResponse"}}}
+		{"$ref": "#/definitions/RegisterContextRequest"},
+		{"$ref": "#/definitions/RegisterContextResponse"},
+		{"$ref": "#/definitions/DiscoveryContextAvailabilityRequest"},
+		{"$ref": "#/definitions/DiscoveryContextAvailabilityResponse"},
+		{"$ref": "#/definitions/SubscribeContextAvailabilityRequest"},
+		{"$ref": "#/definitions/SubscribeContextAvailabilityResponse"},
+		{"$ref": "#/definitions/UpdateContextAvailabilitySubscriptionRequest"},
+		{"$ref": "#/definitions/UpdateContextAvailabilitySubscriptionResponse"},
+		{"$ref": "#/definitions/UnsubscribeContextAvailabilityRequest"},
+		{"$ref": "#/definitions/UnsubscribeContextAvailabilityResponse"},
+		{"$ref": "#/definitions/NotifyContextAvailabilityRequest"},
+		{"$ref": "#/definitions/NotifyContextAvailabilityResponse"}
 
 	]
 }
