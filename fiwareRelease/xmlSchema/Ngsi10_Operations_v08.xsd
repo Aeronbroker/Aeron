@@ -26,6 +26,7 @@
   <xs:element name="updateContextElementRequest"                   type="UpdateContextElementRequest"/>
   <xs:element name="updateContextElementResponse"                  type="UpdateContextElementResponse"/>  
   <xs:element name="appendContextElementRequest"                   type="AppendContextElementRequest"/>
+  <xs:element name="appendContextElementResponse"                   type="AppendContextElementResponse"/>
   <xs:element name="updateContextAttributeRequest" 				   type="UpdateContextAttributeRequest"/>
   
   <xs:element name="contextAttributeResponse"                      type="ContextAttributeResponse"/> 
@@ -56,7 +57,7 @@
     <xs:sequence>
       <xs:element name="entityIdList" type="EntityIdList" minOccurs="1" maxOccurs="1"/>
       <xs:element name="attributeList" type="AttributeList" minOccurs="0" maxOccurs="1"/>
-      <xs:element name="reference" type="xs:anyType" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="reference" type="xs:anyURI" minOccurs="1" maxOccurs="1"/>
       <xs:element name="duration" type="xs:duration" minOccurs="0" maxOccurs="1"/>
       <xs:element name="restriction" type="Restriction" minOccurs="0" maxOccurs="1"/>
       <xs:element name="notifyConditions" type="NotifyConditionList" minOccurs="0" maxOccurs="1"/>
@@ -153,6 +154,13 @@
       <xs:element name="attributeDomainName" type="xs:string" minOccurs="0" maxOccurs="1"/>
       <xs:element name="contextAttributeList" type="ContextAttributeList"  minOccurs="0" maxOccurs="1"/>
       <xs:element name="domainMetadata" type="ContextMetadataList" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:complexType name="AppendContextElementResponse">
+    <xs:sequence>
+      <xs:element name="errorCode"  type="StatusCode" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="contextResponse" type="ContextAttributeResponse" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
   </xs:complexType>
   

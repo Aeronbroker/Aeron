@@ -63,8 +63,8 @@ public class UpdateContextElementResponse extends NgsiStructure {
 	@XmlElement(name = "errorCode")
 	private StatusCode errorCode = null;
 
-	@XmlElement(name = "contextAttributeResponse")
-	@JsonProperty("contextResponses")
+	@XmlElement(name = "contextResponse")
+	@JsonProperty("contextResponse")
 	private ContextAttributeResponse contextAttributeResponse;
 
 	public UpdateContextElementResponse() {

@@ -83,8 +83,31 @@
                         }
                     ]
                 },
-                "contextResponses":{
-                    "title":"contextResponses",
+                "contextResponse":{
+                    "title":"contextResponse",
+                    "allOf":[
+                        {
+                            "$ref":"#/definitions/ContextAttributeResponse"
+                        }
+                    ]
+                }
+            }
+        },
+        "AppendContextElementResponse":{
+            "type":"object",
+			"additionalProperties": false,
+            "title":"AppendContextElementResponse",
+            "properties":{
+                "errorCode":{
+                    "title":"errorCode",
+                    "allOf":[
+                        {
+                            "$ref":"#/definitions/StatusCode"
+                        }
+                    ]
+                },
+                "contextResponse":{
+                    "title":"contextResponse",
                     "allOf":[
                         {
                             "$ref":"#/definitions/ContextAttributeResponse"
@@ -264,6 +287,46 @@
                 }
             }
         },
+        "RegisterProviderRequest":{
+            "type":"object",
+			"additionalProperties": false,
+            "title":"RegisterProviderRequest",
+            "required":["providingApplication"],
+            "properties":{
+                "metadata":{
+                    "title":"metadata",
+                    "allOf":[
+                        {
+                            "$ref":"#/definitions/ContextMetadataList"
+                        }
+                    ]
+                },
+                "duration":{
+                    "title":"duration",
+                    "allOf":[
+                        {
+                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/duration"
+                        }
+                    ]
+                },
+                "providingApplication":{
+                    "title":"providingApplication",
+                    "allOf":[
+                        {
+                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/anyURI"
+                        }
+                    ]
+                },
+                "registrationId":{
+                    "title":"registrationId",
+                    "allOf":[
+                        {
+                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/string"
+                        }
+                    ]
+                }
+            }
+        },
         "ContextRegistrationResponseList":{
             "title":"ContextRegistrationResponseList",
             "type":"array",
@@ -289,8 +352,8 @@
                 "updateAction"
             ],
             "properties":{
-                "contextElementList":{
-                    "title":"contextElementList",
+                "contextElements":{
+                    "title":"contextElements",
                     "allOf":[
                         {
                             "$ref":"#/definitions/ContextElementList"
@@ -312,8 +375,8 @@
 			"additionalProperties": false,
             "title":"QueryContextResponse",
             "properties":{
-                "contextResponseList":{
-                    "title":"contextResponseList",
+                "contextResponses":{
+                    "title":"contextResponses",
                     "allOf":[
                         {
                             "$ref":"#/definitions/ContextElementResponseList"
@@ -918,8 +981,8 @@
                         }
                     ]
                 },
-                "contextResponseList":{
-                    "title":"contextResponseList",
+                "contextResponses":{
+                    "title":"contextResponses",
                     "allOf":[
                         {
                             "$ref":"#/definitions/ContextElementResponseList"
@@ -1155,8 +1218,8 @@
                         }
                     ]
                 },
-                "contextResponseList":{
-                    "title":"contextResponseList",
+                "contextResponses":{
+                    "title":"contextResponses",
                     "allOf":[
                         {
                             "$ref":"#/definitions/ContextElementResponseList"
@@ -1299,7 +1362,7 @@
                     "title":"reference",
                     "allOf":[
                         {
-                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/anyType"
+                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/anyURI"
                         }
                     ]
                 },
@@ -1496,7 +1559,7 @@
 			"items":{
 				"$ref":"#/definitions/ContextElement"
 			},
-			"minItems":0
+			"minItems":1
         },
         "UnsubscribeContextResponse":{
             "type":"object",
@@ -1564,17 +1627,35 @@
 			},
 			"minItems":0
         },
-        "PepCredentials":{
+        "SimpleScope":{
             "type":"object",
 			"additionalProperties": false,
-            "title":"PepCredentials",
+            "title":"SimpleScope",
             "required":[
-                "userName",
+                "simpleScopeExpression"
+            ],
+            "properties":{
+                "simpleScopeExpression":{
+                    "title":"simpleScopeExpression",
+                    "allOf":[
+                        {
+                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/string"
+                        }
+                    ]
+                }
+            }
+        },
+        "PEPCredentials":{
+            "type":"object",
+			"additionalProperties": false,
+            "title":"PEPCredentials",
+            "required":[
+                "username",
                 "password"
             ],
             "properties":{
-                "userName":{
-                    "title":"userName",
+                "username":{
+                    "title":"username",
                     "allOf":[
                         {
                             "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/string"

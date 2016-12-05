@@ -196,50 +196,62 @@
 				minOccurs="1" />
 		</xs:sequence>
 	</xs:complexType>
-
-	<xs:complexType name="pepCredentials">
+	
+	<xs:complexType name="SimpleScope">
 		<xs:sequence>
-			<xs:element name="userName" type="xs:string" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="simpleScopeExpression" type="xs:string" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="PEPCredentials">
+		<xs:sequence>
+			<xs:element name="username" type="xs:string" minOccurs="1" maxOccurs="1"/>
 			<xs:element name="password" type="xs:string" minOccurs="1" maxOccurs="1"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="circle">
+	
+	<xs:complexType name="Circle">
 		<xs:sequence>
 			<xs:element name="centerLatitude" type="xs:float" minOccurs="1" maxOccurs="1"/>
 			<xs:element name="centerLongitude" type="xs:float" minOccurs="1" maxOccurs="1"/>
 			<xs:element name="radius" type="xs:float" minOccurs="1" maxOccurs="1"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="polygon">
+	
+	<xs:complexType name="Polygon">
 		<xs:sequence>
 			<xs:element name="vertexList" type="vertexList" minOccurs="1" maxOccurs="1"/>
 		</xs:sequence>
 	</xs:complexType>
-		<xs:complexType name="vertexList">
+	
+	<xs:complexType name="VertexList">
 		<xs:sequence>
 			<xs:element name="vertex" type="vertex" minOccurs="4" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
 
-	<xs:complexType name="point">
+	<xs:complexType name="Point">
 		<xs:sequence>
 			<xs:element name="latitude" type="xs:float" minOccurs="1" maxOccurs="1"/>
 			<xs:element name="longitude" type="xs:float" minOccurs="1" maxOccurs="1"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="vertex">
+	
+	<xs:complexType name="Vertex">
 		<xs:sequence>
 			<xs:element name="latitude" type="xs:float" minOccurs="1" maxOccurs="1"/>
 			<xs:element name="longitude" type="xs:float" minOccurs="1" maxOccurs="1"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="segment">
+	
+	<xs:complexType name="Segment">
 		<xs:sequence>
 			<xs:element name="NW_Corner" type="xs:string" minOccurs="1" maxOccurs="1"/>
 			<xs:element name="SE_Corner" type="xs:string" minOccurs="1" maxOccurs="1"/>
 			<xs:element name="Height" type="xs:double" minOccurs="0" maxOccurs="1"/>
 		</xs:sequence>
 	</xs:complexType>
+	
 	<xs:complexType name="Restriction">
 		<xs:sequence>
 			<xs:element name="attributeExpression" type="xs:string"

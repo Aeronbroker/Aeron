@@ -61,7 +61,7 @@ public class PEPCredentials implements Serializable  {
 	 */
 	private static final long serialVersionUID = 7587400124126739643L;
 
-	@XmlElement(name = "userName", required = true)
+	@XmlElement(name = "username", required = true)
 	private String username;
 	
 	@XmlElement(name = "password", required = true)
