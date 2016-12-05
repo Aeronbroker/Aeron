@@ -843,22 +843,32 @@
 			"additionalProperties": false,
             "title":"ContextElement",
             "required":[
-                "entityId"
+                "id",
+                "type",
+                "attributes"
             ],
             "properties":{
-                "entityId":{
-                    "title":"entityId",
-                    "allOf":[
-                        {
-                            "$ref":"#/definitions/EntityId"
-                        }
-                    ]
-                },
-                "attributeDomainName":{
-                    "title":"attributeDomainName",
+                "id":{
+                    "title":"id",
                     "allOf":[
                         {
                             "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/string"
+                        }
+                    ]
+                },
+                "type":{
+                    "title":"type",
+                    "allOf":[
+                        {
+                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/anyURI"
+                        }
+                    ]
+                },
+                "isPattern":{
+                    "title":"isPattern",
+                    "allOf":[
+                        {
+                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/boolean"
                         }
                     ]
                 },
@@ -867,14 +877,6 @@
                     "allOf":[
                         {
                             "$ref":"#/definitions/ContextAttributeList"
-                        }
-                    ]
-                },
-                "domainMetadata":{
-                    "title":"domainMetadata",
-                    "allOf":[
-                        {
-                            "$ref":"#/definitions/ContextMetadataList"
                         }
                     ]
                 }
@@ -1210,8 +1212,8 @@
 			"additionalProperties": false,
             "title":"UpdateContextResponse",
             "properties":{
-                "errorCode":{
-                    "title":"errorCode",
+                "statusCode":{
+                    "title":"statusCode",
                     "allOf":[
                         {
                             "$ref":"#/definitions/StatusCode"
@@ -1234,7 +1236,7 @@
             "title":"ContextAttribute",
             "required":[
                 "name",
-                "contextValue"
+                "value"
             ],
             "properties":{
                 "name":{
@@ -1253,16 +1255,16 @@
                         }
                     ]
                 },
-                "contextValue":{
-                    "title":"contextValue",
+                "value":{
+                    "title":"value",
                     "allOf":[
                         {
                             "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/anyType"
                         }
                     ]
                 },
-                "metadata":{
-                    "title":"metadata",
+                "metadatas":{
+                    "title":"metadatas",
                     "allOf":[
                         {
                             "$ref":"#/definitions/ContextMetadataList"
@@ -1765,7 +1767,9 @@
                     "enum":[
                         "UPDATE",
                         "APPEND",
-                        "DELETE"
+                        "APPEND_STRICT",
+                        "DELETE",
+                        "REPLACE"
                     ]
                 }
             ]
