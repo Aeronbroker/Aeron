@@ -1868,6 +1868,5 @@
 		{"$ref": "#/definitions/UnsubscribeContextAvailabilityResponse"},
 		{"$ref": "#/definitions/NotifyContextAvailabilityRequest"},
 		{"$ref": "#/definitions/NotifyContextAvailabilityResponse"}
-
 	]
 }
