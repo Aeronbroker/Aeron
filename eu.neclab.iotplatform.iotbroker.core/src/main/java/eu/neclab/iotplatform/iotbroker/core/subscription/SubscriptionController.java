@@ -522,10 +522,17 @@ public class SubscriptionController {
 		 * We create a request for retrieving the relevant data sources and
 		 * associations for the subscription.
 		 */
+		//
+		// SubscribeContextAvailabilityRequest scaReq = new
+		// SubscribeContextAvailabilityRequest(
+		// scReq.getAllEntity(), scReq.getAttributeList(), ref,
+		// scReq.getDuration(), null, scReq.getRestriction());
 
 		SubscribeContextAvailabilityRequest scaReq = new SubscribeContextAvailabilityRequest(
 				scReq.getAllEntity(), scReq.getAttributeList(), ref,
-				scReq.getDuration(), null, scReq.getRestriction());
+				scReq.getDuration(), null, new Restriction("", scReq
+						.getRestriction().getOperationScope()));
+
 		if (scReq.getDuration() == null) {
 			scaReq.setDuration(DurationUtils.convertToDuration(defaultDuration));
 		}
@@ -747,9 +754,15 @@ public class SubscriptionController {
 				&& !availabilitySubscriptionIDs.isEmpty()) {
 			subsAvailId = linkAvailabilitySubscription.getAvailIDs(
 					uCSreq.getSubscriptionId()).get(0);
+			// final UpdateContextAvailabilitySubscriptionRequest uCAReq = new
+			// UpdateContextAvailabilitySubscriptionRequest(
+			// sCReq.getEntityIdList(), sCReq.getAttributeList(),
+			// uCSreq.getDuration(), subsAvailId, uCSreq.getRestriction());
+
 			final UpdateContextAvailabilitySubscriptionRequest uCAReq = new UpdateContextAvailabilitySubscriptionRequest(
 					sCReq.getEntityIdList(), sCReq.getAttributeList(),
-					uCSreq.getDuration(), subsAvailId, uCSreq.getRestriction());
+					uCSreq.getDuration(), subsAvailId, new Restriction("",
+							uCSreq.getRestriction().getOperationScope()));
 
 			if (uCSreq.getDuration() == null) {
 				uCAReq.setDuration(DurationUtils

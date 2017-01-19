@@ -71,7 +71,7 @@ public class Polygon extends NgsiStructure implements Serializable{
 	@XmlElementWrapper(name="vertexList")
 	@XmlElement(name = "vertex", required = false)
 	@JsonProperty("vertices")
-	List<Vertex> vertexList = new ArrayList<Vertex>();
+	private List<Vertex> vertexList = new ArrayList<Vertex>();
 
 	public Polygon() {
 		super();

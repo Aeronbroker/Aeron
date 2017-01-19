@@ -577,9 +577,15 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	@Override
 	public QueryContextResponse queryContext(QueryContextRequest request) {
 
+		// DiscoverContextAvailabilityRequest discoveryRequest = new
+		// DiscoverContextAvailabilityRequest(
+		// request.getEntityIdList(), request.getAttributeList(),
+		// request.getRestriction());
+
 		DiscoverContextAvailabilityRequest discoveryRequest = new DiscoverContextAvailabilityRequest(
 				request.getEntityIdList(), request.getAttributeList(),
-				request.getRestriction());
+				new Restriction("", request.getRestriction()
+						.getOperationScope()));
 
 		List<ContextRegistration> embeddedAgentContextRegistrations = null;
 
@@ -938,12 +944,15 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 * it is time to apply the xpath restriction to it.
 		 */
 
-		if (request.getRestriction() != null) {
+		if (request.getRestriction() != null
+				&& request.getRestriction().getAttributeExpression() != null
+				&& !request.getRestriction().getAttributeExpression().isEmpty()) {
 
 			String xpathExpression = request.getRestriction()
 					.getAttributeExpression();
 			if (xpathExpression != null && !xpathExpression.isEmpty()) {
-				applyRestriction(xpathExpression, mergerResponse);
+				applyRestriction(xpathExpression,
+						mergerResponse.getListContextElementResponse());
 			}
 
 		}
@@ -998,7 +1007,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	 *            the response
 	 */
 	private static void applyRestriction(String attributeExpr,
-			QueryContextResponse response) {
+			List<ContextElementResponse> contextElementResponseList) {
 
 		// Apply the Restriction
 		XPath xpath = XPathFactory.newInstance().newXPath();
@@ -1006,33 +1015,23 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		try {
 			XPathExpression expr = xpath.compile(attributeExpr);
 
-			Document doc = XmlFactory.stringToDocument(response.toString());
-			Object result = expr.evaluate(doc, XPathConstants.NODESET);
-
-			NodeList nodes = (NodeList) result;
-
-			Iterator<ContextElementResponse> i = response
-					.getListContextElementResponse().iterator();
+			Iterator<ContextElementResponse> i = contextElementResponseList
+					.iterator();
 
 			while (i.hasNext()) {
-
 				ContextElementResponse contextElresp = i.next();
-				boolean doesNotAppear = true;
 
-				for (int j = 0; j < nodes.getLength(); j++) {
-					if (contextElresp.getContextElement().getEntityId().getId()
-							.equals(nodes.item(j).getTextContent())) {
+				Document doc = XmlFactory.stringToDocument(contextElresp
+						.toString());
+				Object result = expr.evaluate(doc, XPathConstants.NODESET);
 
-						doesNotAppear = false;
-						break;
-					}
-				}
+				NodeList nodes = (NodeList) result;
 
-				if (doesNotAppear) {
+				if (nodes.getLength() == 0) {
+					logger.debug("Filtering out : " + contextElresp);
 					i.remove();
 				}
 			}
-
 		} catch (XPathExpressionException e) {
 			logger.error("Xpath Exception", e);
 		}
@@ -1613,6 +1612,25 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 				}
 			}.start();
+		}
+
+		/*
+		 * Now, it is time to apply the xpath restriction to it.
+		 */
+
+		if (outgoingSubscription.getRestriction() != null
+				&& outgoingSubscription.getRestriction()
+						.getAttributeExpression() != null
+				&& !outgoingSubscription.getRestriction()
+						.getAttributeExpression().isEmpty()) {
+
+			String xpathExpression = outgoingSubscription.getRestriction()
+					.getAttributeExpression();
+			if (xpathExpression != null && !xpathExpression.isEmpty()) {
+				applyRestriction(xpathExpression,
+						request.getContextElementResponseList());
+			}
+
 		}
 
 		/*

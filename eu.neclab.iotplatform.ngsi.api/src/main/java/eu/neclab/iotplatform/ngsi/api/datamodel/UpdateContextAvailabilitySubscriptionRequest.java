@@ -54,6 +54,8 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.datatype.Duration;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
  * Implements UpdateContextAvailabilitySubscriptionRequest
  * as defined in OMA NGSI 9/10 approved version 1.0.
@@ -68,6 +70,7 @@ public class UpdateContextAvailabilitySubscriptionRequest extends NgsiStructure 
 
 	@XmlElementWrapper(name = "attributeList")
 	@XmlElement(name = "attribute", required = false)
+	@JsonProperty("attributes")
 	private List<String> attribute = null;
 
 	@XmlElement(name = "duration", required = false)

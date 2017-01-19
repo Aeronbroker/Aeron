@@ -618,7 +618,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 			FullHttpResponse response = sendPostTryingAllSupportedContentType(
 					new URL(url + correctedResource), request,
-					preferredContentType, correctedResource);
+					preferredContentType, xAuthToken);
 
 			if (response.getStatusLine().getStatusCode() == 415) {
 
