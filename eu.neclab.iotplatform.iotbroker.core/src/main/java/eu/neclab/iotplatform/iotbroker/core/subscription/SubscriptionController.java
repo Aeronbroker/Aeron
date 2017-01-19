@@ -528,10 +528,20 @@ public class SubscriptionController {
 		// scReq.getAllEntity(), scReq.getAttributeList(), ref,
 		// scReq.getDuration(), null, scReq.getRestriction());
 
+		Restriction availabilitySubscriptionRestriction;
+
+		if (scReq.getRestriction() != null
+				&& scReq.getRestriction().getOperationScope() != null
+				&& !scReq.getRestriction().getOperationScope().isEmpty()) {
+			availabilitySubscriptionRestriction = new Restriction("", scReq
+					.getRestriction().getOperationScope());
+		} else {
+			availabilitySubscriptionRestriction = null;
+		}
+
 		SubscribeContextAvailabilityRequest scaReq = new SubscribeContextAvailabilityRequest(
 				scReq.getAllEntity(), scReq.getAttributeList(), ref,
-				scReq.getDuration(), null, new Restriction("", scReq
-						.getRestriction().getOperationScope()));
+				scReq.getDuration(), null, availabilitySubscriptionRestriction);
 
 		if (scReq.getDuration() == null) {
 			scaReq.setDuration(DurationUtils.convertToDuration(defaultDuration));
@@ -759,10 +769,21 @@ public class SubscriptionController {
 			// sCReq.getEntityIdList(), sCReq.getAttributeList(),
 			// uCSreq.getDuration(), subsAvailId, uCSreq.getRestriction());
 
+			Restriction availabilitySubscriptionRestriction;
+
+			if (uCSreq.getRestriction() != null
+					&& uCSreq.getRestriction().getOperationScope() != null
+					&& !uCSreq.getRestriction().getOperationScope().isEmpty()) {
+				availabilitySubscriptionRestriction = new Restriction("", uCSreq
+						.getRestriction().getOperationScope());
+			} else {
+				availabilitySubscriptionRestriction = null;
+			}
+
 			final UpdateContextAvailabilitySubscriptionRequest uCAReq = new UpdateContextAvailabilitySubscriptionRequest(
 					sCReq.getEntityIdList(), sCReq.getAttributeList(),
-					uCSreq.getDuration(), subsAvailId, new Restriction("",
-							uCSreq.getRestriction().getOperationScope()));
+					uCSreq.getDuration(), subsAvailId,
+					availabilitySubscriptionRestriction);
 
 			if (uCSreq.getDuration() == null) {
 				uCAReq.setDuration(DurationUtils

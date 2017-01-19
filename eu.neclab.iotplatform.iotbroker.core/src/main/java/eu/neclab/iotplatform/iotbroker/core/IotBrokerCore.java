@@ -582,10 +582,19 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		// request.getEntityIdList(), request.getAttributeList(),
 		// request.getRestriction());
 
+		Restriction availabilityDiscoveryRestriction;
+
+		if (request.getRestriction() != null
+				&& request.getRestriction().getOperationScope() != null
+				&& !request.getRestriction().getOperationScope().isEmpty()) {
+			availabilityDiscoveryRestriction = new Restriction("",request.getRestriction().getOperationScope());
+		} else {
+			availabilityDiscoveryRestriction = null;
+		}
+
 		DiscoverContextAvailabilityRequest discoveryRequest = new DiscoverContextAvailabilityRequest(
 				request.getEntityIdList(), request.getAttributeList(),
-				new Restriction("", request.getRestriction()
-						.getOperationScope()));
+				availabilityDiscoveryRestriction);
 
 		List<ContextRegistration> embeddedAgentContextRegistrations = null;
 
