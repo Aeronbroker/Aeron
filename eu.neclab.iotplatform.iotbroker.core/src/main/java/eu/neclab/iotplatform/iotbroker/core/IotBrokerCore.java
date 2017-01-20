@@ -587,7 +587,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		if (request.getRestriction() != null
 				&& request.getRestriction().getOperationScope() != null
 				&& !request.getRestriction().getOperationScope().isEmpty()) {
-			availabilityDiscoveryRestriction = new Restriction("",request.getRestriction().getOperationScope());
+			availabilityDiscoveryRestriction = new Restriction("", request
+					.getRestriction().getOperationScope());
 		} else {
 			availabilityDiscoveryRestriction = null;
 		}
@@ -1434,7 +1435,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			}
 		}
 
-		if (response == null) {
+		if (((pubSubUrlList != null && !pubSubUrlList.isEmpty()) || (pubSubUrl != null && !pubSubUrl
+				.isEmpty())) && response == null) {
 			response = new UpdateContextResponse(new StatusCode(
 					Code.INTERNALERROR_500.getCode(),
 					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
