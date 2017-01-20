@@ -1436,7 +1436,11 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		}
 
 		if (((pubSubUrlList != null && !pubSubUrlList.isEmpty()) || (pubSubUrl != null && !pubSubUrl
-				.isEmpty())) && response == null) {
+				.isEmpty()))) {
+			response = new UpdateContextResponse(new StatusCode(
+					Code.OK_200.getCode(), ReasonPhrase.OK_200.toString(), ""),
+					null);
+		} else if (response == null) {
 			response = new UpdateContextResponse(new StatusCode(
 					Code.INTERNALERROR_500.getCode(),
 					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
