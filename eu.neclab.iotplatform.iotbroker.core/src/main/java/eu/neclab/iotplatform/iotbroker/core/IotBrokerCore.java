@@ -1398,6 +1398,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		}
 
+		boolean noPubSubUrl = false;
+
 		if (pubSubUrlList != null && !pubSubUrlList.isEmpty()) {
 			for (String url : pubSubUrlList) {
 
@@ -1433,10 +1435,11 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 					logger.debug("URI Syntax Error", e);
 				}
 			}
+		} else {
+			noPubSubUrl = true;
 		}
 
-		if (((pubSubUrlList != null && !pubSubUrlList.isEmpty()) || (pubSubUrl != null && !pubSubUrl
-				.isEmpty()))) {
+		if (noPubSubUrl) {
 			response = new UpdateContextResponse(new StatusCode(
 					Code.OK_200.getCode(), ReasonPhrase.OK_200.toString(), ""),
 					null);
