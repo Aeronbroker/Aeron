@@ -152,9 +152,6 @@
             "type":"object",
 			"additionalProperties": false,
             "title":"UpdateContextSubscriptionRequest",
-            "required":[
-                "subscriptionId"
-            ],
             "properties":{
                 "duration":{
                     "title":"duration",
@@ -351,8 +348,8 @@
 			"additionalProperties": false,
             "title":"UpdateContextResponse",
             "properties":{
-                "errorCode":{
-                    "title":"errorCode",
+                "orionError":{
+                    "title":"orionError",
                     "allOf":[
                         {
                             "$ref":"#/definitions/StatusCode"
@@ -389,14 +386,6 @@
                             "$ref":"#/definitions/ContextAttributeList"
                         }
                     ]
-                },
-                "domainMetadata":{
-                    "title":"domainMetadata",
-                    "allOf":[
-                        {
-                            "$ref":"#/definitions/ContextMetadataList"
-                        }
-                    ]
                 }
             }
         },
@@ -405,8 +394,8 @@
 			"additionalProperties": false,
             "title":"UpdateContextElementResponse",
             "properties":{
-                "errorCode":{
-                    "title":"errorCode",
+                "orionError":{
+                    "title":"orionError",
                     "allOf":[
                         {
                             "$ref":"#/definitions/StatusCode"
@@ -467,14 +456,6 @@
                             "$ref":"#/definitions/ContextAttributeList"
                         }
                     ]
-                },
-                "domainMetadata":{
-                    "title":"domainMetadata",
-                    "allOf":[
-                        {
-                            "$ref":"#/definitions/ContextMetadataList"
-                        }
-                    ]
                 }
             }
         },
@@ -483,8 +464,8 @@
 			"additionalProperties": false,
             "title":"AppendContextElementResponse",
             "properties":{
-                "errorCode":{
-                    "title":"errorCode",
+                "orionError":{
+                    "title":"orionError",
                     "allOf":[
                         {
                             "$ref":"#/definitions/StatusCode"
@@ -529,9 +510,6 @@
             "type":"object",
 			"additionalProperties": false,
             "title":"UpdateContextAttributeRequest",
-            "required":[
-                "value"
-            ],
             "properties":{
                 "type":{
                     "title":"type",
@@ -549,8 +527,8 @@
                         }
                     ]
                 },
-                "metadata":{
-                    "title":"metadata",
+                "metadatas":{
+                    "title":"metadatas",
                     "allOf":[
                         {
                             "$ref":"#/definitions/ContextMetadataList"
@@ -653,9 +631,6 @@
             "type":"object",
 			"additionalProperties": false,
             "title":"DiscoveryContextAvailabilityRequest",
-            "required":[
-                "entities"
-            ],
             "properties":{
                 "entities":{
                     "title":"entities",
@@ -988,8 +963,8 @@
             "title":"RegisterProviderRequest",
             "required":["providingApplication"],
             "properties":{
-                "metadata":{
-                    "title":"metadata",
+                "metadatas":{
+                    "title":"metadatas",
                     "allOf":[
                         {
                             "$ref":"#/definitions/ContextMetadataList"
@@ -1212,7 +1187,7 @@
                     "title":"value",
                     "allOf":[
                         {
-                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/anyType"
+                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/string"
                         }
                     ]
                 }
@@ -1250,8 +1225,8 @@
                         }
                     ]
                 },
-                "contextMetadata":{
-                    "title":"contextMetadata",
+                "metadatas":{
+                    "title":"metadatas",
                     "allOf":[
                         {
                             "$ref":"#/definitions/ContextMetadataList"
@@ -1301,8 +1276,8 @@
                         }
                     ]
                 },
-                "metadata":{
-                    "title":"metadata",
+                "metadatas":{
+                    "title":"metadatas",
                     "allOf":[
                         {
                             "$ref":"#/definitions/ContextMetadataList"
@@ -1411,6 +1386,43 @@
 			},
 			"minItems":1
         },
+        "GeographicQueryLanguage":{
+            "type":"object",
+			"additionalProperties": false,
+            "title":"EntityId",
+            "required":[
+                "georel",
+                "geometry",
+                "coords"
+            ],
+            "properties":{
+                "georel":{
+                    "title":"georel",
+                    "type": "array",
+                    "items": {
+						"type": "http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/string"
+					}
+                },
+                "geometry":{
+                    "title":"geometry",
+                    "allOf":[
+                        {
+                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/string"
+                        }
+                    ]
+                },
+                "coords":{
+                    "title":"coords",
+                    "type": "array",
+                    "items": {
+						"type": "array",
+						"items": {
+							"type": "http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/float"
+						}
+					}
+                }
+            }
+        },
         "NotifyCondition":{
             "type":"object",
 			"additionalProperties": false,
@@ -1434,14 +1446,6 @@
                             "$ref":"#/definitions/CondValueList"
                         }
                     ]
-                },
-                "restriction":{
-                    "title":"restriction",
-                    "allOf":[
-                        {
-                            "$ref":"#/definitions/Restriction"
-                        }
-                    ]
                 }
             }
         },
@@ -1460,8 +1464,6 @@
                 },
                 {
                     "enum":[
-                        "ONTIMEINTERVAL",
-                        "ONVALUE",
                         "ONCHANGE"
                     ]
                 }
@@ -1486,9 +1488,25 @@
                 },
                 "value":{
                     "title":"value",
-                    "allOf":[
+                    "oneOf":[
                         {
-                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/anyType"
+                            "polygon":{
+								"title":"polygon",
+								"allOf":[
+									{
+										"$ref":"#/definitions/Polygon"
+									}
+								]
+							},
+							"circle":{
+								"title":"circle",
+								"allOf":[
+									{
+										"$ref":"#/definitions/Circle"
+									}
+								]
+							},
+							"$ref":"#/definitions/GeographicQueryLanguage"		
                         }
                     ]
                 }
@@ -1506,9 +1524,6 @@
             "type":"object",
 			"additionalProperties": false,
             "title":"Restriction",
-            "required":[
-                "attributeExpression"
-            ],
             "properties":{
                 "attributeExpression":{
                     "title":"attributeExpression",
@@ -1690,58 +1705,12 @@
                             "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/float"
                         }
                     ]
-                }
-            }
-        },
-        "PEPCredentials":{
-            "type":"object",
-			"additionalProperties": false,
-            "title":"PEPCredentials",
-            "required":[
-                "username",
-                "password"
-            ],
-            "properties":{
-                "username":{
-                    "title":"username",
-                    "allOf":[
-                        {
-                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/string"
-                        }
-                    ]
                 },
-                "password":{
-                    "title":"password",
+                "inverted":{
+                    "title":"inverted",
                     "allOf":[
                         {
-                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/string"
-                        }
-                    ]
-                }
-            }
-        },
-        "Point":{
-            "type":"object",
-			"additionalProperties": false,
-            "title":"Point",
-            "required":[
-                "latitude",
-                "longitude"
-            ],
-            "properties":{
-                "latitude":{
-                    "title":"latitude",
-                    "allOf":[
-                        {
-                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/float"
-                        }
-                    ]
-                },
-                "longitude":{
-                    "title":"longitude",
-                    "allOf":[
-                        {
-                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/float"
+                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/boolean"
                         }
                     ]
                 }
@@ -1760,41 +1729,6 @@
                     "allOf":[
                         {
                             "$ref":"#/definitions/VertexList"
-                        }
-                    ]
-                }
-            }
-        },
-        "Segment":{
-            "type":"object",
-			"additionalProperties": false,
-            "title":"Segment",
-            "required":[
-                "nwCorner",
-                "seCorner"
-            ],
-            "properties":{
-                "nwCorner":{
-                    "title":"nwCorner",
-                    "allOf":[
-                        {
-                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/string"
-                        }
-                    ]
-                },
-                "seCorner":{
-                    "title":"seCorner",
-                    "allOf":[
-                        {
-                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/string"
-                        }
-                    ]
-                },
-                "height":{
-                    "title":"height",
-                    "allOf":[
-                        {
-                            "$ref":"http://www.jsonix.org/jsonschemas/w3c/2001/XMLSchema.jsonschema#/definitions/double"
                         }
                     ]
                 }
