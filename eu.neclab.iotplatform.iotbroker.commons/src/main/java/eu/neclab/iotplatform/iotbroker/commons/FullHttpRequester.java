@@ -165,7 +165,7 @@ public class FullHttpRequester {
 
 	public static FullHttpResponse sendGet(URL url) {
 
-		return sendGet(url, null);
+		return sendGet(url, "");
 
 	}
 
@@ -255,6 +255,95 @@ public class FullHttpRequester {
 		return httpResponse;
 
 	}
+	
+	public static FullHttpResponse sendGet(URL url, Map<String,String> headers) {
+
+		FullHttpResponse httpResponse = null;
+
+		HttpURLConnection connection = null;
+		try {
+			// set up out communications stuff
+			connection = null;
+
+			// Set up the initial connection
+			connection = (HttpURLConnection) url.openConnection();
+			connection.setRequestMethod("GET");
+			if (headers != null && !headers.isEmpty()){
+				for (Entry<String,String> entry : headers.entrySet())
+				connection.setRequestProperty(entry.getKey(), entry.getValue());
+			}
+			connection.setDoOutput(true);
+			connection.setReadTimeout(10000);
+
+			try {
+				connection.connect();
+
+				int responseCode = connection.getResponseCode();
+
+				httpResponse = new FullHttpResponse(HttpVersion.HTTP_1_0,
+						connection.getResponseCode(),
+						connection.getResponseMessage());
+
+				if (responseCode > 399 && responseCode < 500) {
+
+					connection.disconnect();
+					return httpResponse;
+
+				} else {
+
+					// Read response
+					BufferedReader in = new BufferedReader(
+							new InputStreamReader(connection.getInputStream()));
+					StringBuffer response = new StringBuffer();
+					String inputLine;
+					while ((inputLine = in.readLine()) != null) {
+						response.append(inputLine);
+						response.append("\n");
+					}
+					in.close();
+
+					httpResponse.setBody(response.toString());
+
+					// logger.info("Response Code : " + responseCode);
+					if (logger.isDebugEnabled()) {
+						logger.debug("\nGET to URL : "+url+"\nResponse Code : " + responseCode + "\n"
+								+ "Response : " + response.toString());
+					}
+
+					connection.disconnect();
+				}
+			} catch (ConnectException e) {
+				logger.warn("Unable to connect with the URL:" + url.toString()
+						+ ". Reason: " + e.getMessage());
+
+				httpResponse = new FullHttpResponse(HttpVersion.HTTP_1_1,
+						HttpStatus.SC_SERVICE_UNAVAILABLE,
+						"Service Unavailable");
+			}
+
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return new FullHttpResponse(HttpVersion.HTTP_1_0,
+					HttpStatus.SC_INTERNAL_SERVER_ERROR, "");
+		} catch (SocketTimeoutException e) {
+			logger.warn("Time out requesting: " + url);
+		} catch (ProtocolException e) {
+			e.printStackTrace();
+			return new FullHttpResponse(HttpVersion.HTTP_1_0,
+					HttpStatus.SC_INTERNAL_SERVER_ERROR, "");
+		} catch (IOException e) {
+			e.printStackTrace();
+			return new FullHttpResponse(HttpVersion.HTTP_1_0,
+					HttpStatus.SC_INTERNAL_SERVER_ERROR, "");
+		} finally {
+			// close the connection, set all objects to null
+			connection.disconnect();
+		}
+
+		return httpResponse;
+
+	}
+
 
 	public static FullHttpResponse sendPut(URL url, String data,
 			String contentType) throws Exception {
