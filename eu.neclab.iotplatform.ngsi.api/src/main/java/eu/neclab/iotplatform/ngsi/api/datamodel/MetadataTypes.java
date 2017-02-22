@@ -48,23 +48,37 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 public enum MetadataTypes {
-	
-	NotificationHandler("NotificationHandler"),
-	SimpleGeolocation("SimpleGeoLocation");
 
-	
+	NotificationHandler("NotificationHandler"), 
+	EmbeddedAgentIdentifier(
+			"HistoricalAgentId"), 
+	SimpleGeolocation("SimpleGeoLocation"),
+	NgsiHierarchy("NgsiHierarchy"),
+	CreationTime("creation_time"),
+	AbstractionLevel("AbstractionLevel"),
+	Unit("Unit");
+
 	private String string;
 
-	private MetadataTypes(String string) {
-		 
-        this.string = string;
+	public static MetadataTypes fromString(String string) {
+		for (MetadataTypes type : MetadataTypes.values()) {
+			if (type.getName().toLowerCase().equals(string.toLowerCase())) {
+				return type;
+			}
+		}
+		return null;
 	}
-	
-	public String getName(){
+
+	private MetadataTypes(String string) {
+
+		this.string = string;
+	}
+
+	public String getName() {
 		return string;
 	}
-	
-	public URI getType(){
+
+	public URI getType() {
 		try {
 			return new URI(string);
 		} catch (URISyntaxException e) {

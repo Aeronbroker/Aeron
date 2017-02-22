@@ -44,8 +44,11 @@
 
 package eu.neclab.iotplatform.iotbroker.embeddediotagent.indexer;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -60,6 +63,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
+import eu.neclab.iotplatform.iotbroker.commons.Pair;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.EmbeddedAgentIndexerInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.KeyValueStoreInterface;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
@@ -83,7 +87,7 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 	private Multimap<String, String> cachedIdsByType = HashMultimap.create();
 
 	/*
-	 * Here is mapped attributeNames by EntityId (id + potentially type) 
+	 * Here is mapped attributeNames by EntityId (id + potentially type)
 	 * [id1:[attributeName1, attributeName2,...],...
 	 */
 	private Multimap<String, String> cachedAttributeNamesById = HashMultimap
@@ -188,26 +192,35 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 				 * Match against a regular expression
 				 */
 				String[] entityIdAndType = splitEntityAndType(id);
-				if ((entityId.getIsPattern() && entityIdAndType[0]
-						.matches(entityId.getId()))
-						|| entityIdAndType[0].toLowerCase().equals(
-								entityId.getId().toLowerCase())) {
+				try {
+					if ((entityId.getIsPattern() && entityIdAndType[0]
+							.matches(entityId.getId()))
+							|| entityIdAndType[0].toLowerCase().equals(
+									entityId.getId().toLowerCase())
+							|| entityIdAndType[0].toLowerCase().equals(
+									URLEncoder
+											.encode(entityId.getId(), "UTF-8")
+											.toLowerCase())) {
 
-					Collection<String> attributeNamesCollect = cachedAttributeNamesById
-							.get(id);
+						Collection<String> attributeNamesCollect = cachedAttributeNamesById
+								.get(id);
 
-					for (String attributeName : attributeNamesCollect) {
+						for (String attributeName : attributeNamesCollect) {
 
-						if (attributeNames == null
-								|| attributeNames.isEmpty()
-								|| attributeNames.contains(attributeName
-										.toLowerCase())) {
+							if (attributeNames == null
+									|| attributeNames.isEmpty()
+									|| attributeNames.contains(attributeName
+											.toLowerCase())) {
 
-							idsAndAttributeNames.put(id, attributeName);
+								idsAndAttributeNames.put(id, attributeName);
 
+							}
 						}
-					}
 
+					}
+				} catch (UnsupportedEncodingException e) {
+					logger.warn("Unsupported UTF-8 encoding of: "
+							+ entityIdAndType[0]);
 				}
 
 			}
@@ -348,8 +361,17 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 			String[] entityAndAttributeName = key.split(PREFIX_TO_ID_SEPARATOR)[1]
 					.split(ID_TO_ATTRIBUTENAME_SEPARATOR);
 
-			cachedAttributeNamesById.put(entityAndAttributeName[0],
-					entityAndAttributeName[1]);
+			if (entityAndAttributeName.length == 2) {
+				try {
+					cachedAttributeNamesById.put(URLEncoder.encode(
+							entityAndAttributeName[0], "UTF-8"),
+							entityAndAttributeName[1]);
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+			}
 		}
 
 	}
@@ -359,6 +381,15 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 		return Iterables.getFirst(
 				isolatedContextElement.getContextAttributeList(), null)
 				.getName();
+	}
+
+	public Pair<String, String> generateStartAndEndKeyForLatestValues() {
+
+		String startKey = LATEST_VALUE_PREFIX;
+		String endKey = LATEST_VALUE_PREFIX + "ÿ";
+
+		return new Pair<String, String>(startKey, endKey);
+
 	}
 
 }

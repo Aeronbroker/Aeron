@@ -56,14 +56,16 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import javax.annotation.PostConstruct;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
+import eu.neclab.iotplatform.iotbroker.commons.Pair;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.EmbeddedAgentIndexerInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.EmbeddedAgentStorageInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.KeyValueStoreInterface;
@@ -80,6 +82,9 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 
 	// Ngsi10Interface to call when a notification needs to be issued
 	private Ngsi10Interface ngsi10Callback;
+
+	private ExecutorService taskExecutor = new ThreadPoolExecutor(0, 1500, 60L,
+			TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
 
 	private EmbeddedAgentIndexerInterface indexer;
 
@@ -166,6 +171,9 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 	private Date extractTimestamp(ContextAttribute contextAttribute) {
 
 		Date timestamp = null;
+
+		// TODO encapsulate this things in a Timestamp class, or create a
+		// ContextMetadataFactory
 
 		if (contextAttribute.getMetadata() != null
 				&& !contextAttribute.getMetadata().isEmpty()) {
@@ -294,8 +302,13 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 
 		List<ContextElement> contextElementList = new ArrayList<ContextElement>();
 
-		Set<String> attributeNamesSet = new HashSet<String>();
-		attributeNamesSet.addAll(attributeNames);
+		Set<String> attributeNamesSet;
+		if (attributeNames != null && !attributeNames.isEmpty()) {
+			attributeNamesSet = new HashSet<String>();
+			attributeNamesSet.addAll(attributeNames);
+		} else {
+			attributeNamesSet = null;
+		}
 
 		Multimap<String, String> idsAndAttributeNames = indexer
 				.matchingIdsAndAttributeNames(entityIdList, attributeNamesSet);
@@ -368,7 +381,6 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 
 		}
 
-		ExecutorService taskExecutor = Executors.newCachedThreadPool();
 		try {
 			taskExecutor.invokeAll(tasks);
 		} catch (InterruptedException e) {
@@ -454,7 +466,6 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 
 		}
 
-		ExecutorService taskExecutor = Executors.newCachedThreadPool();
 		try {
 			taskExecutor.invokeAll(tasks);
 		} catch (InterruptedException e) {
@@ -462,5 +473,14 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 		}
 
 		return contextElementList;
+	}
+
+	@Override
+	public List<ContextElement> getAllLatestValues() {
+		Pair<String, String> startAndEndKey = indexer
+				.generateStartAndEndKeyForLatestValues();
+		return keyValueStore.getAllValues(startAndEndKey.getLeft(),
+				startAndEndKey.getRight());
+
 	}
 }

@@ -52,6 +52,9 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.xml.xpath.XPath;
@@ -178,8 +181,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	// private final String CONFMAN_REG_URL = System.getProperty("confman.ip");
 
 	/** Executor for asynchronous tasks */
-	private final ExecutorService taskExecutor = Executors
-			.newCachedThreadPool();
+	private final ExecutorService taskExecutor = new ThreadPoolExecutor(0,
+			1500, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
 
 	/** The implementation of the NGSI 9 interface */
 	private Ngsi9Interface ngsi9Impl;
@@ -248,6 +251,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	 * ONTIMEINTERVAL notifyCondition handler
 	 */
 	private OnTimeIntervalHandlerInterface onTimeIntervalHandler;
+
+	private ExecutorService executor = Executors.newFixedThreadPool(20);
 
 	/**
 	 * Interface for hierarchies of IoT Broker instances; extra bundle not
@@ -572,10 +577,27 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	@Override
 	public QueryContextResponse queryContext(QueryContextRequest request) {
 
+		// DiscoverContextAvailabilityRequest discoveryRequest = new
+		// DiscoverContextAvailabilityRequest(
+		// request.getEntityIdList(), request.getAttributeList(),
+		// request.getRestriction());
+
+		Restriction availabilityDiscoveryRestriction;
+
+		if (request.getRestriction() != null
+				&& request.getRestriction().getOperationScope() != null
+				&& !request.getRestriction().getOperationScope().isEmpty()) {
+			availabilityDiscoveryRestriction = new Restriction("", request
+					.getRestriction().getOperationScope());
+		} else {
+			availabilityDiscoveryRestriction = null;
+		}
 
 		DiscoverContextAvailabilityRequest discoveryRequest = new DiscoverContextAvailabilityRequest(
 				request.getEntityIdList(), request.getAttributeList(),
-				request.getRestriction());
+				availabilityDiscoveryRestriction);
+
+		List<ContextRegistration> embeddedAgentContextRegistrations = null;
 
 		if (associationsEnabled == true) {
 			AssociationsHandler.insertAssociationScope(discoveryRequest);
@@ -616,6 +638,15 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 * the data retrieval tasks all in parallel.
 		 */
 		List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
+
+		// Extract ContextRegistrations which belong to the embeddedAgent
+		// (in order to avoid loop)
+		if (BundleUtils.isServiceRegistered(this, embeddedIoTAgent)) {
+
+			embeddedAgentContextRegistrations = embeddedIoTAgent
+					.extractOwnContextRegistrations(discoveryResponse);
+
+		}
 
 		/*
 		 * Now check if the discovery response is useful; if yes, then we
@@ -670,7 +701,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 				logger.info("Historical Agent present: fowarding the query");
 				tasks.add(Executors.callable(new EmbeddedIoTAgentRequestThread(
-						embeddedIoTAgent, request, merger)));
+						embeddedIoTAgent, request, merger,
+						embeddedAgentContextRegistrations)));
 			}
 		} catch (org.springframework.osgi.service.ServiceUnavailableException e) {
 			logger.warn("Not possible to query the Big Data Repository: osgi service not registered");
@@ -732,7 +764,9 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 */
 		List<ContextRegistration> registrationList = new ArrayList<ContextRegistration>(
 				discoveryResponse.getContextRegistrationResponse().size());
-		if (discoveryResponse.getContextRegistrationResponse() != null) {
+		if (discoveryResponse.getContextRegistrationResponse() != null
+				&& !discoveryResponse.getContextRegistrationResponse()
+						.isEmpty()) {
 			for (ContextRegistrationResponse cRR : discoveryResponse
 					.getContextRegistrationResponse()) {
 				registrationList.add(cRR.getContextRegistration());
@@ -792,33 +826,36 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			if (logger.isDebugEnabled()) {
 				logger.debug("-----------++++++++++++++++++++++ Begin Filter");
 			}
-			List<QueryContextRequest> lqcReq = new ArrayList<QueryContextRequest>();
-			lqcReq.add(request);
-			List<ContextElementResponse> lceRes = mergerResponse
+
+			List<QueryContextRequest> listQueryContextRequests = new ArrayList<QueryContextRequest>();
+			listQueryContextRequests.add(request);
+
+			List<ContextElementResponse> listContextElementResponses = mergerResponse
 					.getListContextElementResponse();
 
 			if (logger.isDebugEnabled()) {
 				logger.debug("-----------++++++++++++++++++++++ QueryContextRequest:"
-						+ lqcReq.toString()
+						+ listQueryContextRequests.toString()
 						+ " ContextElementResponse:"
-						+ lceRes.toString());
+						+ listContextElementResponses.toString());
 
-				logger.debug(lqcReq.size());
-				logger.debug(lceRes.size());
+				logger.debug(listQueryContextRequests.size());
+				logger.debug(listContextElementResponses.size());
 			}
 
-			List<QueryContextResponse> lqcRes = resultFilter.filterResult(
-					lceRes, lqcReq);
+			List<QueryContextResponse> listQueryContextResponses = resultFilter
+					.filterResult(listContextElementResponses,
+							listQueryContextRequests);
 
-			if (lqcRes.size() == 1) {
-				mergerResponse = lqcRes.get(0);
+			if (listQueryContextResponses.size() == 1) {
+				mergerResponse = listQueryContextResponses.get(0);
 			}
 
 			if (logger.isDebugEnabled()) {
 				logger.debug("-----------++++++++++++++++++++++ After Filter ListContextElementResponse:"
-						+ lqcRes.toString()
+						+ listQueryContextResponses.toString()
 						+ " ContextElementResponse:"
-						+ lqcRes.toString());
+						+ listQueryContextResponses.toString());
 				logger.debug("-----------++++++++++++++++++++++End Filter");
 			}
 			logger.info("Result filter found and applied.");
@@ -917,12 +954,15 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 * it is time to apply the xpath restriction to it.
 		 */
 
-		if (request.getRestriction() != null) {
+		if (request.getRestriction() != null
+				&& request.getRestriction().getAttributeExpression() != null
+				&& !request.getRestriction().getAttributeExpression().isEmpty()) {
 
 			String xpathExpression = request.getRestriction()
 					.getAttributeExpression();
 			if (xpathExpression != null && !xpathExpression.isEmpty()) {
-				applyRestriction(xpathExpression, mergerResponse);
+				applyRestriction(xpathExpression,
+						mergerResponse.getListContextElementResponse());
 			}
 
 		}
@@ -977,7 +1017,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	 *            the response
 	 */
 	private static void applyRestriction(String attributeExpr,
-			QueryContextResponse response) {
+			List<ContextElementResponse> contextElementResponseList) {
 
 		// Apply the Restriction
 		XPath xpath = XPathFactory.newInstance().newXPath();
@@ -985,33 +1025,23 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		try {
 			XPathExpression expr = xpath.compile(attributeExpr);
 
-			Document doc = XmlFactory.stringToDocument(response.toString());
-			Object result = expr.evaluate(doc, XPathConstants.NODESET);
-
-			NodeList nodes = (NodeList) result;
-
-			Iterator<ContextElementResponse> i = response
-					.getListContextElementResponse().iterator();
+			Iterator<ContextElementResponse> i = contextElementResponseList
+					.iterator();
 
 			while (i.hasNext()) {
-
 				ContextElementResponse contextElresp = i.next();
-				boolean doesNotAppear = true;
 
-				for (int j = 0; j < nodes.getLength(); j++) {
-					if (contextElresp.getContextElement().getEntityId().getId()
-							.equals(nodes.item(j).getTextContent())) {
+				Document doc = XmlFactory.stringToDocument(contextElresp
+						.toString());
+				Object result = expr.evaluate(doc, XPathConstants.NODESET);
 
-						doesNotAppear = false;
-						break;
-					}
-				}
+				NodeList nodes = (NodeList) result;
 
-				if (doesNotAppear) {
+				if (nodes.getLength() == 0) {
+					logger.debug("Filtering out : " + contextElresp);
 					i.remove();
 				}
 			}
-
 		} catch (XPathExpressionException e) {
 			logger.error("Xpath Exception", e);
 		}
@@ -1310,13 +1340,13 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			updateContextRequest = request;
 		}
 
-		/**
+		/*
 		 * Dump data in Historical Agent if present.
 		 */
 		if (request.getUpdateAction() != UpdateActionType.DELETE
 				&& BundleUtils.isServiceRegistered(this, embeddedIoTAgent)) {
 
-			new Thread() {
+			executor.execute(new Thread() {
 
 				@Override
 				public void run() {
@@ -1328,7 +1358,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 					}
 
 				}
-			}.start();
+			});
 
 		}
 
@@ -1368,7 +1398,9 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		}
 
-		if (pubSubUrlList != null) {
+		boolean noPubSubUrl = false;
+
+		if (pubSubUrlList != null && !pubSubUrlList.isEmpty()) {
 			for (String url : pubSubUrlList) {
 
 				if (url != null) {
@@ -1390,7 +1422,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 				// necessary to have some rule (for example, ALL,
 				// ATLEASTONE, MOST, NOONE fault tolerant)
 			}
-		} else if (pubSubUrl != null) {
+		} else if (pubSubUrl != null && !pubSubUrl.isEmpty()) {
 			logger.info("Started Contact pub/sub broker: " + pubSubUrl);
 
 			try {
@@ -1403,9 +1435,15 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 					logger.debug("URI Syntax Error", e);
 				}
 			}
+		} else {
+			noPubSubUrl = true;
 		}
 
-		if (response == null) {
+		if (noPubSubUrl) {
+			response = new UpdateContextResponse(new StatusCode(
+					Code.OK_200.getCode(), ReasonPhrase.OK_200.toString(), ""),
+					null);
+		} else if (response == null) {
 			response = new UpdateContextResponse(new StatusCode(
 					Code.INTERNALERROR_500.getCode(),
 					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
@@ -1592,6 +1630,25 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 				}
 			}.start();
+		}
+
+		/*
+		 * Now, it is time to apply the xpath restriction to it.
+		 */
+
+		if (outgoingSubscription.getRestriction() != null
+				&& outgoingSubscription.getRestriction()
+						.getAttributeExpression() != null
+				&& !outgoingSubscription.getRestriction()
+						.getAttributeExpression().isEmpty()) {
+
+			String xpathExpression = outgoingSubscription.getRestriction()
+					.getAttributeExpression();
+			if (xpathExpression != null && !xpathExpression.isEmpty()) {
+				applyRestriction(xpathExpression,
+						request.getContextElementResponseList());
+			}
+
 		}
 
 		/*

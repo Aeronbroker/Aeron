@@ -54,11 +54,12 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
-import eu.neclab.iotplatform.iotbroker.commons.interfaces.BigDataRepository;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.IoTAgentInterface;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
+import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 import eu.neclab.iotplatform.ngsi.api.datamodel.OperationScope;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
@@ -80,6 +81,7 @@ public class EmbeddedIoTAgentRequestThread implements Runnable {
 	private QueryContextRequest request;
 	private QueryResponseMerger merger;
 	private IoTAgentInterface embeddedIoTAgent;
+	private List<ContextRegistration> embeddedAgentContextRegistration;
 
 	/**
 	 * 
@@ -114,11 +116,13 @@ public class EmbeddedIoTAgentRequestThread implements Runnable {
 	 * @param additionalRequestList
 	 */
 	public EmbeddedIoTAgentRequestThread(IoTAgentInterface embeddedIoTAgent,
-			QueryContextRequest request, QueryResponseMerger merger) {
+			QueryContextRequest request, QueryResponseMerger merger,
+			List<ContextRegistration> embeddedAgentContextRegistration) {
 
 		this.embeddedIoTAgent = embeddedIoTAgent;
 		this.request = request;
 		this.merger = merger;
+		this.embeddedAgentContextRegistration = embeddedAgentContextRegistration;
 	}
 
 	/**
@@ -177,6 +181,20 @@ public class EmbeddedIoTAgentRequestThread implements Runnable {
 
 		List<ContextElementResponse> contextElementResponseList = new ArrayList<ContextElementResponse>();
 
+		List<EntityId> entityIdToRequest;
+		List<String> attributeListToRequest;
+
+		if (embeddedAgentContextRegistration == null) {
+			entityIdToRequest = request.getEntityIdList();
+			attributeListToRequest = request.getAttributeList();
+		} else {
+			attributeListToRequest = null;
+			entityIdToRequest = new ArrayList<EntityId>();
+			for (ContextRegistration contextRegistration : embeddedAgentContextRegistration) {
+				entityIdToRequest.addAll(contextRegistration.getListEntityId());
+			}
+		}
+
 		if (response == null || response.getErrorCode() == null) {
 
 			List<ContextElement> contextElementList;
@@ -187,8 +205,8 @@ public class EmbeddedIoTAgentRequestThread implements Runnable {
 				 */
 
 				contextElementList = embeddedIoTAgent.getHistoricalValues(
-						request.getEntityIdList(), request.getAttributeList(),
-						startDate, endDate);
+						entityIdToRequest, attributeListToRequest, startDate,
+						endDate);
 
 			} else {
 
@@ -197,7 +215,7 @@ public class EmbeddedIoTAgentRequestThread implements Runnable {
 				 */
 
 				contextElementList = embeddedIoTAgent.getLatestValues(
-						request.getEntityIdList(), request.getAttributeList());
+						entityIdToRequest, attributeListToRequest);
 
 			}
 

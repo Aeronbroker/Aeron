@@ -42,6 +42,7 @@
  * DAMAGE.
  ******************************************************************************/
 
+package eu.neclab.iotplatform.iotbroker.restcontroller.test;
 
 import static org.junit.Assert.*;
 

@@ -50,62 +50,72 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- *  Representation of a rectangle (for geographic scopes).
+ * Representation of a rectangle (for geographic scopes).
  */
 @XmlRootElement(name = "segment")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Segment extends NgsiStructure{
+public class Segment extends NgsiStructure {
 
 	@XmlElement(name = "NW_Corner", required = true)
 	private String NW_Corner;
-	
+
 	@XmlElement(name = "SE_Corner", required = true)
 	private String SE_Corner;
-	
+
 	@XmlElement(name = "Height", required = false)
 	private Double height;
-
-
-
 
 	public Segment(String nW_Corner, String sE_Corner, Double height) {
 		NW_Corner = nW_Corner;
 		SE_Corner = sE_Corner;
 		this.height = height;
 	}
+
 	public Segment() {
 
 	}
+
 	public String getNW_Corner() {
 		return NW_Corner;
 	}
+
 	public void setNW_Corner(String nW_Corner) {
 		NW_Corner = nW_Corner;
 	}
+
 	public String getSE_Corner() {
 		return SE_Corner;
 	}
+
 	public void setSE_Corner(String sE_Corner) {
 		SE_Corner = sE_Corner;
 	}
+
 	public Double getHeight() {
 		return height;
 	}
+
 	public void setHeight(Double height) {
 		this.height = height;
 	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ (NW_Corner == null ? 0 : NW_Corner.replaceAll("\\s+", "").hashCode());
-		result = prime * result
-				+ (SE_Corner == null ? 0 : SE_Corner.replaceAll("\\s+", "").hashCode());
+		result = prime
+				* result
+				+ (NW_Corner == null ? 0 : NW_Corner.replaceAll("\\s+", "")
+						.hashCode());
+		result = prime
+				* result
+				+ (SE_Corner == null ? 0 : SE_Corner.replaceAll("\\s+", "")
+						.hashCode());
 		result = prime * result + (height == null ? 0 : height.hashCode());
 
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -141,17 +151,10 @@ public class Segment extends NgsiStructure{
 		}
 		return true;
 	}
-//	@Override
-//	public String toString() {
-//		return "Segment [NW_Corner=" + NW_Corner + ", SE_Corner=" + SE_Corner
-//				+ ", height=" + height + "]";
-//	}
-
-
-
-
-
-
-
+	// @Override
+	// public String toString() {
+	// return "Segment [NW_Corner=" + NW_Corner + ", SE_Corner=" + SE_Corner
+	// + ", height=" + height + "]";
+	// }
 
 }

@@ -9,4 +9,8 @@
 	<osgi:service id="EmbeddedAgentCouchDB" ref="couchDB"
 		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.KeyValueStoreInterface" />
 
+
+	<osgi:service id="PermanentRegistryCouchDB" ref="couchDB"
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.PermanentRegistryInterface" />
+
 </beans>

@@ -60,6 +60,9 @@ iotbroker_pathprefixngsi10='ngsi10'
 # Ngsi9 uri of the local IoT Platform
 iotbroker_ngsi9uri='http://localhost:8065/'
 
+# Ngsi9 uri of the remote IoT Platform (it can be the same of the local)
+iotbroker_ngsi9remoteurl='http://localhost:8065/'
+
 # Default throttling time
 iotbroker_defaultthrottling=1000
 

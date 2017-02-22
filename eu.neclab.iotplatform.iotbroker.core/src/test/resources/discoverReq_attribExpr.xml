@@ -9,7 +9,7 @@
         <attribute>temperature</attribute>
     </attributeList>
     <restriction>
-        <attributeExpression>//id[../../contextAttributeList/contextAttribute/metadata/contextMetadata[name='test' and type='string']/value]</attributeExpression>
+        <attributeExpression></attributeExpression>
         <scope>
             <operationScope>
                 <scopeType>IncludeAssociations</scopeType>

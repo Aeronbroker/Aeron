@@ -522,10 +522,27 @@ public class SubscriptionController {
 		 * We create a request for retrieving the relevant data sources and
 		 * associations for the subscription.
 		 */
+		//
+		// SubscribeContextAvailabilityRequest scaReq = new
+		// SubscribeContextAvailabilityRequest(
+		// scReq.getAllEntity(), scReq.getAttributeList(), ref,
+		// scReq.getDuration(), null, scReq.getRestriction());
+
+		Restriction availabilitySubscriptionRestriction;
+
+		if (scReq.getRestriction() != null
+				&& scReq.getRestriction().getOperationScope() != null
+				&& !scReq.getRestriction().getOperationScope().isEmpty()) {
+			availabilitySubscriptionRestriction = new Restriction("", scReq
+					.getRestriction().getOperationScope());
+		} else {
+			availabilitySubscriptionRestriction = null;
+		}
 
 		SubscribeContextAvailabilityRequest scaReq = new SubscribeContextAvailabilityRequest(
 				scReq.getAllEntity(), scReq.getAttributeList(), ref,
-				scReq.getDuration(), null, scReq.getRestriction());
+				scReq.getDuration(), null, availabilitySubscriptionRestriction);
+
 		if (scReq.getDuration() == null) {
 			scaReq.setDuration(DurationUtils.convertToDuration(defaultDuration));
 		}
@@ -747,9 +764,26 @@ public class SubscriptionController {
 				&& !availabilitySubscriptionIDs.isEmpty()) {
 			subsAvailId = linkAvailabilitySubscription.getAvailIDs(
 					uCSreq.getSubscriptionId()).get(0);
+			// final UpdateContextAvailabilitySubscriptionRequest uCAReq = new
+			// UpdateContextAvailabilitySubscriptionRequest(
+			// sCReq.getEntityIdList(), sCReq.getAttributeList(),
+			// uCSreq.getDuration(), subsAvailId, uCSreq.getRestriction());
+
+			Restriction availabilitySubscriptionRestriction;
+
+			if (uCSreq.getRestriction() != null
+					&& uCSreq.getRestriction().getOperationScope() != null
+					&& !uCSreq.getRestriction().getOperationScope().isEmpty()) {
+				availabilitySubscriptionRestriction = new Restriction("", uCSreq
+						.getRestriction().getOperationScope());
+			} else {
+				availabilitySubscriptionRestriction = null;
+			}
+
 			final UpdateContextAvailabilitySubscriptionRequest uCAReq = new UpdateContextAvailabilitySubscriptionRequest(
 					sCReq.getEntityIdList(), sCReq.getAttributeList(),
-					uCSreq.getDuration(), subsAvailId, uCSreq.getRestriction());
+					uCSreq.getDuration(), subsAvailId,
+					availabilitySubscriptionRestriction);
 
 			if (uCSreq.getDuration() == null) {
 				uCAReq.setDuration(DurationUtils

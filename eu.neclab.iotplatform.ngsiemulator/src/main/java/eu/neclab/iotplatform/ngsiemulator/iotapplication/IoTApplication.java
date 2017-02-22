@@ -57,6 +57,8 @@ import org.apache.log4j.Logger;
 import com.sun.jersey.api.core.ResourceConfig;
 
 import eu.neclab.iotplatform.iotbroker.commons.ContentType;
+import eu.neclab.iotplatform.ngsi.api.datamodel.NgsiStructure;
+import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.StatusCode;
 import eu.neclab.iotplatform.ngsiemulator.utils.HeaderExtractor;
@@ -85,7 +87,7 @@ public class IoTApplication {
 			.fromString(
 					System.getProperty("eu.neclab.iotplaform.ngsiemulator.iotprovider.defaultOutgoingContentType"),
 					ContentType.XML);
-	
+
 	@GET
 	@Path("/test")
 	@Produces("application/xml")
@@ -120,6 +122,9 @@ public class IoTApplication {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Received a NGSI-10 Notification:" + body);
 		}
+
+		NotifyContextRequest notification = (NotifyContextRequest) NgsiStructure
+				.parseStringToJson(body, NotifyContextRequest.class);
 
 		response.setResponseCode(new StatusCode(200, "OK", null));
 

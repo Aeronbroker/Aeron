@@ -20,13 +20,17 @@
   <xs:element name="unsubscribeContextAvailabilityResponse"        type="UnsubscribeContextAvailabilityResponse"/>
   <xs:element name="notifyContextAvailabilityRequest"              type="NotifyContextAvailabilityRequest"/>  
   <xs:element name="notifyContextAvailabilitytResponse"             type="NotifyContextAvailabilityResponse"/>
+  
+<!-- ________________________Complex types instantiation for Convenience Operations ___________________________________________ -->
+  
+  <xs:element name="registerProviderRequest"                   type="RegisterProviderRequest"/>
  
 
 <!-- ________________________________________ Methods messages ________________________________________________ -->
 
   <xs:complexType name="RegisterContextRequest">
     <xs:sequence>
-      <xs:element name="contextRegistrationList" type="ContextRegistrationList" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="contextRegistrationList" type="ContextRegistrationList" minOccurs="1" maxOccurs="1"/>
       <xs:element name="duration" type="xs:duration" minOccurs="0" maxOccurs="1"/>
       <xs:element name="registrationId" type="xs:string" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
@@ -116,7 +120,7 @@
   <xs:complexType name="NotifyContextAvailabilityRequest">
     <xs:sequence>
       <xs:element name="subscriptionId" type="xs:string" minOccurs="1" maxOccurs="1"/>  
-      <xs:element name="contextRegistrationResponseList" type="ContextRegistrationResponseList" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="contextRegistrationResponseList" type="ContextRegistrationResponseList" minOccurs="1" maxOccurs="1"/>
 	  <xs:element name="errorCode" type="StatusCode" minOccurs="0" maxOccurs="1"/>              
     </xs:sequence>
   </xs:complexType> 
@@ -126,6 +130,23 @@
     <xs:sequence>
         <xs:element name="responseCode" type="StatusCode" minOccurs="1" maxOccurs="1"/>
       </xs:sequence>
+  </xs:complexType>
+  
+  <!-- _____________________________________ Methods messages  for Convenience Operations______________________________________________ -->
+  
+  <xs:complexType name="RegisterProviderRequest">
+    <xs:sequence>
+	  <xs:element name="metadata" type="ContextMetadataList" minOccurs="0" maxOccurs="1" />
+	  <xs:element name="duration" type="xs:duration" minOccurs="0" maxOccurs="1"/>
+	  <xs:element name="providingApplication" minOccurs="1" maxOccurs="1">
+		<xs:simpleType>
+			<xs:restriction base="xs:anyURI">
+				<xs:minLength value="1"/>
+			</xs:restriction>
+		</xs:simpleType>
+      </xs:element>
+      <xs:element name="registrationId" type="xs:string" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
   </xs:complexType>
  
 </xs:schema>

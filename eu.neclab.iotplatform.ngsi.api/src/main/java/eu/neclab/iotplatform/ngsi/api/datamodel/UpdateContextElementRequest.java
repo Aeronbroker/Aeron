@@ -74,7 +74,7 @@ public class UpdateContextElementRequest extends NgsiStructure {
 
 	@XmlElementWrapper(name = "domainMetadata")
 	@XmlElement(name = "contextMetadata")
-	@JsonProperty("domainMetaData")
+	@JsonProperty("domainMetadata")
 	private List<ContextMetadata> contextMetadata;
 
 	public UpdateContextElementRequest() {

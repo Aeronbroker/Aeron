@@ -44,8 +44,21 @@
 
 package eu.neclab.iotplatform.iotbroker.commons.interfaces;
 
+import java.util.List;
+
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
+import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityResponse;
+
 public interface EmbeddedAgentRegistryInterface {
 
-	public abstract void makeGenericRegistration();
+	public void makeGenericRegistration();
+
+	public void checkRegistration(List<ContextElement> contextElementList);
+
+	public void checkRegistration(ContextElement contextElementList);
+
+	public List<ContextRegistration> extractOwnContextRegistrations(
+			DiscoverContextAvailabilityResponse discoveryResponse);
 
 }

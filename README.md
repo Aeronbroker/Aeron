@@ -369,8 +369,8 @@ IoT Broker References
 | IoT Broker GE specification | https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/FIWARE.OpenSpecification.IoT.Backend.IoTBroker | Specification of IoT Broker Generic Enabler, including information about its role in the FIWARE Intenet-of-Things architecture, functionalities, and data flows.|
 | IoT Broker API specification | http://aeronbroker.github.io/Aeron/    | Specification of the FIWARE NGSI-10 API exposed by the IoT Broker.  |
 | FIWARE NGSI API specification | https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/FI-WARE_NGSI_Open_RESTful_API_Specification    | Specificaton of the FIWARE NGSI API, which is the interface exposed by the IoT Broker and many other FIWARE enablers.  |
-|IoT Broker Installation and Administration guide| [doc/installadminguide](./doc/installadminguide) | Installation and administration guide for IoT Broker.
-|IoT Broker User and Programmer Guide| https://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/IoT_Broker_-_User_and_Programmers_Guide | Guide showing some toy interactions with the IoT Broker. |
+|IoT Broker Installation and Administration guide| [doc/installadminguide.md](./doc/installadminguide.md) | Installation and administration guide for IoT Broker.
+|IoT Broker User and Programmer Guide| [doc/userprogrammersguide.md](doc/userprogrammersguide.md) | Guide showing some interactions with the IoT Broker. |
 |IoT Broker extension point documentation| [doc/extensionpoint.md](./doc/extensionpoint.md) | Documentation on how to write and use plugins for additional data source types. |
 |Entity composition guide| [eu.neclab.iotplatform.entitycomposer/README.MD](./eu.neclab.iotplatform.entitycomposer/README.MD) | Documentation on how to use the IoT Broker to compose entities from other entities. |
 |History Queries| [doc/historyqueries.md](./doc/historyqueries.md) | Documentation on history queries on the IoT Broker. |

@@ -114,10 +114,12 @@ public class ContextMetadata extends NgsiStructure {
 		this.type = type;
 	}
 
+	@JsonSerialize(using = MetadataObjectValueSerializer.class)
 	public Object getValue() {
 		return value;
 	}
 
+	@JsonDeserialize(using = MetadataValueDeserializer.class)
 	public void setValue(Object value) {
 		this.value = value;
 	}
@@ -138,6 +140,11 @@ public class ContextMetadata extends NgsiStructure {
 		return name.equals(other.name) && type.equals(other.type)
 				&& value.toString().equals(other.value.toString());
 
+	}
+
+	@Override
+	public int hashCode() {
+		return this.toJsonString().hashCode();
 	}
 
 }
