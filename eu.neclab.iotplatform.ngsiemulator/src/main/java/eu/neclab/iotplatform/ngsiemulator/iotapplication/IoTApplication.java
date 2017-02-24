@@ -100,7 +100,8 @@ public class IoTApplication {
 	@POST
 	@Path("/testPost")
 	@Produces("application/json")
-	public String testPost(String body) {
+	public String testPost(@Context HttpHeaders headers,
+			@Context ResourceConfig config, String body) {
 		logger.info("Received a testPost:" + body);
 		return "test";
 

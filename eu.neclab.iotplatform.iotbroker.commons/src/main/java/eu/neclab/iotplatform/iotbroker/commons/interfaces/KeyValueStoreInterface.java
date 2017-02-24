@@ -64,6 +64,8 @@ public interface KeyValueStoreInterface {
 	ContextElement getValue(String latestValueDocumentKey);
 
 	ContextElement getValues(String startKey, String endKey);
+	
+	List<ContextElement> getValues(List<String> keys);
 
 	List<ContextElement> getAllValues(String startKey, String endKey);
 

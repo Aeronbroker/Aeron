@@ -49,6 +49,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -81,14 +82,14 @@ public class HttpRequester {
 			}
 
 			logger.info("\nSending 'POST' request to URL : " + url + "\n"
-					+ "Put parameters : " + data + "\n");
+					+ "POST parameters : " + data + "\n");
 
 			if (data != null && !data.equals("")) {
 				// Send put request
 				con.setDoOutput(true);
-				DataOutputStream wr = new DataOutputStream(
-						con.getOutputStream());
-				wr.writeBytes(data);
+				OutputStreamWriter wr = new OutputStreamWriter(
+						con.getOutputStream(), "UTF-8");
+				wr.write(data);
 				wr.flush();
 				wr.close();
 			} else {
@@ -235,9 +236,9 @@ public class HttpRequester {
 			if (data != null && !data.equals("")) {
 				// Send put request
 				con.setDoOutput(true);
-				DataOutputStream wr = new DataOutputStream(
-						con.getOutputStream());
-				wr.writeBytes(data);
+				OutputStreamWriter wr = new OutputStreamWriter(
+						con.getOutputStream(), "UTF-8");
+				wr.write(data);
 				wr.flush();
 				wr.close();
 			} else {

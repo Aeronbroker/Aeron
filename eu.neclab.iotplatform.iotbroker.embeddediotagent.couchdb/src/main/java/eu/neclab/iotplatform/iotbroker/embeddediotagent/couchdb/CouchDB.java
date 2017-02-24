@@ -45,8 +45,10 @@
 package eu.neclab.iotplatform.iotbroker.embeddediotagent.couchdb;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -67,6 +69,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import eu.neclab.iotplatform.iotbroker.commons.ContentType;
 import eu.neclab.iotplatform.iotbroker.commons.FullHttpResponse;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.KeyValueStoreInterface;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.PermanentRegistryInterface;
@@ -91,7 +94,7 @@ public class CouchDB implements KeyValueStoreInterface,
 
 	private String authentication = null;
 
-	private boolean databaseExist = false;
+	private Boolean databaseExist = false;
 
 	@Value("${couchdb_host:localhost}")
 	private String couchDB_HOST;
@@ -328,33 +331,38 @@ public class CouchDB implements KeyValueStoreInterface,
 			setCouchDB_ip();
 		}
 
-		logger.info("Send update to the CouchDB storage...");
-
-		if (couchDB_USERNAME != null && !couchDB_USERNAME.trim().isEmpty()
-				&& couchDB_PASSWORD != null
-				&& !couchDB_PASSWORD.trim().isEmpty()) {
-			UsernamePasswordCredentials creds = new UsernamePasswordCredentials(
-					couchDB_USERNAME, couchDB_PASSWORD);
-			authentication = BasicScheme.authenticate(creds, "US-ASCII", false)
-					.toString();
-		}
-
 		if (!databaseExist) {
-			try {
-				if (CouchDBUtil.checkDB(getCouchDB_ip(), couchDB_NAME,
-						authentication)) {
 
-					databaseExist = true;
+			synchronized (databaseExist) {
 
-				} else {
+				if (!databaseExist) {
 
-					CouchDBUtil.createDb(getCouchDB_ip(), couchDB_NAME,
-							authentication);
-					databaseExist = true;
+					if (couchDB_USERNAME != null
+							&& !couchDB_USERNAME.trim().isEmpty()
+							&& couchDB_PASSWORD != null
+							&& !couchDB_PASSWORD.trim().isEmpty()) {
+						UsernamePasswordCredentials creds = new UsernamePasswordCredentials(
+								couchDB_USERNAME, couchDB_PASSWORD);
+						authentication = BasicScheme.authenticate(creds,
+								"US-ASCII", false).toString();
+					}
+					try {
+						if (CouchDBUtil.checkDB(getCouchDB_ip(), couchDB_NAME,
+								authentication)) {
+
+							databaseExist = true;
+
+						} else {
+
+							CouchDBUtil.createDb(getCouchDB_ip(), couchDB_NAME,
+									authentication);
+							databaseExist = true;
+						}
+					} catch (MalformedURLException e) {
+						logger.info("Impossible to access CouchDB", e);
+						return;
+					}
 				}
-			} catch (MalformedURLException e) {
-				logger.info("Impossible to store information into CouchDB", e);
-				return;
 			}
 		}
 	}
@@ -604,6 +612,70 @@ public class CouchDB implements KeyValueStoreInterface,
 		return historicalContextElement;
 	}
 
+	public List<ContextElement> getValues(List<String> keys) {
+
+		// curl -d '{"keys":["bar","baz"]}' -X POST
+		// http://127.0.0.1:5984/foo/_all_docs?include_docs=true
+
+		StringBuffer body = new StringBuffer();
+		body.append("{\"keys\":[");
+		boolean first = true;
+		for (String key : keys) {
+			if (first) {
+				 try {
+				 body.append("\""+URLDecoder.decode(key, "UTF-8")+"\"");
+				 } catch (UnsupportedEncodingException e) {
+				 // TODO Auto-generated catch block
+				 e.printStackTrace();
+				 }
+				first = false;
+			} else {
+				 try {
+				 body.append(",\""+URLDecoder.decode(key, "UTF-8")+"\"");
+				 } catch (UnsupportedEncodingException e) {
+				 // TODO Auto-generated catch block
+				 e.printStackTrace();
+				 }
+			}
+		}
+		body.append("]}");
+				
+		this.checkDB();
+
+		// TODO A check if the key are referring to only one contextElement
+
+		String url = getCouchDB_ip() + "/" + couchDB_NAME
+				+ "/_all_docs?include_docs=true";
+
+		List<ContextElement> contextElements = new ArrayList<ContextElement>();
+
+		try {
+			FullHttpResponse response = HttpRequester.sendPost(new URL(url),
+					escapeBody(body.toString()), ContentType.JSON.toString()+"; "+"charset=utf-8");
+			if (response == null
+					|| response.getStatusLine().getStatusCode() != 200
+					|| response.getBody() == null
+					|| response.getBody().isEmpty()) {
+
+				logger.error("No response from CouchDB!!!");
+
+			} else {
+
+				contextElements = getContextElements(response.getBody());
+			}
+
+		} catch (MalformedURLException e) {
+			logger.warn("Error on getting values from Couchdb, MalformedURLExpection: "
+					+ url + " message: " + e.getMessage());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			logger.warn("Error on getting values from Couchdb: ");
+			e.printStackTrace();
+		}
+
+		return contextElements;
+	}
+
 	public List<ContextElement> getAllValues(String startKey, String endKey) {
 		List<ContextElement> contextElements = new ArrayList<ContextElement>();
 
@@ -649,7 +721,8 @@ public class CouchDB implements KeyValueStoreInterface,
 			}
 
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
+			logger.warn("Error on getting values from Couchdb, MalformedURLExpection: "
+					+ url + " message: " + e.getMessage());
 		}
 
 		return contextElements;
@@ -697,6 +770,38 @@ public class CouchDB implements KeyValueStoreInterface,
 		}
 
 		return historicalContextElement;
+	}
+
+	private List<ContextElement> getContextElements(String couchDBResultSet) {
+
+		List<ContextElement> contextElements = new ArrayList<ContextElement>();
+
+		JsonElement jelement = new JsonParser().parse(couchDBResultSet);
+		if (!jelement.isJsonNull()) {
+
+			JsonObject jobject = jelement.getAsJsonObject();
+
+			JsonArray rows = jobject.getAsJsonArray("rows");
+
+			// Parse each row of the response
+			for (JsonElement jsonElement : rows) {
+				JsonObject row = jsonElement.getAsJsonObject();
+
+				// Parse the ContextElement
+				if (row.get("doc") != null){
+					ContextElement contextElement = (ContextElement) NgsiStructure
+							.parseStringToJson(row.get("doc").toString(),
+									ContextElement.class);
+					contextElements.add(contextElement);
+				} else {
+					logger.warn("Inconsistency in CouchDB: "+ row.toString());
+				}
+				
+
+			}
+		}
+
+		return contextElements;
 	}
 
 	@Override
@@ -751,6 +856,14 @@ public class CouchDB implements KeyValueStoreInterface,
 		}
 
 		return registrations;
+	}
+
+	private String escapeBody(String body) {
+
+		String escapedBody = body.replaceAll("\"", "\\\"");
+
+		return escapedBody;
+
 	}
 
 	@Override
