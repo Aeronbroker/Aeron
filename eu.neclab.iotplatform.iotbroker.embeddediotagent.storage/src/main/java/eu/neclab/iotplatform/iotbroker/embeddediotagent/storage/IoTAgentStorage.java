@@ -140,6 +140,7 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 	@Override
 	public void storeHistoricalData(ContextElement isolatedContextElement,
 			Date defaultDate) {
+
 		Date timestamp = extractTimestamp(isolatedContextElement
 				.getContextAttributeList().iterator().next());
 
@@ -183,7 +184,9 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 			for (ContextMetadata contextMetadata : contextAttribute
 					.getMetadata()) {
 
-				if (contextMetadata.getName().equalsIgnoreCase("creation_time")) {
+				if (contextMetadata.getName().equalsIgnoreCase("creation_time")
+						|| contextMetadata.getName()
+								.equalsIgnoreCase("endtime")) {
 
 					/*
 					 * This contextMetadata is set by the leafengine connector
