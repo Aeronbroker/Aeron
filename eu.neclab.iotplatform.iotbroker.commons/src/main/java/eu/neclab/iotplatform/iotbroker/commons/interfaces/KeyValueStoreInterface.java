@@ -69,6 +69,4 @@ public interface KeyValueStoreInterface {
 
 	List<ContextElement> getAllValues(String startKey, String endKey);
 
-	List<ContextElement> getAllValues(String startKey, String endKey);
-
 }

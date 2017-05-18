@@ -2,7 +2,7 @@
 How to use me?
 #######################################
 
-1) Run "docker build -t fiware/iotbroker:standalone-dev ."
+1) Run "docker build --no-cache=true -t fiware/iotbroker:standalone-dev ."
 
 
 
