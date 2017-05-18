@@ -50,8 +50,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -138,6 +140,7 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 	@Override
 	public void storeHistoricalData(ContextElement isolatedContextElement,
 			Date defaultDate) {
+
 		Date timestamp = extractTimestamp(isolatedContextElement
 				.getContextAttributeList().iterator().next());
 
@@ -181,7 +184,9 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 			for (ContextMetadata contextMetadata : contextAttribute
 					.getMetadata()) {
 
-				if (contextMetadata.getName().equalsIgnoreCase("creation_time")) {
+				if (contextMetadata.getName().equalsIgnoreCase("creation_time")
+						|| contextMetadata.getName()
+								.equalsIgnoreCase("endtime")) {
 
 					/*
 					 * This contextMetadata is set by the leafengine connector
@@ -314,7 +319,80 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 				.matchingIdsAndAttributeNames(entityIdList, attributeNamesSet);
 
 		// List of Task
-		List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
+		// List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
+
+		List<String> documentKeys = new ArrayList<String>();
+
+		// for (String id : idsAndAttributeNames.keySet()) {
+		//
+		// /*
+		// * Extract the entityId.id and the entityId.type
+		// */
+		// String[] entityAndType = indexer.splitEntityAndType(id);
+		// final String entity;
+		// final String type;
+		// if (entityAndType.length == 1) {
+		// entity = entityAndType[0];
+		// type = null;
+		// } else {
+		// entity = entityAndType[0];
+		// type = entityAndType[1];
+		// }
+		//
+		// final ContextElement contextElement = new ContextElement();
+		//
+		// boolean first = true;
+		//
+		// final List<ContextAttribute> contextAttributelist = new
+		// ArrayList<ContextAttribute>();
+		// final List<ContextAttribute> synContextAttributelist = Collections
+		// .synchronizedList(contextAttributelist);
+		//
+		// for (final String attributeName : idsAndAttributeNames.get(id)) {
+		//
+		// if (first) {
+		//
+		// tasks.add(Executors.callable(new Runnable() {
+		// public void run() {
+		// ContextElement contextElementTmp = getLatestValue(
+		// entity, type, attributeName);
+		// contextElement
+		// .setAttributeDomainName(contextElementTmp
+		// .getAttributeDomainName());
+		// contextElement
+		// .setContextAttributeList(contextAttributelist);
+		// synContextAttributelist.addAll(contextElementTmp
+		// .getContextAttributeList());
+		// contextElement.setDomainMetadata(contextElementTmp
+		// .getDomainMetadata());
+		// contextElement.setEntityId(contextElementTmp
+		// .getEntityId());
+		// }
+		// }));
+		//
+		// first = false;
+		//
+		// } else {
+		// tasks.add(Executors.callable(new Runnable() {
+		// public void run() {
+		// synContextAttributelist.addAll(getLatestValue(
+		// entity, type, attributeName)
+		// .getContextAttributeList());
+		// }
+		// }));
+		// }
+		//
+		// }
+		//
+		// contextElementList.add(contextElement);
+		//
+		// }
+		//
+		// try {
+		// taskExecutor.invokeAll(tasks);
+		// } catch (InterruptedException e) {
+		// e.printStackTrace();
+		// }
 
 		for (String id : idsAndAttributeNames.keySet()) {
 
@@ -332,62 +410,44 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 				type = entityAndType[1];
 			}
 
-			final ContextElement contextElement = new ContextElement();
-
-			boolean first = true;
-
-			final List<ContextAttribute> contextAttributelist = new ArrayList<ContextAttribute>();
-			final List<ContextAttribute> synContextAttributelist = Collections
-					.synchronizedList(contextAttributelist);
-
 			for (final String attributeName : idsAndAttributeNames.get(id)) {
 
-				if (first) {
-
-					tasks.add(Executors.callable(new Runnable() {
-						public void run() {
-							ContextElement contextElementTmp = getLatestValue(
-									entity, type, attributeName);
-							contextElement
-									.setAttributeDomainName(contextElementTmp
-											.getAttributeDomainName());
-							contextElement
-									.setContextAttributeList(contextAttributelist);
-							synContextAttributelist.addAll(getLatestValue(
-									entity, type, attributeName)
-									.getContextAttributeList());
-							contextElement.setDomainMetadata(contextElementTmp
-									.getDomainMetadata());
-							contextElement.setEntityId(contextElementTmp
-									.getEntityId());
-						}
-					}));
-
-					first = false;
-
-				} else {
-					tasks.add(Executors.callable(new Runnable() {
-						public void run() {
-							synContextAttributelist.addAll(getLatestValue(
-									entity, type, attributeName)
-									.getContextAttributeList());
-						}
-					}));
-				}
+				documentKeys.add(indexer.generateKeyForLatestValue(entity,
+						type, attributeName));
 
 			}
 
-			contextElementList.add(contextElement);
+		}
+
+		contextElementList = keyValueStore.getValues(documentKeys);
+
+		Map<String, ContextElement> compactedContextElementsMap = new HashMap<String, ContextElement>();
+
+		for (ContextElement contextElement : contextElementList) {
+
+			String entityKey = contextElement.getEntityId().getId()
+					+ contextElement.getEntityId().getType();
+
+			if (compactedContextElementsMap.containsKey(entityKey)) {
+
+				compactedContextElementsMap.get(entityKey)
+						.getContextAttributeList()
+						.addAll(contextElement.getContextAttributeList());
+
+			} else {
+				compactedContextElementsMap.put(entityKey, contextElement);
+			}
 
 		}
 
-		try {
-			taskExecutor.invokeAll(tasks);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		// try {
+		// taskExecutor.invokeAll(tasks);
+		// } catch (InterruptedException e) {
+		// e.printStackTrace();
+		// }
 
-		return contextElementList;
+		return new ArrayList<ContextElement>(
+				compactedContextElementsMap.values());
 
 	}
 

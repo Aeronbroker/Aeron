@@ -639,7 +639,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 */
 		List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
 
-		// Extract ContextRegistrations which belong to the embeddedAgent
+		// Extract ContextRegistrations that belong to the embeddedAgent
 		// (in order to avoid loop)
 		if (BundleUtils.isServiceRegistered(this, embeddedIoTAgent)) {
 

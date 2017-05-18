@@ -45,13 +45,13 @@
 package eu.neclab.iotplatform.iotbroker.commons;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.NoRouteToHostException;
 import java.net.ProtocolException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
@@ -110,11 +110,11 @@ public class FullHttpRequester {
 			if (data != null && !data.equals("")) {
 				// Send put request
 				con.setDoOutput(true);
-//				 DataOutputStream wr = new DataOutputStream(
-//				 con.getOutputStream());
+				// DataOutputStream wr = new DataOutputStream(
+				// con.getOutputStream());
 				OutputStreamWriter wr = new OutputStreamWriter(
 						con.getOutputStream(), "UTF-8");
-//				wr.writeBytes(data);
+				// wr.writeBytes(data);
 				wr.write(data);
 				wr.flush();
 				wr.close();
@@ -148,8 +148,9 @@ public class FullHttpRequester {
 				httpResponse.setBody(response.toString());
 
 				// logger.info("Response Code : " + responseCode);
-				logger.info("\nPOST to URL : "+url+"\nResponse Code : " + responseCode + "\n"
-						+ "Response : " + response.toString());
+				logger.info("\nPOST to URL : " + url + "\nResponse Code : "
+						+ responseCode + "\n" + "Response : "
+						+ response.toString());
 
 				con.disconnect();
 				return httpResponse;
@@ -196,7 +197,7 @@ public class FullHttpRequester {
 						connection.getResponseCode(),
 						connection.getResponseMessage());
 
-				if (responseCode > 399 && responseCode < 500) {
+				if (responseCode > 399) {
 
 					connection.disconnect();
 					return httpResponse;
@@ -218,7 +219,8 @@ public class FullHttpRequester {
 
 					// logger.info("Response Code : " + responseCode);
 					if (logger.isDebugEnabled()) {
-						logger.debug("\nGET to URL : "+url+"\nResponse Code : " + responseCode + "\n"
+						logger.debug("\nGET to URL : " + url
+								+ "\nResponse Code : " + responseCode + "\n"
 								+ "Response : " + response.toString());
 					}
 
@@ -244,7 +246,9 @@ public class FullHttpRequester {
 			return new FullHttpResponse(HttpVersion.HTTP_1_0,
 					HttpStatus.SC_INTERNAL_SERVER_ERROR, "");
 		} catch (IOException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
+			logger.warn("Impossible to connect with " + url + " while : "
+					+ e.getClass().getSimpleName());
 			return new FullHttpResponse(HttpVersion.HTTP_1_0,
 					HttpStatus.SC_INTERNAL_SERVER_ERROR, "");
 		} finally {
@@ -255,8 +259,8 @@ public class FullHttpRequester {
 		return httpResponse;
 
 	}
-	
-	public static FullHttpResponse sendGet(URL url, Map<String,String> headers) {
+
+	public static FullHttpResponse sendGet(URL url, Map<String, String> headers) {
 
 		FullHttpResponse httpResponse = null;
 
@@ -268,9 +272,10 @@ public class FullHttpRequester {
 			// Set up the initial connection
 			connection = (HttpURLConnection) url.openConnection();
 			connection.setRequestMethod("GET");
-			if (headers != null && !headers.isEmpty()){
-				for (Entry<String,String> entry : headers.entrySet())
-				connection.setRequestProperty(entry.getKey(), entry.getValue());
+			if (headers != null && !headers.isEmpty()) {
+				for (Entry<String, String> entry : headers.entrySet())
+					connection.setRequestProperty(entry.getKey(),
+							entry.getValue());
 			}
 			connection.setDoOutput(true);
 			connection.setReadTimeout(10000);
@@ -306,7 +311,8 @@ public class FullHttpRequester {
 
 					// logger.info("Response Code : " + responseCode);
 					if (logger.isDebugEnabled()) {
-						logger.debug("\nGET to URL : "+url+"\nResponse Code : " + responseCode + "\n"
+						logger.debug("\nGET to URL : " + url
+								+ "\nResponse Code : " + responseCode + "\n"
 								+ "Response : " + response.toString());
 					}
 
@@ -344,7 +350,6 @@ public class FullHttpRequester {
 
 	}
 
-
 	public static FullHttpResponse sendPut(URL url, String data,
 			String contentType) throws Exception {
 
@@ -375,11 +380,11 @@ public class FullHttpRequester {
 			if (data != null && !data.equals("")) {
 				// Send put request
 				con.setDoOutput(true);
-//				 DataOutputStream wr = new DataOutputStream(
-//				 con.getOutputStream());
+				// DataOutputStream wr = new DataOutputStream(
+				// con.getOutputStream());
 				OutputStreamWriter wr = new OutputStreamWriter(
 						con.getOutputStream(), "UTF-8");
-//				wr.writeBytes(data);
+				// wr.writeBytes(data);
 				wr.write(data);
 				wr.flush();
 				wr.close();
@@ -414,8 +419,9 @@ public class FullHttpRequester {
 				httpResponse.setBody(response.toString());
 
 				// logger.info("Response Code : " + responseCode);
-				logger.info("\nPUT to URL : "+url+"\nResponse Code : " + responseCode + "\n"
-						+ "Response : " + response.toString());
+				logger.info("\nPUT to URL : " + url + "\nResponse Code : "
+						+ responseCode + "\n" + "Response : "
+						+ response.toString());
 
 				con.disconnect();
 				return httpResponse;
@@ -453,7 +459,8 @@ public class FullHttpRequester {
 			logger.info("\nSending 'DELETE' request to URL : " + url);
 
 			int responseCode = con.getResponseCode();
-			logger.info("\nDELETE to URL : "+url+"\nResponse Code : " + responseCode + "\n");
+			logger.info("\nDELETE to URL : " + url + "\nResponse Code : "
+					+ responseCode + "\n");
 
 			httpResponse = new FullHttpResponse(HttpVersion.HTTP_1_0,
 					con.getResponseCode(), con.getResponseMessage());

@@ -232,7 +232,9 @@ public class SubscriptionController {
 	/**
 	 * Timer to control the duration of subscriptions.
 	 */
-	private final Timer timer = new Timer("Subs Duration Timer");
+	private final Timer unsubsribeTimer = new Timer("Subs Duration Timer");
+
+	private final Timer throttlingTimer = new Timer("Throttling Timer");
 
 	/**
 	 * Used for handling NGSI associations.
@@ -243,6 +245,8 @@ public class SubscriptionController {
 	long defaultThrottling;
 	private @Value("${default_duration}")
 	long defaultDuration;
+
+	final static long MINIMUM_THROTTLING = 100;
 
 	/**
 	 * Used to filter notifications.
@@ -293,7 +297,7 @@ public class SubscriptionController {
 		// quick and dirty solution
 		// TODO start initialization after all bundles are started
 		final SubscriptionController subscriptionController = this;
-		timer.schedule(new TimerTask() {
+		unsubsribeTimer.schedule(new TimerTask() {
 
 			@Override
 			public void run() {
@@ -302,6 +306,10 @@ public class SubscriptionController {
 			}
 		}, 2000);
 
+	}
+
+	public Timer getThrottlingTimer() {
+		return throttlingTimer;
 	}
 
 	/**
@@ -647,7 +655,8 @@ public class SubscriptionController {
 		 * soon as the subscription has expired.
 		 */
 
-		UnsubscribeTask task = new UnsubscribeTask(subscriptionId, this);
+		UnsubscribeTask unsubscribeTask = new UnsubscribeTask(subscriptionId,
+				this);
 		if (subscribeContextRequest.getDuration() != null
 				&& logger.isDebugEnabled()) {
 			logger.debug("Subscription time: "
@@ -681,7 +690,7 @@ public class SubscriptionController {
 
 		SubscriptionData subData = new SubscriptionData(notificationHandler);
 		subData.setStartTime(DurationUtils.currentTime());
-		subData.setUnsubscribeTask(task);
+		subData.setUnsubscribeTask(unsubscribeTask);
 
 		if (traceOriginatorOfSubscription) {
 			String originator = getSubscriptionOriginator(subscribeContextRequest);
@@ -699,10 +708,41 @@ public class SubscriptionController {
 		 * duration is given, a default duration is used.
 		 */
 		if (subscribeContextRequest.getDuration() != null) {
-			timer.schedule(task, subscribeContextRequest.getDuration()
-					.getTimeInMillis(new GregorianCalendar()));
+			unsubsribeTimer.schedule(unsubscribeTask, subscribeContextRequest
+					.getDuration().getTimeInMillis(new GregorianCalendar()));
 		} else {
-			timer.schedule(task, defaultDuration);
+			unsubsribeTimer.schedule(unsubscribeTask, defaultDuration);
+
+		}
+
+		// create the notification queue for the subscription
+		List<ContextElementResponse> contextResponseQueue = new ArrayList<ContextElementResponse>();
+		// create the notification task for the subscription
+
+		ThrottlingTask taskThrottling = new ThrottlingTask(subscriptionId, this);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Created Throttling task for" + subscriptionId);
+		}
+		// store both in the subscription data
+		subData.setThrottlingTask(taskThrottling);
+		subData.setContextResponseQueue(contextResponseQueue);
+
+		/*
+		 * now finally deploy the notification task
+		 */
+		if (subscribeContextRequest.getThrottling() != null
+				&& subscribeContextRequest.getThrottling().getTimeInMillis(
+						new GregorianCalendar()) > MINIMUM_THROTTLING) {
+
+			throttlingTimer.scheduleAtFixedRate(
+					taskThrottling,
+					new Date(System.currentTimeMillis()),
+					subscribeContextRequest.getThrottling().getTimeInMillis(
+							new GregorianCalendar()));
+		} else {
+
+			throttlingTimer.scheduleAtFixedRate(taskThrottling,
+					new Date(System.currentTimeMillis()), defaultThrottling);
 
 		}
 
@@ -774,8 +814,8 @@ public class SubscriptionController {
 			if (uCSreq.getRestriction() != null
 					&& uCSreq.getRestriction().getOperationScope() != null
 					&& !uCSreq.getRestriction().getOperationScope().isEmpty()) {
-				availabilitySubscriptionRestriction = new Restriction("", uCSreq
-						.getRestriction().getOperationScope());
+				availabilitySubscriptionRestriction = new Restriction("",
+						uCSreq.getRestriction().getOperationScope());
 			} else {
 				availabilitySubscriptionRestriction = null;
 			}
@@ -810,17 +850,15 @@ public class SubscriptionController {
 		SubscriptionData subData = subscriptionDataIndex.get(uCSreq
 				.getSubscriptionId());
 		UnsubscribeTask prvtask = subData.getUnsubscribeTask();
-		UnsubscribeTask task = new UnsubscribeTask(uCSreq.getSubscriptionId(),
-				this);
-		subData.setUnsubscribeTask(task);
+		UnsubscribeTask unsubscribeTask = new UnsubscribeTask(
+				uCSreq.getSubscriptionId(), this);
+		subData.setUnsubscribeTask(unsubscribeTask);
 		prvtask.cancel();
 		if (uCSreq.getDuration() != null) {
 
 			try {
-				timer.schedule(
-						task,
-						uCSreq.getDuration().getTimeInMillis(
-								new GregorianCalendar()));
+				unsubsribeTimer.schedule(unsubscribeTask, uCSreq.getDuration()
+						.getTimeInMillis(new GregorianCalendar()));
 			} catch (Exception e) {
 				logger.error("Time Schedule Error", e);
 				return new UpdateContextSubscriptionResponse(null,
@@ -831,8 +869,8 @@ public class SubscriptionController {
 			}
 		} else {
 			try {
-				timer.schedule(task, new Date(System.currentTimeMillis()),
-						defaultDuration);
+				unsubsribeTimer.schedule(unsubscribeTask,
+						new Date(System.currentTimeMillis()), defaultDuration);
 
 			} catch (Exception e) {
 				logger.error("Time Schedule Error", e);
@@ -1796,9 +1834,12 @@ public class SubscriptionController {
 				int compareResult = keyComparator.compare(exSA.getLeft(),
 						npSA.getLeft());
 
-				logger.debug("PEEK exist " + exSA.getLeft().toString()
-						+ " : PEEK new" + npSA.getLeft().toString() + " : "
-						+ compareResult);
+				if (logger.isDebugEnabled()) {
+
+					logger.debug("PEEK exist " + exSA.getLeft().toString()
+							+ " : PEEK new" + npSA.getLeft().toString() + " : "
+							+ compareResult);
+				}
 
 				if (compareResult == 0) {
 
@@ -2332,6 +2373,11 @@ public class SubscriptionController {
 		// subscribeRequestToSend = this
 		// .replacePepCredentials(subscribeRequest);
 		// }
+
+		if (agentURi.toString().equals(getRefURl())) {
+			return;
+		}
+		;
 
 		new Thread() {
 			@Override

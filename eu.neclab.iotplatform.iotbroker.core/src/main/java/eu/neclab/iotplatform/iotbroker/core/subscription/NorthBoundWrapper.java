@@ -49,7 +49,8 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Timer;
+
+import javax.xml.datatype.Duration;
 
 import org.apache.log4j.Logger;
 
@@ -84,7 +85,7 @@ public class NorthBoundWrapper {
 
 	private static Logger logger = Logger.getLogger(NorthBoundWrapper.class);
 	private final SubscriptionController subscriptionController;
-	private final Timer timer = new Timer();
+	// private final Timer throttlingTimer = new Timer();
 	private Ngsi10Requester ngsi10Requestor;
 
 	private final AssociationsUtil associationUtil = new AssociationsUtil();
@@ -132,11 +133,11 @@ public class NorthBoundWrapper {
 		return ngsi10Requestor.notifyContext(notifyContextRequest, pubSubURL);
 	}
 
-	public SubscribeContextResponse receiveReqFrmSubscribeController(
-			SubscribeContextRequest scReq) {
-
-		return null;
-	}
+	// public SubscribeContextResponse receiveReqFrmSubscribeController(
+	// SubscribeContextRequest scReq) {
+	//
+	// return null;
+	// }
 
 	/**
 	 * 
@@ -159,55 +160,95 @@ public class NorthBoundWrapper {
 		SubscribeContextResponse sCRes = subscriptionController
 				.receiveReqFrmNorthBoundWrapper(subscribeContextRequest);
 
-		if (sCRes != null && sCRes.getSubscribeError() != null
-				&& sCRes.getSubscribeError().getStatusCode().getCode() == 200) {
+//		if (sCRes != null && sCRes.getSubscribeError() != null
+//				&& sCRes.getSubscribeError().getStatusCode().getCode() == 200) {
+//
+//			/*
+//			 * Set up the notification process for this subscription.
+//			 */
+//
+//			/*
+//			 * Get the subscription data from the subscription controller.
+//			 */
+//			SubscriptionData sData = subscriptionController
+//					.getSubscriptionDataIndex().get(
+//							sCRes.getSubscribeResponse().getSubscriptionId());
+//
+//			// create the notification queue for the subscription
+//			List<ContextElementResponse> contextResponseQueue = new ArrayList<ContextElementResponse>();
+//			// create the notification task for the subscription
+//
+//			ThrottlingTask taskThrottling = new ThrottlingTask(sCRes
+//					.getSubscribeResponse().getSubscriptionId(),
+//					subscriptionController);
+//			if (logger.isDebugEnabled()) {
+//				logger.debug("Created Throttling task for"
+//						+ sCRes.getSubscribeResponse().getSubscriptionId());
+//			}
+//			// store both in the subscription data
+//			sData.setThrottlingTask(taskThrottling);
+//			sData.setContextResponseQueue(contextResponseQueue);
+//
+//			/*
+//			 * now finally deploy the notification task
+//			 */
+//			if (subscribeContextRequest.getThrottling() != null) {
+//
+//				subscriptionController.getThrottlingTimer()
+//						.scheduleAtFixedRate(
+//								taskThrottling,
+//								new Date(System.currentTimeMillis()),
+//								subscribeContextRequest.getThrottling()
+//										.getTimeInMillis(
+//												new GregorianCalendar()));
+//			} else {
+//
+//				subscriptionController.getThrottlingTimer()
+//						.scheduleAtFixedRate(taskThrottling,
+//								new Date(System.currentTimeMillis()),
+//								subscriptionController.getDefaultThrottling());
+//
+//			}
 
-			/*
-			 * Set up the notification process for this subscription.
-			 */
-
-			/*
-			 * Get the subscription data from the subscription controller.
-			 */
-			SubscriptionData sData = subscriptionController
-					.getSubscriptionDataIndex().get(
-							sCRes.getSubscribeResponse().getSubscriptionId());
-
-			// create the notification queue for the subscription
-			List<ContextElementResponse> contextResponseQueue = new ArrayList<ContextElementResponse>();
-			// create the notification task for the subscription
-
-			ThrottlingTask taskThrottling = new ThrottlingTask(sCRes
-					.getSubscribeResponse().getSubscriptionId(),
-					subscriptionController);
-			if (logger.isDebugEnabled()) {
-				logger.debug("Created Throttling task for"
-						+ sCRes.getSubscribeResponse().getSubscriptionId());
-			}
-			// store both in the subscription data
-			sData.setThrottlingTask(taskThrottling);
-			sData.setContextResponseQueue(contextResponseQueue);
-
-			/*
-			 * now finally deploy the notification task
-			 */
-			if (subscribeContextRequest.getThrottling() != null) {
-
-				timer.scheduleAtFixedRate(taskThrottling,
-						new Date(System.currentTimeMillis()),
-						subscribeContextRequest.getThrottling()
-								.getTimeInMillis(new GregorianCalendar()));
-			} else {
-
-				timer.scheduleAtFixedRate(taskThrottling,
-						new Date(System.currentTimeMillis()),
-						subscriptionController.getDefaultThrottling());
-
-			}
-		}
+			// initializeThrottlingTask(sCRes.getSubscribeResponse()
+			// .getSubscriptionId(), sData, contextResponseQueue,
+			// subscribeContextRequest.getThrottling());
+//		}
 		return sCRes;
 
 	}
+
+	// public void initializeThrottlingTask(String subscriptionId,
+	// SubscriptionData sData,
+	// List<ContextElementResponse> contextResponseQueue,
+	// Duration throttling) {
+	//
+	// ThrottlingTask taskThrottling = new ThrottlingTask(subscriptionId,
+	// subscriptionController);
+	// if (logger.isDebugEnabled()) {
+	// logger.debug("Created Throttling task for" + subscriptionId);
+	// }
+	// // store both in the subscription data
+	// sData.setThrottlingTask(taskThrottling);
+	// sData.setContextResponseQueue(contextResponseQueue);
+	//
+	// /*
+	// * now finally deploy the notification task
+	// */
+	// if (throttling != null) {
+	//
+	// subscriptionController.getThrottlingTimer().scheduleAtFixedRate(
+	// taskThrottling, new Date(System.currentTimeMillis()),
+	// throttling.getTimeInMillis(new GregorianCalendar()));
+	// } else {
+	//
+	// subscriptionController.getThrottlingTimer().scheduleAtFixedRate(
+	// taskThrottling, new Date(System.currentTimeMillis()),
+	// subscriptionController.getDefaultThrottling());
+	//
+	// }
+	//
+	// }
 
 	/**
 	 * Processes the NGSI 10 UpdateContextSubscription operation.
@@ -233,11 +274,12 @@ public class NorthBoundWrapper {
 			sData.setThrottlingTask(taskThrottling);
 			if (uCSres.getSubscribeResponse().getThrottling() != null) {
 				try {
-					timer.scheduleAtFixedRate(
-							taskThrottling,
-							new Date(System.currentTimeMillis()),
-							uCSreq.getThrottling().getTimeInMillis(
-									new GregorianCalendar()));
+					subscriptionController.getThrottlingTimer()
+							.scheduleAtFixedRate(
+									taskThrottling,
+									new Date(System.currentTimeMillis()),
+									uCSreq.getThrottling().getTimeInMillis(
+											new GregorianCalendar()));
 				} catch (Exception e) {
 					logger.error("Timer Task Error", e);
 					return new UpdateContextSubscriptionResponse(null,
@@ -248,9 +290,12 @@ public class NorthBoundWrapper {
 				}
 			} else {
 				try {
-					timer.scheduleAtFixedRate(taskThrottling,
-							new Date(System.currentTimeMillis()),
-							subscriptionController.getDefaultThrottling());
+					subscriptionController.getThrottlingTimer()
+							.scheduleAtFixedRate(
+									taskThrottling,
+									new Date(System.currentTimeMillis()),
+									subscriptionController
+											.getDefaultThrottling());
 					uCSres.getSubscribeResponse().setThrottling(
 							DurationUtils
 									.convertToDuration(subscriptionController

@@ -101,14 +101,18 @@ public class ThrottlingTask extends TimerTask {
 		 * Retrieve the subscription data from the subscription store
 		 */
 
-		logger.debug("SubscriptionId from TrottlingTask ---------------->"
-				+ subId);
+		if (logger.isDebugEnabled()) {
+			logger.debug("SubscriptionId from TrottlingTask ---------------->"
+					+ subId);
+		}
 
-		SubscriptionData subscriptionData = subContoller.getSubscriptionDataIndex()
-				.get(subId);
+		SubscriptionData subscriptionData = subContoller
+				.getSubscriptionDataIndex().get(subId);
 
-		logger.debug("Trotthling task ID ---------------->"
-				+ subscriptionData.getThrottlingTask().getSubId());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Trotthling task ID ---------------->"
+					+ subscriptionData.getThrottlingTask().getSubId());
+		}
 
 		if (subscriptionData.getContextResponseQueue().isEmpty()) {
 			logger.debug("Terminating notification task as there are no notifications to send.");
@@ -128,8 +132,8 @@ public class ThrottlingTask extends TimerTask {
 			/*
 			 * Get the incoming subscription
 			 */
-			SubscribeContextRequest request = subContoller.getSubscriptionStorage()
-					.getIncomingSubscription(subId);
+			SubscribeContextRequest request = subContoller
+					.getSubscriptionStorage().getIncomingSubscription(subId);
 
 			logger.debug("Processing Notication for this subscription:"
 					+ request.toString());
@@ -190,5 +194,4 @@ public class ThrottlingTask extends TimerTask {
 		}
 
 	}
-
 }
