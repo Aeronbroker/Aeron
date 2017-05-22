@@ -29,7 +29,7 @@ docker pull fiware/iotbroker:standalone-dev
 and for running it use the command 
 
 ```
-docker run -t -p 8065:8065 -p 8060:8060 -p 5984:5984 fiware/iotbroker:internal-standalone-dev
+docker run -t -p 8065:8065 -p 8060:8060 -p 5984:5984 fiware/iotbroker:standalone-dev
 ```
  
 and both the IoT Broker GEri and NEConfMan will be accessible respectively at port 8060 and 8065. In addition CouchDB will be exposed to the port 5984.
@@ -144,6 +144,22 @@ First Sanity Check
 --
 
 To verify that the IoT Broker is running, access the URL of its hosting machine on the IoT Broker port (default:8060) using a web browser; e.g. *localhost:8060* on the hosting machine. If the IoT Broker home page is not shown, it means that the IoT Broker does not run correctly.
+Another way to see wether the IoT Broker is correctly running it is possible to retrieve the version of the IoT Broker by requesting the `sanityCheck` resource:
+
+```
+curl http://{IoTBroker_IP}:{IoTBroker_Port}/sanityCheck
+```
+
+The response will lok like the following:
+
+```
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<sanityCheck>
+  <name>IoT Broker GE</name>
+  <type>Sanity Check</type>
+  <version>Version: 6.1.0.SNAPSHOT</version>
+</sanityCheck>
+```
 
 End to End testing
 --
@@ -151,7 +167,7 @@ End to End testing
 An end-to-end test is to send a query to the FIWARE NGSI interface of IoT Broker and receive the response.
 
 It is possible to test one of the supported NGSI-10 resources. For example let us try to send an
-HTTP GET to the *contextEntity/EntityId* resource `http://{IoT Broker IP}/ngsi10/contextEntities/Kitchen`.
+HTTP GET to the *contextEntity/EntityId* resource `http://{IoTBroker_IP}:{IoTBroker_Port}/ngsi10/contextEntities/Kitchen`.
 
 You should get back an XML response, with an ERROR CODE, similar to this:
 ```
