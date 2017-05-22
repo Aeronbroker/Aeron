@@ -220,13 +220,13 @@
 	
 	<xs:complexType name="Polygon">
 		<xs:sequence>
-			<xs:element name="vertexList" type="vertexList" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="vertexList" type="VertexList" minOccurs="1" maxOccurs="1"/>
 		</xs:sequence>
 	</xs:complexType>
 	
 	<xs:complexType name="VertexList">
 		<xs:sequence>
-			<xs:element name="vertex" type="vertex" minOccurs="4" maxOccurs="unbounded"/>
+			<xs:element name="vertex" type="Vertex" minOccurs="4" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
 
