@@ -49,6 +49,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -95,6 +96,8 @@ public class CouchDB implements KeyValueStoreInterface,
 	private String authentication = null;
 
 	private Boolean databaseExist = false;
+
+	private static String UNDERSCORE_PLACEHOLDER = "-~-_-~-";
 
 	@Value("${couchdb_host:localhost}")
 	private String couchDB_HOST;
@@ -834,18 +837,22 @@ public class CouchDB implements KeyValueStoreInterface,
 					for (JsonElement jsonElement : rows) {
 						JsonObject row = jsonElement.getAsJsonObject();
 
-						registrations.put(row.get("key").getAsString(),
+						String id = row.get("key").getAsString();
+						String rev = row.getAsJsonObject("doc").get("_rev")
+								.getAsString();
+						String registration = row.getAsJsonObject("doc")
+								.get("registration").getAsString();
+
+						if (id.startsWith(UNDERSCORE_PLACEHOLDER)) {
+							id = id.replaceFirst(UNDERSCORE_PLACEHOLDER, "_");
+						}
+
+						registrations.put(id,
 								(RegisterContextRequest) NgsiStructure
-										.convertStringToXml(
-												row.getAsJsonObject("doc")
-														.get("registration")
-														.getAsString(),
+										.convertStringToXml(registration,
 												RegisterContextRequest.class));
 
-						permanentRegistryRevById.put(row.get("key")
-								.getAsString(),
-								row.getAsJsonObject("doc").get("_rev")
-										.getAsString());
+						permanentRegistryRevById.put(id, rev);
 					}
 				}
 			}
@@ -871,6 +878,10 @@ public class CouchDB implements KeyValueStoreInterface,
 	public void storeRegistration(String id, RegisterContextRequest registration) {
 
 		// boolean successful = false;
+
+		if (id.startsWith("_")) {
+			id = id.replaceFirst("_", UNDERSCORE_PLACEHOLDER);
+		}
 
 		try {
 
@@ -919,21 +930,33 @@ public class CouchDB implements KeyValueStoreInterface,
 
 	@Override
 	public void deleteRegistration(String id) {
-		try {
 
+		if (id.startsWith("_")) {
+			id = id.replaceFirst("_", UNDERSCORE_PLACEHOLDER);
+		}
+
+		try {
+			String rev = permanentRegistryRevById.get(id);
+			
+			if (rev == null){
+				rev = permanentRegistryRevById.get(URLEncoder.encode(id, "UTF-8"));
+			}
+			
+			if (rev == null){
+				rev = permanentRegistryRevById.get(URLDecoder.decode(id, "UTF-8"));
+			}
+			
 			FullHttpResponse response = HttpRequester.sendDelete(new URL(
 					getCouchDB_ip() + registryDB_NAME + "/" + id + "?rev="
-							+ permanentRegistryRevById.get(id)));
+							+ rev));
 
 			if (response == null) {
 
 				logger.error("No response from CouchDB!!!");
 
-			} else if (response.getStatusLine().getStatusCode() == 200
-					&& response.getBody() != null
-					&& !response.getBody().isEmpty()) {
+			} else if (response.getStatusLine().getStatusCode() == 200) {
 
-				logger.info("Delete from internal registryDB : " + id);
+				logger.info("Deleted from internal registryDB : " + id);
 			} else {
 
 				logger.warn("CouchDB database " + registryDB_NAME
