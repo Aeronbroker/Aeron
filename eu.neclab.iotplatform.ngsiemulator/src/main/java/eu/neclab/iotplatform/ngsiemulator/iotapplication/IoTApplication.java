@@ -58,12 +58,13 @@ import com.sun.jersey.api.core.ResourceConfig;
 
 import eu.neclab.iotplatform.iotbroker.commons.ContentType;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NgsiStructure;
+import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.StatusCode;
 import eu.neclab.iotplatform.ngsiemulator.utils.HeaderExtractor;
 
-@Path("ngsi10")
+@Path("")
 public class IoTApplication {
 
 	// The logger
@@ -89,7 +90,7 @@ public class IoTApplication {
 					ContentType.XML);
 
 	@GET
-	@Path("/test")
+	@Path("/ngsi10/test")
 	@Produces("application/xml")
 	public String test() {
 
@@ -98,7 +99,7 @@ public class IoTApplication {
 	}
 
 	@POST
-	@Path("/testPost")
+	@Path("/ngsi10/testPost")
 	@Produces("application/json")
 	public String testPost(@Context HttpHeaders headers,
 			@Context ResourceConfig config, String body) {
@@ -108,7 +109,7 @@ public class IoTApplication {
 	}
 
 	@POST
-	@Path("/notify")
+	@Path("/ngsi10/notify")
 	@Consumes("application/json,application/xml")
 	@Produces("application/json,application/xml")
 	public String notifyResp(@Context HttpHeaders headers,
@@ -117,6 +118,8 @@ public class IoTApplication {
 		// Get the accepted content type
 		final ContentType outgoingContentType = HeaderExtractor.getAccept(
 				headers, defaultOutgoingContentType);
+		final ContentType incomingContentType = HeaderExtractor.getContentType(
+				headers, defaultOutgoingContentType);
 
 		NotifyContextResponse response = new NotifyContextResponse();
 		logger.info("Received a NGSI-10 Notification");
@@ -124,8 +127,19 @@ public class IoTApplication {
 			logger.debug("Received a NGSI-10 Notification:" + body);
 		}
 
-		NotifyContextRequest notification = (NotifyContextRequest) NgsiStructure
-				.parseStringToJson(body, NotifyContextRequest.class);
+		if (logger.isDebugEnabled()) {
+			NotifyContextRequest notification;
+			if (incomingContentType == ContentType.JSON) {
+				notification = (NotifyContextRequest) NgsiStructure
+						.parseStringToJson(body, NotifyContextRequest.class);
+			} else {
+				notification = (NotifyContextRequest) NgsiStructure
+						.convertStringToXml(body, NotifyContextRequest.class);
+			}
+			logger.debug("Parsed NGSI-10 Notification:"
+					+ notification.toJsonString());
+
+		}
 
 		response.setResponseCode(new StatusCode(200, "OK", null));
 
@@ -134,7 +148,51 @@ public class IoTApplication {
 		} else {
 			return response.toJsonString();
 		}
+	}
 
+	@POST
+	@Path("/ngsi9/notify")
+	@Consumes("application/json,application/xml")
+	@Produces("application/json,application/xml")
+	public String notifyAvailablityResp(@Context HttpHeaders headers,
+			@Context ResourceConfig config, String body) {
+
+		// Get the accepted content type
+		final ContentType outgoingContentType = HeaderExtractor.getAccept(
+				headers, defaultOutgoingContentType);
+		final ContentType incomingContentType = HeaderExtractor.getContentType(
+				headers, defaultOutgoingContentType);
+
+		NotifyContextResponse response = new NotifyContextResponse();
+		logger.info("Received a NGSI-9 Notification");
+		if (logger.isDebugEnabled()) {
+			logger.debug("Received a NGSI-9 Notification:" + body);
+		}
+
+		if (logger.isDebugEnabled()) {
+			NotifyContextAvailabilityRequest notification;
+
+			if (incomingContentType == ContentType.JSON) {
+				notification = (NotifyContextAvailabilityRequest) NgsiStructure
+						.parseStringToJson(body,
+								NotifyContextAvailabilityRequest.class);
+			} else {
+				notification = (NotifyContextAvailabilityRequest) NgsiStructure
+						.convertStringToXml(body,
+								NotifyContextAvailabilityRequest.class);
+			}
+			logger.debug("Parsed NGSI-9 Notification:"
+					+ notification.toJsonString());
+
+		}
+
+		response.setResponseCode(new StatusCode(200, "OK", null));
+
+		if (outgoingContentType == ContentType.XML) {
+			return response.toString();
+		} else {
+			return response.toJsonString();
+		}
 	}
 
 }
