@@ -42,7 +42,6 @@
  * DAMAGE.
  ******************************************************************************/
 
-
 package eu.neclab.iotplatform.iotbroker.embeddediotagent.couchdb;
 
 import java.io.BufferedReader;
@@ -67,8 +66,8 @@ public class HttpRequester {
 	/** The logger. */
 	private static Logger logger = Logger.getLogger(HttpRequester.class);
 
-	public static FullHttpResponse sendPost(URL url, String data, String contentType)
-			throws Exception {
+	public static FullHttpResponse sendPost(URL url, String data,
+			String contentType) throws Exception {
 
 		try {
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -81,8 +80,10 @@ public class HttpRequester {
 				con.setRequestProperty("Content-Type", contentType);
 			}
 
-			logger.info("\nSending 'POST' request to URL : " + url + "\n"
-					+ "POST parameters : " + data + "\n");
+			if (logger.isDebugEnabled()) {
+				logger.debug("\nSending 'POST' request to URL : " + url + "\n"
+						+ "POST parameters : " + data + "\n");
+			}
 
 			if (data != null && !data.equals("")) {
 				// Send put request
@@ -122,8 +123,10 @@ public class HttpRequester {
 				httpResponse.setBody(response.toString());
 
 				// logger.info("Response Code : " + responseCode);
-				logger.info("\nResponse Code : " + responseCode + "\n"
-						+ "Response : " + response.toString());
+				if (logger.isDebugEnabled()) {
+					logger.debug("\nResponse Code : " + responseCode + "\n"
+							+ "Response : " + response.toString());
+				}
 
 				con.disconnect();
 				return httpResponse;
@@ -216,8 +219,8 @@ public class HttpRequester {
 
 	}
 
-	public static FullHttpResponse sendPut(URL url, String data, String contentType)
-			throws Exception {
+	public static FullHttpResponse sendPut(URL url, String data,
+			String contentType) throws Exception {
 
 		try {
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -230,8 +233,10 @@ public class HttpRequester {
 				con.setRequestProperty("Content-Type", contentType);
 			}
 
-			logger.info("\nSending 'PUT' request to URL : " + url + "\n"
-					+ "Put parameters : " + data + "\n");
+			if (logger.isDebugEnabled()) {
+				logger.debug("\nSending 'PUT' request to URL : " + url + "\n"
+						+ "Put parameters : " + data + "\n");
+			}
 
 			if (data != null && !data.equals("")) {
 				// Send put request
@@ -272,8 +277,10 @@ public class HttpRequester {
 				httpResponse.setBody(response.toString());
 
 				// logger.info("Response Code : " + responseCode);
-				logger.info("\nResponse Code : " + responseCode + "\n"
-						+ "Response : " + response.toString());
+				if (logger.isDebugEnabled()) {
+					logger.debug("\nResponse Code : " + responseCode + "\n"
+							+ "Response : " + response.toString());
+				}
 
 				con.disconnect();
 				return httpResponse;
@@ -295,10 +302,14 @@ public class HttpRequester {
 		con.setRequestMethod("DELETE");
 		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 
-		logger.info("\nSending 'DELETE' request to URL : " + url);
+		if (logger.isDebugEnabled()) {
+			logger.debug("\nSending 'DELETE' request to URL : " + url);
+		}
 
 		int responseCode = con.getResponseCode();
-		logger.info("\nResponse Code : " + responseCode + "\n");
+		if (logger.isDebugEnabled()) {
+			logger.debug("\nResponse Code : " + responseCode + "\n");
+		}
 
 		FullHttpResponse httpResponse = new FullHttpResponse(
 				HttpVersion.HTTP_1_0, con.getResponseCode(),
@@ -329,9 +340,11 @@ public class HttpRequester {
 		wr.close();
 
 		int responseCode = con.getResponseCode();
-		logger.info("\nSending 'PUT' request to URL : " + url);
-		logger.info("Post parameters : " + data);
-		logger.info("Response Code : " + responseCode);
+		if (logger.isDebugEnabled()) {
+			logger.debug("\nSending 'PUT' request to URL : " + url
+					+ "\nPost parameters : " + data
+					+ "\nResponse Code : " + responseCode);
+		}
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(
 				con.getInputStream()));
@@ -344,7 +357,9 @@ public class HttpRequester {
 		in.close();
 		con.disconnect();
 		// print result
-		logger.info("Response : " + response.toString());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Response : " + response.toString());
+		}
 
 	}
 

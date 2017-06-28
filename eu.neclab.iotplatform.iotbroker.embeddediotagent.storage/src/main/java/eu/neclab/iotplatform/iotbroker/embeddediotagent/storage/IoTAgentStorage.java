@@ -197,9 +197,13 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 
 					SimpleDateFormat parserSDF = new SimpleDateFormat(
 							"yyyy.MM.dd HH:mm:ss:SSS Z");
-					timestamp = parserSDF.parse(
-							(String) contextMetadata.getValue(),
-							new ParsePosition(0));
+					try {
+						timestamp = parserSDF.parse(
+								(String) contextMetadata.getValue(),
+								new ParsePosition(0));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 					break;
 				} else if (contextMetadata.getName().equalsIgnoreCase("date")) {
 

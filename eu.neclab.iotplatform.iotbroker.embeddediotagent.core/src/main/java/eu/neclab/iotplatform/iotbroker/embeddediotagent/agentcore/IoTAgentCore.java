@@ -232,6 +232,8 @@ public class IoTAgentCore implements IoTAgentInterface {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+		} else if (logger.isDebugEnabled()) {
+			logger.debug("Registry not available");
 		}
 
 	}

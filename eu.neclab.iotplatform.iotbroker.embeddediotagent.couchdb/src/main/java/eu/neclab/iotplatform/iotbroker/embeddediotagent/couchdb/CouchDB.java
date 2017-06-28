@@ -265,7 +265,7 @@ public class CouchDB implements KeyValueStoreInterface,
 
 				} else if (respFromCouchDB.getStatusLine().getStatusCode() > 299) {
 
-					logger.warn("CouchDB did not created correctly the value. Reason: "
+					logger.warn("CouchDB did not create correctly the value. Reason: "
 							+ respFromCouchDB.getStatusLine());
 
 					successful = false;
@@ -293,7 +293,7 @@ public class CouchDB implements KeyValueStoreInterface,
 
 				if (respFromCouchDB.getStatusLine().getStatusCode() > 299) {
 
-					logger.warn("CouchDB did not updated correctly the value. Reason: "
+					logger.warn("CouchDB did not update correctly the value. Reason: "
 							+ respFromCouchDB.getStatusLine());
 
 					successful = false;
@@ -380,8 +380,9 @@ public class CouchDB implements KeyValueStoreInterface,
 
 			if (respFromCouchDB.getStatusLine().getStatusCode() > 299) {
 
-				logger.warn("CouchDB did not updated correctly the value. Reason: "
-						+ respFromCouchDB.getStatusLine());
+				logger.warn("CouchDB database: " + couchDB_NAME
+						+ " did not update correctly the value with key: "
+						+ key + " . Reason: " + respFromCouchDB.getStatusLine());
 
 				successful = false;
 
@@ -622,24 +623,24 @@ public class CouchDB implements KeyValueStoreInterface,
 		boolean first = true;
 		for (String key : keys) {
 			if (first) {
-				 try {
-				 body.append("\""+URLDecoder.decode(key, "UTF-8")+"\"");
-				 } catch (UnsupportedEncodingException e) {
-				 // TODO Auto-generated catch block
-				 e.printStackTrace();
-				 }
+				try {
+					body.append("\"" + URLDecoder.decode(key, "UTF-8") + "\"");
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				first = false;
 			} else {
-				 try {
-				 body.append(",\""+URLDecoder.decode(key, "UTF-8")+"\"");
-				 } catch (UnsupportedEncodingException e) {
-				 // TODO Auto-generated catch block
-				 e.printStackTrace();
-				 }
+				try {
+					body.append(",\"" + URLDecoder.decode(key, "UTF-8") + "\"");
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 		body.append("]}");
-				
+
 		this.checkDB();
 
 		// TODO A check if the key are referring to only one contextElement
@@ -651,7 +652,8 @@ public class CouchDB implements KeyValueStoreInterface,
 
 		try {
 			FullHttpResponse response = HttpRequester.sendPost(new URL(url),
-					escapeBody(body.toString()), ContentType.JSON.toString()+"; "+"charset=utf-8");
+					escapeBody(body.toString()), ContentType.JSON.toString()
+							+ "; " + "charset=utf-8");
 			if (response == null
 					|| response.getStatusLine().getStatusCode() != 200
 					|| response.getBody() == null
@@ -788,15 +790,14 @@ public class CouchDB implements KeyValueStoreInterface,
 				JsonObject row = jsonElement.getAsJsonObject();
 
 				// Parse the ContextElement
-				if (row.get("doc") != null){
+				if (row.get("doc") != null) {
 					ContextElement contextElement = (ContextElement) NgsiStructure
 							.parseStringToJson(row.get("doc").toString(),
 									ContextElement.class);
 					contextElements.add(contextElement);
 				} else {
-					logger.warn("Inconsistency in CouchDB: "+ row.toString());
+					logger.warn("Inconsistency in CouchDB: " + row.toString());
 				}
-				
 
 			}
 		}
@@ -850,7 +851,7 @@ public class CouchDB implements KeyValueStoreInterface,
 			}
 
 		} catch (MalformedURLException e) {
-			logger.info("Impossible to get data from CouchDB", e);
+			logger.warn("Impossible to get data from CouchDB", e);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -883,10 +884,20 @@ public class CouchDB implements KeyValueStoreInterface,
 					getCouchDB_ip() + registryDB_NAME + "/" + id),
 					registrationString, "application/json");
 
+			if (logger.isDebugEnabled()) {
+				logger.debug("Response for the insertion in the database "
+						+ registryDB_NAME + ". Insertion: key:" + id
+						+ " value: " + registrationString
+						+ " Response.StatusLine: "
+						+ respFromCouchDB.getStatusLine() + " Response.body: "
+						+ respFromCouchDB.getBody());
+			}
+
 			if (respFromCouchDB.getStatusLine().getStatusCode() > 299) {
 
-				logger.warn("CouchDB did not updated correctly the value. Reason: "
-						+ respFromCouchDB.getStatusLine());
+				logger.warn("CouchDB database " + registryDB_NAME
+						+ " did not store correctly the value with key: " + id
+						+ " . Reason: " + respFromCouchDB.getStatusLine());
 
 			} else {
 				// Parse the revision and store it
@@ -897,7 +908,7 @@ public class CouchDB implements KeyValueStoreInterface,
 			}
 
 		} catch (MalformedURLException e) {
-			logger.info("Impossible to store information into CouchDB", e);
+			logger.warn("Impossible to store information into CouchDB", e);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -923,10 +934,15 @@ public class CouchDB implements KeyValueStoreInterface,
 					&& !response.getBody().isEmpty()) {
 
 				logger.info("Delete from internal registryDB : " + id);
+			} else {
+
+				logger.warn("CouchDB database " + registryDB_NAME
+						+ " did not delete correctly the value with key: " + id
+						+ " . Reason: " + response.getStatusLine());
 			}
 
 		} catch (MalformedURLException e) {
-			logger.info("Impossible to delete data from CouchDB", e);
+			logger.warn("Impossible to delete data from CouchDB", e);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

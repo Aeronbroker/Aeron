@@ -163,9 +163,6 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 
 		Multimap<String, String> idsAndAttributeNames = HashMultimap.create();
 
-		// logger.info("+++++++++++++++++++cachedIdsByType"+cachedIdsByType);
-		// logger.info("+++++++++++++++++++cachedAttributeNamesById"+cachedAttributeNamesById);
-
 		for (EntityId entityId : entityIdList) {
 
 			Collection<String> ids;
@@ -202,8 +199,14 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 											.encode(entityId.getId(), "UTF-8")
 											.toLowerCase())) {
 
+						// Lets first try to look for the one with the exact id
 						Collection<String> attributeNamesCollect = cachedAttributeNamesById
 								.get(id);
+						// Otherwise check also the encoded url
+						if (attributeNamesCollect.isEmpty()){
+							attributeNamesCollect = cachedAttributeNamesById
+									.get(URLEncoder.encode(id,"UTF-8"));
+						}
 
 						for (String attributeName : attributeNamesCollect) {
 
@@ -221,6 +224,9 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 				} catch (UnsupportedEncodingException e) {
 					logger.warn("Unsupported UTF-8 encoding of: "
 							+ entityIdAndType[0]);
+				} catch (Exception e) {
+					logger.error("Exception: ");
+					e.printStackTrace();
 				}
 
 			}
