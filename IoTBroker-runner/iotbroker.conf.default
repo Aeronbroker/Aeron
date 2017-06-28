@@ -3,11 +3,11 @@
 ##############################
 # IoT Broker feature selection
 ##############################
-iotbroker_bigdatarepository="enabled"
-iotbroker_historicalagent="enabled"
-iotbroker_entitycomposer="enabled"
-iotbroker_association="enabled"
-iotbroker_semantic="enabled"
+iotbroker_bigdatarepository="disabled"
+iotbroker_historicalagent="disabled"
+iotbroker_entitycomposer="disabled"
+iotbroker_association="disabled"
+iotbroker_semantic="disabled"
 
 ##############################
 # IoT Broker configurations
