@@ -202,11 +202,13 @@ then
 	enableBundle iotbroker.embeddediotagent.couchdb
 	enableBundle iotbroker.embeddediotagent.indexer
 	enableBundle iotbroker.embeddediotagent.storage
+	enableBundle iotbroker.embeddediotagent.registry
 else
 	disableBundle iotbroker.embeddediotagent.core
 	disableBundle iotbroker.embeddediotagent.couchdb
 	disableBundle iotbroker.embeddediotagent.indexer
 	disableBundle iotbroker.embeddediotagent.storage
+	disableBundle iotbroker.embeddediotagent.registry
 fi
 
 ##ENABLE ENTITY COMPOSER BUNDLES
