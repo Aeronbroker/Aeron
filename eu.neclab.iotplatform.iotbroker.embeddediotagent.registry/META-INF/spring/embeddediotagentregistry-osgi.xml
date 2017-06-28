@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans   
+       http://www.springframework.org/schema/beans/spring-beans.xsd                      
+       http://www.springframework.org/schema/osgi  
+       http://www.springframework.org/schema/osgi/spring-osgi.xsd">
+
+	<osgi:service id="Registry" ref="registry"
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.EmbeddedAgentRegistryInterface" />
+
+	<osgi:reference id="EmbeddedAgentIndexer"
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.EmbeddedAgentIndexerInterface"></osgi:reference>
+
+	<osgi:reference id="PermanentRegistry"
+		interface="eu.neclab.iotplatform.iotbroker.commons.interfaces.PermanentRegistryInterface"></osgi:reference>
+
+
+	<osgi:reference id="Ngsi9Interface"
+		interface="eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface"
+		bean-name="connector"></osgi:reference>
+</beans>
