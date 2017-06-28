@@ -113,6 +113,31 @@ If you want to run the IoTBroker docker container in background use the followin
 docker run -p 8060:8060 fiware/iotbroker > /dev/null &
 ```
 
+In order to configure the IoT Broker, use the following command:
+
+```
+docker run -t -p 8065:8065 -p 8060:8060 fiware/iotbroker -p <iotbroker_key>="<value>" [-p ...]
+```
+
+where *iotbroker_key* is one of the parameters available in the *IoTBroker_Runner/iotbroker.conf.default*.
+Please note that such configurations are runtime properties and they will be forgotten the next time the docker is run.
+
+In case you want to have the standalone component of the IoT Broker GE (IoT Broker GEri + NEConfMan), run the following command (the version might change):
+```
+docker run -t -p 8065:8065 -p 8060:8060 -p 5984:5984 fiware/iotbroker:v5.4.3-standalone
+```
+ 
+Both the IoT Broker GEri and NEConfMan will be accessible respectively at port 8060 and 8065. In addition CouchDB will be exposed to the port 5984.
+
+And for configuraing it:
+
+```
+docker run -t -p 8065:8065 -p 8060:8060 fiware/iotbroker:v5.4.3-standalone -p <iotbroker_key>="<value>" -p <confman_key>="<value>" [-p ...]
+```
+
+where *iotbroker_key* is one of the parameters available in the *IoTBroker_Runner/iotbroker.conf.default* and *confman_key* one of the parameters available in the *ConfMan_Runner/confman.conf.default*.
+Please note that such configurations are runtime properties and they will be forgotten the next time the docker is run.
+
 IoT Broker on DockerHub: https://hub.docker.com/r/fiware/iotbroker/
 
 
