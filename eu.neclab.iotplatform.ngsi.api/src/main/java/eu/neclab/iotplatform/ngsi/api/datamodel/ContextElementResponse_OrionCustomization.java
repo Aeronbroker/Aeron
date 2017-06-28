@@ -67,6 +67,12 @@ public class ContextElementResponse_OrionCustomization extends
 	public ContextElementResponse_OrionCustomization() {
 
 	}
+	
+	public ContextElementResponse_OrionCustomization(ContextElementResponse contextElementResponse) {
+
+		this.contextElement = new ContextElement_OrionCustomization(contextElementResponse.getContextElement());
+		this.statusCode = contextElementResponse.getStatusCode();		
+	}
 
 	public ContextElementResponse_OrionCustomization(
 			ContextElement_OrionCustomization contextElement,

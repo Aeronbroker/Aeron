@@ -68,6 +68,7 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextResponse;
 import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Requester;
+import eu.neclab.iotplatform.ngsi.api.ngsi10.StandardVersion;
 import eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface;
 
 /**
@@ -184,7 +185,7 @@ public class TestFunctionality {
 		
 		
 		//further configuration of core
-		ReflectionTestUtils.setField(core, "pubSubUrl", "http://192.168.100.1:70/application");
+		ReflectionTestUtils.setField(core, "pubSubUrl_ngsiv1", "http://192.168.100.1:70/application");
 	}
 	
 	
@@ -306,7 +307,7 @@ public class TestFunctionality {
 			.andReturn(discoverResp_notFound);
 		
 		try {
-			EasyMock.expect(ngsi10RequesterMock.updateContext(updateReq,new URI("http://192.168.100.1:70/application")))
+			EasyMock.expect(ngsi10RequesterMock.updateContext(updateReq,new URI("http://192.168.100.1:70/application"),StandardVersion.NGSI10_v1_nle))
 			.andReturn(updateResp);
 		} catch (URISyntaxException e) {
 			e.printStackTrace();

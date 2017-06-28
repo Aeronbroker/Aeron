@@ -65,6 +65,10 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextAvailabilitySubscri
  */
 @Resource
 public interface Ngsi9Interface {
+	
+	static String CONFIGURATION_FOLDER = "/confmanconfig";
+	static String CONFIGURATIONAMANGER_PARENT_CONFIGURATION_FOLDER = "/confmanconfig/configurationManager";
+	static String CONFIGURATIONAMANGER_CONFIGURATION_FOLDER = "/confmanconfig/configurationManager/config";
 
 	/**
 	 * Operation for registering availability of context information.

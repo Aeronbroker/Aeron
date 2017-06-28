@@ -129,6 +129,7 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextSubscriptionRequest
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextSubscriptionResponse;
 import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Interface;
 import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Requester;
+import eu.neclab.iotplatform.ngsi.api.ngsi10.StandardVersion;
 import eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface;
 import eu.neclab.iotplatform.ngsi.association.datamodel.AssociationDS;
 
@@ -156,10 +157,16 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	private boolean dumbInBigDataRepo;
 
 	/** The URL of the pub/sub broker */
-	@Value("${pub_sub_addr:null}")
-	private String pubSubUrl;
+	@Value("${pub_sub_addr_ngsiv1_orion:null}")
+	private String pubSubUrl_ngsiv1_orion;
 
-	private List<String> pubSubUrlList = null;
+	private List<String> pubSubUrlList_ngsiv1_orion = null;
+
+	/** The URL of the pub/sub broker */
+	@Value("${pub_sub_addr_ngsiv1:null}")
+	private String pubSubUrl_ngsiv1;
+
+	private List<String> pubSubUrlList_ngsiv1 = null;
 
 	/**
 	 * This flag enables the keeping of trace in order to avoid loop in presence
@@ -534,22 +541,25 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 	@PostConstruct
 	public void postConstruct() {
-		if (pubSubUrl != null && pubSubUrl.contains(",")) {
-			pubSubUrlList = getListOfUpdateAdress();
+		if (pubSubUrl_ngsiv1_orion != null && pubSubUrl_ngsiv1_orion.contains(",")) {
+			pubSubUrlList_ngsiv1_orion = getListOfUpdateAdress(pubSubUrl_ngsiv1_orion);
 		}
-		;
+		if (pubSubUrl_ngsiv1 != null && pubSubUrl_ngsiv1.contains(",")) {
+			pubSubUrlList_ngsiv1 = getListOfUpdateAdress(pubSubUrl_ngsiv1);
+		}
+
 	}
 
 	/**
 	 * This method is intended for working with several pub-sub brokers; but as
 	 * the feature is not yet enabled the method is currently unused.
 	 */
-	private List<String> getListOfUpdateAdress() {
+	private List<String> getListOfUpdateAdress(String commaSeparetedList) {
 
 		List<String> listUrl = new ArrayList<String>();
 
 		Iterable<String> iterable = Splitter.on(",").omitEmptyStrings()
-				.trimResults().split(pubSubUrl);
+				.trimResults().split(commaSeparetedList);
 
 		Iterator<String> iter = iterable.iterator();
 
@@ -1379,7 +1389,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			}
 		}
 
-		/**
+		/*
 		 * Dump data in Big Data Repository if present.
 		 */
 		if (request.getUpdateAction() != UpdateActionType.DELETE
@@ -1398,52 +1408,12 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		}
 
-		boolean noPubSubUrl = false;
+		/*
+		 * Here we forward notifications to pub sub url
+		 */
+		response = fowardUpdateToIoTConsumers(request);
 
-		if (pubSubUrlList != null && !pubSubUrlList.isEmpty()) {
-			for (String url : pubSubUrlList) {
-
-				if (url != null) {
-					logger.info("Started Contact pub/sub broker: " + url);
-
-					try {
-						response = ngsi10Requester.updateContext(
-								updateContextRequest, new URI(url));
-					} catch (URISyntaxException e) {
-						logger.info("Impossible to connect to the pub/sub broker: "
-								+ url);
-						if (logger.isDebugEnabled()) {
-							logger.debug("URI Syntax Error", e);
-						}
-					}
-				}
-				// TODO here the only the last response is taken into
-				// consideration as updateCotnextResponse. It would be
-				// necessary to have some rule (for example, ALL,
-				// ATLEASTONE, MOST, NOONE fault tolerant)
-			}
-		} else if (pubSubUrl != null && !pubSubUrl.isEmpty()) {
-			logger.info("Started Contact pub/sub broker: " + pubSubUrl);
-
-			try {
-				response = ngsi10Requester.updateContext(updateContextRequest,
-						new URI(pubSubUrl));
-			} catch (URISyntaxException e) {
-				logger.info("Impossible to connect to the pub/sub broker: "
-						+ pubSubUrl);
-				if (logger.isDebugEnabled()) {
-					logger.debug("URI Syntax Error", e);
-				}
-			}
-		} else {
-			noPubSubUrl = true;
-		}
-
-		if (noPubSubUrl) {
-			response = new UpdateContextResponse(new StatusCode(
-					Code.OK_200.getCode(), ReasonPhrase.OK_200.toString(), ""),
-					null);
-		} else if (response == null) {
+		if (response == null) {
 			response = new UpdateContextResponse(new StatusCode(
 					Code.INTERNALERROR_500.getCode(),
 					ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
@@ -1463,6 +1433,119 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		}
 
 		return response;
+
+	}
+
+	private UpdateContextResponse fowardUpdateToIoTConsumers(
+			UpdateContextRequest updateContextRequest) {
+
+		UpdateContextResponse response = null;
+
+		boolean noPubSubUrl_ngsiv1_nle = false;
+
+		/*
+		 * Forward to IoT Consumers which are compliant with NGSI-10.v1.nle
+		 */
+		if (pubSubUrlList_ngsiv1 != null
+				&& !pubSubUrlList_ngsiv1.isEmpty()) {
+			for (String url : pubSubUrlList_ngsiv1) {
+
+				if (url != null) {
+					logger.info("Started Contact pub/sub broker: " + url);
+
+					try {
+						response = ngsi10Requester.updateContext(
+								updateContextRequest, new URI(url),
+								StandardVersion.NGSI10_v1_nle);
+					} catch (URISyntaxException e) {
+						logger.info("Impossible to connect to the pub/sub broker: "
+								+ url);
+						if (logger.isDebugEnabled()) {
+							logger.debug("URI Syntax Error", e);
+						}
+					}
+				}
+				// TODO here the only the last response is taken into
+				// consideration as updateCotnextResponse. It would be
+				// necessary to have some rule (for example, ALL,
+				// ATLEASTONE, MOST, NOONE fault tolerant)
+			}
+		} else if (pubSubUrl_ngsiv1 != null
+				&& !pubSubUrl_ngsiv1.isEmpty()) {
+			logger.info("Started to contact pub/sub broker: "
+					+ pubSubUrl_ngsiv1);
+
+			try {
+				response = ngsi10Requester.updateContext(updateContextRequest,
+						new URI(pubSubUrl_ngsiv1),
+						StandardVersion.NGSI10_v1_nle);
+			} catch (URISyntaxException e) {
+				logger.info("Impossible to connect to the pub/sub broker: "
+						+ pubSubUrl_ngsiv1);
+				if (logger.isDebugEnabled()) {
+					logger.debug("URI Syntax Error", e);
+				}
+			}
+		} else {
+			noPubSubUrl_ngsiv1_nle = true;
+		}
+
+		boolean noPubSubUrl_ngsiv1_tid = false;
+
+		/*
+		 * Forward to IoT Consumers which are compliant with NGSI-10.v1.tid
+		 */
+		if (pubSubUrlList_ngsiv1_orion != null
+				&& !pubSubUrlList_ngsiv1_orion.isEmpty()) {
+			for (String url : pubSubUrlList_ngsiv1_orion) {
+
+				if (url != null) {
+					logger.info("Started Contact pub/sub broker: " + url);
+
+					try {
+						response = ngsi10Requester.updateContext(
+								updateContextRequest, new URI(url),
+								StandardVersion.NGSI10_v1_tid);
+					} catch (URISyntaxException e) {
+						logger.info("Impossible to connect to the pub/sub broker: "
+								+ url);
+						if (logger.isDebugEnabled()) {
+							logger.debug("URI Syntax Error", e);
+						}
+					}
+				}
+				// TODO here the only the last response is taken into
+				// consideration as updateCotnextResponse. It would be
+				// necessary to have some rule (for example, ALL,
+				// ATLEASTONE, MOST, NOONE fault tolerant)
+			}
+		} else if (pubSubUrl_ngsiv1_orion != null
+				&& !pubSubUrl_ngsiv1_orion.isEmpty()) {
+			logger.info("Started to contact pub/sub broker: "
+					+ pubSubUrl_ngsiv1_orion);
+
+			try {
+				response = ngsi10Requester.updateContext(updateContextRequest,
+						new URI(pubSubUrl_ngsiv1_orion),
+						StandardVersion.NGSI10_v1_tid);
+			} catch (URISyntaxException e) {
+				logger.info("Impossible to connect to the pub/sub broker: "
+						+ pubSubUrl_ngsiv1_orion);
+				if (logger.isDebugEnabled()) {
+					logger.debug("URI Syntax Error", e);
+				}
+			}
+		} else {
+			noPubSubUrl_ngsiv1_tid = true;
+		}
+
+		if (noPubSubUrl_ngsiv1_nle && noPubSubUrl_ngsiv1_tid) {
+			return new UpdateContextResponse(new StatusCode(
+					Code.OK_200.getCode(), ReasonPhrase.OK_200.toString(), ""),
+					null);
+		} else {
+			return response;
+		}
 
 	}
 

@@ -31,6 +31,41 @@ public class NgsiObjectFactory {
 
 	}
 
+	public static ContextMetadata generateContextMetadataUnitCelsius() {
+
+		ContextMetadata contextMetadata = new ContextMetadata();
+		contextMetadata.setName(MetadataTypes.Unit.getName());
+		contextMetadata.setType(MetadataTypes.Unit.getType());
+		contextMetadata.setValue("Celsius");
+		return contextMetadata;
+
+	}
+
+	public static ContextMetadata generateContextMetadataUnitCar() {
+
+		ContextMetadata contextMetadata = new ContextMetadata();
+		contextMetadata.setName(MetadataTypes.Unit.getName());
+		contextMetadata.setType(MetadataTypes.Unit.getType());
+		contextMetadata.setValue("NumberOfCar");
+		return contextMetadata;
+
+	}
+
+	public static ContextMetadata generateContextMetadataAccurancy() {
+
+		ContextMetadata contextMetadata = new ContextMetadata();
+		contextMetadata.setName("accurancy");
+		try {
+			contextMetadata.setType(new URI("accurancy"));
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		contextMetadata.setValue("1");
+		return contextMetadata;
+
+	}
+
 	/*
 	 * EntityIdList
 	 */
@@ -134,12 +169,12 @@ public class NgsiObjectFactory {
 
 		return polygon;
 	}
-	
+
 	/*
 	 * PEP Credentials
 	 */
 	public static PEPCredentials generatePEPCredentials() {
-		return new PEPCredentials("user","passwd");
+		return new PEPCredentials("user", "passwd");
 	}
 
 	/*
@@ -207,4 +242,89 @@ public class NgsiObjectFactory {
 		return attributeList;
 	}
 
+	public static List<ContextRegistration> generateContextRegistrationListOneValue() {
+
+		List<ContextRegistration> contextRegistrationList = new ArrayList<ContextRegistration>();
+		contextRegistrationList.add(generateContextRegistration());
+		
+		return contextRegistrationList;
+
+	}
+
+	public static URI generateProvidingApplicationURI() {
+		URI uri = null;
+		try {
+			uri = new URI("http://localhost:8060/ngsi10");
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return uri;
+	}
+
+	public static ContextRegistration generateContextRegistration() {
+		ContextRegistration contextRegistration = new ContextRegistration();
+
+		contextRegistration
+				.setListContextMetadata(new ArrayList<ContextMetadata>());
+
+		contextRegistration.getListContextMetadata().add(
+				generateContextMetadataSegment2d());
+
+		contextRegistration.setListEntityId(generateEntityIdListFull());
+
+		contextRegistration
+				.setProvidingApplication(generateProvidingApplicationURI());
+
+		contextRegistration
+				.setListContextRegistrationAttribute(new ArrayList<ContextRegistrationAttribute>());
+		contextRegistration.getContextRegistrationAttribute().add(
+				generateContextRegistrationAttributeCarCount());
+		contextRegistration.getContextRegistrationAttribute().add(
+				generateContextRegistrationAttributeTemperature());
+
+		return contextRegistration;
+
+	}
+
+	public static ContextRegistrationAttribute generateContextRegistrationAttributeTemperature() {
+		ContextRegistrationAttribute contextRegistrationAttribute = null;
+		try {
+			contextRegistrationAttribute = new ContextRegistrationAttribute(
+					"m3-lite:AirTemperature",
+					new URI("m3-lite:AirTemperature"), false,
+					new ArrayList<ContextMetadata>());
+
+			contextRegistrationAttribute.getMetadata().add(
+					generateContextMetadataUnitCelsius());
+
+			contextRegistrationAttribute.getMetadata().add(
+					generateContextMetadataAccurancy());
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return contextRegistrationAttribute;
+	}
+
+	public static ContextRegistrationAttribute generateContextRegistrationAttributeCarCount() {
+		ContextRegistrationAttribute contextRegistrationAttribute = null;
+		try {
+			contextRegistrationAttribute = new ContextRegistrationAttribute(
+					"m3-lite:CarCount", new URI("m3-lite:CarCount"), false,
+					new ArrayList<ContextMetadata>());
+
+			contextRegistrationAttribute.getMetadata().add(
+					generateContextMetadataUnitCar());
+
+			contextRegistrationAttribute.getMetadata().add(
+					generateContextMetadataAccurancy());
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return contextRegistrationAttribute;
+	}
 }

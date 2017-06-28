@@ -48,7 +48,6 @@ import java.net.URI;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
@@ -56,6 +55,8 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+
+import com.sun.org.apache.xerces.internal.dom.ElementNSImpl;
 
 import eu.neclab.iotplatform.ngsi.api.serialization.json.MetadataObjectValueSerializer;
 import eu.neclab.iotplatform.ngsi.api.serialization.json.MetadataValueDeserializer;
@@ -116,6 +117,12 @@ public class ContextMetadata extends NgsiStructure {
 
 	@JsonSerialize(using = MetadataObjectValueSerializer.class)
 	public Object getValue() {
+		if (value instanceof ElementNSImpl){
+			ElementNSImpl v = (ElementNSImpl)value;
+			if (v.getFirstChild().getNodeValue() instanceof String){
+				value = (String)v.getFirstChild().getNodeValue();
+			}
+		}
 		return value;
 	}
 

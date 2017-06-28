@@ -62,9 +62,10 @@ import org.codehaus.jackson.annotate.JsonProperty;
  */
 @XmlRootElement(name = "updateContextResponse")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class UpdateContextResponse_OrionCustomization extends NgsiStructureAlternative {
+public class UpdateContextResponse_OrionCustomization extends
+		NgsiStructureAlternative {
 
-	@XmlElement(name = "errorCode")
+	@XmlElement(name = "orionError")
 	private StatusCode errorCode = null;
 
 	@XmlElementWrapper(name = "contextResponseList")
@@ -74,6 +75,22 @@ public class UpdateContextResponse_OrionCustomization extends NgsiStructureAlter
 
 	public UpdateContextResponse_OrionCustomization() {
 
+	}
+
+	public UpdateContextResponse_OrionCustomization(
+			UpdateContextResponse updateContextResponse) {
+		
+		this.errorCode = updateContextResponse.getErrorCode();
+		if (updateContextResponse.getContextElementResponse() != null) {
+			this.contextElementResponse = new ArrayList<ContextElementResponse_OrionCustomization>();
+			for (ContextElementResponse contextElementResponse : updateContextResponse
+					.getContextElementResponse()) {
+				this.contextElementResponse
+						.add(new ContextElementResponse_OrionCustomization(
+								contextElementResponse));
+
+			}
+		}
 	}
 
 	public UpdateContextResponse_OrionCustomization(

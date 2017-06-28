@@ -38,7 +38,11 @@ iotbroker_producedtype="application/json"
 # IoT Consumers
 # If more than one, they can be comma-separate. e.g. 'http://localhost:8001,http://localhost:8002'
 # The path needs to include the full path but the final resource. IoT Broker will add only "updateContext".
-iotbroker_consumers='http://localhost:8001/ngsi10/'
+# The consumers can be compliant with the NGSI-10 v1 JSON binding proposed by Aeron IoT Broker 
+# (fully compliant with the OMA NGSI standard) or by Orion Context Broker. The latter loses some NGSI fields 
+# like contextElement.domainMetadata
+iotbroker_consumers_ngsiv1='http://localhost:8001/ngsi10/'
+iotbroker_consumers_ngsiv1_orion='http://localhost:1026/v1/'
 
 # IoT Broker scalability settings
 iotbroker_ismaster=true

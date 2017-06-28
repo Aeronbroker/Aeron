@@ -92,10 +92,12 @@ public class HttpRequester {
 			wr.close();
 
 			int responseCode = con.getResponseCode();
-			logger.info("\nSending " + method + " request to URL : " + url);
-			logger.info("Content-Type : " + contentType);
-			logger.info("Post parameters : " + data);
-			logger.info("Response Code : " + responseCode);
+			if (logger.isDebugEnabled()) {
+				logger.debug("\nSending " + method + " request to URL : " + url
+						+ "\nContent-Type : " + contentType
+						+ "\nPost parameters : " + data
+						+ "\nResponse Code : " + responseCode);
+			}
 
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					con.getInputStream()));
@@ -108,10 +110,12 @@ public class HttpRequester {
 			in.close();
 
 			// print result
-			logger.info("Response : " + response.toString());
+			if (logger.isDebugEnabled()) {
+				logger.debug("Response : " + response.toString());
+			}
 
 		} catch (IOException e) {
-			logger.debug("I/O Exception", e);
+			logger.info("I/O Exception", e);
 		}
 
 	}
@@ -138,9 +142,11 @@ public class HttpRequester {
 			wr.close();
 
 			responseCode = con.getResponseCode();
-			logger.info("\nSending " + method + " request to URL : " + url);
-			logger.info("Content-Type : " + contentType);
-			logger.info("Post parameters : " + data);
+			if (logger.isDebugEnabled()) {
+				logger.debug("\nSending " + method + " request to URL : " + url
+						+ "\nContent-Type : " + contentType
+						+ "\nPost parameters : " + data);
+			}
 			logger.info("Response Code : " + responseCode);
 
 			BufferedReader in = new BufferedReader(new InputStreamReader(
@@ -154,7 +160,9 @@ public class HttpRequester {
 			in.close();
 
 			// print result
-			logger.info("Response : " + response.toString());
+			if (logger.isDebugEnabled()) {
+				logger.debug("Response : " + response.toString());
+			}
 
 		} catch (IOException e) {
 			logger.info("I/O Exception", e);
@@ -168,11 +176,11 @@ public class HttpRequester {
 
 	}
 
-	public static String sendGenericRequestwithResponse(URL url, String method, String data,
-			String contentType) {
+	public static String sendGenericRequestwithResponse(URL url, String method,
+			String data, String contentType) {
 
 		HttpURLConnection con = null;
-		String responseMessage= null;
+		String responseMessage = null;
 		int responseCode = 0;
 		try {
 			con = (HttpURLConnection) url.openConnection();
@@ -191,10 +199,12 @@ public class HttpRequester {
 			wr.close();
 
 			responseCode = con.getResponseCode();
-			logger.info("\nSending " + method + " request to URL : " + url);
-			logger.info("Content-Type : " + contentType);
-			logger.info("Post parameters : " + data);
-			logger.info("Response Code : " + responseCode);
+			if (logger.isDebugEnabled()) {
+				logger.debug("\nSending " + method + " request to URL : " + url
+						+ "\nContent-Type : " + contentType
+						+ "\nPost parameters : " + data
+						+ "\nResponse Code : " + responseCode);
+			}
 
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					con.getInputStream()));
@@ -207,11 +217,13 @@ public class HttpRequester {
 			in.close();
 
 			// print result
-			logger.info("Response : " + response.toString());
+			if (logger.isDebugEnabled()) {
+				logger.debug("Response : " + response.toString());
+			}
 			responseMessage = response.toString();
 
 		} catch (IOException e) {
-			logger.debug("I/O Exception", e);
+			logger.info("I/O Exception", e);
 			responseCode = -1;
 			responseMessage = e.getMessage();
 		} finally {
@@ -219,7 +231,7 @@ public class HttpRequester {
 			con.disconnect();
 
 		}
-		return responseCode+"|"+responseMessage;
+		return responseCode + "|" + responseMessage;
 
 	}
 

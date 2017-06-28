@@ -46,7 +46,9 @@ package eu.neclab.iotplatform.ngsi.api.datamodel;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -86,10 +88,39 @@ public class ContextElement_OrionCustomization extends NgsiStructureAlternative 
 	}
 
 	public ContextElement_OrionCustomization(ContextElement contextElement) {
+		
+		if (contextElement == null){
+			return;
+		}
 
 		this.id = contextElement.getEntityId().getId();
 		this.type = contextElement.getEntityId().getType();
 		this.isPattern = contextElement.getEntityId().getIsPattern();
+
+		List<ContextMetadata> contextMetadataList = new ArrayList<ContextMetadata>();
+
+		/*
+		 * Domain metadata check: keep location and timestamp
+		 */
+		Set<String> metadataToKeep = new HashSet();
+		metadataToKeep.add(MetadataTypes.SimpleGeolocation.getName()
+				.toLowerCase());
+		metadataToKeep.add(MetadataTypes.CreationTime.getName().toLowerCase());
+
+		if (contextElement.getDomainMetadata() != null
+				&& !contextElement.getDomainMetadata().isEmpty()) {
+
+			for (ContextMetadata contextMetadata : contextElement
+					.getDomainMetadata()) {
+				if (metadataToKeep.contains(contextMetadata.getName()
+						.toLowerCase())
+						|| metadataToKeep.contains(contextMetadata.getType()
+								.toString().toLowerCase())) {
+					contextMetadataList.add(contextMetadata);
+				}
+			}
+
+		}
 
 		if (contextElement.getContextAttributeList() != null
 				&& !contextElement.getContextAttributeList().isEmpty()) {
@@ -98,9 +129,17 @@ public class ContextElement_OrionCustomization extends NgsiStructureAlternative 
 
 			for (ContextAttribute contextAttribute : contextElement
 					.getContextAttributeList()) {
-				contextAttributeList
-						.add(new ContextAttribute_OrionCustomization(
-								contextAttribute));
+				ContextAttribute_OrionCustomization contextAttribute_tid = new ContextAttribute_OrionCustomization(
+						contextAttribute);
+
+				if (contextAttribute_tid.getMetadata() == null) {
+					contextAttribute_tid.setMetadata(contextMetadataList);
+				} else {
+					contextAttribute_tid.getMetadata().addAll(
+							contextMetadataList);
+				}
+
+				contextAttributeList.add(contextAttribute_tid);
 			}
 		}
 

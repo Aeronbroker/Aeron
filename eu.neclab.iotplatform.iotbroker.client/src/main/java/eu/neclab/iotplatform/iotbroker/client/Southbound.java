@@ -98,13 +98,17 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.UnsubscribeContextAvailabilityRe
 import eu.neclab.iotplatform.ngsi.api.datamodel.UnsubscribeContextAvailabilityResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UnsubscribeContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UnsubscribeContextResponse;
+import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateActionType;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextAvailabilitySubscriptionRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextAvailabilitySubscriptionResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextRequest;
+import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextRequest_OrionCustomization;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextResponse;
+import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextResponse_OrionCustomization;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextSubscriptionRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextSubscriptionResponse;
 import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Requester;
+import eu.neclab.iotplatform.ngsi.api.ngsi10.StandardVersion;
 import eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface;
 
 /**
@@ -610,6 +614,22 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 		ContentType preferredContentType = getCONTENT_TYPE();
 
+		return sendRequest(url, resource, request, expectedResponseClazz,
+				schemaLocation, preferredContentType);
+
+	}
+
+	/**
+	 * 
+	 * 
+	 * @return A StatusCode if there was an error, otherwise an object of the
+	 *         expectedResponseClazz
+	 * 
+	 */
+	private Object sendRequest(URL url, String resource, NgsiStructure request,
+			Class<? extends NgsiStructure> expectedResponseClazz,
+			String schemaLocation, ContentType preferredContentType) {
+
 		Object output;
 
 		try {
@@ -870,6 +890,71 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	}
 
 	/**
+	 * Calls the UpdateContext method on an NGSI-10 server.
+	 * 
+	 * @param request
+	 *            The request message.
+	 * @param uri
+	 *            The address of the NGSI-10 server
+	 * @return The response message.
+	 * 
+	 */
+	public UpdateContextResponse_OrionCustomization updateContext_ngsiv1_tid(
+			UpdateContextRequest request, URI uri) {
+
+		UpdateContextResponse_OrionCustomization updateResponse = new UpdateContextResponse_OrionCustomization();
+
+		UpdateContextRequest_OrionCustomization request_tid = new UpdateContextRequest_OrionCustomization(
+				request);
+
+		// adaptUpdatesToOrionStandard
+		// I would suggest to have a completely different updateContext for
+		// Orion Context and then call it specifically. Maybe add a list of
+		// Orion Broker consumer in the settings (so having two pub_sub_addr).
+
+		try {
+
+			Object response = sendRequest(new URL(uri.toString()),
+					"updateContext", request_tid,
+					UpdateContextResponse_OrionCustomization.class,
+					ngsi10schema, CONTENT_TYPE.JSON);
+
+			// If there was an error then a StatusCode has been returned
+			if (response instanceof StatusCode) {
+				updateResponse = new UpdateContextResponse_OrionCustomization(
+						(StatusCode) response, null);
+				return updateResponse;
+			}
+
+			// Cast the response
+			updateResponse = (UpdateContextResponse_OrionCustomization) response;
+
+		} catch (MalformedURLException e) {
+			logger.warn("Malformed URI", e);
+
+			updateResponse = new UpdateContextResponse_OrionCustomization(
+					new StatusCode(Code.INTERNALERROR_500.getCode(),
+							ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
+							"Malformed URI"), null);
+		}
+
+		return updateResponse;
+
+	}
+
+	@Override
+	public UpdateContextResponse updateContext(UpdateContextRequest request,
+			URI uri, StandardVersion standardVersion) {
+
+		if (standardVersion == StandardVersion.NGSI10_v1_nle) {
+			return updateContext(request, uri);
+		} else {
+			return updateContext_ngsiv1_tid(request, uri)
+					.toUpdateContextResponse();
+		}
+	}
+
+	/**
 	 * Calls the DiscoverContextAvailability method on the NGSI-9 server.
 	 * 
 	 * @param request
@@ -1052,6 +1137,11 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 			// Cast the response
 			output = (RegisterContextResponse) response;
+
+			if (logger.isDebugEnabled()) {
+				logger.debug("Response for the registration. Request: "
+						+ request + " Response: " + response);
+			}
 
 		} catch (MalformedURLException e) {
 			logger.warn("Malformed URI", e);

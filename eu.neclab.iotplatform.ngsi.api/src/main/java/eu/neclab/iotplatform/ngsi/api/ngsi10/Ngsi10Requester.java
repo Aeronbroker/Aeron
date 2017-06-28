@@ -122,6 +122,14 @@ public interface Ngsi10Requester {
 	 * @return The NGSI 10 UpdateContextResponse.
 	 */
 	UpdateContextResponse updateContext(UpdateContextRequest request, URI uri);
+	
+	/**
+	 * 
+	 * @param request The NGSI 10 UpdateContextRequest.
+	 * @param uri The target address of the operation.
+	 * @return The NGSI 10 UpdateContextResponse.
+	 */
+	UpdateContextResponse updateContext(UpdateContextRequest request, URI uri, StandardVersion standardVersion);
 
 	/**
 	 * Operation for processing notifications that are sent in reaction

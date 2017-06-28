@@ -69,6 +69,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import eu.neclab.iotplatform.iotbroker.commons.ContentType;
 import eu.neclab.iotplatform.iotbroker.commons.GenerateMetadata;
 import eu.neclab.iotplatform.iotbroker.commons.HttpRequester;
 import eu.neclab.iotplatform.iotbroker.commons.JsonValidator;
@@ -85,6 +86,7 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Converter;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
+import eu.neclab.iotplatform.ngsi.api.datamodel.NgsiStructure;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest;
@@ -103,7 +105,9 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextAttributeRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextElementRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextElementResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextRequest;
+import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextRequest_OrionCustomization;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextResponse;
+import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextResponse_OrionCustomization;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextSubscriptionRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextSubscriptionResponse;
 import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Interface;
@@ -277,7 +281,7 @@ public class RestProviderController {
 	 * 
 	 * @return the response entity
 	 */
-	@RequestMapping(value = { "/ngsi10/sanityCheck", "/sanityCheck" } , method = RequestMethod.GET, consumes = { "*/*" }, produces = {
+	@RequestMapping(value = { "/ngsi10/sanityCheck", "/sanityCheck" }, method = RequestMethod.GET, consumes = { "*/*" }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public ResponseEntity<SanityCheck> sanityCheck() {
 
@@ -518,13 +522,37 @@ public class RestProviderController {
 	 *            The request body.
 	 * @return The response body.
 	 */
+	@RequestMapping(value = "/v1/updateContext", method = RequestMethod.POST, consumes = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
+	public ResponseEntity<UpdateContextResponse_OrionCustomization> updateContext(
+			HttpServletRequest requester,
+			@RequestBody UpdateContextRequest_OrionCustomization request) {
+
+		ResponseEntity<UpdateContextResponse> response = this.updateContext(
+				requester, request.toUpdateContextRequest());
+
+		return new ResponseEntity<UpdateContextResponse_OrionCustomization>(
+				new UpdateContextResponse_OrionCustomization(response.getBody()),
+				response.getStatusCode());
+	}
+
+	/**
+	 * Executes the standard NGSI 10 UpdateContext method.
+	 * 
+	 * @param requester
+	 *            Represents the HTTP request message.
+	 * @param request
+	 *            The request body.
+	 * @return The response body.
+	 */
 	@RequestMapping(value = "/ngsi10/updateContext", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public ResponseEntity<UpdateContextResponse> updateContext(
 			HttpServletRequest requester,
 			@RequestBody UpdateContextRequest request) {
-
+		
 		logger.info(" <--- NGSI-10 has received request for Update Context resource ---> \n");
 
 		if (validateMessageBody(requester, request, sNgsi10schema)) {

@@ -104,8 +104,10 @@ public class FullHttpRequester {
 				con.setRequestProperty(entry.getKey(), entry.getValue());
 			}
 
-			logger.info("\nSending 'POST' request to URL : " + url + "\n"
-					+ "POST parameters : " + data + "\n");
+			if (logger.isDebugEnabled()) {
+				logger.info("\nSending 'POST' request to URL : " + url + "\n"
+						+ "POST parameters : " + data + "\n");
+			}
 
 			if (data != null && !data.equals("")) {
 				// Send put request
@@ -148,9 +150,11 @@ public class FullHttpRequester {
 				httpResponse.setBody(response.toString());
 
 				// logger.info("Response Code : " + responseCode);
-				logger.info("\nPOST to URL : " + url + "\nResponse Code : "
-						+ responseCode + "\n" + "Response : "
-						+ response.toString());
+				if (logger.isDebugEnabled()) {
+					logger.debug("\nPOST to URL : " + url
+							+ "\nResponse Code : " + responseCode + "\n"
+							+ "Response : " + response.toString());
+				}
 
 				con.disconnect();
 				return httpResponse;
