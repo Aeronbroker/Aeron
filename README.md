@@ -353,6 +353,7 @@ instance.
 |├── eu.neclab.iotplatform.iotbroker.embeddediotagent.core | Optional bundle for enabling storage and retrieve of (historical) context information. |
 |├── eu.neclab.iotplatform.iotbroker.embeddediotagent.couchdb | Optional bundle for enabling the storage of the (historical) context information into CouchDB. (This bundle must be activated if eu.neclab.iotplatform.iotbroker.embeddediotagent.core is active).|
 |├── eu.neclab.iotplatform.iotbroker.embeddediotagent.indexer | Optional bundle for indexing the (historical) context information (This bundle must be activated if eu.neclab.iotplatform.iotbroker.embeddediotagent.core is active).|
+|├── eu.neclab.iotplatform.iotbroker.embeddediotagent.registry | Optional bundle that keeps registrations to an IoT Discovery accordingly to the ContextElement registered into the embbededagent.|
 |├── eu.neclab.iotplatform.iotbroker.embeddediotagent.storage | Optional bundle for handling the serialiation of the (historical) context information(This bundle must be activated if eu.neclab.iotplatform.iotbroker.embeddediotagent.core is active).|
 |├── eu.neclab.iotplatform.iotbroker.ext.resultfilter | Required bundle for filtering results. Deploying this bundle  will effectuate that faulty query responses from IoT data sources are not forwarded to IoT applications.|
 |├── eu.neclab.iotplatform.iotbroker.restcontroller | Required bundle implementing the HTTP REST interface of the IoT Broker.|
