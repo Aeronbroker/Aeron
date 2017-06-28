@@ -58,6 +58,15 @@ public interface EmbeddedAgentRegistryInterface {
 
 	public void checkRegistration(ContextElement contextElementList);
 
+	/**
+	 * This method separates the ContextRegistrations handled by this Registry.
+	 * The ones handled are removed from the DiscoveryResponse (so the
+	 * DiscoveryResponse will be modified!) and return them within the returned
+	 * list
+	 * 
+	 * @param discoveryResponse
+	 * @return
+	 */
 	public List<ContextRegistration> extractOwnContextRegistrations(
 			DiscoverContextAvailabilityResponse discoveryResponse);
 
