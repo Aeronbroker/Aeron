@@ -309,6 +309,12 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 	public List<ContextElement> getLatestValues(List<EntityId> entityIdList,
 			List<String> attributeNames) {
 
+		if (logger.isDebugEnabled()) {
+			logger.debug(String.format(
+					"Requested Last Values for entities %s and attribute %s",
+					entityIdList.toString(), attributeNames.toString()));
+		}
+
 		List<ContextElement> contextElementList = new ArrayList<ContextElement>();
 
 		Set<String> attributeNamesSet;

@@ -541,7 +541,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 	@PostConstruct
 	public void postConstruct() {
-		if (pubSubUrl_ngsiv1_orion != null && pubSubUrl_ngsiv1_orion.contains(",")) {
+		if (pubSubUrl_ngsiv1_orion != null
+				&& pubSubUrl_ngsiv1_orion.contains(",")) {
 			pubSubUrlList_ngsiv1_orion = getListOfUpdateAdress(pubSubUrl_ngsiv1_orion);
 		}
 		if (pubSubUrl_ngsiv1 != null && pubSubUrl_ngsiv1.contains(",")) {
@@ -706,10 +707,17 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 * Now we query also the Embedded IoT Agent
 		 */
 		try {
-			logger.info("Checking if Historical Agent is present");
+			if (logger.isDebugEnabled()) {
+				logger.debug("Checking if Historical Agent is present");
+			}
 			if (BundleUtils.isServiceRegistered(this, embeddedIoTAgent)) {
 
-				logger.info("Historical Agent present: fowarding the query");
+				if (logger.isDebugEnabled()) {
+					logger.debug("Historical Agent present: fowarding the query: "
+							+ request.toString()
+							+ "with the embeddedAgentContextRegistrations: "
+							+ embeddedAgentContextRegistrations.toString());
+				}
 				tasks.add(Executors.callable(new EmbeddedIoTAgentRequestThread(
 						embeddedIoTAgent, request, merger,
 						embeddedAgentContextRegistrations)));
@@ -1446,8 +1454,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		/*
 		 * Forward to IoT Consumers which are compliant with NGSI-10.v1.nle
 		 */
-		if (pubSubUrlList_ngsiv1 != null
-				&& !pubSubUrlList_ngsiv1.isEmpty()) {
+		if (pubSubUrlList_ngsiv1 != null && !pubSubUrlList_ngsiv1.isEmpty()) {
 			for (String url : pubSubUrlList_ngsiv1) {
 
 				if (url != null) {
@@ -1470,8 +1477,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 				// necessary to have some rule (for example, ALL,
 				// ATLEASTONE, MOST, NOONE fault tolerant)
 			}
-		} else if (pubSubUrl_ngsiv1 != null
-				&& !pubSubUrl_ngsiv1.isEmpty()) {
+		} else if (pubSubUrl_ngsiv1 != null && !pubSubUrl_ngsiv1.isEmpty()) {
 			logger.info("Started to contact pub/sub broker: "
 					+ pubSubUrl_ngsiv1);
 

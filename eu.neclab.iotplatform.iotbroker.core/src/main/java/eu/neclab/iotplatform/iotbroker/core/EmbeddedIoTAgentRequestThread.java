@@ -230,8 +230,8 @@ public class EmbeddedIoTAgentRequestThread implements Runnable {
 
 		synchronized (merger) {
 			if (logger.isDebugEnabled()) {
-				logger.debug("Start Merger!");
-				logger.debug("Response to put into merger: " + response);
+				logger.debug("Start Merger!" + "Response to put into merger: "
+						+ response);
 			}
 			merger.put(response);
 		}

@@ -88,8 +88,8 @@ public class ContextElement_OrionCustomization extends NgsiStructureAlternative 
 	}
 
 	public ContextElement_OrionCustomization(ContextElement contextElement) {
-		
-		if (contextElement == null){
+
+		if (contextElement == null) {
 			return;
 		}
 
@@ -112,10 +112,11 @@ public class ContextElement_OrionCustomization extends NgsiStructureAlternative 
 
 			for (ContextMetadata contextMetadata : contextElement
 					.getDomainMetadata()) {
-				if (metadataToKeep.contains(contextMetadata.getName()
-						.toLowerCase())
-						|| metadataToKeep.contains(contextMetadata.getType()
-								.toString().toLowerCase())) {
+				if ((contextMetadata.getName() != null && metadataToKeep
+						.contains(contextMetadata.getName().toLowerCase()))
+						|| (contextMetadata.getType() != null && metadataToKeep
+								.contains(contextMetadata.getType().toString()
+										.toLowerCase()))) {
 					contextMetadataList.add(contextMetadata);
 				}
 			}
