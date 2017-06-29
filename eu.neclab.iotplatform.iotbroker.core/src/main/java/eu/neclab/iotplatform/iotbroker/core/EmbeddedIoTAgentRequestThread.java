@@ -133,6 +133,13 @@ public class EmbeddedIoTAgentRequestThread implements Runnable {
 	public void run() {
 
 		QueryContextResponse response = null;
+		
+		if (logger.isDebugEnabled()) {
+			logger.debug(String.format(
+					"Requested: %s and embeddedAgentContextRegistration: %s",
+					request.toString(),
+					embeddedAgentContextRegistration.toString()));
+		}
 
 		try {
 
@@ -205,8 +212,8 @@ public class EmbeddedIoTAgentRequestThread implements Runnable {
 			if (logger.isDebugEnabled()) {
 				logger.debug(String.format(
 						"Requested ContextRegistration: %s and attributes: %s",
-						entityIdToRequest.toString(),
-						attributeListToRequest.toString()));
+						entityIdToRequest,
+						attributeListToRequest));
 			}
 
 			if (response == null || response.getErrorCode() == null) {
