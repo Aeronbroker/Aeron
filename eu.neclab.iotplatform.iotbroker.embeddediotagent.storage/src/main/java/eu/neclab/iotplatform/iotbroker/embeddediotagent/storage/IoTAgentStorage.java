@@ -312,7 +312,7 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format(
 					"Requested Last Values for entities %s and attribute %s",
-					entityIdList.toString(), attributeNames.toString()));
+					entityIdList, attributeNames));
 		}
 
 		List<ContextElement> contextElementList = new ArrayList<ContextElement>();
