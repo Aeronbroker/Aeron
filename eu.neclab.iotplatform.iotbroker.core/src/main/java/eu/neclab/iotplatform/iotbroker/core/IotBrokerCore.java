@@ -541,6 +541,12 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 	@PostConstruct
 	public void postConstruct() {
+		if ("null".equals(pubSubUrl_ngsiv1_orion)) {
+			pubSubUrl_ngsiv1_orion = null;
+		}
+		if ("null".equals(pubSubUrl_ngsiv1)) {
+			pubSubUrl_ngsiv1 = null;
+		}
 		if (pubSubUrl_ngsiv1_orion != null
 				&& pubSubUrl_ngsiv1_orion.contains(",")) {
 			pubSubUrlList_ngsiv1_orion = getListOfUpdateAdress(pubSubUrl_ngsiv1_orion);
@@ -841,9 +847,6 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 */
 
 		if (BundleUtils.isServiceRegistered(this, resultFilter)) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("-----------++++++++++++++++++++++ Begin Filter");
-			}
 
 			List<QueryContextRequest> listQueryContextRequests = new ArrayList<QueryContextRequest>();
 			listQueryContextRequests.add(request);
@@ -852,13 +855,12 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 					.getListContextElementResponse();
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("-----------++++++++++++++++++++++ QueryContextRequest:"
-						+ listQueryContextRequests.toString()
-						+ " ContextElementResponse:"
-						+ listContextElementResponses.toString());
-
-				logger.debug(listQueryContextRequests.size());
-				logger.debug(listContextElementResponses.size());
+				logger.debug(String
+						.format("QueryContextRequest: %s \nContextElementResponse: %s listQueryContextRequests.size: %s listContextElementResponses.size: %s",
+								listQueryContextRequests.toString(),
+								listContextElementResponses.toString(),
+								listQueryContextRequests.size(),
+								listContextElementResponses.size()));
 			}
 
 			List<QueryContextResponse> listQueryContextResponses = resultFilter
@@ -870,13 +872,11 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			}
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("-----------++++++++++++++++++++++ After Filter ListContextElementResponse:"
+				logger.debug("After Filter ListContextElementResponse:"
 						+ listQueryContextResponses.toString()
 						+ " ContextElementResponse:"
 						+ listQueryContextResponses.toString());
-				logger.debug("-----------++++++++++++++++++++++End Filter");
 			}
-			logger.info("Result filter found and applied.");
 		} else {
 
 			logger.warn("Result filter service not registered!!");

@@ -552,8 +552,12 @@ public class RestProviderController {
 	public ResponseEntity<UpdateContextResponse> updateContext(
 			HttpServletRequest requester,
 			@RequestBody UpdateContextRequest request) {
-		
+
 		logger.info(" <--- NGSI-10 has received request for Update Context resource ---> \n");
+		if (logger.isDebugEnabled()) {
+			logger.info(" <--- NGSI-10 has received request for Update Context resource ---> \n"
+					+ request.toJsonString());
+		}
 
 		if (validateMessageBody(requester, request, sNgsi10schema)) {
 

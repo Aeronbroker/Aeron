@@ -134,98 +134,115 @@ public class EmbeddedIoTAgentRequestThread implements Runnable {
 
 		QueryContextResponse response = null;
 
-		/*
-		 * Check if historical query
-		 */
-		/*
-		 * <operationScope <scopeType>ISO8601TimeInterval</scopeType>
-		 * <scopeValue>yyyy-mm-ddThh:mm:ssZ/yyyy-mm-ddThh:mm:ssZ</scopeValue>
-		 * </operationScope>
-		 */
-		Date startDate = null;
-		Date endDate = null;
-		if (request.getRestriction() != null
-				&& request.getRestriction().getOperationScope() != null
-				&& !request.getRestriction().getOperationScope().isEmpty()) {
+		try {
 
-			for (OperationScope scope : request.getRestriction()
-					.getOperationScope()) {
-				if (scope.getScopeType().equalsIgnoreCase(
-						ScopeTypes.ISO8601TimeInterval.toString())) {
-					if (scope.getScopeValue() instanceof String) {
-						String scopeValue = (String) (scope.getScopeValue());
-						String[] dates = scopeValue.split("/");
+			/*
+			 * Check if historical query
+			 */
+			/*
+			 * <operationScope <scopeType>ISO8601TimeInterval</scopeType>
+			 * <scopeValue
+			 * >yyyy-mm-ddThh:mm:ssZ/yyyy-mm-ddThh:mm:ssZ</scopeValue>
+			 * </operationScope>
+			 */
+			Date startDate = null;
+			Date endDate = null;
+			if (request.getRestriction() != null
+					&& request.getRestriction().getOperationScope() != null
+					&& !request.getRestriction().getOperationScope().isEmpty()) {
 
-						SimpleDateFormat sdf = new SimpleDateFormat(
-								"yyyy-MM-dd'T'HH:mm:ssZ");
-						try {
-							startDate = sdf.parse(dates[0]);
+				for (OperationScope scope : request.getRestriction()
+						.getOperationScope()) {
 
-							endDate = sdf.parse(dates[1]);
-						} catch (ParseException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+					if (scope.getScopeType() != null
+							&& scope.getScopeType().equalsIgnoreCase(
+									ScopeTypes.ISO8601TimeInterval.toString())) {
+						if (scope.getScopeValue() instanceof String) {
+							String scopeValue = (String) (scope.getScopeValue());
+							String[] dates = scopeValue.split("/");
 
-							String details = "Wrong scopeValue for "
-									+ ScopeTypes.ISO8601TimeInterval.toString()
-									+ ". Usage example: 2015-06-13T17:07:16+0200/2015-06-13T17:07:18+0200";
+							SimpleDateFormat sdf = new SimpleDateFormat(
+									"yyyy-MM-dd'T'HH:mm:ssZ");
+							try {
+								startDate = sdf.parse(dates[0]);
 
-							logger.warn(details);
+								endDate = sdf.parse(dates[1]);
+							} catch (ParseException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+
+								String details = "Wrong scopeValue for "
+										+ ScopeTypes.ISO8601TimeInterval
+												.toString()
+										+ ". Usage example: 2015-06-13T17:07:16+0200/2015-06-13T17:07:18+0200";
+
+								logger.warn(details);
+							}
+
 						}
-
+						break;
 					}
-					break;
 				}
 			}
-		}
 
-		List<ContextElementResponse> contextElementResponseList = new ArrayList<ContextElementResponse>();
+			List<ContextElementResponse> contextElementResponseList = new ArrayList<ContextElementResponse>();
 
-		List<EntityId> entityIdToRequest;
-		List<String> attributeListToRequest;
+			List<EntityId> entityIdToRequest;
+			List<String> attributeListToRequest;
 
-		if (embeddedAgentContextRegistration == null) {
-			entityIdToRequest = request.getEntityIdList();
-			attributeListToRequest = request.getAttributeList();
-		} else {
-			attributeListToRequest = null;
-			entityIdToRequest = new ArrayList<EntityId>();
-			for (ContextRegistration contextRegistration : embeddedAgentContextRegistration) {
-				entityIdToRequest.addAll(contextRegistration.getListEntityId());
-			}
-		}
-
-		if (response == null || response.getErrorCode() == null) {
-
-			List<ContextElement> contextElementList;
-
-			if (startDate != null && endDate != null) {
-				/*
-				 * Historical Query
-				 */
-
-				contextElementList = embeddedIoTAgent.getHistoricalValues(
-						entityIdToRequest, attributeListToRequest, startDate,
-						endDate);
-
+			if (embeddedAgentContextRegistration == null) {
+				entityIdToRequest = request.getEntityIdList();
+				attributeListToRequest = request.getAttributeList();
 			} else {
-
-				/*
-				 * Latest Value Query
-				 */
-
-				contextElementList = embeddedIoTAgent.getLatestValues(
-						entityIdToRequest, attributeListToRequest);
-
+				attributeListToRequest = null;
+				entityIdToRequest = new ArrayList<EntityId>();
+				for (ContextRegistration contextRegistration : embeddedAgentContextRegistration) {
+					entityIdToRequest.addAll(contextRegistration
+							.getListEntityId());
+				}
 			}
 
-			for (ContextElement contextElement : contextElementList) {
-				contextElementResponseList
-						.add(createContextElementResponse(contextElement));
+			if (logger.isDebugEnabled()) {
+				logger.debug(String.format(
+						"Requested ContextRegistration: %s and attributes: %s",
+						entityIdToRequest.toString(),
+						attributeListToRequest.toString()));
 			}
 
-			response = new QueryContextResponse(contextElementResponseList,
-					null);
+			if (response == null || response.getErrorCode() == null) {
+
+				List<ContextElement> contextElementList;
+
+				if (startDate != null && endDate != null) {
+					/*
+					 * Historical Query
+					 */
+
+					contextElementList = embeddedIoTAgent.getHistoricalValues(
+							entityIdToRequest, attributeListToRequest,
+							startDate, endDate);
+
+				} else {
+
+					/*
+					 * Latest Value Query
+					 */
+
+					contextElementList = embeddedIoTAgent.getLatestValues(
+							entityIdToRequest, attributeListToRequest);
+
+				}
+
+				for (ContextElement contextElement : contextElementList) {
+					contextElementResponseList
+							.add(createContextElementResponse(contextElement));
+				}
+
+				response = new QueryContextResponse(contextElementResponseList,
+						null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 		synchronized (merger) {
