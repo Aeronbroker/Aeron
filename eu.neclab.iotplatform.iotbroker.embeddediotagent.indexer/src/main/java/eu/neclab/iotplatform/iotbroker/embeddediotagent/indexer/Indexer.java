@@ -136,7 +136,7 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 								id, isolatedContextElement.getEntityId()
 										.getType().toString(),
 								put ? "successfully" : "already",
-								cachedIdsByType.toString()));
+								cachedIdsByType));
 			}
 		}
 
@@ -149,8 +149,7 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 							id, isolatedContextElement
 									.getContextAttributeList().iterator()
 									.next().getName(), put ? "successfully"
-									: "already", cachedAttributeNamesById
-									.toString()));
+									: "already", cachedAttributeNamesById));
 		}
 
 		return true;
@@ -238,10 +237,9 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 			}
 
 		}
-		
+
 		if (logger.isDebugEnabled()) {
-			logger.debug(String.format(
-					"idsAndAttributeNames to return: %s",
+			logger.debug(String.format("idsAndAttributeNames to return: %s",
 					idsAndAttributeNames));
 		}
 
@@ -368,6 +366,10 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 	private void cacheIdsByType() {
 
 		cachedIdsByType = keyValueStore.getIdsByType();
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("Cached IdsByType: " + cachedIdsByType);
+		}
 	}
 
 	private void cacheAttributeNamesById() {
@@ -390,6 +392,11 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 				}
 
 			}
+		}
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("Cached AttributeNamesById: "
+					+ cachedAttributeNamesById);
 		}
 
 	}

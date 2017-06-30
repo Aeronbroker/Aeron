@@ -477,6 +477,12 @@ public class CouchDB implements KeyValueStoreInterface,
 			} else if (response.getStatusLine().getStatusCode() == 200
 					&& response.getBody() != null
 					&& !response.getBody().isEmpty()) {
+
+				if (logger.isDebugEnabled()) {
+					logger.debug(String.format("GetKeys %s response %s", url,
+							response.getBody()));
+				}
+
 				JsonElement jelement = new JsonParser().parse(response
 						.getBody());
 				if (!jelement.isJsonNull()) {
@@ -497,6 +503,11 @@ public class CouchDB implements KeyValueStoreInterface,
 			e.printStackTrace();
 		}
 
+		if (logger.isDebugEnabled()) {
+			logger.debug(String.format("Keys for %s parsed response %s", url,
+					keys));
+		}
+
 		return keys;
 	}
 
@@ -513,11 +524,17 @@ public class CouchDB implements KeyValueStoreInterface,
 
 			if (response == null) {
 
-				logger.error("No response from CouchDB!!!");
+				logger.error("No response from CouchDB for"
+						+ View.ID_BY_TYPE_VIEW.getPath() + " view!!!");
 
 			} else if (response.getStatusLine().getStatusCode() == 200
 					&& response.getBody() != null
 					&& !response.getBody().isEmpty()) {
+
+				if (logger.isDebugEnabled()) {
+					logger.debug(String.format("View %s response %s", url,
+							response.getBody()));
+				}
 				JsonElement jelement = new JsonParser().parse(response
 						.getBody());
 				if (!jelement.isJsonNull()) {
@@ -541,6 +558,10 @@ public class CouchDB implements KeyValueStoreInterface,
 			}
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
+		}
+
+		if (logger.isDebugEnabled()) {
+			logger.debug(String.format("Parsed id by type %s", idsByType));
 		}
 
 		return idsByType;
@@ -937,15 +958,17 @@ public class CouchDB implements KeyValueStoreInterface,
 
 		try {
 			String rev = permanentRegistryRevById.get(id);
-			
-			if (rev == null){
-				rev = permanentRegistryRevById.get(URLEncoder.encode(id, "UTF-8"));
+
+			if (rev == null) {
+				rev = permanentRegistryRevById.get(URLEncoder.encode(id,
+						"UTF-8"));
 			}
-			
-			if (rev == null){
-				rev = permanentRegistryRevById.get(URLDecoder.decode(id, "UTF-8"));
+
+			if (rev == null) {
+				rev = permanentRegistryRevById.get(URLDecoder.decode(id,
+						"UTF-8"));
 			}
-			
+
 			FullHttpResponse response = HttpRequester.sendDelete(new URL(
 					getCouchDB_ip() + registryDB_NAME + "/" + id + "?rev="
 							+ rev));
