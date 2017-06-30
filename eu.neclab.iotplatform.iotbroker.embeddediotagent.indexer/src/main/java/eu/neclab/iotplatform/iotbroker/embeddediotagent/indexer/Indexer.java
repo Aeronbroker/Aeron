@@ -161,9 +161,10 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 			List<EntityId> entityIdList, Set<String> attributeNames) {
 
 		if (logger.isDebugEnabled()) {
-			logger.debug(String.format(
-					"EntityId to check: %s Attributes to check: %s",
-					entityIdList, attributeNames));
+			logger.debug(String
+					.format("EntityId to check: %s Attributes to check: %s against cachedIdsByType: %s and cachedAttributeNamesById: %s ",
+							entityIdList, attributeNames, cachedIdsByType,
+							cachedAttributeNamesById));
 		}
 
 		Multimap<String, String> idsAndAttributeNames = HashMultimap.create();
@@ -377,7 +378,7 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 		// ÿ is the last character of the UTF-8 character table
 
 		for (String key : keyValueStore.getKeys(LATEST_VALUE_PREFIX,
-				LATEST_VALUE_PREFIX + "ÿ")) {
+				LATEST_VALUE_PREFIX + "%C3%BF")) {
 			String[] entityAndAttributeName = key.split(PREFIX_TO_ID_SEPARATOR)[1]
 					.split(ID_TO_ATTRIBUTENAME_SEPARATOR);
 
