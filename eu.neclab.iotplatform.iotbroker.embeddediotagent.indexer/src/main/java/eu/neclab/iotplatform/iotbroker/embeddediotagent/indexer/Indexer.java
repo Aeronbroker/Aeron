@@ -161,6 +161,12 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 	public Multimap<String, String> matchingIdsAndAttributeNames(
 			List<EntityId> entityIdList, Set<String> attributeNames) {
 
+		if (logger.isDebugEnabled()) {
+			logger.debug(String.format(
+					"EntityId to check: %s Attributes to check: %s",
+					entityIdList, attributeNames));
+		}
+
 		Multimap<String, String> idsAndAttributeNames = HashMultimap.create();
 
 		for (EntityId entityId : entityIdList) {
@@ -203,9 +209,9 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 						Collection<String> attributeNamesCollect = cachedAttributeNamesById
 								.get(id);
 						// Otherwise check also the encoded url
-						if (attributeNamesCollect.isEmpty()){
+						if (attributeNamesCollect.isEmpty()) {
 							attributeNamesCollect = cachedAttributeNamesById
-									.get(URLEncoder.encode(id,"UTF-8"));
+									.get(URLEncoder.encode(id, "UTF-8"));
 						}
 
 						for (String attributeName : attributeNamesCollect) {
@@ -231,6 +237,12 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 
 			}
 
+		}
+		
+		if (logger.isDebugEnabled()) {
+			logger.debug(String.format(
+					"idsAndAttributeNames to return: %s",
+					idsAndAttributeNames));
 		}
 
 		return idsAndAttributeNames;

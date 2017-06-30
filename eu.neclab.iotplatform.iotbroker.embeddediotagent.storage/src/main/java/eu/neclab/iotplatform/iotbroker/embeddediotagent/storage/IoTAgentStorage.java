@@ -327,6 +327,12 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 
 		Multimap<String, String> idsAndAttributeNames = indexer
 				.matchingIdsAndAttributeNames(entityIdList, attributeNamesSet);
+		
+		if (logger.isDebugEnabled()) {
+			logger.debug(String.format(
+					"idsAndAttributeNames found %s",
+					idsAndAttributeNames));
+		}
 
 		// List of Task
 		// List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
@@ -427,6 +433,12 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 
 			}
 
+		}
+		
+		if (logger.isDebugEnabled()) {
+			logger.debug(String.format(
+					"Requesting the ids from the Key-Value Storage: %s",
+					documentKeys));
 		}
 
 		contextElementList = keyValueStore.getValues(documentKeys);
