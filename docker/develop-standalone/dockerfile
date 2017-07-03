@@ -5,17 +5,17 @@ FROM ubuntu
 MAINTAINER 'NEC Laboratories Europe: iotplatform@neclab.eu, Flavio Cirillo: flavio.cirillo@neclab.eu'
 
 #Install postgres
-RUN apt-get update
-RUN apt-get install postgresql postgis -y
+RUN apt-get update; apt-get install postgresql postgis -y
 RUN service postgresql start && su -c "psql -d postgres -c \"ALTER USER postgres PASSWORD 'postgres'\"" postgres
 
 #install CouchDB
 RUN apt-get install couchdb -y
 RUN mkdir /var/run/couchdb
 RUN chown -R couchdb:couchdb /var/run/couchdb
+RUN sed -i "s/^bind_address/;bind_address/g" /etc/couchdb/local.ini; sed -i "s/\[httpd\]/\[httpd\]\nbind_address = 0\.0\.0\.0/g" /etc/couchdb/local.ini; cat  /etc/couchdb/local.ini
 
 #install Maven, Java and GIT
-RUN apt-get install maven default-jdk git -y
+RUN apt-get update; apt-get install maven default-jdk git -y
 
 #Download the IoTBroker SourceCode
 WORKDIR /root
@@ -50,7 +50,7 @@ RUN ./setup.sh --auto --propagateauto
 
 #Create the dockerentrypoint
 WORKDIR /root/
-RUN printf "#!/bin/bash\n\n/usr/bin/couchdb > /dev/null &\n\nservice postgresql start && cd /root/NEConfMan/ConfMan_Runner && ./exec.sh \$@ &\n\ncd /root/Aeron/IoTBroker-runner\n./unix64_exec.sh \$@ &\ntail -n1000 -F /root/NEConfMan/ConfMan_Runner/logs/confman.log /root/Aeron/IoTBroker-runner/logs/iotbroker.log" >  iotbroker_dockerentrypoint.sh
+RUN printf "#!/bin/bash\n\n/usr/bin/couchdb > /dev/null &\n\nservice postgresql start && sleep 15s && cd /root/NEConfMan/ConfMan_Runner && ./exec.sh \$@ &\n\nsleep 15s && cd /root/Aeron/IoTBroker-runner\n./unix64_exec.sh \$@ &\ntail -n1000 -F /root/NEConfMan/ConfMan_Runner/logs/confman.log /root/Aeron/IoTBroker-runner/logs/iotbroker.log" >  iotbroker_dockerentrypoint.sh
 RUN chmod +x iotbroker_dockerentrypoint.sh
 
 #Expose the port

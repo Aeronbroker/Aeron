@@ -62,13 +62,13 @@ import org.codehaus.jackson.annotate.JsonProperty;
  */
 @XmlRootElement(name = "polygon")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Polygon extends NgsiStructure implements Serializable{
+public class Polygon extends NgsiStructure implements Serializable {
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 1L;
-	@XmlElementWrapper(name="vertexList")
+	@XmlElementWrapper(name = "vertexList")
 	@XmlElement(name = "vertex", required = false)
 	@JsonProperty("vertices")
 	private List<Vertex> vertexList = new ArrayList<Vertex>();
@@ -87,12 +87,20 @@ public class Polygon extends NgsiStructure implements Serializable{
 		this.vertexList = vertexList;
 	}
 
-//	@Override
-//	public String toString() {
-//		return "Polygon [vertexList=" + vertexList + "]";
-//	}
+	public Point getBarycentre() {
+		float latAccu = 0;
+		float lngAccu = 0;
+		for (Vertex vertex : vertexList) {
+			latAccu += vertex.getLatitude();
+			lngAccu += vertex.getLongitude();
+		}
 
-
-
+		return new Point(latAccu / vertexList.size(), lngAccu
+				/ vertexList.size());
+	}
+	// @Override
+	// public String toString() {
+	// return "Polygon [vertexList=" + vertexList + "]";
+	// }
 
 }

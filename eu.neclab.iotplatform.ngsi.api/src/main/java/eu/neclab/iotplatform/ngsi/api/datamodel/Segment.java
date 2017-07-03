@@ -99,6 +99,28 @@ public class Segment extends NgsiStructure {
 		this.height = height;
 	}
 
+	public Point getBarycentre() {
+
+		String[] NW_LatLng = NW_Corner.split(",");
+		String[] SE_LatLng = SE_Corner.split(",");
+
+		Point point = null;
+
+		try {
+			float lat = (Float.parseFloat(NW_LatLng[0]) + Float
+					.parseFloat(SE_LatLng[0])) / 2;
+
+			float lng = (Float.parseFloat(NW_LatLng[1]) + Float
+					.parseFloat(SE_LatLng[1])) / 2;
+
+			point = new Point(lat, lng);
+		} catch (NumberFormatException e) {
+
+		}
+
+		return point;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

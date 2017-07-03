@@ -103,9 +103,11 @@ public class ContextElement_OrionCustomization extends NgsiStructureAlternative 
 		 * Domain metadata check: keep location and timestamp
 		 */
 		Set<String> metadataToKeep = new HashSet();
-		metadataToKeep.add(MetadataTypes.SimpleGeolocation.getName()
-				.toLowerCase());
+		// metadataToKeep.add(MetadataTypes.SimpleGeolocation.getName()
+		// .toLowerCase());
 		metadataToKeep.add(MetadataTypes.CreationTime.getName().toLowerCase());
+
+		ContextAttribute_OrionCustomization geolocationAttribute = null;
 
 		if (contextElement.getDomainMetadata() != null
 				&& !contextElement.getDomainMetadata().isEmpty()) {
@@ -117,10 +119,29 @@ public class ContextElement_OrionCustomization extends NgsiStructureAlternative 
 						|| (contextMetadata.getType() != null && metadataToKeep
 								.contains(contextMetadata.getType().toString()
 										.toLowerCase()))) {
+
 					contextMetadataList.add(contextMetadata);
+
+				} else if ((contextMetadata.getName() != null && MetadataTypes.SimpleGeolocation
+						.getName().toLowerCase()
+						.equals(contextMetadata.getName().toLowerCase()))
+						|| (contextMetadata.getType() != null && MetadataTypes.SimpleGeolocation
+								.getName()
+								.toLowerCase()
+								.equals(contextMetadata.getType().toString()
+										.toLowerCase()))) {
+
+					Point_OrionCustomization point = Point_OrionCustomization
+							.createPoint(contextMetadata.getValue());
+					if (point != null) {
+						geolocationAttribute = new ContextAttribute_OrionCustomization(
+								AttributeTypes_OrionCustomization.GeoPoint
+										.getName(),
+								AttributeTypes_OrionCustomization.GeoPoint
+										.getType(), point.toString());
+					}
 				}
 			}
-
 		}
 
 		if (contextElement.getContextAttributeList() != null
@@ -130,6 +151,7 @@ public class ContextElement_OrionCustomization extends NgsiStructureAlternative 
 
 			for (ContextAttribute contextAttribute : contextElement
 					.getContextAttributeList()) {
+
 				ContextAttribute_OrionCustomization contextAttribute_tid = new ContextAttribute_OrionCustomization(
 						contextAttribute);
 
@@ -142,6 +164,10 @@ public class ContextElement_OrionCustomization extends NgsiStructureAlternative 
 
 				contextAttributeList.add(contextAttribute_tid);
 			}
+		}
+
+		if (geolocationAttribute != null) {
+			contextAttributeList.add(geolocationAttribute);
 		}
 
 	}

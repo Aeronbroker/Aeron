@@ -956,7 +956,7 @@ public class SubscriptionStorage implements SubscriptionStorageInterface {
 					subscriptionWithInfo.setThrottling(DurationUtils
 							.convertToDuration(defaultThrottling));
 				}
-				
+
 				subscriptionWithInfoList.add(subscriptionWithInfo);
 
 			}
@@ -1437,7 +1437,9 @@ public class SubscriptionStorage implements SubscriptionStorageInterface {
 
 			stmt = this
 					.createCheckSubscriptionQueryStatement(c, contextElement);
-			logger.info("Check Subscription query:" + stmt.toString());
+			if (logger.isDebugEnabled()) {
+				logger.debug("Check Subscription query:" + stmt.toString());
+			}
 			result = stmt.executeQuery();
 
 			while (result.next()) {
