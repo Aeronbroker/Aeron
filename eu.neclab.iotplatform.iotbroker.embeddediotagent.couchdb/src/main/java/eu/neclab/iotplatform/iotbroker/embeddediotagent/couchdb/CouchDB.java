@@ -229,6 +229,9 @@ public class CouchDB implements KeyValueStoreInterface,
 			}
 
 			this.cacheRevisionById();
+			if (logger.isDebugEnabled()) {
+				logger.debug("Cached revisions: " + cachedRevisionByKey);
+			}
 
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
@@ -409,10 +412,16 @@ public class CouchDB implements KeyValueStoreInterface,
 		this.checkDB();
 
 		// ÿ is the last character of the UTF-8 character table
-		String url = String.format(
-				"%s%s/_all_docs?startkey=%%22%s%%22&endkey=%%22%sÿ%%22",
-				getCouchDB_ip(), couchDB_NAME, keyToCachePrefix,
-				keyToCachePrefix);
+		// %C3%BF is the url encoded for ÿ
+		String url = null;
+		try {
+			url = String
+					.format("%s%s/_all_docs?startkey=%%22%s%%22&endkey=%%22%s%%C3%%BF%%22",
+							getCouchDB_ip(), couchDB_NAME, keyToCachePrefix,
+							keyToCachePrefix);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		try {
 			FullHttpResponse response = HttpRequester.sendGet(new URL(url));

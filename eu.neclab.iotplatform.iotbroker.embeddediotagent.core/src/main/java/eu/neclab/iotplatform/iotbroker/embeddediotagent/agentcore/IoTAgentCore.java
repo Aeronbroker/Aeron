@@ -181,9 +181,19 @@ public class IoTAgentCore implements IoTAgentInterface {
 					@Override
 					public void run() {
 
+						if (logger.isDebugEnabled()) {
+							logger.debug(String.format(
+									"Storing historically contextElement %s",
+									isolatedContextElement.toJsonString()));
+						}
 						iotAgentStorage.storeHistoricalData(
 								isolatedContextElement, localDate);
 
+						if (logger.isDebugEnabled()) {
+							logger.debug(String.format(
+									"Storing latest contextElement %s",
+									isolatedContextElement.toJsonString()));
+						}
 						iotAgentStorage.storeLatestData(isolatedContextElement);
 
 					}

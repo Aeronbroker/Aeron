@@ -411,8 +411,11 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 
 	public Pair<String, String> generateStartAndEndKeyForLatestValues() {
 
+		// ÿ is the last character of the UTF-8 character table
+		// %C3%BF is url encoded for ÿ
+		
 		String startKey = LATEST_VALUE_PREFIX;
-		String endKey = LATEST_VALUE_PREFIX + "ÿ";
+		String endKey = LATEST_VALUE_PREFIX + "%C3%BF";
 
 		return new Pair<String, String>(startKey, endKey);
 

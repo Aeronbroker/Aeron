@@ -101,21 +101,24 @@ public class ThrottlingTask extends TimerTask {
 		 * Retrieve the subscription data from the subscription store
 		 */
 
-		if (logger.isDebugEnabled()) {
-			logger.debug("SubscriptionId from TrottlingTask ---------------->"
+		if (logger.isTraceEnabled()) {
+			logger.trace("SubscriptionId from TrottlingTask ---------------->"
 					+ subId);
 		}
 
 		SubscriptionData subscriptionData = subContoller
 				.getSubscriptionDataIndex().get(subId);
 
-		if (logger.isDebugEnabled()) {
-			logger.debug("Trotthling task ID ---------------->"
+		if (logger.isTraceEnabled()) {
+			logger.trace("Trotthling task ID ---------------->"
 					+ subscriptionData.getThrottlingTask().getSubId());
 		}
 
 		if (subscriptionData.getContextResponseQueue().isEmpty()) {
-			logger.debug("Terminating notification task as there are no notifications to send.");
+			if (logger.isTraceEnabled()) {
+				logger.trace("Terminating notification task as there are no notifications to send.");
+			}
+
 			return;
 		}
 
@@ -127,7 +130,9 @@ public class ThrottlingTask extends TimerTask {
 			 */
 
 			subscriptionData.getLock().lock();
-			logger.debug("subscription ID to notify: " + subId);
+			if (logger.isDebugEnabled()) {
+				logger.debug("subscription ID to notify: " + subId);
+			}
 
 			/*
 			 * Get the incoming subscription
@@ -135,13 +140,16 @@ public class ThrottlingTask extends TimerTask {
 			SubscribeContextRequest request = subContoller
 					.getSubscriptionStorage().getIncomingSubscription(subId);
 
-			logger.debug("Processing Notication for this subscription:"
-					+ request.toString());
+			if (logger.isDebugEnabled()) {
+				logger.debug("Processing Notication for this subscription:"
+						+ request.toString());
+			}
 
 			NotifyContextRequest notifyReq = null;
-
-			logger.debug("Notification queue: "
-					+ subscriptionData.getContextResponseQueue().toString());
+			if (logger.isDebugEnabled()) {
+				logger.debug("Notification queue: "
+						+ subscriptionData.getContextResponseQueue().toString());
+			}
 
 			/*
 			 * Create a query context response from the context element
@@ -162,8 +170,10 @@ public class ThrottlingTask extends TimerTask {
 						.getAttributeExpression(), qcr);
 			}
 
-			logger.info("Notification queue after applying restriction: "
-					+ qcr.getListContextElementResponse());
+			if (logger.isDebugEnabled()) {
+				logger.debug("Notification queue after applying restriction: "
+						+ qcr.getListContextElementResponse());
+			}
 
 			/*
 			 * Create the notification request
@@ -177,7 +187,10 @@ public class ThrottlingTask extends TimerTask {
 			// + "/ngsi10/notify",
 			// qcr.getListContextElementResponse());
 
-			logger.info("Now sending this notification:" + notifyReq);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Now sending this notification:" + notifyReq);
+
+			}
 
 			subContoller.getNorthBoundWrapper().forwardNotification(notifyReq,
 					new URI(subscriptionData.getNotificationHandler()));

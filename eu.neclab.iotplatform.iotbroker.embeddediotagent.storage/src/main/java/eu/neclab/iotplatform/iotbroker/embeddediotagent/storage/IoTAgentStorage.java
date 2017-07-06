@@ -133,6 +133,17 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 
 		if (successfullyStored) {
 			indexer.index(isolatedContextElement);
+			if (logger.isDebugEnabled()) {
+				logger.debug(String.format(
+						"ContextElement %s \n\tsuccessfully stored",
+						isolatedContextElement));
+			}
+		} else {
+			if (logger.isDebugEnabled()) {
+				logger.debug(String.format(
+						"ContextElement %s \n\tnot successfully stored",
+						isolatedContextElement));
+			}
 		}
 
 	}
@@ -147,6 +158,10 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 		// If no timestamp is found, take the local one.
 		if (timestamp == null) {
 			timestamp = defaultDate;
+			if (logger.isDebugEnabled()) {
+				logger.debug(String.format("No date found %s",
+						isolatedContextElement.toJsonString()));
+			}
 		}
 
 		final String historicalDataDocumentKey = indexer
@@ -184,9 +199,10 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 			for (ContextMetadata contextMetadata : contextAttribute
 					.getMetadata()) {
 
-				if (contextMetadata.getName().equalsIgnoreCase("creation_time")
-						|| contextMetadata.getName()
-								.equalsIgnoreCase("endtime")) {
+				if (contextMetadata.getName() != null
+						&& (contextMetadata.getName().equalsIgnoreCase(
+								"creation_time") || contextMetadata.getName()
+								.equalsIgnoreCase("endtime"))) {
 
 					/*
 					 * This contextMetadata is set by the leafengine connector
@@ -205,7 +221,8 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 						e.printStackTrace();
 					}
 					break;
-				} else if (contextMetadata.getName().equalsIgnoreCase("date")) {
+				} else if (contextMetadata.getName() != null
+						&& contextMetadata.getName().equalsIgnoreCase("date")) {
 
 					/*
 					 * This contextMetadata is set by the leafengine connector
@@ -327,10 +344,9 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 
 		Multimap<String, String> idsAndAttributeNames = indexer
 				.matchingIdsAndAttributeNames(entityIdList, attributeNamesSet);
-		
+
 		if (logger.isDebugEnabled()) {
-			logger.debug(String.format(
-					"idsAndAttributeNames found %s",
+			logger.debug(String.format("idsAndAttributeNames found %s",
 					idsAndAttributeNames));
 		}
 
@@ -434,7 +450,7 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 			}
 
 		}
-		
+
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format(
 					"Requesting the ids from the Key-Value Storage: %s",
