@@ -55,6 +55,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -63,6 +64,9 @@ import org.apache.http.impl.auth.BasicScheme;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 
+import com.github.benmanes.caffeine.cache.CacheLoader;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonArray;
@@ -90,6 +94,8 @@ public class CouchDB implements KeyValueStoreInterface,
 	private Map<String, String> cachedRevisionByKey = new HashMap<String, String>();
 
 	private Map<String, String> permanentRegistryRevById = new HashMap<String, String>();
+
+	LoadingCache<String, ContextElement> lastValueCache;
 
 	private String couchDB_ip = null;
 
@@ -151,16 +157,16 @@ public class CouchDB implements KeyValueStoreInterface,
 		return couchDB_USERNAME;
 	}
 
-	public void setUSERNAME(String uSERNAME) {
-		couchDB_USERNAME = uSERNAME;
+	public void setUSERNAME(String username) {
+		couchDB_USERNAME = username;
 	}
 
 	public String getPASSWORD() {
 		return couchDB_PASSWORD;
 	}
 
-	public void setPASSWORD(String pASSWORD) {
-		couchDB_PASSWORD = pASSWORD;
+	public void setPASSWORD(String password) {
+		couchDB_PASSWORD = password;
 	}
 
 	public String getKeyToCachePrefix() {
@@ -227,11 +233,29 @@ public class CouchDB implements KeyValueStoreInterface,
 						authentication);
 				databaseExist = true;
 			}
+			
+			lastValueCache = Caffeine.newBuilder().maximumSize(10000)
+					.expireAfterAccess(10, TimeUnit.MINUTES)
+					.build(new CacheLoader<String, ContextElement>() {
 
-			this.cacheRevisionById();
+						public ContextElement load(String key) throws Exception {
+							return getValuefromCouchDB(key);
+						}
+
+						public Map<String, ContextElement> loadAll(
+								Iterable<? extends String> keys) {
+							return getValuesFromCouchDB(keys);
+						}
+
+					});
+
+			this.cacheLastValue();
+
 			if (logger.isDebugEnabled()) {
 				logger.debug("Cached revisions: " + cachedRevisionByKey);
 			}
+
+			
 
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
@@ -284,6 +308,8 @@ public class CouchDB implements KeyValueStoreInterface,
 					// Update the cache
 					cachedRevisionByKey.put(key, revision);
 
+					lastValueCache.put(key, contextElement);
+
 					successful = true;
 				}
 
@@ -311,6 +337,8 @@ public class CouchDB implements KeyValueStoreInterface,
 							.parseRevisionFromCouchdbResponse(respFromCouchDB);
 					// Put in cache
 					cachedRevisionByKey.put(key, revision);
+
+					lastValueCache.put(key, contextElement);
 
 					successful = true;
 
@@ -375,6 +403,13 @@ public class CouchDB implements KeyValueStoreInterface,
 
 	@Override
 	public boolean storeValue(String key, ContextElement contextElement) {
+		return this.storeValue(key, contextElement, false);
+	}
+
+	@Override
+	public boolean storeValue(String key, ContextElement contextElement,
+			boolean cacheAfterStoring) {
+
 		this.checkDB();
 
 		boolean successful = false;
@@ -387,14 +422,18 @@ public class CouchDB implements KeyValueStoreInterface,
 			if (respFromCouchDB.getStatusLine().getStatusCode() > 299) {
 
 				logger.warn("CouchDB database: " + couchDB_NAME
-						+ " did not update correctly the value with key: "
-						+ key + " . Reason: " + respFromCouchDB.getStatusLine());
+						+ " did not store correctly the value with key: " + key
+						+ " . Reason: " + respFromCouchDB.getStatusLine());
 
 				successful = false;
 
 			} else {
 
 				successful = true;
+
+				if (cacheAfterStoring) {
+					lastValueCache.put(key, contextElement);
+				}
 
 			}
 
@@ -407,7 +446,7 @@ public class CouchDB implements KeyValueStoreInterface,
 		return successful;
 	}
 
-	private void cacheRevisionById() {
+	private void cacheLastValue() {
 
 		this.checkDB();
 
@@ -416,7 +455,7 @@ public class CouchDB implements KeyValueStoreInterface,
 		String url = null;
 		try {
 			url = String
-					.format("%s%s/_all_docs?startkey=%%22%s%%22&endkey=%%22%s%%C3%%BF%%22",
+					.format("%s%s/_all_docs?startkey=%%22%s%%22&endkey=%%22%s%%C3%%BF%%22&include_docs=true",
 							getCouchDB_ip(), couchDB_NAME, keyToCachePrefix,
 							keyToCachePrefix);
 		} catch (Exception e) {
@@ -451,6 +490,17 @@ public class CouchDB implements KeyValueStoreInterface,
 						String key = row.get("key").getAsString();
 
 						cachedRevisionByKey.put(key, rev);
+
+						// Parse the ContextElement
+						if (row.get("doc") != null) {
+							ContextElement contextElement = (ContextElement) NgsiStructure
+									.parseStringToJson(row.get("doc")
+											.toString(), ContextElement.class);
+							lastValueCache.put(key, contextElement);
+						} else {
+							logger.warn("Inconsistency in CouchDB: "
+									+ row.toString());
+						}
 
 					}
 				}
@@ -576,7 +626,7 @@ public class CouchDB implements KeyValueStoreInterface,
 		return idsByType;
 	}
 
-	public ContextElement getValue(String latestValueDocumentKey) {
+	private ContextElement getValuefromCouchDB(String latestValueDocumentKey) {
 		this.checkDB();
 
 		ContextElement contextElement = null;
@@ -600,8 +650,6 @@ public class CouchDB implements KeyValueStoreInterface,
 							.parseStringToJson(httpResponse.getBody(),
 									ContextElement.class);
 
-					// System.out.println("PARSED:" + contextElement);
-
 				}
 			}
 
@@ -610,7 +658,10 @@ public class CouchDB implements KeyValueStoreInterface,
 		}
 
 		return contextElement;
+	}
 
+	public ContextElement getValue(String latestValueDocumentKey) {
+		return lastValueCache.get(latestValueDocumentKey);
 	}
 
 	public ContextElement getValues(String startKey, String endKey) {
@@ -647,6 +698,11 @@ public class CouchDB implements KeyValueStoreInterface,
 	}
 
 	public List<ContextElement> getValues(List<String> keys) {
+		return new ArrayList(lastValueCache.getAll(keys).values());
+	}
+
+	private Map<String, ContextElement> getValuesFromCouchDB(
+			Iterable<? extends String> keys) {
 
 		// curl -d '{"keys":["bar","baz"]}' -X POST
 		// http://127.0.0.1:5984/foo/_all_docs?include_docs=true
@@ -681,7 +737,7 @@ public class CouchDB implements KeyValueStoreInterface,
 		String url = getCouchDB_ip() + "/" + couchDB_NAME
 				+ "/_all_docs?include_docs=true";
 
-		List<ContextElement> contextElements = new ArrayList<ContextElement>();
+		Map<String, ContextElement> contextElements = new HashMap<String, ContextElement>();
 
 		try {
 			FullHttpResponse response = HttpRequester.sendPost(new URL(url),
@@ -807,9 +863,10 @@ public class CouchDB implements KeyValueStoreInterface,
 		return historicalContextElement;
 	}
 
-	private List<ContextElement> getContextElements(String couchDBResultSet) {
+	private Map<String, ContextElement> getContextElements(
+			String couchDBResultSet) {
 
-		List<ContextElement> contextElements = new ArrayList<ContextElement>();
+		Map<String, ContextElement> contextElements = new HashMap<String, ContextElement>();
 
 		JsonElement jelement = new JsonParser().parse(couchDBResultSet);
 		if (!jelement.isJsonNull()) {
@@ -824,10 +881,11 @@ public class CouchDB implements KeyValueStoreInterface,
 
 				// Parse the ContextElement
 				if (row.get("doc") != null) {
+					String id = row.get("key").getAsString();
 					ContextElement contextElement = (ContextElement) NgsiStructure
 							.parseStringToJson(row.get("doc").toString(),
 									ContextElement.class);
-					contextElements.add(contextElement);
+					contextElements.put(id, contextElement);
 				} else {
 					logger.warn("Inconsistency in CouchDB: " + row.toString());
 				}

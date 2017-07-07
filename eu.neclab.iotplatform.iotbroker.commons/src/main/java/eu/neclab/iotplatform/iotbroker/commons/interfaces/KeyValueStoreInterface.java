@@ -57,6 +57,9 @@ public interface KeyValueStoreInterface {
 
 	boolean storeValue(String key, ContextElement contextElement);
 
+	boolean storeValue(String key, ContextElement contextElement,
+			boolean cacheAfterStore);
+
 	public Collection<String> getKeys(String startKey, String endKey);
 
 	public Multimap<String, String> getIdsByType();
@@ -64,7 +67,7 @@ public interface KeyValueStoreInterface {
 	ContextElement getValue(String latestValueDocumentKey);
 
 	ContextElement getValues(String startKey, String endKey);
-	
+
 	List<ContextElement> getValues(List<String> keys);
 
 	List<ContextElement> getAllValues(String startKey, String endKey);
