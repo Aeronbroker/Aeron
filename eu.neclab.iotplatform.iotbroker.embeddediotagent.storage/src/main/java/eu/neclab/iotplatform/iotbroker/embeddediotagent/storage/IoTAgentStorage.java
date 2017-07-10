@@ -48,6 +48,7 @@ import java.net.URI;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -332,7 +333,7 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 					entityIdList, attributeNames));
 		}
 
-		List<ContextElement> contextElementList = new ArrayList<ContextElement>();
+		Collection<ContextElement> contextElementList = new ArrayList<ContextElement>();
 
 		Set<String> attributeNamesSet;
 		if (attributeNames != null && !attributeNames.isEmpty()) {

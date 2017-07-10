@@ -47,7 +47,7 @@ package eu.neclab.iotplatform.iotbroker.embeddediotagent.indexer;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
+//import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -167,9 +167,18 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 							cachedAttributeNamesById));
 		}
 
+		logger.info(String
+				.format("TODELETE EntityId to check: %s Attributes to check: %s against cachedIdsByType: %s and cachedAttributeNamesById: %s ",
+						entityIdList, attributeNames, cachedIdsByType,
+						cachedAttributeNamesById));
+
 		Multimap<String, String> idsAndAttributeNames = HashMultimap.create();
 
 		for (EntityId entityId : entityIdList) {
+			
+			if (entityId.getId().startsWith("Iglesia")){
+				logger.info("TODELETE HERE");
+			}
 
 			Collection<String> ids;
 
@@ -203,7 +212,15 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 							|| entityIdAndType[0].toLowerCase().equals(
 									URLEncoder
 											.encode(entityId.getId(), "UTF-8")
-											.toLowerCase())) {
+											.toLowerCase())
+							|| URLEncoder
+									.encode(entityIdAndType[0], "UTF-8")
+									.toLowerCase()
+									.equals(URLEncoder.encode(entityId.getId(),
+											"UTF-8").toLowerCase())
+							|| URLEncoder.encode(entityIdAndType[0], "UTF-8")
+									.toLowerCase()
+									.equals(entityId.getId().toLowerCase())) {
 
 						// Lets first try to look for the one with the exact id
 						Collection<String> attributeNamesCollect = cachedAttributeNamesById
@@ -383,15 +400,18 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 					.split(ID_TO_ATTRIBUTENAME_SEPARATOR);
 
 			if (entityAndAttributeName.length == 2) {
-				try {
-					cachedAttributeNamesById.put(URLEncoder.encode(
-							entityAndAttributeName[0], "UTF-8"),
-							entityAndAttributeName[1]);
-				} catch (UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+//				try {
+//					 cachedAttributeNamesById.put(URLEncoder.encode(
+//					 entityAndAttributeName[0], "UTF-8"),
+//					 entityAndAttributeName[1]);
+//				} catch (UnsupportedEncodingException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
 
+				cachedAttributeNamesById.put(
+						entityAndAttributeName[0],
+						entityAndAttributeName[1]);
 			}
 		}
 
@@ -413,7 +433,7 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 
 		// ÿ is the last character of the UTF-8 character table
 		// %C3%BF is url encoded for ÿ
-		
+
 		String startKey = LATEST_VALUE_PREFIX;
 		String endKey = LATEST_VALUE_PREFIX + "%C3%BF";
 

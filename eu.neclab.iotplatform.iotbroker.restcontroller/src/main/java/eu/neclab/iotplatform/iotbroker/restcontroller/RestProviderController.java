@@ -375,7 +375,7 @@ public class RestProviderController {
 			HttpServletRequest requester,
 			@RequestBody QueryContextRequest request) {
 
-		logger.info(" <--- NGSI-10 has received request for Context query resource ---> \n");
+		logger.info("\n\n <--- NGSI-10 has received request for Context query resource ---> \n");
 
 		// System.out.println(request);
 

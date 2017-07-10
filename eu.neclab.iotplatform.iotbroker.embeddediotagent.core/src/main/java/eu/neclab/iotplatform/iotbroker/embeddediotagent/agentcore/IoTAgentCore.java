@@ -180,6 +180,10 @@ public class IoTAgentCore implements IoTAgentInterface {
 
 					@Override
 					public void run() {
+						
+						if (isolatedContextElement.getEntityId().getId().startsWith("Igles")){
+							logger.info("TODELETE HERE");
+						}
 
 						if (logger.isDebugEnabled()) {
 							logger.debug(String.format(

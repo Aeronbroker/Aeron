@@ -50,11 +50,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
@@ -64,9 +66,9 @@ import org.apache.http.impl.auth.BasicScheme;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.github.benmanes.caffeine.cache.CacheLoader;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonArray;
@@ -95,7 +97,7 @@ public class CouchDB implements KeyValueStoreInterface,
 
 	private Map<String, String> permanentRegistryRevById = new HashMap<String, String>();
 
-	LoadingCache<String, ContextElement> lastValueCache;
+	private LoadingCache<String, ContextElement> lastValueCache;
 
 	private String couchDB_ip = null;
 
@@ -233,17 +235,20 @@ public class CouchDB implements KeyValueStoreInterface,
 						authentication);
 				databaseExist = true;
 			}
-			
-			lastValueCache = Caffeine.newBuilder().maximumSize(10000)
+
+			lastValueCache = CacheBuilder.newBuilder().maximumSize(1_000_000)
 					.expireAfterAccess(10, TimeUnit.MINUTES)
 					.build(new CacheLoader<String, ContextElement>() {
 
+						@Override
 						public ContextElement load(String key) throws Exception {
 							return getValuefromCouchDB(key);
 						}
 
+						@Override
 						public Map<String, ContextElement> loadAll(
-								Iterable<? extends String> keys) {
+								Iterable<? extends String> keys)
+								throws Exception {
 							return getValuesFromCouchDB(keys);
 						}
 
@@ -255,7 +260,8 @@ public class CouchDB implements KeyValueStoreInterface,
 				logger.debug("Cached revisions: " + cachedRevisionByKey);
 			}
 
-			
+			logger.info("All caches initialized. LastValueCache elements: "
+					+ lastValueCache.size());
 
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
@@ -275,7 +281,11 @@ public class CouchDB implements KeyValueStoreInterface,
 		 * Get the document revision
 		 */
 		String revision = cachedRevisionByKey.get(key);
+
 		try {
+
+			String encodedKey = URLEncoder.encode(key, "UTF-8");
+
 			if (revision == null) {
 
 				// Revision is null because not cached before. It means that
@@ -285,7 +295,8 @@ public class CouchDB implements KeyValueStoreInterface,
 				FullHttpResponse respFromCouchDB;
 
 				respFromCouchDB = HttpRequester.sendPut(new URL(getCouchDB_ip()
-						+ couchDB_NAME + "/" + key), value, "application/json");
+						+ couchDB_NAME + "/" + encodedKey), value,
+						"application/json");
 
 				if (respFromCouchDB == null) {
 
@@ -320,8 +331,8 @@ public class CouchDB implements KeyValueStoreInterface,
 
 				// Update the document
 				FullHttpResponse respFromCouchDB = HttpRequester.sendPut(
-						new URL(getCouchDB_ip() + couchDB_NAME + "/" + key),
-						messageBody, "application/json");
+						new URL(getCouchDB_ip() + couchDB_NAME + "/"
+								+ encodedKey), messageBody, "application/json");
 
 				if (respFromCouchDB.getStatusLine().getStatusCode() > 299) {
 
@@ -415,9 +426,10 @@ public class CouchDB implements KeyValueStoreInterface,
 		boolean successful = false;
 
 		try {
-			FullHttpResponse respFromCouchDB = HttpRequester.sendPut(new URL(
-					getCouchDB_ip() + couchDB_NAME + "/" + key), contextElement
-					.toJsonString(), "application/json");
+			FullHttpResponse respFromCouchDB = HttpRequester.sendPut(
+					new URL(getCouchDB_ip() + couchDB_NAME + "/"
+							+ URLEncoder.encode(key, "UTF-8")),
+					contextElement.toJsonString(), "application/json");
 
 			if (respFromCouchDB.getStatusLine().getStatusCode() > 299) {
 
@@ -489,6 +501,13 @@ public class CouchDB implements KeyValueStoreInterface,
 
 						String key = row.get("key").getAsString();
 
+//						try {
+//							key = URLDecoder.decode(key, "UTF-8");
+//						} catch (UnsupportedEncodingException e) {
+//							// TODO Auto-generated catch block
+//							e.printStackTrace();
+//						}
+
 						cachedRevisionByKey.put(key, rev);
 
 						// Parse the ContextElement
@@ -496,6 +515,12 @@ public class CouchDB implements KeyValueStoreInterface,
 							ContextElement contextElement = (ContextElement) NgsiStructure
 									.parseStringToJson(row.get("doc")
 											.toString(), ContextElement.class);
+
+							if (key.contains("Siglo")) {
+								logger.info("TODELETE key " + key + " value"
+										+ contextElement.toJsonString());
+							}
+
 							lastValueCache.put(key, contextElement);
 						} else {
 							logger.warn("Inconsistency in CouchDB: "
@@ -520,13 +545,16 @@ public class CouchDB implements KeyValueStoreInterface,
 
 		this.checkDB();
 
-		String url = String.format(
-				"%s%s/_all_docs?startkey=%%22%s%%22&endkey=%%22%s%%22",
-				getCouchDB_ip(), couchDB_NAME, startKey, endKey);
-
 		Collection<String> keys = new ArrayList<String>();
 
 		try {
+
+			String url = String.format(
+					"%s%s/_all_docs?startkey=%%22%s%%22&endkey=%%22%s%%22",
+					getCouchDB_ip(), couchDB_NAME,
+					URLEncoder.encode(startKey, "UTF-8"),
+					URLEncoder.encode(endKey, "UTF-8"));
+
 			FullHttpResponse response = HttpRequester.sendGet(new URL(url));
 
 			if (response == null) {
@@ -558,13 +586,16 @@ public class CouchDB implements KeyValueStoreInterface,
 					}
 				}
 			}
+
+			if (logger.isDebugEnabled()) {
+				logger.debug(String.format("Keys for %s parsed response %s",
+						url, keys));
+			}
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
-		}
-
-		if (logger.isDebugEnabled()) {
-			logger.debug(String.format("Keys for %s parsed response %s", url,
-					keys));
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 		return keys;
@@ -627,15 +658,14 @@ public class CouchDB implements KeyValueStoreInterface,
 	}
 
 	private ContextElement getValuefromCouchDB(String latestValueDocumentKey) {
+
 		this.checkDB();
 
 		ContextElement contextElement = null;
 		try {
 
 			String url = getCouchDB_ip() + couchDB_NAME + "/"
-					+ latestValueDocumentKey;
-
-			// System.out.println("Requesting Url:" + url);
+					+ URLEncoder.encode(latestValueDocumentKey, "UTF-8");
 
 			FullHttpResponse httpResponse = HttpRequester.sendGet(new URL(url));
 
@@ -649,7 +679,6 @@ public class CouchDB implements KeyValueStoreInterface,
 					contextElement = (ContextElement) NgsiStructure
 							.parseStringToJson(httpResponse.getBody(),
 									ContextElement.class);
-
 				}
 			}
 
@@ -661,7 +690,13 @@ public class CouchDB implements KeyValueStoreInterface,
 	}
 
 	public ContextElement getValue(String latestValueDocumentKey) {
-		return lastValueCache.get(latestValueDocumentKey);
+		try {
+			return lastValueCache.get(latestValueDocumentKey);
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	public ContextElement getValues(String startKey, String endKey) {
@@ -697,8 +732,14 @@ public class CouchDB implements KeyValueStoreInterface,
 		return historicalContextElement;
 	}
 
-	public List<ContextElement> getValues(List<String> keys) {
-		return new ArrayList(lastValueCache.getAll(keys).values());
+	public Collection<ContextElement> getValues(List<String> keys) {
+		try {
+			return lastValueCache.getAll(keys).values();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	private Map<String, ContextElement> getValuesFromCouchDB(
@@ -712,23 +753,28 @@ public class CouchDB implements KeyValueStoreInterface,
 		boolean first = true;
 		for (String key : keys) {
 			if (first) {
-				try {
-					body.append("\"" + URLDecoder.decode(key, "UTF-8") + "\"");
-				} catch (UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+//				try {
+//					body.append("\"" + URLDecoder.decode(key, "UTF-8") + "\"");
+//				} catch (UnsupportedEncodingException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+				body.append("\"" + key + "\"");
 				first = false;
 			} else {
-				try {
-					body.append(",\"" + URLDecoder.decode(key, "UTF-8") + "\"");
-				} catch (UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+//				try {
+//					body.append(",\"" + URLDecoder.decode(key, "UTF-8") + "\"");
+//				} catch (UnsupportedEncodingException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+				body.append(",\"" + key + "\"");
+
 			}
 		}
 		body.append("]}");
+
+		logger.info("TODELETE body " + body);
 
 		this.checkDB();
 
@@ -752,7 +798,7 @@ public class CouchDB implements KeyValueStoreInterface,
 
 			} else {
 
-				contextElements = getContextElements(response.getBody());
+				contextElements = parseContextElements(response.getBody());
 			}
 
 		} catch (MalformedURLException e) {
@@ -823,9 +869,16 @@ public class CouchDB implements KeyValueStoreInterface,
 
 		// "startkey=%22obs_urn:x-iot:smartsantander:1:10006|2015-05-08%2016:00:00%22&endkey=%22obs_urn:x-iot:smartsantander:1:10006|2015-05-08%2017:00:00%22&include_docs=true"
 
-		String queryString = new String(String.format(
-				"startkey=%%22%s%%22&endkey=%%22%s%%22&include_docs=true",
-				startKey, endKey));
+		String queryString = null;
+		try {
+			queryString = new String(String.format(
+					"startkey=%%22%s%%22&endkey=%%22%s%%22&include_docs=true",
+					URLEncoder.encode(startKey, "UTF-8"),
+					URLEncoder.encode(endKey, "UTF-8")));
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		return queryString;
 
@@ -863,7 +916,7 @@ public class CouchDB implements KeyValueStoreInterface,
 		return historicalContextElement;
 	}
 
-	private Map<String, ContextElement> getContextElements(
+	private Map<String, ContextElement> parseContextElements(
 			String couchDBResultSet) {
 
 		Map<String, ContextElement> contextElements = new HashMap<String, ContextElement>();
@@ -882,6 +935,14 @@ public class CouchDB implements KeyValueStoreInterface,
 				// Parse the ContextElement
 				if (row.get("doc") != null) {
 					String id = row.get("key").getAsString();
+
+//					try {
+//						id = URLDecoder.decode(id, "UTF-8");
+//					} catch (UnsupportedEncodingException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+
 					ContextElement contextElement = (ContextElement) NgsiStructure
 							.parseStringToJson(row.get("doc").toString(),
 									ContextElement.class);
@@ -979,8 +1040,9 @@ public class CouchDB implements KeyValueStoreInterface,
 			registrationString = "{\"registration\":\"" + registrationString
 					+ "\"}";
 
-			FullHttpResponse respFromCouchDB = HttpRequester.sendPut(new URL(
-					getCouchDB_ip() + registryDB_NAME + "/" + id),
+			FullHttpResponse respFromCouchDB = HttpRequester.sendPut(
+					new URL(getCouchDB_ip() + registryDB_NAME + "/"
+							+ URLEncoder.encode(id, "UTF-8")),
 					registrationString, "application/json");
 
 			if (logger.isDebugEnabled()) {
@@ -1037,7 +1099,7 @@ public class CouchDB implements KeyValueStoreInterface,
 			}
 
 			FullHttpResponse response = HttpRequester.sendDelete(new URL(
-					getCouchDB_ip() + registryDB_NAME + "/" + id + "?rev="
+					getCouchDB_ip() + registryDB_NAME + "/" + URLEncoder.encode(id,"UTF-8") + "?rev="
 							+ rev));
 
 			if (response == null) {
