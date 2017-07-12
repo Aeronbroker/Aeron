@@ -67,6 +67,8 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ReasonPhrase;
+import eu.neclab.iotplatform.ngsi.api.datamodel.StatusCode;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextRequest;
 import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Interface;
 
@@ -152,12 +154,15 @@ public class IoTAgentCore implements IoTAgentInterface {
 	}
 
 	@Override
-	public void storeData(final List<ContextElement> contextElementList) {
+	public StatusCode storeData(final List<ContextElement> contextElementList) {
 
 		// List of Task
 		List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
 
 		Iterator<ContextElement> iter = contextElementList.iterator();
+
+		List<ContextElement> contextElementUnsuccessfullyStored = new ArrayList<ContextElement>();
+
 		while (iter.hasNext()) {
 
 			ContextElement contextElement = iter.next();
@@ -176,78 +181,97 @@ public class IoTAgentCore implements IoTAgentInterface {
 			// the tasks used to store data
 			for (final ContextElement isolatedContextElement : isolatedContextElementList) {
 
-				tasks.add(Executors.callable(new Runnable() {
+				// tasks.add(Executors.callable(new Runnable() {
 
-					@Override
-					public void run() {
-						
-						if (isolatedContextElement.getEntityId().getId().startsWith("Igles")){
-							logger.info("TODELETE HERE");
-						}
+				// @Override
+				// public void run() {
 
-						if (logger.isDebugEnabled()) {
-							logger.debug(String.format(
-									"Storing historically contextElement %s",
-									isolatedContextElement.toJsonString()));
-						}
-						iotAgentStorage.storeHistoricalData(
-								isolatedContextElement, localDate);
+				if (logger.isDebugEnabled()) {
+					logger.debug(String.format(
+							"Storing historically contextElement %s",
+							isolatedContextElement.toJsonString()));
+				}
 
-						if (logger.isDebugEnabled()) {
-							logger.debug(String.format(
-									"Storing latest contextElement %s",
-									isolatedContextElement.toJsonString()));
-						}
-						iotAgentStorage.storeLatestData(isolatedContextElement);
+				iotAgentStorage.storeHistoricalData(isolatedContextElement,
+						localDate);
 
-					}
+				if (logger.isDebugEnabled()) {
+					logger.debug(String.format(
+							"Storing latest contextElement %s",
+							isolatedContextElement.toJsonString()));
+				}
 
-				}));
+				boolean successfullyStored = iotAgentStorage
+						.storeLatestData(isolatedContextElement);
+				if (!successfullyStored) {
+					contextElementUnsuccessfullyStored
+							.add(isolatedContextElement);
+				}
+
+				// }
+
+				// }));
 
 			}
 
 			if (BundleUtils.isServiceRegistered(this, subscriptionHandler)) {
-				tasks.add(Executors.callable(new Runnable() {
+				// tasks.add(Executors.callable(new Runnable() {
 
-					@Override
-					public void run() {
-						subscriptionHandler
-								.checkSubscriptions(isolatedContextElementList);
-					}
+				// @Override
+				// public void run() {
+				subscriptionHandler
+						.checkSubscriptions(isolatedContextElementList);
+				// }
 
-				}));
+				// }));
 			}
 		}
 
 		// Execute the tasks used to store the data
-		ExecutorService taskExecutor = Executors.newCachedThreadPool();
-		try {
-			taskExecutor.invokeAll(tasks);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		// ExecutorService taskExecutor = Executors.newCachedThreadPool();
+		// try {
+		// taskExecutor.invokeAll(tasks);
+		// } catch (InterruptedException e) {
+		// e.printStackTrace();
+		// }
 
 		/*
 		 * Check registration
 		 */
 		if (BundleUtils.isServiceRegistered(this, registrationHandler)) {
-			tasks.add(Executors.callable(new Runnable() {
+			// tasks.add(Executors.callable(new Runnable() {
 
-				@Override
-				public void run() {
-					registrationHandler.checkRegistration(contextElementList);
+			// @Override
+			// public void run() {
+			registrationHandler.checkRegistration(contextElementList);
 
-				}
-
-			}));
-			taskExecutor = Executors.newCachedThreadPool();
-			try {
-				taskExecutor.invokeAll(tasks);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			// }
+			//
+			// }));
+			// taskExecutor = Executors.newCachedThreadPool();
+			// try {
+			// taskExecutor.invokeAll(tasks);
+			// } catch (InterruptedException e) {
+			// e.printStackTrace();
+			// }
 		} else if (logger.isDebugEnabled()) {
 			logger.debug("Registry not available");
+		}
+
+		if (contextElementUnsuccessfullyStored.isEmpty()) {
+			
+			return new StatusCode(200, ReasonPhrase.OK_200.toString(), "");
+			
+		} else {
+			
+			StringBuffer details = new StringBuffer();
+			details.append("Some EntityId+Attribute not successfully stored: ");
+			for (ContextElement isolatedContextElement : contextElementUnsuccessfullyStored) {
+				details.append(isolatedContextElement.toJsonString() + "; ");
+			}
+			return new StatusCode(472,
+					ReasonPhrase.INVALIDPARAMETER_472.toString(),
+					details.toString());
 		}
 
 	}

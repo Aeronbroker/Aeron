@@ -120,7 +120,7 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 	}
 
 	@Override
-	public void storeLatestData(ContextElement isolatedContextElement) {
+	public boolean storeLatestData(ContextElement isolatedContextElement) {
 		String documentKey = indexer
 				.generateKeyForLatestValue(
 						isolatedContextElement.getEntityId().getId(),
@@ -146,6 +146,8 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 						isolatedContextElement));
 			}
 		}
+
+		return successfullyStored;
 
 	}
 
@@ -458,25 +460,36 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 					documentKeys));
 		}
 
-		contextElementList = keyValueStore.getValues(documentKeys);
+		if (!documentKeys.isEmpty()) {
+
+			contextElementList = keyValueStore.getValues(documentKeys);
+		} else {
+			contextElementList = new ArrayList<ContextElement>();
+		}
 
 		Map<String, ContextElement> compactedContextElementsMap = new HashMap<String, ContextElement>();
 
-		for (ContextElement contextElement : contextElementList) {
+		if (contextElementList.size() > 2) {
+			for (ContextElement contextElement : contextElementList) {
 
-			String entityKey = contextElement.getEntityId().getId()
-					+ contextElement.getEntityId().getType();
+				String entityKey = contextElement.getEntityId().getId()
+						+ contextElement.getEntityId().getType();
 
-			if (compactedContextElementsMap.containsKey(entityKey)) {
+				if (compactedContextElementsMap.containsKey(entityKey)) {
 
-				compactedContextElementsMap.get(entityKey)
-						.getContextAttributeList()
-						.addAll(contextElement.getContextAttributeList());
+					compactedContextElementsMap.get(entityKey)
+							.getContextAttributeList()
+							.addAll(contextElement.getContextAttributeList());
 
-			} else {
-				compactedContextElementsMap.put(entityKey, contextElement);
+				} else {
+					compactedContextElementsMap.put(entityKey, contextElement);
+				}
+
 			}
-
+			return new ArrayList<ContextElement>(
+					compactedContextElementsMap.values());
+		} else {
+			return new ArrayList<ContextElement>(contextElementList);
 		}
 
 		// try {
@@ -484,9 +497,6 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 		// } catch (InterruptedException e) {
 		// e.printStackTrace();
 		// }
-
-		return new ArrayList<ContextElement>(
-				compactedContextElementsMap.values());
 
 	}
 

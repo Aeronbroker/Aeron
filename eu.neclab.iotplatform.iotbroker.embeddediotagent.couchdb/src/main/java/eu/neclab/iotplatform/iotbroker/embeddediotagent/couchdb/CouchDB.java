@@ -516,11 +516,6 @@ public class CouchDB implements KeyValueStoreInterface,
 									.parseStringToJson(row.get("doc")
 											.toString(), ContextElement.class);
 
-							if (key.contains("Siglo")) {
-								logger.info("TODELETE key " + key + " value"
-										+ contextElement.toJsonString());
-							}
-
 							lastValueCache.put(key, contextElement);
 						} else {
 							logger.warn("Inconsistency in CouchDB: "
@@ -773,9 +768,7 @@ public class CouchDB implements KeyValueStoreInterface,
 			}
 		}
 		body.append("]}");
-
-		logger.info("TODELETE body " + body);
-
+		
 		this.checkDB();
 
 		// TODO A check if the key are referring to only one contextElement

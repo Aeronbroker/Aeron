@@ -75,6 +75,9 @@ iotbroker_defaultthrottling=1000
 # Default subscription duration time
 iotbroker_defaultduration=31536000
 
+# System parameters
+iotbroker_updatethreadpoolsize=20
+
 # Ignore IoT Discovery failure (to be enabled if the IoT Discovery is not started)
 iotbroker_ignoreiotdiscoveryfailure=true
 

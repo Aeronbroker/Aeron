@@ -150,6 +150,9 @@ public class TestFunctionality {
 	UpdateContextResponse updateResp =  (UpdateContextResponse)
 			XmlFactory.convertFileToXML("src/test/resources/updateResp.xml", UpdateContextResponse.class);
 	
+	UpdateContextResponse updateRespTraceByIoTBroker =  (UpdateContextResponse)
+			XmlFactory.convertFileToXML("src/test/resources/updateRespTraceByIoTBroker.xml", UpdateContextResponse.class);
+	
 	@Before
 	public void before(){
 		
@@ -167,6 +170,7 @@ public class TestFunctionality {
 		core.setConfManWrapper(confManWrapper);
 		core.setNorthBoundWrapper(northBoundWrapper);
 		core.enableAssociations(true);
+		core.setUpdateThreadPoolSize(20);
 		
 		subscriptionController.setAgentWrapper(agentWrapper);
 		subscriptionController.setConfManWrapper(confManWrapper);
@@ -214,9 +218,6 @@ public class TestFunctionality {
 		
 		//execute the test
 		QueryContextResponse brokerResp = core.queryContext(queryReq_attribExpr);
-		
-		logger.info("ADFASDFADFSSDFASDFASDFASDFASDF"+brokerResp);
-
 		
 		//verify the communication of core
 		EasyMock.verify(ngsi9InterfaceMock);
@@ -325,8 +326,9 @@ public class TestFunctionality {
 		//verify the communication of core
 		EasyMock.verify(ngsi9InterfaceMock);
 		EasyMock.verify(ngsi10RequesterMock);
+	
 		
-		assertEquals(updateResp,brokerResp);
+		assertEquals(updateRespTraceByIoTBroker.toJsonString(),brokerResp.toJsonString());
 		
 		logger.info("Successfully tested FIWARE.Feature.IoT.BackendIoTBroker.Update.IdBased");
 	}	

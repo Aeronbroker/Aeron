@@ -167,18 +167,9 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 							cachedAttributeNamesById));
 		}
 
-		logger.info(String
-				.format("TODELETE EntityId to check: %s Attributes to check: %s against cachedIdsByType: %s and cachedAttributeNamesById: %s ",
-						entityIdList, attributeNames, cachedIdsByType,
-						cachedAttributeNamesById));
-
 		Multimap<String, String> idsAndAttributeNames = HashMultimap.create();
 
 		for (EntityId entityId : entityIdList) {
-			
-			if (entityId.getId().startsWith("Iglesia")){
-				logger.info("TODELETE HERE");
-			}
 
 			Collection<String> ids;
 
@@ -395,7 +386,7 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 		// ÿ is the last character of the UTF-8 character table
 
 		for (String key : keyValueStore.getKeys(LATEST_VALUE_PREFIX,
-				LATEST_VALUE_PREFIX + "%C3%BF")) {
+				LATEST_VALUE_PREFIX + "ÿ")) {
 			String[] entityAndAttributeName = key.split(PREFIX_TO_ID_SEPARATOR)[1]
 					.split(ID_TO_ATTRIBUTENAME_SEPARATOR);
 
@@ -435,7 +426,7 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 		// %C3%BF is url encoded for ÿ
 
 		String startKey = LATEST_VALUE_PREFIX;
-		String endKey = LATEST_VALUE_PREFIX + "%C3%BF";
+		String endKey = LATEST_VALUE_PREFIX + "ÿ";
 
 		return new Pair<String, String>(startKey, endKey);
 
