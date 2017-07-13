@@ -519,7 +519,9 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 				.synchronizedList(contextElementList);
 
 		Set<String> attributeNamesSet = new HashSet<String>();
-		attributeNamesSet.addAll(attributeNames);
+		if (attributeNames != null && !attributeNames.isEmpty()) {
+			attributeNamesSet.addAll(attributeNames);
+		}
 
 		final Multimap<String, String> idsAndAttributeNames = indexer
 				.matchingIdsAndAttributeNames(entityIdList, attributeNamesSet);

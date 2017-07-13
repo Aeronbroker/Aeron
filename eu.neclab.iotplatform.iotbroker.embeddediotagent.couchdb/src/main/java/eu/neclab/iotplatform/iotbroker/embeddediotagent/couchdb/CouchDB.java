@@ -501,12 +501,12 @@ public class CouchDB implements KeyValueStoreInterface,
 
 						String key = row.get("key").getAsString();
 
-//						try {
-//							key = URLDecoder.decode(key, "UTF-8");
-//						} catch (UnsupportedEncodingException e) {
-//							// TODO Auto-generated catch block
-//							e.printStackTrace();
-//						}
+						// try {
+						// key = URLDecoder.decode(key, "UTF-8");
+						// } catch (UnsupportedEncodingException e) {
+						// // TODO Auto-generated catch block
+						// e.printStackTrace();
+						// }
 
 						cachedRevisionByKey.put(key, rev);
 
@@ -748,27 +748,27 @@ public class CouchDB implements KeyValueStoreInterface,
 		boolean first = true;
 		for (String key : keys) {
 			if (first) {
-//				try {
-//					body.append("\"" + URLDecoder.decode(key, "UTF-8") + "\"");
-//				} catch (UnsupportedEncodingException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
+				// try {
+				// body.append("\"" + URLDecoder.decode(key, "UTF-8") + "\"");
+				// } catch (UnsupportedEncodingException e) {
+				// // TODO Auto-generated catch block
+				// e.printStackTrace();
+				// }
 				body.append("\"" + key + "\"");
 				first = false;
 			} else {
-//				try {
-//					body.append(",\"" + URLDecoder.decode(key, "UTF-8") + "\"");
-//				} catch (UnsupportedEncodingException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
+				// try {
+				// body.append(",\"" + URLDecoder.decode(key, "UTF-8") + "\"");
+				// } catch (UnsupportedEncodingException e) {
+				// // TODO Auto-generated catch block
+				// e.printStackTrace();
+				// }
 				body.append(",\"" + key + "\"");
 
 			}
 		}
 		body.append("]}");
-		
+
 		this.checkDB();
 
 		// TODO A check if the key are referring to only one contextElement
@@ -866,6 +866,7 @@ public class CouchDB implements KeyValueStoreInterface,
 		try {
 			queryString = new String(String.format(
 					"startkey=%%22%s%%22&endkey=%%22%s%%22&include_docs=true",
+					// startKey, endKey));
 					URLEncoder.encode(startKey, "UTF-8"),
 					URLEncoder.encode(endKey, "UTF-8")));
 		} catch (UnsupportedEncodingException e) {
@@ -929,12 +930,12 @@ public class CouchDB implements KeyValueStoreInterface,
 				if (row.get("doc") != null) {
 					String id = row.get("key").getAsString();
 
-//					try {
-//						id = URLDecoder.decode(id, "UTF-8");
-//					} catch (UnsupportedEncodingException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
+					// try {
+					// id = URLDecoder.decode(id, "UTF-8");
+					// } catch (UnsupportedEncodingException e) {
+					// // TODO Auto-generated catch block
+					// e.printStackTrace();
+					// }
 
 					ContextElement contextElement = (ContextElement) NgsiStructure
 							.parseStringToJson(row.get("doc").toString(),
@@ -1092,8 +1093,8 @@ public class CouchDB implements KeyValueStoreInterface,
 			}
 
 			FullHttpResponse response = HttpRequester.sendDelete(new URL(
-					getCouchDB_ip() + registryDB_NAME + "/" + URLEncoder.encode(id,"UTF-8") + "?rev="
-							+ rev));
+					getCouchDB_ip() + registryDB_NAME + "/"
+							+ URLEncoder.encode(id, "UTF-8") + "?rev=" + rev));
 
 			if (response == null) {
 

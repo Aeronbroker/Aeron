@@ -278,7 +278,7 @@ public class Indexer implements EmbeddedAgentIndexerInterface {
 
 	public String formatDate(Date date) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat(
-				"yyyy-MM-dd'%20'HH:mm:ss.SSS");
+				"yyyy-MM-dd HH:mm:ss.SSS");
 
 		return dateFormat.format(date);
 	}

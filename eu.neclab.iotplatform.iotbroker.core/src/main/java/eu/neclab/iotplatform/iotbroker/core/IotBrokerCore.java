@@ -96,6 +96,7 @@ import eu.neclab.iotplatform.iotbroker.storage.AvailabilitySubscriptionInterface
 import eu.neclab.iotplatform.iotbroker.storage.LinkSubscriptionAvailabilityInterface;
 import eu.neclab.iotplatform.iotbroker.storage.SubscriptionStorageInterface;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElementResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
@@ -1067,16 +1068,57 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			while (i.hasNext()) {
 				ContextElementResponse contextElresp = i.next();
 
-				Document doc = XmlFactory.stringToDocument(contextElresp
-						.toString());
+				/*
+				 * First check if it is complient with the XPath the entityId
+				 * itself
+				 */
+				ContextElement entityAndDomainMetadataOnly = new ContextElement(
+						contextElresp.getContextElement().getEntityId(),
+						contextElresp.getContextElement()
+								.getAttributeDomainName(), null, contextElresp
+								.getContextElement().getDomainMetadata());
+
+				Document doc = XmlFactory
+						.stringToDocument(entityAndDomainMetadataOnly
+								.toString());
 				Object result = expr.evaluate(doc, XPathConstants.NODESET);
 
 				NodeList nodes = (NodeList) result;
 
-				if (nodes.getLength() == 0) {
-					logger.debug("Filtering out : " + contextElresp);
+				if (nodes.getLength() > 0) {
+					// it matches then take all the contextAttributes
+
+					continue;
+
+				}
+
+				Iterator<ContextAttribute> j = contextElresp
+						.getContextElement().getContextAttributeList()
+						.iterator();
+				while (j.hasNext()) {
+					ContextAttribute contextAttribute = j.next();
+					doc = XmlFactory.stringToDocument(contextAttribute
+							.toString());
+					result = expr.evaluate(doc, XPathConstants.NODESET);
+
+					nodes = (NodeList) result;
+					if (nodes.getLength() == 0) {
+						if (logger.isDebugEnabled()) {
+							logger.debug("Filtering out : " + contextAttribute);
+						}
+						j.remove();
+					}
+				}
+
+				if (contextElresp.getContextElement().getContextAttributeList()
+						.isEmpty()) {
+					// no ContextAttribute, then remove
+					if (logger.isDebugEnabled()) {
+						logger.debug("Filtering out : " + contextElresp);
+					}
 					i.remove();
 				}
+
 			}
 		} catch (XPathExpressionException e) {
 			logger.error("Xpath Exception", e);
