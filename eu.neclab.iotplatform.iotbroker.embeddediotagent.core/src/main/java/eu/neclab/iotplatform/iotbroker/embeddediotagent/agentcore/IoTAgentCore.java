@@ -156,76 +156,92 @@ public class IoTAgentCore implements IoTAgentInterface {
 	@Override
 	public StatusCode storeData(final List<ContextElement> contextElementList) {
 
-		// List of Task
-		List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
+		List<ContextElement> isolatedContextElementList = new ArrayList<ContextElement>();
 
-		Iterator<ContextElement> iter = contextElementList.iterator();
-
-		List<ContextElement> contextElementUnsuccessfullyStored = new ArrayList<ContextElement>();
-
-		while (iter.hasNext()) {
-
-			ContextElement contextElement = iter.next();
-
-			// Create a list of ContextElement where each ContextElement has
-			// exactly one ContextAttribute
-			//
-			// TODO change the isolatedContextElement to a new class called
-			// AtomicContextElement
-			final List<ContextElement> isolatedContextElementList = this
-					.isolateAttributes(contextElement);
-
-			final Date localDate = new Date();
-
-			// Iterate over the isolatedContextElement list in order to create
-			// the tasks used to store data
-			for (final ContextElement isolatedContextElement : isolatedContextElementList) {
-
-				// tasks.add(Executors.callable(new Runnable() {
-
-				// @Override
-				// public void run() {
-
-				if (logger.isDebugEnabled()) {
-					logger.debug(String.format(
-							"Storing historically contextElement %s",
-							isolatedContextElement.toJsonString()));
-				}
-
-				iotAgentStorage.storeHistoricalData(isolatedContextElement,
-						localDate);
-
-				if (logger.isDebugEnabled()) {
-					logger.debug(String.format(
-							"Storing latest contextElement %s",
-							isolatedContextElement.toJsonString()));
-				}
-
-				boolean successfullyStored = iotAgentStorage
-						.storeLatestData(isolatedContextElement);
-				if (!successfullyStored) {
-					contextElementUnsuccessfullyStored
-							.add(isolatedContextElement);
-				}
-
-				// }
-
-				// }));
-
-			}
-
-			if (BundleUtils.isServiceRegistered(this, subscriptionHandler)) {
-				// tasks.add(Executors.callable(new Runnable() {
-
-				// @Override
-				// public void run() {
-				subscriptionHandler
-						.checkSubscriptions(isolatedContextElementList);
-				// }
-
-				// }));
-			}
+		for (ContextElement contextElement : contextElementList) {
+			isolatedContextElementList.addAll(this
+					.isolateAttributes(contextElement));
 		}
+
+		// List of Task
+		// List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
+
+		// Iterator<ContextElement> iter = contextElementList.iterator();
+
+		// List<ContextElement> contextElementUnsuccessfullyStored = new
+		// ArrayList<ContextElement>();
+
+		// while (iter.hasNext()) {
+
+		// ContextElement contextElement = iter.next();
+
+		// Create a list of ContextElement where each ContextElement has
+		// exactly one ContextAttribute
+		//
+		// TODO change the isolatedContextElement to a new class called
+		// AtomicContextElement
+		// final List<ContextElement> isolatedContextElementList = this
+		// .isolateAttributes(contextElement);
+
+		final Date localDate = new Date();
+
+		if (logger.isDebugEnabled()) {
+			logger.debug(String.format("Storing contextElement %s",
+					isolatedContextElementList));
+		}
+
+		boolean successful = iotAgentStorage.storeData(
+				isolatedContextElementList, isolatedContextElementList,
+				localDate);
+
+		// // Iterate over the isolatedContextElement list in order to create
+		// // the tasks used to store data
+		// for (final ContextElement isolatedContextElement :
+		// isolatedContextElementList) {
+		//
+		// // tasks.add(Executors.callable(new Runnable() {
+		//
+		// // @Override
+		// // public void run() {
+		//
+		// if (logger.isDebugEnabled()) {
+		// logger.debug(String.format(
+		// "Storing historically contextElement %s",
+		// isolatedContextElement.toJsonString()));
+		// }
+		//
+		// iotAgentStorage.storeHistoricalData(isolatedContextElement,
+		// localDate);
+		//
+		// if (logger.isDebugEnabled()) {
+		// logger.debug(String.format("Storing latest contextElement %s",
+		// isolatedContextElement.toJsonString()));
+		// }
+		//
+		// boolean successfullyStored = iotAgentStorage
+		// .storeLatestData(isolatedContextElement);
+		// if (!successfullyStored) {
+		// contextElementUnsuccessfullyStored.add(isolatedContextElement);
+		// }
+		//
+		// // }
+		//
+		// // }));
+		//
+		// }
+
+		// if (BundleUtils.isServiceRegistered(this, subscriptionHandler)) {
+		// // tasks.add(Executors.callable(new Runnable() {
+		//
+		// // @Override
+		// // public void run() {
+		// subscriptionHandler
+		// .checkSubscriptions(isolatedContextElementList);
+		// // }
+		//
+		// // }));
+		// }
+		// }
 
 		// Execute the tasks used to store the data
 		// ExecutorService taskExecutor = Executors.newCachedThreadPool();
@@ -258,17 +274,18 @@ public class IoTAgentCore implements IoTAgentInterface {
 			logger.debug("Registry not available");
 		}
 
-		if (contextElementUnsuccessfullyStored.isEmpty()) {
-			
+		// if (contextElementUnsuccessfullyStored.isEmpty()) {
+		if (successful) {
 			return new StatusCode(200, ReasonPhrase.OK_200.toString(), "");
-			
+
 		} else {
-			
+
 			StringBuffer details = new StringBuffer();
 			details.append("Some EntityId+Attribute not successfully stored: ");
-			for (ContextElement isolatedContextElement : contextElementUnsuccessfullyStored) {
-				details.append(isolatedContextElement.toJsonString() + "; ");
-			}
+			// for (ContextElement isolatedContextElement :
+			// contextElementUnsuccessfullyStored) {
+			// details.append(isolatedContextElement.toJsonString() + "; ");
+			// }
 			return new StatusCode(472,
 					ReasonPhrase.INVALIDPARAMETER_472.toString(),
 					details.toString());

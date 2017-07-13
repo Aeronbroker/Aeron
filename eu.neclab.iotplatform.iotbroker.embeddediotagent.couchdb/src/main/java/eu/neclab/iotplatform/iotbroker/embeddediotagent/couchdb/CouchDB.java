@@ -50,12 +50,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -456,6 +456,150 @@ public class CouchDB implements KeyValueStoreInterface,
 		}
 
 		return successful;
+	}
+
+	@Override
+	public boolean storeAndUpdateValues(
+			Map<String, ContextElement> keyValuesToStore,
+			Map<String, ContextElement> keyValuesToUpdate,
+			boolean cacheAfterStoring) {
+
+		this.checkDB();
+
+		boolean successful = false;
+
+		String body = generateBulkStoreBody(keyValuesToStore, keyValuesToUpdate);
+
+		try {
+			FullHttpResponse respFromCouchDB = HttpRequester.sendPost(new URL(
+					getCouchDB_ip() + couchDB_NAME + "/_bulk_docs"), body,
+					"application/json");
+
+			if (respFromCouchDB.getStatusLine().getStatusCode() > 299) {
+
+				logger.warn("CouchDB database: " + couchDB_NAME
+						+ " did not store correctly the values");
+
+				successful = false;
+
+			}
+
+			if (respFromCouchDB.getBody() != null) {
+
+				CouchDBBulkStoreResponse parseResp = CouchDBUtil
+						.parseRevisionsFromCouchdbResponse(respFromCouchDB);
+
+				for (Entry<String, String> entry : parseResp.getIdAndRevision()
+						.entrySet()) {
+
+					if (keyValuesToUpdate.containsKey(entry.getKey())
+							|| cacheAfterStoring) {
+
+						cachedRevisionByKey.put(entry.getKey(),
+								entry.getValue());
+
+						if (keyValuesToUpdate.containsKey(entry.getKey())) {
+							lastValueCache.put(entry.getKey(),
+									keyValuesToUpdate.get(entry.getKey()));
+
+						} else if (keyValuesToStore.containsKey(entry.getKey())) {
+
+							lastValueCache.put(entry.getKey(),
+									keyValuesToUpdate.get(entry.getKey()));
+						} else {
+							logger.warn("CouchDB database: " + couchDB_NAME
+									+ " stored a non-requested value"
+									+ entry.getKey());
+						}
+
+					}
+				}
+
+				for (Entry<String, String> entry : parseResp
+						.getErrorInsertion().entrySet()) {
+
+					if (keyValuesToUpdate.containsKey(entry.getKey())
+							|| cacheAfterStoring) {
+
+						logger.warn("CouchDB database: " + couchDB_NAME
+								+ " did not store correctly the value "
+								+ entry.getKey() + " Reason: "
+								+ entry.getValue());
+					}
+				}
+
+				if (parseResp.getErrorInsertion().size() != 0) {
+					successful = false;
+				} else {
+					successful = true;
+				}
+
+			}
+
+		} catch (MalformedURLException e) {
+			logger.info("Impossible to store information into CouchDB", e);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return successful;
+	}
+
+	private String generateBulkStoreBody(
+			Map<String, ContextElement> keyValuesToStore,
+			Map<String, ContextElement> keyValuesToUpdate) {
+		StringBuffer body = new StringBuffer();
+		body.append("{\"docs\": [");
+
+		boolean first = true;
+		for (Entry<String, ContextElement> keyValueToStore : keyValuesToStore
+				.entrySet()) {
+
+			if (!first) {
+				body.append(",");
+			} else {
+				first = false;
+			}
+			String doc = keyValueToStore.getValue().toJsonString();
+			try {
+				doc = doc.replaceFirst("\\{", "\\{\"_id\":\"" + keyValueToStore.getKey()
+				+ "\",");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			body.append(doc);
+		}
+
+		for (Entry<String, ContextElement> keyValueToUpdate : keyValuesToUpdate
+				.entrySet()) {
+
+			if (!first) {
+				body.append(",");
+			} else {
+				first = false;
+			}
+
+			String revision = cachedRevisionByKey
+					.get(keyValueToUpdate.getKey());
+			String doc = keyValueToUpdate.getValue().toJsonString();
+
+			if (revision == null || revision.isEmpty()) {
+				// logger.warn("Revision not found for key: "
+				// + keyValueToUpdate.getKey());
+				// continue;
+				doc = doc.replaceFirst("\\{", "{\"_id\":\"" + keyValueToUpdate.getKey()
+						+ "\",");
+			} else {
+				doc = doc.replaceFirst("\\{", "{\"_id\":\"" + keyValueToUpdate.getKey()
+						+ "\",\"_rev\":\"" + revision + "\",");
+			}
+			body.append(doc);
+
+		}
+		body.append("]}");
+
+		return body.toString();
+
 	}
 
 	private void cacheLastValue() {

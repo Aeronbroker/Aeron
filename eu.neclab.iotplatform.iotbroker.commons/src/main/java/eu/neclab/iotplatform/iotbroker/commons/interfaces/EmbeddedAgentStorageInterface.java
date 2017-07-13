@@ -60,12 +60,14 @@ public interface EmbeddedAgentStorageInterface {
 	// @Override
 	public void setNgsi10Callback(Ngsi10Interface ngsi10Callback);
 
+	public boolean storeData(List<ContextElement> isolatedLatestContextElement,
+			List<ContextElement> isolatedHistoricalContextElement,
+			Date defaultDate);
+
 	public boolean storeLatestData(ContextElement isolatedContextElement);
 
 	public void storeHistoricalData(ContextElement isolatedContextElement,
 			Date defaultDate);
-
-	// @Override
 
 	public List<ContextElement> getAllLatestValues();
 

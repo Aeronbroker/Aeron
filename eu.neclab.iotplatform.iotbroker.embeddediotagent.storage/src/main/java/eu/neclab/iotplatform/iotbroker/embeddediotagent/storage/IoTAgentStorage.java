@@ -182,6 +182,59 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 
 	}
 
+	@Override
+	public boolean storeData(List<ContextElement> isolatedLatestContextElement,
+			List<ContextElement> isolatedHistoricalContextElement,
+			Date defaultDate) {
+
+		Map<String, ContextElement> historicalContextElementMap = new HashMap<String, ContextElement>();
+		Map<String, ContextElement> latestContextElementMap = new HashMap<String, ContextElement>();
+
+		for (ContextElement isolatedContextElement : isolatedHistoricalContextElement) {
+			Date timestamp = extractTimestamp(isolatedContextElement
+					.getContextAttributeList().iterator().next());
+
+			// If no timestamp is found, take the local one.
+			if (timestamp == null) {
+				timestamp = defaultDate;
+				if (logger.isDebugEnabled()) {
+					logger.debug(String.format("No date found %s",
+							isolatedContextElement.toJsonString()));
+				}
+			}
+
+			String historicalDataDocumentKey = indexer
+					.generateKeyForHistoricalData(isolatedContextElement
+							.getEntityId().getId(), (isolatedContextElement
+							.getEntityId().getType() == null) ? null
+							: isolatedContextElement.getEntityId().getType()
+									.toString(), isolatedContextElement
+							.getContextAttributeList().iterator().next()
+							.getName(), timestamp);
+
+			historicalContextElementMap.put(historicalDataDocumentKey,
+					isolatedContextElement);
+		}
+
+		for (ContextElement isolatedContextElement : isolatedLatestContextElement) {
+			String documentKey = indexer
+					.generateKeyForLatestValue(
+							isolatedContextElement.getEntityId().getId(),
+							(isolatedContextElement.getEntityId().getType() == null) ? null
+									: isolatedContextElement.getEntityId()
+											.getType().toString(),
+							getAttributeNameFromIsolatedContextElement(isolatedContextElement));
+
+			latestContextElementMap.put(documentKey, isolatedContextElement);
+
+		}
+
+		// Store the observation as historical document
+		return keyValueStore.storeAndUpdateValues(historicalContextElementMap,
+				latestContextElementMap, false);
+
+	}
+
 	private String getAttributeNameFromIsolatedContextElement(
 			ContextElement isolatedContextElement) {
 		return Iterables.getFirst(
@@ -204,8 +257,10 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 
 				if (contextMetadata.getName() != null
 						&& (contextMetadata.getName().equalsIgnoreCase(
-								"creation_time") || contextMetadata.getName()
-								.equalsIgnoreCase("endtime"))) {
+								"creation_time")
+								|| contextMetadata.getName().equalsIgnoreCase(
+										"endtime") || contextMetadata.getName()
+								.equalsIgnoreCase("nle:date"))) {
 
 					/*
 					 * This contextMetadata is set by the leafengine connector

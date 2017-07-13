@@ -46,6 +46,7 @@ package eu.neclab.iotplatform.iotbroker.commons.interfaces;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.Multimap;
 
@@ -59,6 +60,11 @@ public interface KeyValueStoreInterface {
 
 	boolean storeValue(String key, ContextElement contextElement,
 			boolean cacheAfterStore);
+
+	public boolean storeAndUpdateValues(
+			Map<String, ContextElement> keyValuesToStore,
+			Map<String, ContextElement> keyValuesToUpdate,
+			boolean cacheAfterStoring);
 
 	public Collection<String> getKeys(String startKey, String endKey);
 
