@@ -47,8 +47,9 @@ package eu.neclab.iotplatform.iotbroker.embeddediotagent.agentcore;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -56,6 +57,7 @@ import java.util.concurrent.Executors;
 import javax.annotation.PostConstruct;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 
 import eu.neclab.iotplatform.iotbroker.commons.BundleUtils;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.EmbeddedAgentRegistryInterface;
@@ -76,6 +78,9 @@ public class IoTAgentCore implements IoTAgentInterface {
 
 	/** The logger. */
 	private static Logger logger = Logger.getLogger(IoTAgentCore.class);
+
+	@Value("${storeOnlyLatestValue:false}")
+	private boolean storeOnlyLatestValue;
 
 	private EmbeddedAgentStorageInterface iotAgentStorage;
 
@@ -189,10 +194,17 @@ public class IoTAgentCore implements IoTAgentInterface {
 			logger.debug(String.format("Storing contextElement %s",
 					isolatedContextElementList));
 		}
-
-		boolean successful = iotAgentStorage.storeData(
-				isolatedContextElementList, isolatedContextElementList,
-				localDate);
+		Map<ContextElement, Boolean> successfulMap;
+		
+		if (storeOnlyLatestValue) {
+			successfulMap = iotAgentStorage.storeData(
+					isolatedContextElementList, null,
+					localDate);
+		} else {
+			successfulMap = iotAgentStorage.storeData(
+					isolatedContextElementList, isolatedContextElementList,
+					localDate);
+		}
 
 		// // Iterate over the isolatedContextElement list in order to create
 		// // the tasks used to store data
@@ -274,14 +286,20 @@ public class IoTAgentCore implements IoTAgentInterface {
 			logger.debug("Registry not available");
 		}
 
+		StringBuffer details = new StringBuffer();
+		for (Entry<ContextElement, Boolean> success : successfulMap.entrySet()) {
+			if (!success.getValue()) {
+				details.append("EntityId+Attribute not successfully stored: "
+						+ success.getKey().toJsonString() + ". ");
+			}
+		}
+
 		// if (contextElementUnsuccessfullyStored.isEmpty()) {
-		if (successful) {
+		if (details.length() == 0) {
 			return new StatusCode(200, ReasonPhrase.OK_200.toString(), "");
 
 		} else {
 
-			StringBuffer details = new StringBuffer();
-			details.append("Some EntityId+Attribute not successfully stored: ");
 			// for (ContextElement isolatedContextElement :
 			// contextElementUnsuccessfullyStored) {
 			// details.append(isolatedContextElement.toJsonString() + "; ");

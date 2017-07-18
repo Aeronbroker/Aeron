@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -183,55 +184,120 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 	}
 
 	@Override
-	public boolean storeData(List<ContextElement> isolatedLatestContextElement,
+	public Map<ContextElement, Boolean> storeData(
+			List<ContextElement> isolatedLatestContextElement,
 			List<ContextElement> isolatedHistoricalContextElement,
 			Date defaultDate) {
+
+		Map<ContextElement, Boolean> successfullyStored = new HashMap<ContextElement, Boolean>();
 
 		Map<String, ContextElement> historicalContextElementMap = new HashMap<String, ContextElement>();
 		Map<String, ContextElement> latestContextElementMap = new HashMap<String, ContextElement>();
 
-		for (ContextElement isolatedContextElement : isolatedHistoricalContextElement) {
-			Date timestamp = extractTimestamp(isolatedContextElement
-					.getContextAttributeList().iterator().next());
+		if (isolatedHistoricalContextElement != null
+				&& !isolatedHistoricalContextElement.isEmpty()) {
+			
+			for (ContextElement isolatedContextElement : isolatedHistoricalContextElement) {
+				Date timestamp = extractTimestamp(isolatedContextElement
+						.getContextAttributeList().iterator().next());
 
-			// If no timestamp is found, take the local one.
-			if (timestamp == null) {
-				timestamp = defaultDate;
-				if (logger.isDebugEnabled()) {
-					logger.debug(String.format("No date found %s",
-							isolatedContextElement.toJsonString()));
+				// If no timestamp is found, take the local one.
+				if (timestamp == null) {
+					timestamp = defaultDate;
+					if (logger.isDebugEnabled()) {
+						logger.debug(String.format("No date found %s",
+								isolatedContextElement.toJsonString()));
+					}
 				}
+
+				String historicalDataDocumentKey = indexer
+						.generateKeyForHistoricalData(isolatedContextElement
+								.getEntityId().getId(), (isolatedContextElement
+								.getEntityId().getType() == null) ? null
+								: isolatedContextElement.getEntityId()
+										.getType().toString(),
+								isolatedContextElement
+										.getContextAttributeList().iterator()
+										.next().getName(), timestamp);
+
+				historicalContextElementMap.put(historicalDataDocumentKey,
+						isolatedContextElement);
+			}
+			
+		}
+
+		if (isolatedLatestContextElement != null
+				&& !isolatedLatestContextElement.isEmpty()) {
+			
+			for (ContextElement isolatedContextElement : isolatedLatestContextElement) {
+				String documentKey = indexer
+						.generateKeyForLatestValue(
+								isolatedContextElement.getEntityId().getId(),
+								(isolatedContextElement.getEntityId().getType() == null) ? null
+										: isolatedContextElement.getEntityId()
+												.getType().toString(),
+								getAttributeNameFromIsolatedContextElement(isolatedContextElement));
+
+				latestContextElementMap
+						.put(documentKey, isolatedContextElement);
+
+			}
+			
+		}
+
+		Map<String, Boolean> successfulMap = keyValueStore
+				.storeAndUpdateValues(historicalContextElementMap,
+						latestContextElementMap, false);
+
+		for (Entry<String, Boolean> success : successfulMap.entrySet()) {
+
+			boolean isLatestValue = false;
+			ContextElement contextElement = null;
+			if (historicalContextElementMap.containsKey(success.getKey())) {
+				contextElement = historicalContextElementMap.get(success
+						.getKey());
+			} else if (latestContextElementMap.containsKey(success.getKey())) {
+				contextElement = latestContextElementMap.get(success.getKey());
+				isLatestValue = true;
 			}
 
-			String historicalDataDocumentKey = indexer
-					.generateKeyForHistoricalData(isolatedContextElement
-							.getEntityId().getId(), (isolatedContextElement
-							.getEntityId().getType() == null) ? null
-							: isolatedContextElement.getEntityId().getType()
-									.toString(), isolatedContextElement
-							.getContextAttributeList().iterator().next()
-							.getName(), timestamp);
+			if (contextElement == null) {
+				if (success.getValue()) {
+					if (logger.isDebugEnabled()) {
+						logger.debug(String.format(
+								"Stored something on wrong key: %s",
+								success.getKey()));
+					}
+				} else {
+					if (logger.isDebugEnabled()) {
+						logger.debug(String
+								.format("Tried (unsuccessfully) to stored something on wrong key: %s",
+										success.getKey()));
+					}
+				}
+			} else {
+				successfullyStored.put(contextElement, success.getValue());
 
-			historicalContextElementMap.put(historicalDataDocumentKey,
-					isolatedContextElement);
+				if (success.getValue()) {
+					if (logger.isDebugEnabled()) {
+						logger.debug(String.format(
+								"ContextElement %s \n\tsuccessfully stored",
+								contextElement));
+					}
+					if (isLatestValue) {
+						indexer.index(contextElement);
+					}
+				} else {
+					if (logger.isDebugEnabled()) {
+						logger.debug(String
+								.format("ContextElement %s \n\tnot successfully stored",
+										contextElement));
+					}
+				}
+			}
 		}
 
-		for (ContextElement isolatedContextElement : isolatedLatestContextElement) {
-			String documentKey = indexer
-					.generateKeyForLatestValue(
-							isolatedContextElement.getEntityId().getId(),
-							(isolatedContextElement.getEntityId().getType() == null) ? null
-									: isolatedContextElement.getEntityId()
-											.getType().toString(),
-							getAttributeNameFromIsolatedContextElement(isolatedContextElement));
-
-			latestContextElementMap.put(documentKey, isolatedContextElement);
-
-		}
-
-		// Store the observation as historical document
-		return keyValueStore.storeAndUpdateValues(historicalContextElementMap,
-				latestContextElementMap, false);
+		return successfullyStored;
 
 	}
 

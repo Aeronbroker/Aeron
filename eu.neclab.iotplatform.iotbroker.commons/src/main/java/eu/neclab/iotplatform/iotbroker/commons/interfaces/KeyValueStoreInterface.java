@@ -61,7 +61,7 @@ public interface KeyValueStoreInterface {
 	boolean storeValue(String key, ContextElement contextElement,
 			boolean cacheAfterStore);
 
-	public boolean storeAndUpdateValues(
+	public Map<String, Boolean> storeAndUpdateValues(
 			Map<String, ContextElement> keyValuesToStore,
 			Map<String, ContextElement> keyValuesToUpdate,
 			boolean cacheAfterStoring);

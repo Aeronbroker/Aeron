@@ -120,7 +120,7 @@ public class CouchDB implements KeyValueStoreInterface,
 	@Value("${couchdb_password:null}")
 	private String couchDB_PASSWORD;
 
-	@Value("${registryDB_NAME:embeddedagentregistrydb}")
+	@Value("${registrydb_name:embeddedagentregistrydb}")
 	private String registryDB_NAME;
 
 	public String getCouchDB_HOST() {
@@ -459,14 +459,15 @@ public class CouchDB implements KeyValueStoreInterface,
 	}
 
 	@Override
-	public boolean storeAndUpdateValues(
+	public Map<String, Boolean> storeAndUpdateValues(
 			Map<String, ContextElement> keyValuesToStore,
 			Map<String, ContextElement> keyValuesToUpdate,
 			boolean cacheAfterStoring) {
 
 		this.checkDB();
 
-		boolean successful = false;
+		// boolean successful = false;
+		Map<String, Boolean> successfulMap = new HashMap<String, Boolean>();
 
 		String body = generateBulkStoreBody(keyValuesToStore, keyValuesToUpdate);
 
@@ -480,7 +481,7 @@ public class CouchDB implements KeyValueStoreInterface,
 				logger.warn("CouchDB database: " + couchDB_NAME
 						+ " did not store correctly the values");
 
-				successful = false;
+				// successful = false;
 
 			}
 
@@ -491,6 +492,8 @@ public class CouchDB implements KeyValueStoreInterface,
 
 				for (Entry<String, String> entry : parseResp.getIdAndRevision()
 						.entrySet()) {
+
+					successfulMap.put(entry.getKey(), true);
 
 					if (keyValuesToUpdate.containsKey(entry.getKey())
 							|| cacheAfterStoring) {
@@ -518,6 +521,8 @@ public class CouchDB implements KeyValueStoreInterface,
 				for (Entry<String, String> entry : parseResp
 						.getErrorInsertion().entrySet()) {
 
+					successfulMap.put(entry.getKey(), false);
+
 					if (keyValuesToUpdate.containsKey(entry.getKey())
 							|| cacheAfterStoring) {
 
@@ -528,10 +533,19 @@ public class CouchDB implements KeyValueStoreInterface,
 					}
 				}
 
-				if (parseResp.getErrorInsertion().size() != 0) {
-					successful = false;
-				} else {
-					successful = true;
+				// if (parseResp.getErrorInsertion().size() != 0) {
+				// successful = false;
+				// } else {
+				// successful = true;
+				// }
+
+			} else {
+				for (String key : keyValuesToStore.keySet()) {
+					successfulMap.put(key, false);
+				}
+
+				for (String key : keyValuesToUpdate.keySet()) {
+					successfulMap.put(key, false);
 				}
 
 			}
@@ -542,7 +556,7 @@ public class CouchDB implements KeyValueStoreInterface,
 			e.printStackTrace();
 		}
 
-		return successful;
+		return successfulMap;
 	}
 
 	private String generateBulkStoreBody(
@@ -562,8 +576,8 @@ public class CouchDB implements KeyValueStoreInterface,
 			}
 			String doc = keyValueToStore.getValue().toJsonString();
 			try {
-				doc = doc.replaceFirst("\\{", "\\{\"_id\":\"" + keyValueToStore.getKey()
-				+ "\",");
+				doc = doc.replaceFirst("\\{",
+						"\\{\"_id\":\"" + keyValueToStore.getKey() + "\",");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -587,11 +601,12 @@ public class CouchDB implements KeyValueStoreInterface,
 				// logger.warn("Revision not found for key: "
 				// + keyValueToUpdate.getKey());
 				// continue;
-				doc = doc.replaceFirst("\\{", "{\"_id\":\"" + keyValueToUpdate.getKey()
-						+ "\",");
+				doc = doc.replaceFirst("\\{",
+						"{\"_id\":\"" + keyValueToUpdate.getKey() + "\",");
 			} else {
-				doc = doc.replaceFirst("\\{", "{\"_id\":\"" + keyValueToUpdate.getKey()
-						+ "\",\"_rev\":\"" + revision + "\",");
+				doc = doc.replaceFirst("\\{",
+						"{\"_id\":\"" + keyValueToUpdate.getKey()
+								+ "\",\"_rev\":\"" + revision + "\",");
 			}
 			body.append(doc);
 

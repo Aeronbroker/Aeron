@@ -95,9 +95,12 @@ iotbroker_knowledgebaseport=8015
 ### Embedded agent configuration
 
 # CouchDB configurations
+iotbroker_embeddedagent_registrydbname="embeddedagentregistrydb"
 iotbroker_embeddedagent_couchdbname="historicalrepository"
 iotbroker_embeddedagent_couchdbcreatedb=true
 iotbroker_embeddedagent_couchdbprotocol="http"
 iotbroker_embeddedagent_couchdbhost="127.0.0.1"
 iotbroker_embeddedagent_couchdbport=5984
 iotbroker_embeddedagent_historicallyTrackQueryResponseAndNotifications=false
+iotbroker_embeddedagent_storeOnlyLatestValue=false
+iotbroker_embeddedagent_localagentid="embeddedagent1"

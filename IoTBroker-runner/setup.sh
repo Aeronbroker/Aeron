@@ -155,12 +155,16 @@ setPropertyIntoXML "trackContextSource" "$iotbroker_trackcontextsource" "$iotbro
 setPropertyIntoXML "exposedAddress" "$iotbroker_exposedAddress" "$iotbroker_configxml"
 setPropertyIntoXML "historicallyTrackQueryResponseAndNotifications" "$iotbroker_embeddedagent_historicallyTrackQueryResponseAndNotifications" "$iotbroker_configxml"
 setPropertyIntoXML "updateThreadPoolSize" "$iotbroker_updatethreadpoolsize" "$iotbroker_configxml"
+setPropertyIntoXML "historicallyTrackQueryResponseAndNotifications" "$iotbroker_embeddedagent_historicallyTrackQueryResponseAndNotifications" "$iotbroker_configxml" 
 
 setPropertyIntoXML "couchdb_name" "$iotbroker_embeddedagent_couchdbname" "$iotbroker_embeddedagent_couchdbxml"
 setPropertyIntoXML "couchdb_createdb" "$iotbroker_embeddedagent_couchdbcreatedb" "$iotbroker_embeddedagent_couchdbxml"
 setPropertyIntoXML "couchdb_protocol" "$iotbroker_embeddedagent_couchdbprotocol" "$iotbroker_embeddedagent_couchdbxml"
 setPropertyIntoXML "couchdb_host" "$iotbroker_embeddedagent_couchdbhost" "$iotbroker_embeddedagent_couchdbxml"
 setPropertyIntoXML "couchdb_port" "$iotbroker_embeddedagent_couchdbport" "$iotbroker_embeddedagent_couchdbxml" 
+setPropertyIntoXML "storeOnlyLatestValue" "$iotbroker_embeddedagent_storeOnlyLatestValue" "$iotbroker_embeddedagent_couchdbxml" 
+setPropertyIntoXML "registrydb_name" "$iotbroker_embeddedagent_registrydbname" "$iotbroker_embeddedagent_couchdbxml" 
+setPropertyIntoXML "embeddedAgentId" "$iotbroker_embeddedagent_localagentid" "$iotbroker_embeddedagent_couchdbxml" 
 
 setPropertyIntoProperties "log4j.appender.ReportFileAppender.File" "$iotbroker_logfile" "$iotbroker_loggerproperties"
 setFirstPropertyValueOverMultipleValuesIntoProperties "log4j.rootLogger" "$iotbroker_loglevel" "$iotbroker_loggerproperties"
