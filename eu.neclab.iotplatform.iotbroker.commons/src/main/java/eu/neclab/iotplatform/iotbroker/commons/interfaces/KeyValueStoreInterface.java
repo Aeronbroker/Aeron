@@ -46,6 +46,7 @@ package eu.neclab.iotplatform.iotbroker.commons.interfaces;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.Multimap;
 
@@ -57,6 +58,14 @@ public interface KeyValueStoreInterface {
 
 	boolean storeValue(String key, ContextElement contextElement);
 
+	boolean storeValue(String key, ContextElement contextElement,
+			boolean cacheAfterStore);
+
+	public Map<String, Boolean> storeAndUpdateValues(
+			Map<String, ContextElement> keyValuesToStore,
+			Map<String, ContextElement> keyValuesToUpdate,
+			boolean cacheAfterStoring);
+
 	public Collection<String> getKeys(String startKey, String endKey);
 
 	public Multimap<String, String> getIdsByType();
@@ -64,8 +73,8 @@ public interface KeyValueStoreInterface {
 	ContextElement getValue(String latestValueDocumentKey);
 
 	ContextElement getValues(String startKey, String endKey);
-	
-	List<ContextElement> getValues(List<String> keys);
+
+	Collection<ContextElement> getValues(List<String> keys);
 
 	List<ContextElement> getAllValues(String startKey, String endKey);
 

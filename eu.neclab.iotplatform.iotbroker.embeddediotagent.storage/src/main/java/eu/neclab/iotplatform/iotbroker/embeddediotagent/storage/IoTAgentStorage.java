@@ -48,12 +48,14 @@ import java.net.URI;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -119,7 +121,7 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 	}
 
 	@Override
-	public void storeLatestData(ContextElement isolatedContextElement) {
+	public boolean storeLatestData(ContextElement isolatedContextElement) {
 		String documentKey = indexer
 				.generateKeyForLatestValue(
 						isolatedContextElement.getEntityId().getId(),
@@ -145,6 +147,8 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 						isolatedContextElement));
 			}
 		}
+
+		return successfullyStored;
 
 	}
 
@@ -179,6 +183,124 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 
 	}
 
+	@Override
+	public Map<ContextElement, Boolean> storeData(
+			List<ContextElement> isolatedLatestContextElement,
+			List<ContextElement> isolatedHistoricalContextElement,
+			Date defaultDate) {
+
+		Map<ContextElement, Boolean> successfullyStored = new HashMap<ContextElement, Boolean>();
+
+		Map<String, ContextElement> historicalContextElementMap = new HashMap<String, ContextElement>();
+		Map<String, ContextElement> latestContextElementMap = new HashMap<String, ContextElement>();
+
+		if (isolatedHistoricalContextElement != null
+				&& !isolatedHistoricalContextElement.isEmpty()) {
+			
+			for (ContextElement isolatedContextElement : isolatedHistoricalContextElement) {
+				Date timestamp = extractTimestamp(isolatedContextElement
+						.getContextAttributeList().iterator().next());
+
+				// If no timestamp is found, take the local one.
+				if (timestamp == null) {
+					timestamp = defaultDate;
+					if (logger.isDebugEnabled()) {
+						logger.debug(String.format("No date found %s",
+								isolatedContextElement.toJsonString()));
+					}
+				}
+
+				String historicalDataDocumentKey = indexer
+						.generateKeyForHistoricalData(isolatedContextElement
+								.getEntityId().getId(), (isolatedContextElement
+								.getEntityId().getType() == null) ? null
+								: isolatedContextElement.getEntityId()
+										.getType().toString(),
+								isolatedContextElement
+										.getContextAttributeList().iterator()
+										.next().getName(), timestamp);
+
+				historicalContextElementMap.put(historicalDataDocumentKey,
+						isolatedContextElement);
+			}
+			
+		}
+
+		if (isolatedLatestContextElement != null
+				&& !isolatedLatestContextElement.isEmpty()) {
+			
+			for (ContextElement isolatedContextElement : isolatedLatestContextElement) {
+				String documentKey = indexer
+						.generateKeyForLatestValue(
+								isolatedContextElement.getEntityId().getId(),
+								(isolatedContextElement.getEntityId().getType() == null) ? null
+										: isolatedContextElement.getEntityId()
+												.getType().toString(),
+								getAttributeNameFromIsolatedContextElement(isolatedContextElement));
+
+				latestContextElementMap
+						.put(documentKey, isolatedContextElement);
+
+			}
+			
+		}
+
+		Map<String, Boolean> successfulMap = keyValueStore
+				.storeAndUpdateValues(historicalContextElementMap,
+						latestContextElementMap, false);
+
+		for (Entry<String, Boolean> success : successfulMap.entrySet()) {
+
+			boolean isLatestValue = false;
+			ContextElement contextElement = null;
+			if (historicalContextElementMap.containsKey(success.getKey())) {
+				contextElement = historicalContextElementMap.get(success
+						.getKey());
+			} else if (latestContextElementMap.containsKey(success.getKey())) {
+				contextElement = latestContextElementMap.get(success.getKey());
+				isLatestValue = true;
+			}
+
+			if (contextElement == null) {
+				if (success.getValue()) {
+					if (logger.isDebugEnabled()) {
+						logger.debug(String.format(
+								"Stored something on wrong key: %s",
+								success.getKey()));
+					}
+				} else {
+					if (logger.isDebugEnabled()) {
+						logger.debug(String
+								.format("Tried (unsuccessfully) to stored something on wrong key: %s",
+										success.getKey()));
+					}
+				}
+			} else {
+				successfullyStored.put(contextElement, success.getValue());
+
+				if (success.getValue()) {
+					if (logger.isDebugEnabled()) {
+						logger.debug(String.format(
+								"ContextElement %s \n\tsuccessfully stored",
+								contextElement));
+					}
+					if (isLatestValue) {
+						indexer.index(contextElement);
+					}
+				} else {
+					if (logger.isDebugEnabled()) {
+						logger.debug(String
+								.format("ContextElement %s \n\tnot successfully stored",
+										contextElement));
+					}
+				}
+			}
+		}
+
+		return successfullyStored;
+
+	}
+
 	private String getAttributeNameFromIsolatedContextElement(
 			ContextElement isolatedContextElement) {
 		return Iterables.getFirst(
@@ -201,8 +323,10 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 
 				if (contextMetadata.getName() != null
 						&& (contextMetadata.getName().equalsIgnoreCase(
-								"creation_time") || contextMetadata.getName()
-								.equalsIgnoreCase("endtime"))) {
+								"creation_time")
+								|| contextMetadata.getName().equalsIgnoreCase(
+										"endtime") || contextMetadata.getName()
+								.equalsIgnoreCase("nle:date"))) {
 
 					/*
 					 * This contextMetadata is set by the leafengine connector
@@ -332,7 +456,7 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 					entityIdList, attributeNames));
 		}
 
-		List<ContextElement> contextElementList = new ArrayList<ContextElement>();
+		Collection<ContextElement> contextElementList = new ArrayList<ContextElement>();
 
 		Set<String> attributeNamesSet;
 		if (attributeNames != null && !attributeNames.isEmpty()) {
@@ -457,25 +581,36 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 					documentKeys));
 		}
 
-		contextElementList = keyValueStore.getValues(documentKeys);
+		if (!documentKeys.isEmpty()) {
+
+			contextElementList = keyValueStore.getValues(documentKeys);
+		} else {
+			contextElementList = new ArrayList<ContextElement>();
+		}
 
 		Map<String, ContextElement> compactedContextElementsMap = new HashMap<String, ContextElement>();
 
-		for (ContextElement contextElement : contextElementList) {
+		if (contextElementList.size() > 2) {
+			for (ContextElement contextElement : contextElementList) {
 
-			String entityKey = contextElement.getEntityId().getId()
-					+ contextElement.getEntityId().getType();
+				String entityKey = contextElement.getEntityId().getId()
+						+ contextElement.getEntityId().getType();
 
-			if (compactedContextElementsMap.containsKey(entityKey)) {
+				if (compactedContextElementsMap.containsKey(entityKey)) {
 
-				compactedContextElementsMap.get(entityKey)
-						.getContextAttributeList()
-						.addAll(contextElement.getContextAttributeList());
+					compactedContextElementsMap.get(entityKey)
+							.getContextAttributeList()
+							.addAll(contextElement.getContextAttributeList());
 
-			} else {
-				compactedContextElementsMap.put(entityKey, contextElement);
+				} else {
+					compactedContextElementsMap.put(entityKey, contextElement);
+				}
+
 			}
-
+			return new ArrayList<ContextElement>(
+					compactedContextElementsMap.values());
+		} else {
+			return new ArrayList<ContextElement>(contextElementList);
 		}
 
 		// try {
@@ -483,9 +618,6 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 		// } catch (InterruptedException e) {
 		// e.printStackTrace();
 		// }
-
-		return new ArrayList<ContextElement>(
-				compactedContextElementsMap.values());
 
 	}
 
@@ -508,7 +640,9 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 				.synchronizedList(contextElementList);
 
 		Set<String> attributeNamesSet = new HashSet<String>();
-		attributeNamesSet.addAll(attributeNames);
+		if (attributeNames != null && !attributeNames.isEmpty()) {
+			attributeNamesSet.addAll(attributeNames);
+		}
 
 		final Multimap<String, String> idsAndAttributeNames = indexer
 				.matchingIdsAndAttributeNames(entityIdList, attributeNamesSet);

@@ -1263,11 +1263,13 @@ public class SubscriptionController {
 	public NotifyContextResponse receiveReqFrmAgentWrapper(
 			NotifyContextRequest ncReq) {
 
-		logger.info("SubscriptionController: Received the following notify context request:"
-				+ ncReq.toString()
-				+ "/n"
-				+ "SubscriptionID is: "
-				+ ncReq.getSubscriptionId());
+		if (logger.isDebugEnabled()) {
+			logger.debug("SubscriptionController: Received the following notify context request:"
+					+ ncReq.toString()
+					+ "/n"
+					+ "SubscriptionID is: "
+					+ ncReq.getSubscriptionId());
+		}
 
 		/*
 		 * Retrieves the list of incoming subscription ids that are relevant for
@@ -1523,8 +1525,9 @@ public class SubscriptionController {
 			for (ContextElementResponse contextElementResponse : qCRes_forMerger
 					.getListContextElementResponse()) {
 
-				logger.info("###########################################");
-				logger.info(contextElementResponse);
+				if (logger.isDebugEnabled()) {
+					logger.debug(contextElementResponse);
+				}
 
 				// ContextElementResponse contextElementResponse =
 				// qCRes_forMerger

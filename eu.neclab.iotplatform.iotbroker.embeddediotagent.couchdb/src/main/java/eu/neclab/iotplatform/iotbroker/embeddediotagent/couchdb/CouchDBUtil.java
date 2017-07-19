@@ -46,9 +46,13 @@ package eu.neclab.iotplatform.iotbroker.embeddediotagent.couchdb;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -61,7 +65,6 @@ public class CouchDBUtil {
 
 	public CouchDBUtil() {
 	}
-
 
 	/**
 	 * Function that checks if the DB exist otherwise it will call a function
@@ -127,9 +130,9 @@ public class CouchDBUtil {
 			return false;
 
 		}
-		
+
 	}
-	
+
 	public static String parseRevisionFromCouchdbResponse(
 			FullHttpResponse fullHttpResponse) {
 
@@ -139,6 +142,40 @@ public class CouchDBUtil {
 		JsonObject o = (JsonObject) parser.parse(responseBody);
 
 		return o.get("rev").getAsString().replaceAll("\"+", "");
+	}
+
+	public static CouchDBBulkStoreResponse parseRevisionsFromCouchdbResponse(
+			FullHttpResponse fullHttpResponse) {
+
+		CouchDBBulkStoreResponse response = new CouchDBBulkStoreResponse();
+
+		String responseBody = fullHttpResponse.getBody();
+
+		JsonParser parser = new JsonParser();
+		JsonArray array = (JsonArray) parser.parse(responseBody);
+
+//		JsonArray array = o.getAsJsonArray();
+		for (int i = 0; i < array.size(); i++) {
+
+			JsonObject row = array.get(i).getAsJsonObject();
+			if (row.get("rev") != null) {
+				response.getIdAndRevision().put(row.get("id").getAsString(),
+						row.get("rev").getAsString());
+			} else {
+				if (row.get("error") != null) {
+					response.getErrorInsertion().put(
+							row.get("id").getAsString(),
+							"Error "
+									+ row.get("error").getAsString()
+									+ ((row.get("reason") != null) ? " Reason "
+											+ row.get("reason").getAsString()
+											: ""));
+				}
+			}
+
+		}
+
+		return response;
 	}
 
 	/**

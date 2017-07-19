@@ -13,4 +13,12 @@
 		<property name="iotAgentStorage" ref="EmbeddedAgentStorage"></property>
 		<property name="subscriptionHandler" ref="EmbeddedAgentSubscriptionHandler"></property>
 	</bean>
+	
+	
+	<context:property-placeholder
+		location="file:///${dir.config}/iotbrokerconfig/embeddedAgent/couchdb.xml"  order="1" ignore-unresolvable="true" />
+
+	<context:property-placeholder
+		location="file:///${dir.config}/iotbrokerconfig/iotBroker/config/config.xml"  order="2" ignore-unresolvable="true" />
+		
 </beans>
