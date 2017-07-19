@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<updateContextResponse>
+	<contextResponseList>
+		<contextElementResponse>
+		<contextElement>
+			<entityId type='sensor' isPattern='false'>
+				<id>Sensor5</id>
+			</entityId>
+		</contextElement>
+			<statusCode>
+				<code>200</code>
+				<reasonPhrase>Ok</reasonPhrase>
+				<details>a. Processed by http://192.168.100.1:70/application with Standard: NGSI10_v1_nle</details>
+			</statusCode>
+		</contextElementResponse>
+	</contextResponseList>
+</updateContextResponse>

@@ -47,6 +47,7 @@ package eu.neclab.iotplatform.iotbroker.commons.interfaces;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
@@ -60,12 +61,14 @@ public interface EmbeddedAgentStorageInterface {
 	// @Override
 	public void setNgsi10Callback(Ngsi10Interface ngsi10Callback);
 
-	public void storeLatestData(ContextElement isolatedContextElement);
+	public Map<ContextElement, Boolean> storeData(List<ContextElement> isolatedLatestContextElement,
+			List<ContextElement> isolatedHistoricalContextElement,
+			Date defaultDate);
+
+	public boolean storeLatestData(ContextElement isolatedContextElement);
 
 	public void storeHistoricalData(ContextElement isolatedContextElement,
 			Date defaultDate);
-
-	// @Override
 
 	public List<ContextElement> getAllLatestValues();
 

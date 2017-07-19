@@ -47,8 +47,9 @@ package eu.neclab.iotplatform.iotbroker.embeddediotagent.agentcore;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -56,6 +57,7 @@ import java.util.concurrent.Executors;
 import javax.annotation.PostConstruct;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 
 import eu.neclab.iotplatform.iotbroker.commons.BundleUtils;
 import eu.neclab.iotplatform.iotbroker.commons.interfaces.EmbeddedAgentRegistryInterface;
@@ -67,6 +69,8 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ReasonPhrase;
+import eu.neclab.iotplatform.ngsi.api.datamodel.StatusCode;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextRequest;
 import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Interface;
 
@@ -74,6 +78,9 @@ public class IoTAgentCore implements IoTAgentInterface {
 
 	/** The logger. */
 	private static Logger logger = Logger.getLogger(IoTAgentCore.class);
+
+	@Value("${storeOnlyLatestValue:false}")
+	private boolean storeOnlyLatestValue;
 
 	private EmbeddedAgentStorageInterface iotAgentStorage;
 
@@ -152,98 +159,154 @@ public class IoTAgentCore implements IoTAgentInterface {
 	}
 
 	@Override
-	public void storeData(final List<ContextElement> contextElementList) {
+	public StatusCode storeData(final List<ContextElement> contextElementList) {
+
+		List<ContextElement> isolatedContextElementList = new ArrayList<ContextElement>();
+
+		for (ContextElement contextElement : contextElementList) {
+			isolatedContextElementList.addAll(this
+					.isolateAttributes(contextElement));
+		}
 
 		// List of Task
-		List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
+		// List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
 
-		Iterator<ContextElement> iter = contextElementList.iterator();
-		while (iter.hasNext()) {
+		// Iterator<ContextElement> iter = contextElementList.iterator();
 
-			ContextElement contextElement = iter.next();
+		// List<ContextElement> contextElementUnsuccessfullyStored = new
+		// ArrayList<ContextElement>();
 
-			// Create a list of ContextElement where each ContextElement has
-			// exactly one ContextAttribute
-			//
-			// TODO change the isolatedContextElement to a new class called
-			// AtomicContextElement
-			final List<ContextElement> isolatedContextElementList = this
-					.isolateAttributes(contextElement);
+		// while (iter.hasNext()) {
 
-			final Date localDate = new Date();
+		// ContextElement contextElement = iter.next();
 
-			// Iterate over the isolatedContextElement list in order to create
-			// the tasks used to store data
-			for (final ContextElement isolatedContextElement : isolatedContextElementList) {
+		// Create a list of ContextElement where each ContextElement has
+		// exactly one ContextAttribute
+		//
+		// TODO change the isolatedContextElement to a new class called
+		// AtomicContextElement
+		// final List<ContextElement> isolatedContextElementList = this
+		// .isolateAttributes(contextElement);
 
-				tasks.add(Executors.callable(new Runnable() {
+		final Date localDate = new Date();
 
-					@Override
-					public void run() {
-
-						if (logger.isDebugEnabled()) {
-							logger.debug(String.format(
-									"Storing historically contextElement %s",
-									isolatedContextElement.toJsonString()));
-						}
-						iotAgentStorage.storeHistoricalData(
-								isolatedContextElement, localDate);
-
-						if (logger.isDebugEnabled()) {
-							logger.debug(String.format(
-									"Storing latest contextElement %s",
-									isolatedContextElement.toJsonString()));
-						}
-						iotAgentStorage.storeLatestData(isolatedContextElement);
-
-					}
-
-				}));
-
-			}
-
-			if (BundleUtils.isServiceRegistered(this, subscriptionHandler)) {
-				tasks.add(Executors.callable(new Runnable() {
-
-					@Override
-					public void run() {
-						subscriptionHandler
-								.checkSubscriptions(isolatedContextElementList);
-					}
-
-				}));
-			}
+		if (logger.isDebugEnabled()) {
+			logger.debug(String.format("Storing contextElement %s",
+					isolatedContextElementList));
 		}
+		Map<ContextElement, Boolean> successfulMap;
+		
+		if (storeOnlyLatestValue) {
+			successfulMap = iotAgentStorage.storeData(
+					isolatedContextElementList, null,
+					localDate);
+		} else {
+			successfulMap = iotAgentStorage.storeData(
+					isolatedContextElementList, isolatedContextElementList,
+					localDate);
+		}
+
+		// // Iterate over the isolatedContextElement list in order to create
+		// // the tasks used to store data
+		// for (final ContextElement isolatedContextElement :
+		// isolatedContextElementList) {
+		//
+		// // tasks.add(Executors.callable(new Runnable() {
+		//
+		// // @Override
+		// // public void run() {
+		//
+		// if (logger.isDebugEnabled()) {
+		// logger.debug(String.format(
+		// "Storing historically contextElement %s",
+		// isolatedContextElement.toJsonString()));
+		// }
+		//
+		// iotAgentStorage.storeHistoricalData(isolatedContextElement,
+		// localDate);
+		//
+		// if (logger.isDebugEnabled()) {
+		// logger.debug(String.format("Storing latest contextElement %s",
+		// isolatedContextElement.toJsonString()));
+		// }
+		//
+		// boolean successfullyStored = iotAgentStorage
+		// .storeLatestData(isolatedContextElement);
+		// if (!successfullyStored) {
+		// contextElementUnsuccessfullyStored.add(isolatedContextElement);
+		// }
+		//
+		// // }
+		//
+		// // }));
+		//
+		// }
+
+		// if (BundleUtils.isServiceRegistered(this, subscriptionHandler)) {
+		// // tasks.add(Executors.callable(new Runnable() {
+		//
+		// // @Override
+		// // public void run() {
+		// subscriptionHandler
+		// .checkSubscriptions(isolatedContextElementList);
+		// // }
+		//
+		// // }));
+		// }
+		// }
 
 		// Execute the tasks used to store the data
-		ExecutorService taskExecutor = Executors.newCachedThreadPool();
-		try {
-			taskExecutor.invokeAll(tasks);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		// ExecutorService taskExecutor = Executors.newCachedThreadPool();
+		// try {
+		// taskExecutor.invokeAll(tasks);
+		// } catch (InterruptedException e) {
+		// e.printStackTrace();
+		// }
 
 		/*
 		 * Check registration
 		 */
 		if (BundleUtils.isServiceRegistered(this, registrationHandler)) {
-			tasks.add(Executors.callable(new Runnable() {
+			// tasks.add(Executors.callable(new Runnable() {
 
-				@Override
-				public void run() {
-					registrationHandler.checkRegistration(contextElementList);
+			// @Override
+			// public void run() {
+			registrationHandler.checkRegistration(contextElementList);
 
-				}
-
-			}));
-			taskExecutor = Executors.newCachedThreadPool();
-			try {
-				taskExecutor.invokeAll(tasks);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			// }
+			//
+			// }));
+			// taskExecutor = Executors.newCachedThreadPool();
+			// try {
+			// taskExecutor.invokeAll(tasks);
+			// } catch (InterruptedException e) {
+			// e.printStackTrace();
+			// }
 		} else if (logger.isDebugEnabled()) {
 			logger.debug("Registry not available");
+		}
+
+		StringBuffer details = new StringBuffer();
+		for (Entry<ContextElement, Boolean> success : successfulMap.entrySet()) {
+			if (!success.getValue()) {
+				details.append("EntityId+Attribute not successfully stored: "
+						+ success.getKey().toJsonString() + ". ");
+			}
+		}
+
+		// if (contextElementUnsuccessfullyStored.isEmpty()) {
+		if (details.length() == 0) {
+			return new StatusCode(200, ReasonPhrase.OK_200.toString(), "");
+
+		} else {
+
+			// for (ContextElement isolatedContextElement :
+			// contextElementUnsuccessfullyStored) {
+			// details.append(isolatedContextElement.toJsonString() + "; ");
+			// }
+			return new StatusCode(472,
+					ReasonPhrase.INVALIDPARAMETER_472.toString(),
+					details.toString());
 		}
 
 	}

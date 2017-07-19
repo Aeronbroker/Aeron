@@ -52,7 +52,7 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
-import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
+import eu.neclab.iotplatform.ngsi.api.datamodel.StatusCode;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextRequest;
 import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Interface;
 
@@ -62,7 +62,7 @@ import eu.neclab.iotplatform.ngsi.api.ngsi10.Ngsi10Interface;
  */
 public interface IoTAgentInterface {
 
-	void storeData(List<ContextElement> contextElementList);
+	StatusCode storeData(List<ContextElement> contextElementList);
 
 	ContextElement getLatestValue(String id, URI type, String attributeName);
 

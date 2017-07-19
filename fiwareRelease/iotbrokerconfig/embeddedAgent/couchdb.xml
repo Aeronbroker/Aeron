@@ -9,4 +9,8 @@
 <entry key="couchdb_username"></entry>
 <entry key="couchdb_password"></entry>
 
+<entry key="storeOnlyLatestValue">true</entry>
+<entry key="registrydb_name">haregistry20170707173538</entry>
+<entry key="embeddedAgentId">embeddedagent1</entry>
+
 </properties>
