@@ -99,7 +99,7 @@ public class AppendContextAttributeRequest extends NgsiStructure {
 	@XmlElement(name = "contextValue", required = true)
 	private String contextValue = null;
 
-	@XmlElementWrapper(name = "Metadata")
+	@XmlElementWrapper(name = "metadata")
 	@XmlElement(name = "contextMetadata", required = false)
 	private List<ContextMetadata> contextMetadata;
 

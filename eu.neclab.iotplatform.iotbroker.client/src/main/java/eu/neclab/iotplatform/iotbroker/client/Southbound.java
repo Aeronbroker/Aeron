@@ -942,6 +942,59 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	}
 
+	
+	/**
+	 * Calls the UpdateContext method on an NGSI-10 server.
+	 * 
+	 * @param request
+	 *            The request message.
+	 * @param uri
+	 *            The address of the NGSI-10 server
+	 * @return The response message.
+	 * 
+	 */
+	public UpdateContextResponse_OrionCustomization updateContext_orion(
+			UpdateContextRequest_OrionCustomization request_tid, URI uri) {
+
+		UpdateContextResponse_OrionCustomization updateResponse = new UpdateContextResponse_OrionCustomization();
+
+
+		// adaptUpdatesToOrionStandard
+		// I would suggest to have a completely different updateContext for
+		// Orion Context and then call it specifically. Maybe add a list of
+		// Orion Broker consumer in the settings (so having two pub_sub_addr).
+
+		try {
+
+			Object response = sendRequest(new URL(uri.toString()),
+					"updateContext", request_tid,
+					UpdateContextResponse_OrionCustomization.class,
+					ngsi10schema, CONTENT_TYPE.JSON);
+
+			// If there was an error then a StatusCode has been returned
+			if (response instanceof StatusCode) {
+				updateResponse = new UpdateContextResponse_OrionCustomization(
+						(StatusCode) response, null);
+				return updateResponse;
+			}
+
+			// Cast the response
+			updateResponse = (UpdateContextResponse_OrionCustomization) response;
+
+		} catch (MalformedURLException e) {
+			logger.warn("Malformed URI", e);
+
+			updateResponse = new UpdateContextResponse_OrionCustomization(
+					new StatusCode(Code.INTERNALERROR_500.getCode(),
+							ReasonPhrase.RECEIVERINTERNALERROR_500.toString(),
+							"Malformed URI"), null);
+		}
+
+		return updateResponse;
+
+	}
+
+	
 	@Override
 	public UpdateContextResponse updateContext(UpdateContextRequest request,
 			URI uri, StandardVersion standardVersion) {

@@ -96,17 +96,17 @@ public class AppendContextElementResponse extends NgsiStructure {
 	@XmlElement(name = "errorCode", required = false)
 	private StatusCode errorCode = null;
 
-	@XmlElement(name = "contextAttributeResponse", required = false)
-	private List<ContextAttributeResponse> contextAttributeResponse;
+	@XmlElement(name = "contextResponse", required = false)
+	private ContextAttributeResponse contextAttributeResponse;
 
 	public AppendContextElementResponse() {
 
 	}
 
 	public AppendContextElementResponse(StatusCode errorCode,
-			List<ContextAttributeResponse> contextAttributeResponseList) {
+			ContextAttributeResponse contextAttributeResponse) {
 		this.errorCode = errorCode;
-		this.contextAttributeResponse = contextAttributeResponseList;
+		this.contextAttributeResponse = contextAttributeResponse;
 	}
 
 	public StatusCode getErrorCode() {
@@ -117,14 +117,14 @@ public class AppendContextElementResponse extends NgsiStructure {
 		this.errorCode = errorCode;
 	}
 
-	public List<ContextAttributeResponse> getContextAttributeResponse() {
+	public ContextAttributeResponse getContextAttributeResponse() {
 
 		return contextAttributeResponse;
 	}
 
-	public void setContextAttributeResponseList(
-			List<ContextAttributeResponse> contextAttributeResponseList) {
-		this.contextAttributeResponse = contextAttributeResponseList;
+	public void setContextAttributeResponse(
+			ContextAttributeResponse contextAttributeResponse) {
+		this.contextAttributeResponse = contextAttributeResponse;
 	}
 
 }
