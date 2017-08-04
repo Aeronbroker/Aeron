@@ -154,14 +154,14 @@ instance of queryContextResponse.
 
 + Request (application/json)
 
-		{
-			"entities": [{
-				"isPattern": false,
-				"id": "ConferenceRoom",
-				"type": "Room"
-			}],
-			"attributes": ["temperature"]
-		}
+        {
+            "entities": [{
+                "isPattern": false,
+                "id": "ConferenceRoom",
+                "type": "Room"
+            }],
+            "attributes": ["temperature"]
+        }
 
 + Response 200 (application/xml)
 
@@ -178,12 +178,12 @@ instance of queryContextResponse.
 + Response 200 (application/json)
 
         {
-			"contextResponses": [],
-			"errorCode": {
-				"reasonPhrase": "CONTEXT ELEMENT NOT FOUND",
-				"code": 404
-			}
-		}
+            "contextResponses": [],
+            "errorCode": {
+                "reasonPhrase": "CONTEXT ELEMENT NOT FOUND",
+                "code": 404
+            }
+        }
 
 + Response 200 (application/xml)
 
@@ -220,32 +220,32 @@ instance of queryContextResponse.
         
 + Response 200 (application/json)
  
-		{
-			"contextResponses": [{
-				"contextElement": {
-					"attributes": [{
-						"contextValue": "6",
-						"metadata": [{
-							"name": "ID",
-							"value": "1110",
-							"type": "string"
-						}],
-						"name": "indoorTemperature",
-						"type": "Room"
-					}],
-					"domainMetadata": [],
-					"entityId": {
-						"isPattern": false,
-						"id": "ConferenceRoom",
-						"type": "Room"
-					}
-				},
-				"statusCode": {
-					"reasonPhrase": "Ok",
-					"code": 200
-				}
-			}]
-		}
+        {
+            "contextResponses": [{
+                "contextElement": {
+                    "attributes": [{
+                        "contextValue": "6",
+                        "metadata": [{
+                            "name": "ID",
+                            "value": "1110",
+                            "type": "string"
+                        }],
+                        "name": "indoorTemperature",
+                        "type": "Room"
+                    }],
+                    "domainMetadata": [],
+                    "entityId": {
+                        "isPattern": false,
+                        "id": "ConferenceRoom",
+                        "type": "Room"
+                    }
+                },
+                "statusCode": {
+                    "reasonPhrase": "Ok",
+                    "code": 200
+                }
+            }]
+        }
 
 ## Standard Context Subscription [/ngsi10/subscribeContext]
 
@@ -289,28 +289,28 @@ response body is an instance of subscribeContextResponse.
 + Request (application/json)
 
         {
-			"entities": [{
-				"isPattern": false,
-				"id": "ConferenceRoom",
-				"type": "Room"
-			}],
-			"attributes": ["temperature"],
-			"notifyConditions": [{
-				"type": "ONCHANGE"
-			}],
-			"reference": "127.0.0.1",
-			"duration": "P5M",
-			"notifyCondition": [{
-				"type": "ONCHANGE"
-			}],
-			"restriction": {
-				"scopes": [{
-					"scopeType": "someScopeType",
-					"scopeValue": "someScopeValue"
-				}],
-				"attributeExpression": "someXPATH"
-			}
-		}
+            "entities": [{
+                "isPattern": false,
+                "id": "ConferenceRoom",
+                "type": "Room"
+            }],
+            "attributes": ["temperature"],
+            "notifyConditions": [{
+                "type": "ONCHANGE"
+            }],
+            "reference": "127.0.0.1",
+            "duration": "P5M",
+            "notifyCondition": [{
+                "type": "ONCHANGE"
+            }],
+            "restriction": {
+                "scopes": [{
+                    "scopeType": "someScopeType",
+                    "scopeValue": "someScopeValue"
+                }],
+                "attributeExpression": "someXPATH"
+            }
+        }
         
 + Response 200 (application/xml)
 
@@ -326,12 +326,12 @@ response body is an instance of subscribeContextResponse.
  + Response 200 (application/json)
        
         {
-			"subscribeResponse": {
-				"subscriptionId": "12345",
-				"duration": "P5Y",
-				"throttling": "P5Y"
-			}
-		}
+            "subscribeResponse": {
+                "subscriptionId": "12345",
+                "duration": "P5Y",
+                "throttling": "P5Y"
+            }
+        }
 
 ## Standard Context Subscription Update [/ngsi10/updateContextSubscription]
 
@@ -348,29 +348,29 @@ is an instance of updateContextSubscriptionResponse.
             <duration>P5Y</duration>
             <restriction>
                 <attributeExpression></attributeExpression>
-				<scope>
-					<operationScope>
-						<scopeType>myScopeType</scopeType>
-						<scopeValue>myScopeValue</scopeValue>
-					</operationScope>
-				</scope>
-			</restriction>
+                <scope>
+                    <operationScope>
+                        <scopeType>myScopeType</scopeType>
+                        <scopeValue>myScopeValue</scopeValue>
+                    </operationScope>
+                </scope>
+            </restriction>
         </updateContextSubscriptionRequest>
         
         
 + Request (application/json)
      
         {
-			"duration": "P5Y",
-			"notifyCondition": [],
-			"restriction": {
-				"scopes": [{
-					"scopeType": "myScopeType",
-					"scopeValue": "myScopeValue"
-				}],
-				"attributeExpression": ""
-			}
-		}
+            "duration": "P5Y",
+            "notifyCondition": [],
+            "restriction": {
+                "scopes": [{
+                    "scopeType": "myScopeType",
+                    "scopeValue": "myScopeValue"
+                }],
+                "attributeExpression": ""
+            }
+        }
         
 + Response 200 (application/xml)
 
@@ -388,14 +388,14 @@ is an instance of updateContextSubscriptionResponse.
 + Response 200 (application/json)
 
         {
-			"subscribeError": {
-				"subscriptionId": "12345",
-				"statusCode": {
-					"reasonPhrase": "Subscription ID not found",
-					"code": 470
-				}
-			}
-		}
+            "subscribeError": {
+                "subscriptionId": "12345",
+                "statusCode": {
+                    "reasonPhrase": "Subscription ID not found",
+                    "code": 470
+                }
+            }
+        }
 
 + Response 200 (application/xml)
 
@@ -412,12 +412,12 @@ is an instance of updateContextSubscriptionResponse.
 + Response 200 (application/json)
 
         {
-			"subscribeResponse": {
-				"subscriptionId": "12345",
-				"duration": "P5Y",
-				"throttling": "P1D"
-			}
-		}
+            "subscribeResponse": {
+                "subscriptionId": "12345",
+                "duration": "P5Y",
+                "throttling": "P1D"
+            }
+        }
 
 ## Standard Context Subscription Cancellation [/ngsi10/unsubscribeContext]
 
@@ -437,8 +437,8 @@ instance of unsubscribeContextResponse.
 + Request (application/json)
        
         {
-			"subscriptionId": "1245"
-		}
+            "subscriptionId": "1245"
+        }
         
 + Response 200 (application/xml)
 
@@ -454,13 +454,13 @@ instance of unsubscribeContextResponse.
 + Response 200 (application/json)
       
         {
-			"subscriptionId": "12345",
-			"statusCode": {
-				"reasonPhrase": "OK",
-				"code": 200
-			}
-		}
-		
+            "subscriptionId": "12345",
+            "statusCode": {
+                "reasonPhrase": "OK",
+                "code": 200
+            }
+        }
+        
 + Response 200 (application/xml)
 
         <?xml version="1.0" encoding="UTF-8"?>
@@ -475,12 +475,12 @@ instance of unsubscribeContextResponse.
 + Response 200 (application/json)
 
         {
-			"subscriptionId": "12345",
-			"statusCode": {
-				"reasonPhrase": "Subscription ID not found",
-				"code": 470
-			}
-		}
+            "subscriptionId": "12345",
+            "statusCode": {
+                "reasonPhrase": "Subscription ID not found",
+                "code": 470
+            }
+        }
 
 ## Standard Context Notification [/ngsi10/notifyContext]
 
@@ -529,33 +529,33 @@ notifyContextResponse.
 + Request (application/json)
         
         {
-			"contextResponses": [{
-				"contextElement": {
-					"attributes": [{
-						"contextValue": "10",
-						"metadata": [{
-							"name": "ID",
-							"value": "1110",
-							"type": "string"
-						}],
-						"name": "temperature",
-						"type": "Room"
-					}],
-					"domainMetadata": [],
-					"entityId": {
-						"isPattern": false,
-						"id": "ConferenceRoom",
-						"type": "Room"
-					}
-				},
-				"statusCode": {
-					"reasonPhrase": "Ok",
-					"code": 200
-				}
-			}],
-			"subscriptionId": "12345",
-			"originator": "http://localhost/test"
-		}
+            "contextResponses": [{
+                "contextElement": {
+                    "attributes": [{
+                        "contextValue": "10",
+                        "metadata": [{
+                            "name": "ID",
+                            "value": "1110",
+                            "type": "string"
+                        }],
+                        "name": "temperature",
+                        "type": "Room"
+                    }],
+                    "domainMetadata": [],
+                    "entityId": {
+                        "isPattern": false,
+                        "id": "ConferenceRoom",
+                        "type": "Room"
+                    }
+                },
+                "statusCode": {
+                    "reasonPhrase": "Ok",
+                    "code": 200
+                }
+            }],
+            "subscriptionId": "12345",
+            "originator": "http://localhost/test"
+        }
         
 + Response 200 (application/xml)
 
@@ -569,12 +569,12 @@ notifyContextResponse.
 
 + Response 200 (application/json)
 
-		{
-			"responseCode": {
-				"reasonPhrase": "Ok",
-				"code": 200
-			}
-		}
+        {
+            "responseCode": {
+                "reasonPhrase": "Ok",
+                "code": 200
+            }
+        }
 
 ## Standard Context Data Push [/ngsi10/updateContext]
 
@@ -615,26 +615,26 @@ updateContextResponse.
 + Request (application/json)
         
         {
-			"contextElements": [{
-				"attributes": [{
-					"contextValue": "20",
-					"metadata": [{
-						"name": "ID",
-						"value": "1",
-						"type": "long"
-					}],
-					"name": "temperature",
-					"type": "degree"
-				}],
-				"domainMetadata": [],
-				"entityId": {
-					"isPattern": false,
-					"id": "ConferenceRoom",
-					"type": "Room"
-				}
-			}],
-			"updateAction": "UPDATE"
-		}
+            "contextElements": [{
+                "attributes": [{
+                    "contextValue": "20",
+                    "metadata": [{
+                        "name": "ID",
+                        "value": "1",
+                        "type": "long"
+                    }],
+                    "name": "temperature",
+                    "type": "degree"
+                }],
+                "domainMetadata": [],
+                "entityId": {
+                    "isPattern": false,
+                    "id": "ConferenceRoom",
+                    "type": "Room"
+                }
+            }],
+            "updateAction": "UPDATE"
+        }
 
 + Response 200 (application/xml)
 
@@ -663,24 +663,24 @@ updateContextResponse.
 + Response 200 (application/json)
         
         {
-			"contextResponses": [{
-				"contextElement": {
-					"attributes": [{
-						"name": "temperature"
-					}],
-					"domainMetadata": [],
-					"entityId": {
-						"isPattern": false,
-						"id": "ConferenceRoom",
-						"type": "Room"
-					}
-				},
-				"statusCode": {
-					"reasonPhrase": "Ok",
-					"code": 200
-				}
-			}]
-		}
+            "contextResponses": [{
+                "contextElement": {
+                    "attributes": [{
+                        "name": "temperature"
+                    }],
+                    "domainMetadata": [],
+                    "entityId": {
+                        "isPattern": false,
+                        "id": "ConferenceRoom",
+                        "type": "Room"
+                    }
+                },
+                "statusCode": {
+                    "reasonPhrase": "Ok",
+                    "code": 200
+                }
+            }]
+        }
 
 ## Convenience Interaction with Individual Context Entity [/ngsi10/contextEntities/ConferenceRoom]
 
@@ -718,31 +718,31 @@ updateContextResponse.
 
 + Response 200 (application/json)
 
-		{
-			"contextElement": {
-				"attributes": [{
-					"contextValue": "6",
-					"metadata": [{
-						"name": "ID",
-						"value": "1110",
-						"type": "string"
-					}],
-					"name": "indoorTemperature",
-					"type": "Room"
-				}],
-				"domainMetadata": [],
-				"entityId": {
-					"isPattern": false,
-					"id": "ConferenceRoom",
-					"type": "Room"
-				}
-			},
-			"statusCode": {
-				"details": "a",
-				"reasonPhrase": "Ok",
-				"code": 200
-			}
-		}        
+        {
+            "contextElement": {
+                "attributes": [{
+                    "contextValue": "6",
+                    "metadata": [{
+                        "name": "ID",
+                        "value": "1110",
+                        "type": "string"
+                    }],
+                    "name": "indoorTemperature",
+                    "type": "Room"
+                }],
+                "domainMetadata": [],
+                "entityId": {
+                    "isPattern": false,
+                    "id": "ConferenceRoom",
+                    "type": "Room"
+                }
+            },
+            "statusCode": {
+                "details": "a",
+                "reasonPhrase": "Ok",
+                "code": 200
+            }
+        }        
 
 ### Replace a number of attribute values  [PUT]
 
@@ -781,26 +781,26 @@ updateContextResponse.
 + Request (application/json)        
         
         {
-			"attributes": [{
-				"contextValue": "10",
-				"metadata": [{
-					"name": "ID",
-					"value": "1110",
-					"type": "string"
-				}],
-				"name": "temperature",
-				"type": "degree"
-			}, {
-				"contextValue": "70",
-				"metadata": [{
-					"name": "ID",
-					"value": "2312",
-					"type": "string"
-				}],
-				"name": "humidity",
-				"type": "percentage"
-			}]
-		}
+            "attributes": [{
+                "contextValue": "10",
+                "metadata": [{
+                    "name": "ID",
+                    "value": "1110",
+                    "type": "string"
+                }],
+                "name": "temperature",
+                "type": "degree"
+            }, {
+                "contextValue": "70",
+                "metadata": [{
+                    "name": "ID",
+                    "value": "2312",
+                    "type": "string"
+                }],
+                "name": "humidity",
+                "type": "percentage"
+            }]
+        }
         
 + Response 200 (application/xml)
 
@@ -827,20 +827,20 @@ updateContextResponse.
 + Response 200 (application/json)
         
         {
-			"contextResponse": {
-				"attributes": [{
-					"name": "temperature",
-					"type": "degree"
-				}, {
-					"name": "humidity",
-					"type": "percentage"
-				}],
-				"statusCode": {
-					"reasonPhrase": "Ok",
-					"code": 200
-				}
-			}
-		}
+            "contextResponse": {
+                "attributes": [{
+                    "name": "temperature",
+                    "type": "degree"
+                }, {
+                    "name": "humidity",
+                    "type": "percentage"
+                }],
+                "statusCode": {
+                    "reasonPhrase": "Ok",
+                    "code": 200
+                }
+            }
+        }
         
 + Response 200 (application/xml)
 
@@ -856,12 +856,12 @@ updateContextResponse.
 + Response 200 (application/json)
 
         {
-			"errorCode": {
-				"details": "No Attribute with given value IDs found",
-				"reasonPhrase": "Context Element not Found",
-				"code": 404
-			}
-		}     
+            "errorCode": {
+                "details": "No Attribute with given value IDs found",
+                "reasonPhrase": "Context Element not Found",
+                "code": 404
+            }
+        }     
 
 ### Append context attribute values [POST]
 
@@ -900,45 +900,45 @@ updateContextResponse.
 + Request (application/json)
         
         {
-			"attributes": [{
-				"contextValue": "10",
-				"metadata": [{
-					"name": "ID",
-					"value": "1110",
-					"type": "string"
-				}],
-				"name": "temperature",
-				"type": "degree"
-			}, {
-				"contextValue": "70",
-				"metadata": [{
-					"name": "ID",
-					"value": "2312",
-					"type": "string"
-				}],
-				"name": "humidity",
-				"type": "percentage"
-			}],
-			"contextAttributeList": [{
-				"contextValue": "10",
-				"metadata": [{
-					"name": "ID",
-					"value": "1110",
-					"type": "string"
-				}],
-				"name": "temperature",
-				"type": "degree"
-			}, {
-				"contextValue": "70",
-				"metadata": [{
-					"name": "ID",
-					"value": "2312",
-					"type": "string"
-				}],
-				"name": "humidity",
-				"type": "percentage"
-			}]
-		}
+            "attributes": [{
+                "contextValue": "10",
+                "metadata": [{
+                    "name": "ID",
+                    "value": "1110",
+                    "type": "string"
+                }],
+                "name": "temperature",
+                "type": "degree"
+            }, {
+                "contextValue": "70",
+                "metadata": [{
+                    "name": "ID",
+                    "value": "2312",
+                    "type": "string"
+                }],
+                "name": "humidity",
+                "type": "percentage"
+            }],
+            "contextAttributeList": [{
+                "contextValue": "10",
+                "metadata": [{
+                    "name": "ID",
+                    "value": "1110",
+                    "type": "string"
+                }],
+                "name": "temperature",
+                "type": "degree"
+            }, {
+                "contextValue": "70",
+                "metadata": [{
+                    "name": "ID",
+                    "value": "2312",
+                    "type": "string"
+                }],
+                "name": "humidity",
+                "type": "percentage"
+            }]
+        }
 
 + Response 200 (application/xml)
 
@@ -981,32 +981,32 @@ updateContextResponse.
 + Response 200 (application/json)
         
         {
-			"contextAttributeResponse": {
-				"attributes": [{
-					"contextValue": "10",
-					"metadata": [{
-						"name": "ID",
-						"value": "1110",
-						"type": "string"
-					}],
-					"name": "temperature",
-					"type": "degree"
-				}, {
-					"contextValue": "70",
-					"metadata": [{
-						"name": "ID",
-						"value": "2312",
-						"type": "string"
-					}],
-					"name": "humidity",
-					"type": "percentage"
-				}],
-				"statusCode": {
-					"reasonPhrase": "Ok",
-					"code": 200
-				}
-			}
-		}   
+            "contextAttributeResponse": {
+                "attributes": [{
+                    "contextValue": "10",
+                    "metadata": [{
+                        "name": "ID",
+                        "value": "1110",
+                        "type": "string"
+                    }],
+                    "name": "temperature",
+                    "type": "degree"
+                }, {
+                    "contextValue": "70",
+                    "metadata": [{
+                        "name": "ID",
+                        "value": "2312",
+                        "type": "string"
+                    }],
+                    "name": "humidity",
+                    "type": "percentage"
+                }],
+                "statusCode": {
+                    "reasonPhrase": "Ok",
+                    "code": 200
+                }
+            }
+        }   
 
 + Response 200 (application/xml)
 
@@ -1021,11 +1021,11 @@ updateContextResponse.
 + Response 200 (application/json)
 
         {
-			"errorCode": {
-				"reasonPhrase": "Context Element not found",
-				"code": 404
-			}
-		}
+            "errorCode": {
+                "reasonPhrase": "Context Element not found",
+                "code": 404
+            }
+        }
 
 ### Delete all entity information [DELETE]
 
@@ -1040,9 +1040,9 @@ updateContextResponse.
 + Response 200 (application/json)
 
         {
-			"reasonPhrase": "Ok",
-			"code": 200
-		}
+            "reasonPhrase": "Ok",
+            "code": 200
+        }
         
 + Response 200 (application/xml)
 
@@ -1055,9 +1055,9 @@ updateContextResponse.
 + Response 200 (application/json)
 
         {
-			"reasonPhrase": "Context Element not found",
-			"code": 404
-		}
+            "reasonPhrase": "Context Element not found",
+            "code": 404
+        }
 
 ## Convenience Interaction with an Individual Attribute of an Individual Entity [/ngsi10/contextEntities/ConferenceRoom/attributes/temperature]
 
@@ -1102,30 +1102,30 @@ updateContextResponse.
 + Response 200 (application/json)
      
         {
-			"attributes": [{
-				"contextValue": "10",
-				"metadata": [{
-					"name": "ID",
-					"value": "1110",
-					"type": "string"
-				}],
-				"name": "temperature",
-				"type": "degree"
-			}, {
-				"contextValue": "12",
-				"metadata": [{
-					"name": "ID",
-					"value": "4837",
-					"type": "string"
-				}],
-				"name": "temperature",
-				"type": "degree"
-			}],
-			"statusCode": {
-				"reasonPhrase": "OK",
-				"code": 200
-			}
-		}
+            "attributes": [{
+                "contextValue": "10",
+                "metadata": [{
+                    "name": "ID",
+                    "value": "1110",
+                    "type": "string"
+                }],
+                "name": "temperature",
+                "type": "degree"
+            }, {
+                "contextValue": "12",
+                "metadata": [{
+                    "name": "ID",
+                    "value": "4837",
+                    "type": "string"
+                }],
+                "name": "temperature",
+                "type": "degree"
+            }],
+            "statusCode": {
+                "reasonPhrase": "OK",
+                "code": 200
+            }
+        }
 
 ### Append context attribute value [POST]
 
@@ -1147,14 +1147,14 @@ updateContextResponse.
 + Request (application/json)
         
         {
-			"contextValue":"10",
-			"contextMetadata": [{
-				"name": "ID",
-				"value": "1110",
-				"type": "string"
-			}],
-			"type": "degree"
-		}
+            "contextValue":"10",
+            "contextMetadata": [{
+                "name": "ID",
+                "value": "1110",
+                "type": "string"
+            }],
+            "type": "degree"
+        }
         
 + Response 200 (application/xml)
 
@@ -1167,9 +1167,9 @@ updateContextResponse.
 + Response 200 (application/json)
         
         {
-			"reasonPhrase": "Ok",
-			"code": 200
-		}
+            "reasonPhrase": "Ok",
+            "code": 200
+        }
         
 
 ### Delete all values of attribute [DELETE]
@@ -1185,9 +1185,9 @@ updateContextResponse.
 + Response 200 (application/json)
 
         {
-			"reasonPhrase": "Ok",
-			"code": 200
-		}
+            "reasonPhrase": "Ok",
+            "code": 200
+        }
 
 ## Convenience Interaction with an Individual Attribute Value Instance of an Individual Entity [/ngsi10/contextEntities/ConferenceRoom/attributes/temperature/id77]
 
@@ -1212,15 +1212,15 @@ updateContextResponse.
 + Response 200 (application/json)
       
         {
-			"attributes": [{
-				"name": "temperature",
-				"type": "degree"
-			}],
-			"statusCode": {
-				"reasonPhrase": "OK",
-				"code": 200
-			}
-		}
+            "attributes": [{
+                "name": "temperature",
+                "type": "degree"
+            }],
+            "statusCode": {
+                "reasonPhrase": "OK",
+                "code": 200
+            }
+        }
         
 + Response 200 (application/xml)
 
@@ -1241,15 +1241,15 @@ updateContextResponse.
 + Response 200 (application/json)
         
         {
-			"attributes": [{
-				"name": "temperature"
-			}],
-			"statusCode": {
-				"details": "Value ID id77 not found.",
-				"reasonPhrase": "Not Found",
-				"code": 404
-			}
-		}
+            "attributes": [{
+                "name": "temperature"
+            }],
+            "statusCode": {
+                "details": "Value ID id77 not found.",
+                "reasonPhrase": "Not Found",
+                "code": 404
+            }
+        }
 
 ### Replace context attribute value [PUT]
 
@@ -1263,11 +1263,11 @@ updateContextResponse.
         
 + Request (application/json)
 
-		{
-			"contextValue": "10",
-			"contextMetadata": [],
-			"type": "degree"
-		} 
+        {
+            "contextValue": "10",
+            "contextMetadata": [],
+            "type": "degree"
+        } 
 
 + Response 200 (application/xml)
 
@@ -1280,9 +1280,9 @@ updateContextResponse.
 + Response 200 (application/json)
 
         {
-			"reasonPhrase": "Ok",
-			"code": 200
-		}
+            "reasonPhrase": "Ok",
+            "code": 200
+        }
 
 ### Delete all value attribute [DELETE]
 
@@ -1298,9 +1298,9 @@ updateContextResponse.
 + Response 200 (application/json)
 
         {
-			"reasonPhrase": "Ok",
-			"code": 200
-		}
+            "reasonPhrase": "Ok",
+            "code": 200
+        }
 
 ## Convenience Interaction with  Attribute Domain of Individual Entity [/ngsi10/contextEntities/ConferenceRoom/attributeDomain/roomInfo]
 
@@ -1345,30 +1345,30 @@ updateContextResponse.
 + Response 200 (application/json)
         
         {
-			"attributes": [{
-				"contextValue": "10",
-				"metadata": [{
-					"name": "ID",
-					"value": "1110",
-					"type": "string"
-				}],
-				"name": "temperature",
-				"type": "degree"
-			}, {
-				"contextValue": "70",
-				"metadata": [{
-					"name": "ID",
-					"value": "2312",
-					"type": "string"
-				}],
-				"name": "humidity",
-				"type": "percentage"
-			}],
-			"statusCode": {
-				"reasonPhrase": "Ok",
-				"code": 200
-			}
-		}
+            "attributes": [{
+                "contextValue": "10",
+                "metadata": [{
+                    "name": "ID",
+                    "value": "1110",
+                    "type": "string"
+                }],
+                "name": "temperature",
+                "type": "degree"
+            }, {
+                "contextValue": "70",
+                "metadata": [{
+                    "name": "ID",
+                    "value": "2312",
+                    "type": "string"
+                }],
+                "name": "humidity",
+                "type": "percentage"
+            }],
+            "statusCode": {
+                "reasonPhrase": "Ok",
+                "code": 200
+            }
+        }
 
 ## Convenience Interaction with Entity Type [/ngsi10/contextEntityTypes/Room]
 
@@ -1429,49 +1429,49 @@ updateContextResponse.
 + Response 200 (application/json)
 
         {
-			"contextResponses": [{
-				"contextElement": {
-					"attributes": [{
-						"contextValue": "6",
-						"metadata": [{
-							"name": "ID",
-							"value": "1110",
-							"type": "string"
-						}],
-						"name": "indoorTemperature",
-						"type": "degree"
-					}],
-					"domainMetadata": [],
-					"entityId": {
-						"isPattern": false,
-						"id": "ConferenceRoom",
-						"type": "Room"
-					}
-				},
-				"statusCode": {
-					"reasonPhrase": "Ok",
-					"code": 200
-				}
-			}, {
-				"contextElement": {
-					"attributes": [{
-						"contextValue": "70",
-						"name": "humidity",
-						"type": "percentage"
-					}],
-					"domainMetadata": [],
-					"entityId": {
-						"isPattern": false,
-						"id": "Office",
-						"type": "Room"
-					}
-				},
-				"statusCode": {
-					"reasonPhrase": "Ok",
-					"code": 200
-				}
-			}]
-		} 
+            "contextResponses": [{
+                "contextElement": {
+                    "attributes": [{
+                        "contextValue": "6",
+                        "metadata": [{
+                            "name": "ID",
+                            "value": "1110",
+                            "type": "string"
+                        }],
+                        "name": "indoorTemperature",
+                        "type": "degree"
+                    }],
+                    "domainMetadata": [],
+                    "entityId": {
+                        "isPattern": false,
+                        "id": "ConferenceRoom",
+                        "type": "Room"
+                    }
+                },
+                "statusCode": {
+                    "reasonPhrase": "Ok",
+                    "code": 200
+                }
+            }, {
+                "contextElement": {
+                    "attributes": [{
+                        "contextValue": "70",
+                        "name": "humidity",
+                        "type": "percentage"
+                    }],
+                    "domainMetadata": [],
+                    "entityId": {
+                        "isPattern": false,
+                        "id": "Office",
+                        "type": "Room"
+                    }
+                },
+                "statusCode": {
+                    "reasonPhrase": "Ok",
+                    "code": 200
+                }
+            }]
+        } 
 
 
 ## Convenience Interaction with Attribute of Entity Type [/ngsi10/contextEntityTypes/Room/attributes/indoorTemperature]
@@ -1532,50 +1532,50 @@ updateContextResponse.
 
 + Response 200 (application/json)
 
-		{
-			"contextResponses": [{
-				"contextElement": {
-					"attributes": [{
-						"contextValue": "6",
-						"metadata": [{
-							"name": "ID",
-							"value": "1110",
-							"type": "string"
-						}],
-						"name": "indoorTemperature",
-						"type": "degree"
-					}],
-					"domainMetadata": [],
-					"entityId": {
-						"isPattern": false,
-						"id": "ConferenceRoom",
-						"type": "Room"
-					}
-				},
-				"statusCode": {
-					"reasonPhrase": "Ok",
-					"code": 200
-				}
-			}, {
-				"contextElement": {
-					"attributes": [{
-						"contextValue": "13",
-						"name": "indoorTemperature",
-						"type": "degree"
-					}],
-					"domainMetadata": [],
-					"entityId": {
-						"isPattern": false,
-						"id": "Office",
-						"type": "Room"
-					}
-				},
-				"statusCode": {
-					"reasonPhrase": "Ok",
-					"code": 200
-				}
-			}]
-		}
+        {
+            "contextResponses": [{
+                "contextElement": {
+                    "attributes": [{
+                        "contextValue": "6",
+                        "metadata": [{
+                            "name": "ID",
+                            "value": "1110",
+                            "type": "string"
+                        }],
+                        "name": "indoorTemperature",
+                        "type": "degree"
+                    }],
+                    "domainMetadata": [],
+                    "entityId": {
+                        "isPattern": false,
+                        "id": "ConferenceRoom",
+                        "type": "Room"
+                    }
+                },
+                "statusCode": {
+                    "reasonPhrase": "Ok",
+                    "code": 200
+                }
+            }, {
+                "contextElement": {
+                    "attributes": [{
+                        "contextValue": "13",
+                        "name": "indoorTemperature",
+                        "type": "degree"
+                    }],
+                    "domainMetadata": [],
+                    "entityId": {
+                        "isPattern": false,
+                        "id": "Office",
+                        "type": "Room"
+                    }
+                },
+                "statusCode": {
+                    "reasonPhrase": "Ok",
+                    "code": 200
+                }
+            }]
+        }
 
 ## Convenience Interaction with Attribute Domain of Entity Type [/ngsi10/contextEntityTypes/Room/attributeDomains/roomInfo]
 
@@ -1641,53 +1641,53 @@ updateContextResponse.
 + Response 200 (application/json)
         
         {
-			"contextResponses": [{
-				"contextElement": {
-					"attributes": [{
-						"contextValue": "6",
-						"metadata": [{
-							"name": "ID",
-							"value": "1110",
-							"type": "string"
-						}],
-						"name": "indoorTemperature",
-						"type": "degree"
-					}, {
-						"contextValue": "70",
-						"name": "humidity",
-						"type": "percentage"
-					}],
-					"domainMetadata": [],
-					"entityId": {
-						"isPattern": false,
-						"id": "ConferenceRoom",
-						"type": "Room"
-					}
-				},
-				"statusCode": {
-					"reasonPhrase": "Ok",
-					"code": 200
-				}
-			}, {
-				"contextElement": {
-					"attributes": [{
-						"contextValue": "13",
-						"name": "indoorTemperature",
-						"type": "degree"
-					}],
-					"domainMetadata": [],
-					"entityId": {
-						"isPattern": false,
-						"id": "Office",
-						"type": "Room"
-					}
-				},
-				"statusCode": {
-					"reasonPhrase": "Ok",
-					"code": 200
-				}
-			}]
-		}
+            "contextResponses": [{
+                "contextElement": {
+                    "attributes": [{
+                        "contextValue": "6",
+                        "metadata": [{
+                            "name": "ID",
+                            "value": "1110",
+                            "type": "string"
+                        }],
+                        "name": "indoorTemperature",
+                        "type": "degree"
+                    }, {
+                        "contextValue": "70",
+                        "name": "humidity",
+                        "type": "percentage"
+                    }],
+                    "domainMetadata": [],
+                    "entityId": {
+                        "isPattern": false,
+                        "id": "ConferenceRoom",
+                        "type": "Room"
+                    }
+                },
+                "statusCode": {
+                    "reasonPhrase": "Ok",
+                    "code": 200
+                }
+            }, {
+                "contextElement": {
+                    "attributes": [{
+                        "contextValue": "13",
+                        "name": "indoorTemperature",
+                        "type": "degree"
+                    }],
+                    "domainMetadata": [],
+                    "entityId": {
+                        "isPattern": false,
+                        "id": "Office",
+                        "type": "Room"
+                    }
+                },
+                "statusCode": {
+                    "reasonPhrase": "Ok",
+                    "code": 200
+                }
+            }]
+        }
 
 ## Convenience Subscription Container [/ngsi10/contextSubscriptions]
 
@@ -1727,29 +1727,29 @@ updateContextResponse.
 + Request (application/json)
         
         {
-			"entities": [{
-				"isPattern": false,
-				"id": "ConferenceRoom",
-				"type": "Room"
-			}],
-			"attributes": ["temperature"],
-			"notifyConditions": [{
-				"type": "ONCHANGE"
-			}],
-			"reference": "127.0.0.1",
-			"duration": "P5Y",
-			"notifyCondition": [{
-				"type": "ONCHANGE"
-			}],
-			"throttling": "P5Y",
-			"restriction": {
-				"scopes": [{
-					"scopeType": "someScopeType",
-					"scopeValue": "someScopeValue"
-				}],
-				"attributeExpression": "someXPATH"
-			}
-		}
+            "entities": [{
+                "isPattern": false,
+                "id": "ConferenceRoom",
+                "type": "Room"
+            }],
+            "attributes": ["temperature"],
+            "notifyConditions": [{
+                "type": "ONCHANGE"
+            }],
+            "reference": "127.0.0.1",
+            "duration": "P5Y",
+            "notifyCondition": [{
+                "type": "ONCHANGE"
+            }],
+            "throttling": "P5Y",
+            "restriction": {
+                "scopes": [{
+                    "scopeType": "someScopeType",
+                    "scopeValue": "someScopeValue"
+                }],
+                "attributeExpression": "someXPATH"
+            }
+        }
         
 + Response 200 (application/xml)
 
@@ -1766,12 +1766,12 @@ updateContextResponse.
 + Response 200 (application/json)
       
         {
-			"subscribeResponse": {
-				"subscriptionId": "123",
-				"duration": "P5Y",
-				"throttling": "P5Y"
-			}
-		}    
+            "subscribeResponse": {
+                "subscriptionId": "123",
+                "duration": "P5Y",
+                "throttling": "P5Y"
+            }
+        }    
 
 ## Convenience Interaction with individual subscription [/ngsi10/contextSubscriptions/12345]
 
@@ -1788,9 +1788,9 @@ updateContextResponse.
 + Request (application/json)
         
         {
-			"duration": "P5Y",
-			"notifyCondition": []
-		}
+            "duration": "P5Y",
+            "notifyCondition": []
+        }
         
 + Response 200 (application/xml)        
 
@@ -1808,14 +1808,14 @@ updateContextResponse.
 + Response 200 (application/json)        
         
         {
-			"subscribeError": {
-				"subscriptionId": "12345",
-				"statusCode": {
-					"reasonPhrase": "Subscription ID not found",
-					"code": 470
-				}
-			}
-		}
+            "subscribeError": {
+                "subscriptionId": "12345",
+                "statusCode": {
+                    "reasonPhrase": "Subscription ID not found",
+                    "code": 470
+                }
+            }
+        }
 
 + Response 200 (application/xml)
 
@@ -1831,18 +1831,18 @@ updateContextResponse.
 + Response 200 (application/json)
         
         {
-			"subscribeResponse": {
-				"subscriptionId": "12345",
-				"duration": "P5Y",
-				"throttling": "P1D"
-			}
-		}       
+            "subscribeResponse": {
+                "subscriptionId": "12345",
+                "duration": "P5Y",
+                "throttling": "P1D"
+            }
+        }       
 
 ### Cancel subscription [DELETE]
 
 + Response 200 (application/xml)
 
-        <?xml version="1.0" encoding="UTF-8"?>
+       <?xml version="1.0" encoding="UTF-8"?>
         <unsubscribeContextResponse>
             <subscriptionId>12345</subscriptionId>
             <statusCode>
@@ -1854,12 +1854,12 @@ updateContextResponse.
 + Response 200 (application/json)
         
         {
-			"subscriptionId": "12345",
-			"statusCode": {
-				"reasonPhrase": "OK",
-				"code": 200
-			}
-		}
+            "subscriptionId": "12345",
+            "statusCode": {
+                "reasonPhrase": "OK",
+                "code": 200
+            }
+        }
         
         
 + Response 200 (application/xml)
@@ -1876,12 +1876,12 @@ updateContextResponse.
 + Response 200 (application/json)
         
         {
-			"subscriptionId": "12345",
-			"statusCode": {
-				"reasonPhrase": "Subscription ID not found",
-				"code": 470
-			}
-		}
+            "subscriptionId": "12345",
+            "statusCode": {
+                "reasonPhrase": "Subscription ID not found",
+                "code": 470
+            }
+        }
 
 
 
