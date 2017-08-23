@@ -57,12 +57,13 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
- * Implements NotifyContextAvailabilityRequest
- * as defined in OMA NGSI 9/10 approved version 1.0.
+ * Implements NotifyContextAvailabilityRequest as defined in OMA NGSI 9/10
+ * approved version 1.0.
  */
 @XmlRootElement(name = "notifyContextAvailabilityRequest")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class NotifyContextAvailabilityRequest extends NgsiStructure {
+public class NotifyContextAvailabilityRequest_OrionCustomization extends
+		NgsiStructureAlternative {
 
 	@XmlElement(name = "subscriptionId", required = true)
 	private String subscriptionId = null;
@@ -70,51 +71,94 @@ public class NotifyContextAvailabilityRequest extends NgsiStructure {
 	@XmlElementWrapper(name = "contextRegistrationResponseList")
 	@XmlElement(name = "contextRegistrationResponse", required = true)
 	@JsonProperty("contextRegistrationResponses")
-	private List<ContextRegistrationResponse> contextRegistrationResponse = null;
+	private List<ContextRegistrationResponse_OrionCustomization> contextRegistrationResponse = null;
 
-	@XmlElement(name = "errorCode", required = true)
-	private StatusCode errorCode = null;
+	// @XmlElement(name = "errorCode", required = true)
+	// private StatusCode errorCode = null;
 
-	public NotifyContextAvailabilityRequest() {
+	public NotifyContextAvailabilityRequest_OrionCustomization() {
 
 	}
 
-	public NotifyContextAvailabilityRequest(String subscriptionId,
-			List<ContextRegistrationResponse> contextRegistrationResponseList,
-			StatusCode errorCode) {
+	public NotifyContextAvailabilityRequest_OrionCustomization(
+			String subscriptionId,
+			List<ContextRegistrationResponse_OrionCustomization> contextRegistrationResponseList) {
 		this.subscriptionId = subscriptionId;
 		this.contextRegistrationResponse = contextRegistrationResponseList;
-		this.errorCode = errorCode;
+		// this.errorCode = errorCode;
 	}
 
+	public NotifyContextAvailabilityRequest_OrionCustomization(
+			NotifyContextAvailabilityRequest notifyContextAvailabilityRequest) {
+		this.subscriptionId = notifyContextAvailabilityRequest.getSubscriptionId();
+		if (notifyContextAvailabilityRequest
+				.getContextRegistrationResponseList() != null
+				&& !notifyContextAvailabilityRequest
+						.getContextRegistrationResponseList().isEmpty()) {
+			this.contextRegistrationResponse = new ArrayList<ContextRegistrationResponse_OrionCustomization>();
+			for (ContextRegistrationResponse contextRegistrationResp : notifyContextAvailabilityRequest
+					.getContextRegistrationResponseList()) {
+				this.contextRegistrationResponse
+						.add(new ContextRegistrationResponse_OrionCustomization(
+								contextRegistrationResp));
+			}
+		}
+		// this.errorCode = notifyContextAvailabilityRequest.getErrorCode();
+	}
+
+	
 	public String getSubscriptionId() {
 		return subscriptionId;
 	}
 
+	
 	public void setSubscriptionId(String subscriptionId) {
-		this.subscriptionId =subscriptionId;
+		this.subscriptionId = subscriptionId;
 	}
 
 	@JsonIgnore
-	public List<ContextRegistrationResponse> getContextRegistrationResponseList() {
+	public List<ContextRegistrationResponse_OrionCustomization> getContextRegistrationResponseList() {
 		if (contextRegistrationResponse == null) {
-			contextRegistrationResponse = new ArrayList<ContextRegistrationResponse>();
+			contextRegistrationResponse = new ArrayList<ContextRegistrationResponse_OrionCustomization>();
 		}
 		return contextRegistrationResponse;
 	}
 
 	@JsonIgnore
 	public void setContextRegistrationResponseList(
-			List<ContextRegistrationResponse> contextRegistrationResponseList) {
+			List<ContextRegistrationResponse_OrionCustomization> contextRegistrationResponseList) {
 		this.contextRegistrationResponse = contextRegistrationResponseList;
 	}
 
-	public StatusCode getErrorCode() {
-		return errorCode;
+	// public StatusCode getErrorCode() {
+	// return errorCode;
+	// }
+	//
+	// public void setErrorCode(StatusCode errorCode) {
+	// this.errorCode = errorCode;
+	// }
+
+	public NotifyContextAvailabilityRequest toNotifyContextAvailabilityRequest() {
+		NotifyContextAvailabilityRequest notifyContextAvailabilityRequest = new NotifyContextAvailabilityRequest();
+		if (contextRegistrationResponse != null
+				&& !contextRegistrationResponse.isEmpty()) {
+			notifyContextAvailabilityRequest
+					.setContextRegistrationResponseList(new ArrayList<ContextRegistrationResponse>());
+			for (ContextRegistrationResponse_OrionCustomization contextRegistrationResponse_orion : contextRegistrationResponse) {
+				notifyContextAvailabilityRequest
+						.getContextRegistrationResponseList().add(
+								contextRegistrationResponse_orion
+										.toContextRegistrationResponse());
+			}
+		}
+		notifyContextAvailabilityRequest.setErrorCode(new StatusCode(200,
+				ReasonPhrase.OK_200.toString(), ""));
+		return notifyContextAvailabilityRequest;
+
 	}
 
-	public void setErrorCode(StatusCode errorCode) {
-		this.errorCode = errorCode;
+	@Override
+	public NgsiStructure toStandardNgsiStructure() {
+		return toNotifyContextAvailabilityRequest();
 	}
-
 }

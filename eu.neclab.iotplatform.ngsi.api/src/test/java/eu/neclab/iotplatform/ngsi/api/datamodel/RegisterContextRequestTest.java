@@ -32,16 +32,5 @@ public class RegisterContextRequestTest {
 		return registerContextRequest;
 
 	}
-	
-	public static void main(String[] args) {
-		
-		RegisterContextRequest registerContextRequest = new RegisterContextRequest();
-
-		registerContextRequest.setContextRegistrationList(NgsiObjectFactory
-				.generateContextRegistrationListOneValue());
-		
-		System.out.println(registerContextRequest.toJsonString());
-		
-	}
 
 }

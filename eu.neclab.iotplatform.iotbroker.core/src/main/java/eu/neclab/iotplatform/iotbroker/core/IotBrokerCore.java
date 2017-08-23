@@ -679,7 +679,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 			embeddedAgentContextRegistrations = embeddedIoTAgent
 					.extractOwnContextRegistrations(discoveryResponse);
-
+			
 		}
 
 		/*

@@ -146,7 +146,8 @@ public class KnowledgeBase implements KnowledgeBaseInterface {
 
 			} else {
 				logger.info(String
-						.format("Problem when contacting the KnowledgeBase server. StatusCode: %s. ReasonPhrase: %s.",
+						.format("Problem when contacting the KnowledgeBase server for %s. StatusCode: %s. ReasonPhrase: %s.",
+								fullUrl.toString(),
 								fullHttpResponse.getStatusLine()
 										.getStatusCode(), fullHttpResponse
 										.getStatusLine().getReasonPhrase()));
@@ -210,8 +211,15 @@ public class KnowledgeBase implements KnowledgeBaseInterface {
 				&& binding.getAsJsonObject().getAsJsonObject("type")
 						.get("value") != null) {
 			try {
-				subtype = new URI(binding.getAsJsonObject()
-						.getAsJsonObject("type").get("value").getAsString());
+				
+				String value = binding.getAsJsonObject()
+						.getAsJsonObject("type").get("value").getAsString();
+				if (value.contains("#")) {
+					value = value.split("#")[1];
+				}
+
+				subtype = new URI(value);
+				
 			} catch (URISyntaxException e) {
 				logger.info("Bad uri as type");
 			}

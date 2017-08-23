@@ -211,7 +211,9 @@ public class HttpConnectionClient {
 
 				// logger.info("URL" + url + resource);
 
-				logger.info("Starting connection with: " + url + resource);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Starting connection with: " + url + resource);
+				}
 
 				// logger.info("Send the QUERY!");
 
@@ -236,7 +238,9 @@ public class HttpConnectionClient {
 			} else {
 				// connect using JSON message body
 
-				logger.info("Starting connection with: " + url + resource);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Starting connection with: " + url + resource);
+				}
 
 				// get the OutputStram form the connection
 				os = connection.getOutputStream();
@@ -272,8 +276,11 @@ public class HttpConnectionClient {
 				}
 
 			}
-			logger.info("Output Stream to " + url + resource + " : "
-					+ os.toString());
+
+			if (logger.isDebugEnabled()) {
+				logger.debug("Output Stream to " + url + resource + " : "
+						+ os.toString());
+			}
 
 			// send Message
 			os.flush();
@@ -290,7 +297,9 @@ public class HttpConnectionClient {
 
 			is.close();
 
-			logger.info("------------->Response = " + resp);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Response = " + resp);
+			}
 
 			if (connection.getResponseCode() == 415) {
 
@@ -369,36 +378,14 @@ public class HttpConnectionClient {
 		 * "720" } ] } ], "updateAction": "APPEND" }
 		 */
 
-		// List<ContextElement> contextElementsForOrion = new
-		// ArrayList<ContextElement>();
-		// for (ContextElement contextElement : request.getContextElement()) {
-		//
-		// // List<ContextAttribute> contextAttributesForOrion = new
-		// // ArrayList<ContextAttribute>();
-		// // for (ContextAttribute contextAttribute : contextElement
-		// // .getContextAttributeList()) {
-		// //
-		// // ContextAttribute contextAttributeForOrion = new ContextAttribute(
-		// // contextAttribute.getName(), contextAttribute.getType(),
-		// // contextAttribute.getContextValue());
-		// // contextAttributesForOrion.add(contextAttributeForOrion);
-		// //
-		// // }
-		//
-		// ContextElement contextElementForOrion = new ContextElement(
-		// contextElement.getEntityId(), null,
-		// contextElement.getContextAttributeList(), null);
-		// contextElementsForOrion.add(contextElementForOrion);
-		// }
-		// UpdateContextRequest orionUpdateContextRequest = new
-		// UpdateContextRequest(
-		// contextElementsForOrion, request.getUpdateAction());
-
 		UpdateContextRequest_OrionCustomization orionUpdateContextRequest = new UpdateContextRequest_OrionCustomization(
 				request);
-		logger.info("Translating UpdateContextRequest :"
-				+ request.toJsonString() + " to the Orion Customization:"
-				+ orionUpdateContextRequest.toJsonString());
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("Translating UpdateContextRequest :"
+					+ request.toJsonString() + " to the Orion Customization:"
+					+ orionUpdateContextRequest.toJsonString());
+		}
 
 		try {
 
@@ -418,36 +405,12 @@ public class HttpConnectionClient {
 			String string = ((NgsiStructure) orionUpdateContextRequest)
 					.toJsonString();
 
-			// string = string.replaceAll("contextValue", "value");
-
-			// // The first is for deleting if it is followed by a comma (other
-			// // fields next to it)
-			// string = string.replaceAll(".attributeDomainName.:\\[.*?\\],",
-			// "");
-			// // The second is for deleting if it is followed by the bracket
-			// (end
-			// // of the structure)
-			// string = string.replaceAll(".attributeDomainName.:\\[.*?\\]}",
-			// "}");
-			//
-			// // The first is for deleting if it is followed by a comma (other
-			// // fields next to it)
-			// string = string.replaceAll(".domainMetadata.:\\[.*?\\],", "");
-			// // The second is for deleting if it is followed by the bracket
-			// (end
-			// // of the structure)
-			// string = string.replaceAll(".domainMetadata.:\\[.*?\\]}", "}");
-			//
-			// // The first is for deleting if it is followed by a comma (other
-			// // fields next to it)
-			// string = string.replaceAll("\"metadata\"", "\"metadatas\"");
-			//
-			// string = this.levelUpEntityId(string);
-
 			os.write(string.getBytes(Charset.forName("UTF-8")));
 
-			logger.info("Output Stream to " + url + resource + " : "
-					+ os.toString());
+			if (logger.isDebugEnabled()) {
+				logger.debug("Output Stream to " + url + resource + " : "
+						+ os.toString());
+			}
 
 			// send Message
 			os.flush();
@@ -464,7 +427,9 @@ public class HttpConnectionClient {
 
 			is.close();
 
-			logger.info("Response from " + url + resource + " : " + resp);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Response from " + url + resource + " : " + resp);
+			}
 
 			if (connection.getResponseCode() == 415) {
 
@@ -521,41 +486,12 @@ public class HttpConnectionClient {
 
 				connection.disconnect();
 			}
-			logger.info("Connection Closed!");
+			if (logger.isDebugEnabled()) {
+				logger.debug("Connection Closed!");
+			}
 		}
 
 	}
-
-	// public static void main(String[] args) {
-	// // String string =
-	// "{ \"updateAction\": \"UPDATE\", \"contextElements\": [{ \"entityId\": { \"id\": \"test\", \"isPattern\": false }, \"attributes\": [{ \"name\": \"temp\", \"type\": \"temp\", \"contextValue\": \"43\" }] }], \"contextElements\": [{ \"entityId\": { \"id\": \"test\", \"isPattern\": false }, \"attributes\": [{ \"name\": \"temp\", \"type\": \"temp\", \"contextValue\": \"43\" }] }] }";
-	// String string =
-	// "{\"updateAction\":\"UPDATE\",\"contextElements\":[{\"id\":\"urn:x-iot:smartsantander:1:478\",\"isPattern\":false,\"domainMetadata\":[],\"attributes\":[{\"name\":\"temperature\",\"type\":\"temperature\",\"contextValue\":\"63.51\"}]}]}";
-	//
-	// string = string.replaceAll("contextValue", "value");
-	// System.out.println(string);
-	//
-	//
-	// // The first is for deleting if it is followed by a comma (other fields
-	// next to it)
-	// string = string.replaceAll(".attributeDomainName.:\\[.*?\\],","");
-	// // The second is for deleting if it is followed by the bracket (end of
-	// the structure)
-	// string = string.replaceAll(".attributeDomainName.:\\[.*?\\]}","}");
-	//
-	// // The first is for deleting if it is followed by a comma (other fields
-	// next to it)
-	// string = string.replaceAll(".domainMetadata.:\\[.*?\\],","");
-	// // The second is for deleting if it is followed by the bracket (end of
-	// the structure)
-	// string = string.replaceAll(".domainMetadata.:\\[.*?\\]}","}");
-	//
-	// System.out.println(string);
-	//
-	// // System.out.println(HttpConnectionClient.levelUpEntityId(string));
-	//
-	//
-	// }
 
 	private String levelUpEntityId(String requestAsJsonString) {
 

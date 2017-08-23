@@ -44,95 +44,76 @@
 
 package eu.neclab.iotplatform.ngsi.api.datamodel;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
- * Implements ContextElementResponse as defined in OMA NGSI 9/10 approved
- * version 1.0.
+ * Implements Restriction as defined in OMA NGSI 9/10 approved version 1.0.
  */
-@XmlRootElement(name = "contextElementResponse")
+@XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ContextElementResponse_OrionCustomization extends
-		NgsiStructureAlternative {
+public class Restriction_OrionCustomization extends NgsiStructureAlternative {
 
-	@XmlElement(name = "contextElement", required = true)
-	private ContextElement_OrionCustomization contextElement = null;
+	@XmlElement(name = "attributeExpression")
+	private String attributeExpression = null;
 
-	@XmlElement(name = "statusCode", required = true)
-	private StatusCode statusCode = null;
+	@XmlElementWrapper(name = "scope")
+	@XmlElement(name = "operationScope")
+	@JsonProperty("scopes")
+	private List<OperationScope_OrionCustomization> operationScope = null;
 
-	public ContextElementResponse_OrionCustomization() {
-
-	}
-
-	public ContextElementResponse_OrionCustomization(
-			ContextElementResponse contextElementResponse) {
-
-		this.contextElement = new ContextElement_OrionCustomization(
-				contextElementResponse.getContextElement());
-		this.statusCode = contextElementResponse.getStatusCode();
-	}
-
-	public ContextElementResponse_OrionCustomization(
-			ContextElement_OrionCustomization contextElement,
-			StatusCode statusCode) {
-		this.contextElement = contextElement;
-		this.statusCode = statusCode;
+	public Restriction_OrionCustomization() {
 
 	}
 
-	
-	public ContextElement_OrionCustomization getContextElement() {
-		return contextElement;
+	@JsonIgnore
+	public Restriction_OrionCustomization(String attributeExpression,
+			List<OperationScope_OrionCustomization> scope) {
+		this.attributeExpression = attributeExpression;
+		this.operationScope = scope;
+
 	}
 
-	public void setContextElement(
-			ContextElement_OrionCustomization contextElement) {
-		this.contextElement = contextElement;
+	public String getAttributeExpression() {
+		return attributeExpression;
 	}
 
-	public StatusCode getStatusCode() {
-		return statusCode;
+	public void setAttributeExpression(String attributeExpression) {
+		this.attributeExpression = attributeExpression;
 	}
 
-	public void setStatusCode(StatusCode statusCode) {
-		this.statusCode = statusCode;
-	}
-
-	public ContextElementResponse toContextElementResponse() {
-
-		if (contextElement != null) {
-
-			return new ContextElementResponse(
-					contextElement.toContextElement(), statusCode);
-		} else {
-
-			return new ContextElementResponse(null, statusCode);
+	@JsonIgnore
+	public List<OperationScope_OrionCustomization> getOperationScope() {
+		if (operationScope == null) {
+			operationScope = new ArrayList<OperationScope_OrionCustomization>();
 		}
-
+		return operationScope;
 	}
 
-	@Override
-	public boolean sanityCheck() {
-		if (contextElement == null || !contextElement.sanityCheck()
-				|| statusCode == null || !statusCode.sanityCheck()) {
-			return false;
-		}
-		return true;
-
+	@JsonIgnore
+	public void setOperationScope(List<OperationScope_OrionCustomization> scope) {
+		operationScope = scope;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime
+				* result
+				+ (attributeExpression == null ? 0 : attributeExpression
+						.hashCode());
 		result = prime * result
-				+ (contextElement == null ? 0 : contextElement.hashCode());
-		result = prime * result
-				+ (statusCode == null ? 0 : statusCode.hashCode());
+				+ (operationScope == null ? 0 : operationScope.hashCode());
 		return result;
 	}
 
@@ -147,19 +128,19 @@ public class ContextElementResponse_OrionCustomization extends
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		ContextElementResponse_OrionCustomization other = (ContextElementResponse_OrionCustomization) obj;
-		if (contextElement == null) {
-			if (other.contextElement != null) {
+		Restriction_OrionCustomization other = (Restriction_OrionCustomization) obj;
+		if (attributeExpression == null) {
+			if (other.attributeExpression != null) {
 				return false;
 			}
-		} else if (!contextElement.equals(other.contextElement)) {
+		} else if (!attributeExpression.equals(other.attributeExpression)) {
 			return false;
 		}
-		if (statusCode == null) {
-			if (other.statusCode != null) {
+		if (operationScope == null) {
+			if (other.operationScope != null) {
 				return false;
 			}
-		} else if (!statusCode.equals(other.statusCode)) {
+		} else if (!operationScope.equals(other.operationScope)) {
 			return false;
 		}
 		return true;
@@ -167,7 +148,24 @@ public class ContextElementResponse_OrionCustomization extends
 
 	@Override
 	public NgsiStructure toStandardNgsiStructure() {
-		return toContextElementResponse();
+		return toRestriction();
 	}
 
+	public Restriction toRestriction() {
+		Restriction restriction = new Restriction();
+		if (operationScope != null && !operationScope.isEmpty()) {
+			restriction.setOperationScope(new ArrayList<OperationScope>());
+			for (OperationScope_OrionCustomization scope : operationScope) {
+				restriction.getOperationScope().add(scope.toOperationScope());
+			}
+		}
+
+		if (attributeExpression != null) {
+			restriction.setAttributeExpression(attributeExpression);
+		} else {
+			restriction.setAttributeExpression("");
+		}
+
+		return restriction;
+	}
 }

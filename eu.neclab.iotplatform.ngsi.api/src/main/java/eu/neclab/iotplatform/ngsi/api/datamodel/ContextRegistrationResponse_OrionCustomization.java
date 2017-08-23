@@ -44,69 +44,55 @@
 
 package eu.neclab.iotplatform.ngsi.api.datamodel;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
-
 /**
- * Implements NotifyContextAvailabilityRequest
- * as defined in OMA NGSI 9/10 approved version 1.0.
+ * Implements ContextRegistrationResponse as defined in OMA NGSI 9/10 approved
+ * version 1.0.
  */
-@XmlRootElement(name = "notifyContextAvailabilityRequest")
+@XmlRootElement(name = "contextRegistrationResponse")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class NotifyContextAvailabilityRequest extends NgsiStructure {
+public class ContextRegistrationResponse_OrionCustomization extends
+		NgsiStructureAlternative {
 
-	@XmlElement(name = "subscriptionId", required = true)
-	private String subscriptionId = null;
-
-	@XmlElementWrapper(name = "contextRegistrationResponseList")
-	@XmlElement(name = "contextRegistrationResponse", required = true)
-	@JsonProperty("contextRegistrationResponses")
-	private List<ContextRegistrationResponse> contextRegistrationResponse = null;
-
-	@XmlElement(name = "errorCode", required = true)
+	@XmlElement(name = "contextRegistration", required = true)
+	private ContextRegistration_OrionCustomization contextRegistration = null;
+	@XmlElement(name = "errorCode")
 	private StatusCode errorCode = null;
 
-	public NotifyContextAvailabilityRequest() {
+	public ContextRegistrationResponse_OrionCustomization() {
 
 	}
 
-	public NotifyContextAvailabilityRequest(String subscriptionId,
-			List<ContextRegistrationResponse> contextRegistrationResponseList,
+	public ContextRegistrationResponse_OrionCustomization(
+			ContextRegistration_OrionCustomization contextRegistration,
 			StatusCode errorCode) {
-		this.subscriptionId = subscriptionId;
-		this.contextRegistrationResponse = contextRegistrationResponseList;
+
+		this.contextRegistration = contextRegistration;
 		this.errorCode = errorCode;
+
 	}
 
-	public String getSubscriptionId() {
-		return subscriptionId;
+	public ContextRegistrationResponse_OrionCustomization(
+			ContextRegistrationResponse contextRegistrationResponse) {
+
+		this.contextRegistration = new ContextRegistration_OrionCustomization(
+				contextRegistrationResponse.getContextRegistration());
+		this.errorCode = contextRegistrationResponse.getErrorCode();
+
 	}
 
-	public void setSubscriptionId(String subscriptionId) {
-		this.subscriptionId =subscriptionId;
+	public ContextRegistration_OrionCustomization getContextRegistration() {
+		return contextRegistration;
 	}
 
-	@JsonIgnore
-	public List<ContextRegistrationResponse> getContextRegistrationResponseList() {
-		if (contextRegistrationResponse == null) {
-			contextRegistrationResponse = new ArrayList<ContextRegistrationResponse>();
-		}
-		return contextRegistrationResponse;
-	}
+	public void setContextRegistration(
+			ContextRegistration_OrionCustomization contextRegistration) {
+		this.contextRegistration = contextRegistration;
 
-	@JsonIgnore
-	public void setContextRegistrationResponseList(
-			List<ContextRegistrationResponse> contextRegistrationResponseList) {
-		this.contextRegistrationResponse = contextRegistrationResponseList;
 	}
 
 	public StatusCode getErrorCode() {
@@ -115,6 +101,16 @@ public class NotifyContextAvailabilityRequest extends NgsiStructure {
 
 	public void setErrorCode(StatusCode errorCode) {
 		this.errorCode = errorCode;
+
 	}
 
+	@Override
+	public NgsiStructure toStandardNgsiStructure() {
+		return toContextRegistrationResponse();
+	}
+
+	public ContextRegistrationResponse toContextRegistrationResponse() {
+		return new ContextRegistrationResponse(
+				contextRegistration.toContextRegistration(), errorCode);
+	}
 }
