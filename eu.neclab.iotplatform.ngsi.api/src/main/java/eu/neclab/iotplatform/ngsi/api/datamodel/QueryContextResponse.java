@@ -101,12 +101,10 @@ public class QueryContextResponse extends NgsiStructure {
 		contextElementResponse = ContextResponseList;
 	}
 
-	@JsonIgnore
 	public StatusCode getErrorCode() {
 		return errorCode;
 	}
 
-	@JsonIgnore
 	public void setErrorCode(StatusCode errorCode) {
 		this.errorCode = errorCode;
 	}

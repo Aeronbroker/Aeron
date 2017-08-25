@@ -67,7 +67,7 @@ public class UpdateContextAttributeRequest extends NgsiStructure {
 	private URI type;
 
 	@XmlElement(name = "contextValue", required = true)
-	private Object contextValue;
+	private String contextValue;
 
 	@XmlElementWrapper(name = "metadata")
 	@XmlElement(name = "contextMetadata")
@@ -87,7 +87,7 @@ public class UpdateContextAttributeRequest extends NgsiStructure {
 		return contextValue;
 	}
 
-	public void setContextValue(Object contextValue) {
+	public void setContextValue(String contextValue) {
 		this.contextValue = contextValue;
 	}
 

@@ -73,7 +73,6 @@
 		<module>../eu.neclab.iotplatform.iotbroker.embeddediotagent.storage</module>
 		<module>../eu.neclab.iotplatform.iotbroker.embeddediotagent.registry</module>
 		<module>../eu.neclab.iotplatform.knowledgebase</module>
-		
 	</modules>
 
 
