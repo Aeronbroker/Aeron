@@ -780,14 +780,14 @@ public class RestProviderController {
 					&& !response.getContextElementResponse().isEmpty()) {
 
 				// create the new context attribute response
-				ArrayList<ContextAttributeResponse> ar = new ArrayList<ContextAttributeResponse>();
+				ContextAttributeResponse ar = new ContextAttributeResponse();
+				ar.setContextAttribute(new ArrayList<ContextAttribute>());
+
 				for (ContextElementResponse element : response
 						.getContextElementResponse()) {
-					ContextAttributeResponse attrib = new ContextAttributeResponse();
-					attrib.setContextAttribute(element.getContextElement()
+					ar.getContextAttribute().addAll(element.getContextElement()
 							.getContextAttributeList());
-					attrib.setStatusCode(element.getStatusCode());
-					ar.add(attrib);
+					ar.setStatusCode(element.getStatusCode());
 				}
 
 				AppendContextElementResponse respAppend = new AppendContextElementResponse(
