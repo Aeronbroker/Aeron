@@ -85,6 +85,25 @@ public class QueryContextResponse_OrionCustomization extends
 		this.errorCode = errorCode;
 	}
 
+	public QueryContextResponse_OrionCustomization(
+			QueryContextResponse queryContextResponse) {
+		this();
+		if (queryContextResponse != null) {
+			if (queryContextResponse.getListContextElementResponse() != null
+					&& !queryContextResponse.getListContextElementResponse()
+							.isEmpty()) {
+				this.contextElementResponse = new ArrayList<ContextElementResponse_OrionCustomization>();
+				for (ContextElementResponse contextElementResponse : queryContextResponse
+						.getListContextElementResponse()) {
+					this.contextElementResponse
+							.add(new ContextElementResponse_OrionCustomization(
+									contextElementResponse));
+				}
+			}
+			this.errorCode = queryContextResponse.getErrorCode();
+		}
+	}
+
 	public QueryContextResponse toQueryContextResponse() {
 
 		List<ContextElementResponse> contextElementResponseList = null;
@@ -109,19 +128,17 @@ public class QueryContextResponse_OrionCustomization extends
 		}
 		return contextElementResponse;
 	}
-	
+
 	@JsonIgnore
 	public void setContextResponseList(
 			List<ContextElementResponse_OrionCustomization> ContextResponseList) {
 		contextElementResponse = ContextResponseList;
 	}
 
-	@JsonIgnore
 	public StatusCode getErrorCode() {
 		return errorCode;
 	}
 
-	@JsonIgnore
 	public void setErrorCode(StatusCode errorCode) {
 		this.errorCode = errorCode;
 	}

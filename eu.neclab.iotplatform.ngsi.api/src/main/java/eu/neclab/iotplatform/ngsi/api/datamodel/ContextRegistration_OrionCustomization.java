@@ -59,12 +59,13 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
- * Implements ContextRegistration
- * as defined in OMA NGSI 9/10 approved version 1.0.
+ * Implements ContextRegistration as defined in OMA NGSI 9/10 approved version
+ * 1.0.
  */
 @XmlRootElement(name = "contextRegistration")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ContextRegistration extends NgsiStructure {
+public class ContextRegistration_OrionCustomization extends
+		NgsiStructureAlternative {
 
 	@XmlElementWrapper(name = "entityIdList")
 	@XmlElement(name = "entityId")
@@ -78,24 +79,52 @@ public class ContextRegistration extends NgsiStructure {
 
 	@XmlElementWrapper(name = "registrationMetadata")
 	@XmlElement(name = "contextMetadata")
-	@JsonProperty("contextMetadata")
-	private List<ContextMetadata> contextMetadata = null;
+	@JsonProperty("metadatas")
+	private List<ContextMetadata_OrionCustomization> contextMetadata = null;
 
-	@XmlElement(name = "providingApplication",required = true)
-	//@XmlSchemaType(name = "anyURI")
+	@XmlElement(name = "providingApplication", required = true)
+	// @XmlSchemaType(name = "anyURI")
 	private String providingApplication;
 
-	public ContextRegistration() {
+	public ContextRegistration_OrionCustomization() {
 
 	}
 
-	public ContextRegistration(List<EntityId> entityId,
+	public ContextRegistration_OrionCustomization(List<EntityId> entityId,
 			List<ContextRegistrationAttribute> contextRegistrationAttribute,
-			List<ContextMetadata> contextMetadata, URI provideApplication) {
+			List<ContextMetadata_OrionCustomization> contextMetadata,
+			URI provideApplication) {
 		this.entityId = entityId;
 		this.contextRegistrationAttribute = contextRegistrationAttribute;
 		this.contextMetadata = contextMetadata;
 		this.providingApplication = provideApplication.toString();
+
+	}
+
+	public ContextRegistration_OrionCustomization(
+			ContextRegistration contextRegistration) {
+
+		this.entityId = contextRegistration.getListEntityId();
+		this.contextRegistrationAttribute = contextRegistration
+				.getContextRegistrationAttribute();
+		if (contextRegistration.getListContextMetadata() != null
+				&& !contextRegistration.getListContextMetadata().isEmpty()) {
+			this.contextMetadata = new ArrayList<ContextMetadata_OrionCustomization>();
+			for (ContextMetadata contextMetadata : contextRegistration
+					.getListContextMetadata()) {
+				this.contextMetadata
+						.add(new ContextMetadata_OrionCustomization(
+								contextMetadata));
+			}
+		}
+		String providingApp = contextRegistration
+				.getProvidingApplication().toString();
+		if (providingApp.endsWith("/ngsi10")){
+			providingApp = providingApp.replace("/ngsi10", "/v1");
+		} else if (providingApp.endsWith("/ngsi10/")){
+			providingApp = providingApp.replace("/ngsi10/", "/v1");
+		} 
+		this.providingApplication = providingApp;
 
 	}
 
@@ -125,24 +154,25 @@ public class ContextRegistration extends NgsiStructure {
 		this.contextRegistrationAttribute = contextRegistrationAttribute;
 
 	}
-	
+
 	@JsonIgnore
-	public List<ContextMetadata> getListContextMetadata() {
+	public List<ContextMetadata_OrionCustomization> getListContextMetadata() {
 		if (contextMetadata == null) {
-			contextMetadata = new ArrayList<ContextMetadata>();
+			contextMetadata = new ArrayList<ContextMetadata_OrionCustomization>();
 		}
 		return contextMetadata;
 	}
-	
+
 	@JsonIgnore
-	public void setListContextMetadata(List<ContextMetadata> contextMetadata) {
+	public void setListContextMetadata(
+			List<ContextMetadata_OrionCustomization> contextMetadata) {
 		this.contextMetadata = contextMetadata;
 
 	}
 
 	public URI getProvidingApplication() {
 
-		if (providingApplication == null){
+		if (providingApplication == null) {
 			return null;
 		}
 
@@ -161,5 +191,34 @@ public class ContextRegistration extends NgsiStructure {
 	public void setProvidingApplication(URI providingApplication) {
 		this.providingApplication = providingApplication.toString();
 
+	}
+
+	@Override
+	public NgsiStructure toStandardNgsiStructure() {
+		return toContextRegistration();
+	}
+
+	public ContextRegistration toContextRegistration() {
+		ContextRegistration contextRegistration = null;
+		URI uri = null;
+		try {
+			uri = new URI(providingApplication);
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		List<ContextMetadata> contextMetadataList = new ArrayList<ContextMetadata>();
+		if (contextMetadata != null && !contextMetadata.isEmpty()) {
+			for (ContextMetadata_OrionCustomization contextMetadataOrion : contextMetadata) {
+				contextMetadataList.add(contextMetadataOrion
+						.toContextMetadata());
+			}
+		}
+
+		contextRegistration = new ContextRegistration(entityId,
+				contextRegistrationAttribute, contextMetadataList, uri);
+
+		return contextRegistration;
 	}
 }

@@ -61,9 +61,9 @@ docker0   Link encap:Ethernet  HWaddr 02:42:0e:f6:a6:67
 ```
 Then we need to instruct postgreSQL to accept requests from this virtual network:
 ```
-sudo echo -e 'host\tall\tall\t172.17.0.0/24\ttrust' >> /etc/postgresql/9.5/main/pg_hba.conf
-sudo sed -i "s/^port/listen_addresses = '\*'\nport/g" /etc/postgresql/9.5/main/postgresql.conf
-sudo service postgresql restart
+echo -e 'host\tall\tall\t172.17.0.0/24\ttrust' >> /etc/postgresql/9.5/main/pg_hba.conf
+sed -i "s/^port/listen_addresses = '\*'\nport/g" /etc/postgresql/9.5/main/postgresql.conf
+service postgresql restart
 ```
 
 Configure **CouchDB**:

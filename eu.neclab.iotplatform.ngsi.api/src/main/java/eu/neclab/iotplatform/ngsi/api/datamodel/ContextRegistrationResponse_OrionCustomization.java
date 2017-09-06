@@ -42,46 +42,75 @@
  * DAMAGE.
  ******************************************************************************/
 
-package eu.neclab.iotplatform.ngsiemulator.server;
+package eu.neclab.iotplatform.ngsi.api.datamodel;
 
-import java.net.BindException;
-import java.util.Set;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
-import eu.neclab.iotplatform.ngsiemulator.utils.RangesUtil;
+/**
+ * Implements ContextRegistrationResponse as defined in OMA NGSI 9/10 approved
+ * version 1.0.
+ */
+@XmlRootElement(name = "contextRegistrationResponse")
+@XmlAccessorType(XmlAccessType.FIELD)
+public class ContextRegistrationResponse_OrionCustomization extends
+		NgsiStructureAlternative {
 
-public class MainIoTConsumer {
+	@XmlElement(name = "contextRegistration", required = true)
+	private ContextRegistration_OrionCustomization contextRegistration = null;
+	@XmlElement(name = "errorCode")
+	private StatusCode errorCode = null;
 
-	private static String portNumbers = System.getProperty(
-			"eu.neclab.ioplatform.ngsiemulator.iotconsumer.ports", "8001");
+	public ContextRegistrationResponse_OrionCustomization() {
 
-	public static void main(String[] args) {
-		
-		Set<Integer> portSet = RangesUtil.rangesToSet(portNumbers);
+	}
 
-		if (portSet == null) {
-			System.out
-					.println("Wrong eu.neclab.ioplatform.ngsiemulator.iotconsumer.ports property. "
-							+ "Allowed only ranges (e.g. 8001-8005) and single ports (e.g. 8001) separated by comma. "
-							+ "E.g. -Deu.neclab.ioplatform.ngsiemulator.iotconsumer.ports=8001-8005,8021,8025,8030-8040");
-			System.exit(0);
-		}
+	public ContextRegistrationResponse_OrionCustomization(
+			ContextRegistration_OrionCustomization contextRegistration,
+			StatusCode errorCode) {
 
-		for (int portNumber : portSet) {
-			ServerDummy server = new ServerDummy();
+		this.contextRegistration = contextRegistration;
+		this.errorCode = errorCode;
 
-			try {
+	}
 
-				server.startServer(portNumber,
-						"eu.neclab.iotplatform.ngsiemulator.iotconsumer");
+	public ContextRegistrationResponse_OrionCustomization(
+			ContextRegistrationResponse contextRegistrationResponse) {
 
-			} catch (BindException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
+		this.contextRegistration = new ContextRegistration_OrionCustomization(
+				contextRegistrationResponse.getContextRegistration());
+		this.errorCode = contextRegistrationResponse.getErrorCode();
 
-				e.printStackTrace();
-			}
-		}
+	}
+
+	public ContextRegistration_OrionCustomization getContextRegistration() {
+		return contextRegistration;
+	}
+
+	public void setContextRegistration(
+			ContextRegistration_OrionCustomization contextRegistration) {
+		this.contextRegistration = contextRegistration;
+
+	}
+
+	public StatusCode getErrorCode() {
+		return errorCode;
+	}
+
+	public void setErrorCode(StatusCode errorCode) {
+		this.errorCode = errorCode;
+
+	}
+
+	@Override
+	public NgsiStructure toStandardNgsiStructure() {
+		return toContextRegistrationResponse();
+	}
+
+	public ContextRegistrationResponse toContextRegistrationResponse() {
+		return new ContextRegistrationResponse(
+				contextRegistration.toContextRegistration(), errorCode);
 	}
 }

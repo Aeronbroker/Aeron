@@ -54,5 +54,8 @@ The IoT Broker is based on the OSGi framework and is composed of a number of dif
 
 Importantly, the IoT broker core has a dedicated extension point for custom data retrieval and data processing plugins. Please see [here](https://github.com/Aeronbroker/Aeron/blob/master/doc/extensionpoint.md) for details on how to write custom plugins.
 
+NGSI Emulator
+==
+The Aeron project is including also a NGSI emulator which allows to easily emulate NGSI components in order to let them interworking with IoT Broker and the ConfMan. The puropose of this emulator is two-fold: testing the IoT Broker functionalities and example of implementation of NGSI players. See: https://github.com/Aeronbroker/Aeron/tree/master/eu.neclab.iotplatform.ngsiemulator
 
 

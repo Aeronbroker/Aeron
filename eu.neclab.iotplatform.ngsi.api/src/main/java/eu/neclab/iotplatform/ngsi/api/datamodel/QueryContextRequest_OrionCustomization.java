@@ -44,84 +44,86 @@
 
 package eu.neclab.iotplatform.ngsi.api.datamodel;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
-/**
- * Implements ContextElementResponse as defined in OMA NGSI 9/10 approved
- * version 1.0.
- */
-@XmlRootElement(name = "contextElementResponse")
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
+
+@XmlRootElement(name = "queryContextRequest")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ContextElementResponse_OrionCustomization extends
+/**
+ * Implements QueryContextRequest
+ * as defined in OMA NGSI 9/10 approved version 1.0.
+ */
+public class QueryContextRequest_OrionCustomization extends
 		NgsiStructureAlternative {
 
-	@XmlElement(name = "contextElement", required = true)
-	private ContextElement_OrionCustomization contextElement = null;
+	@XmlElementWrapper(name = "entityIdList")
+	@XmlElement(name = "entityId", required = true)
+	@JsonProperty("entities")
+	protected List<EntityId> entityIdList;
 
-	@XmlElement(name = "statusCode", required = true)
-	private StatusCode statusCode = null;
+	@XmlElementWrapper(name = "attributeList")
+	@XmlElement(name = "attribute", required = false)
+	@JsonProperty("attributes")
+	protected List<String> attributeList;
 
-	public ContextElementResponse_OrionCustomization() {
+	@XmlElement(name = "restriction")
+	protected Restriction_OrionCustomization restriction = null;
 
-	}
-
-	public ContextElementResponse_OrionCustomization(
-			ContextElementResponse contextElementResponse) {
-
-		this.contextElement = new ContextElement_OrionCustomization(
-				contextElementResponse.getContextElement());
-		this.statusCode = contextElementResponse.getStatusCode();
-	}
-
-	public ContextElementResponse_OrionCustomization(
-			ContextElement_OrionCustomization contextElement,
-			StatusCode statusCode) {
-		this.contextElement = contextElement;
-		this.statusCode = statusCode;
+	public QueryContextRequest_OrionCustomization() {
 
 	}
 
-	
-	public ContextElement_OrionCustomization getContextElement() {
-		return contextElement;
+	public QueryContextRequest_OrionCustomization(List<EntityId> enityId,
+			List<String> attributeList,
+			Restriction_OrionCustomization restriction) {
+		this.entityIdList = enityId;
+		this.attributeList = attributeList;
+		this.restriction = restriction;
+
 	}
 
-	public void setContextElement(
-			ContextElement_OrionCustomization contextElement) {
-		this.contextElement = contextElement;
-	}
-
-	public StatusCode getStatusCode() {
-		return statusCode;
-	}
-
-	public void setStatusCode(StatusCode statusCode) {
-		this.statusCode = statusCode;
-	}
-
-	public ContextElementResponse toContextElementResponse() {
-
-		if (contextElement != null) {
-
-			return new ContextElementResponse(
-					contextElement.toContextElement(), statusCode);
-		} else {
-
-			return new ContextElementResponse(null, statusCode);
+	@JsonIgnore
+	public List<EntityId> getEntityIdList() {
+		if (entityIdList == null) {
+			entityIdList = new ArrayList<EntityId>();
 		}
+		return entityIdList;
+	}
+
+	@JsonIgnore
+	public void setEntityIdList(List<EntityId> entityId) {
+		this.entityIdList = entityId;
 
 	}
 
-	@Override
-	public boolean sanityCheck() {
-		if (contextElement == null || !contextElement.sanityCheck()
-				|| statusCode == null || !statusCode.sanityCheck()) {
-			return false;
+	@JsonIgnore
+	public List<String> getAttributeList() {
+		if (attributeList == null) {
+			attributeList = new ArrayList<String>();
 		}
-		return true;
+		return attributeList;
+	}
+
+	@JsonIgnore
+	public void setAttributeList(List<String> attributeList) {
+		this.attributeList = attributeList;
+	}
+
+	public Restriction_OrionCustomization getRestriction() {
+		return restriction;
+	}
+
+	public void setRestriction(Restriction_OrionCustomization restriction) {
+		this.restriction = restriction;
 
 	}
 
@@ -130,9 +132,11 @@ public class ContextElementResponse_OrionCustomization extends
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-				+ (contextElement == null ? 0 : contextElement.hashCode());
+				+ (attributeList == null ? 0 : attributeList.hashCode());
 		result = prime * result
-				+ (statusCode == null ? 0 : statusCode.hashCode());
+				+ (entityIdList == null ? 0 : entityIdList.hashCode());
+		result = prime * result
+				+ (restriction == null ? 0 : restriction.hashCode());
 		return result;
 	}
 
@@ -147,19 +151,26 @@ public class ContextElementResponse_OrionCustomization extends
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		ContextElementResponse_OrionCustomization other = (ContextElementResponse_OrionCustomization) obj;
-		if (contextElement == null) {
-			if (other.contextElement != null) {
+		QueryContextRequest_OrionCustomization other = (QueryContextRequest_OrionCustomization) obj;
+		if (attributeList == null) {
+			if (other.attributeList != null) {
 				return false;
 			}
-		} else if (!contextElement.equals(other.contextElement)) {
+		} else if (!attributeList.equals(other.attributeList)) {
 			return false;
 		}
-		if (statusCode == null) {
-			if (other.statusCode != null) {
+		if (entityIdList == null) {
+			if (other.entityIdList != null) {
 				return false;
 			}
-		} else if (!statusCode.equals(other.statusCode)) {
+		} else if (!entityIdList.equals(other.entityIdList)) {
+			return false;
+		}
+		if (restriction == null) {
+			if (other.restriction != null) {
+				return false;
+			}
+		} else if (!restriction.equals(other.restriction)) {
 			return false;
 		}
 		return true;
@@ -167,7 +178,17 @@ public class ContextElementResponse_OrionCustomization extends
 
 	@Override
 	public NgsiStructure toStandardNgsiStructure() {
-		return toContextElementResponse();
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public QueryContextRequest toQueryContextRequest() {
+		if (restriction != null) {
+			return new QueryContextRequest(entityIdList, attributeList,
+					restriction.toRestriction());
+		} else {
+			return new QueryContextRequest(entityIdList, attributeList, null);
+		}
 	}
 
 }

@@ -202,6 +202,11 @@ public class FullHttpRequester {
 						connection.getResponseMessage());
 
 				if (responseCode > 399) {
+					
+					if (logger.isDebugEnabled()) {
+						logger.debug("\nGET to URL : " + url
+								+ "\nResponse Code : " + responseCode);
+					}
 
 					connection.disconnect();
 					return httpResponse;

@@ -168,25 +168,7 @@ public class IoTAgentCore implements IoTAgentInterface {
 					.isolateAttributes(contextElement));
 		}
 
-		// List of Task
-		// List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
-
-		// Iterator<ContextElement> iter = contextElementList.iterator();
-
-		// List<ContextElement> contextElementUnsuccessfullyStored = new
-		// ArrayList<ContextElement>();
-
-		// while (iter.hasNext()) {
-
-		// ContextElement contextElement = iter.next();
-
-		// Create a list of ContextElement where each ContextElement has
-		// exactly one ContextAttribute
-		//
-		// TODO change the isolatedContextElement to a new class called
-		// AtomicContextElement
-		// final List<ContextElement> isolatedContextElementList = this
-		// .isolateAttributes(contextElement);
+		
 
 		final Date localDate = new Date();
 
@@ -205,83 +187,15 @@ public class IoTAgentCore implements IoTAgentInterface {
 					isolatedContextElementList, isolatedContextElementList,
 					localDate);
 		}
-
-		// // Iterate over the isolatedContextElement list in order to create
-		// // the tasks used to store data
-		// for (final ContextElement isolatedContextElement :
-		// isolatedContextElementList) {
-		//
-		// // tasks.add(Executors.callable(new Runnable() {
-		//
-		// // @Override
-		// // public void run() {
-		//
-		// if (logger.isDebugEnabled()) {
-		// logger.debug(String.format(
-		// "Storing historically contextElement %s",
-		// isolatedContextElement.toJsonString()));
-		// }
-		//
-		// iotAgentStorage.storeHistoricalData(isolatedContextElement,
-		// localDate);
-		//
-		// if (logger.isDebugEnabled()) {
-		// logger.debug(String.format("Storing latest contextElement %s",
-		// isolatedContextElement.toJsonString()));
-		// }
-		//
-		// boolean successfullyStored = iotAgentStorage
-		// .storeLatestData(isolatedContextElement);
-		// if (!successfullyStored) {
-		// contextElementUnsuccessfullyStored.add(isolatedContextElement);
-		// }
-		//
-		// // }
-		//
-		// // }));
-		//
-		// }
-
-		// if (BundleUtils.isServiceRegistered(this, subscriptionHandler)) {
-		// // tasks.add(Executors.callable(new Runnable() {
-		//
-		// // @Override
-		// // public void run() {
-		// subscriptionHandler
-		// .checkSubscriptions(isolatedContextElementList);
-		// // }
-		//
-		// // }));
-		// }
-		// }
-
-		// Execute the tasks used to store the data
-		// ExecutorService taskExecutor = Executors.newCachedThreadPool();
-		// try {
-		// taskExecutor.invokeAll(tasks);
-		// } catch (InterruptedException e) {
-		// e.printStackTrace();
-		// }
+		
 
 		/*
 		 * Check registration
 		 */
 		if (BundleUtils.isServiceRegistered(this, registrationHandler)) {
-			// tasks.add(Executors.callable(new Runnable() {
 
-			// @Override
-			// public void run() {
 			registrationHandler.checkRegistration(contextElementList);
 
-			// }
-			//
-			// }));
-			// taskExecutor = Executors.newCachedThreadPool();
-			// try {
-			// taskExecutor.invokeAll(tasks);
-			// } catch (InterruptedException e) {
-			// e.printStackTrace();
-			// }
 		} else if (logger.isDebugEnabled()) {
 			logger.debug("Registry not available");
 		}
@@ -294,16 +208,12 @@ public class IoTAgentCore implements IoTAgentInterface {
 			}
 		}
 
-		// if (contextElementUnsuccessfullyStored.isEmpty()) {
 		if (details.length() == 0) {
 			return new StatusCode(200, ReasonPhrase.OK_200.toString(), "");
 
 		} else {
 
-			// for (ContextElement isolatedContextElement :
-			// contextElementUnsuccessfullyStored) {
-			// details.append(isolatedContextElement.toJsonString() + "; ");
-			// }
+
 			return new StatusCode(472,
 					ReasonPhrase.INVALIDPARAMETER_472.toString(),
 					details.toString());
@@ -446,8 +356,18 @@ public class IoTAgentCore implements IoTAgentInterface {
 		 * If there is no registry, just return null without any alteration of
 		 * the DiscoverContextAvailabilityResponse
 		 */
+		if (logger.isDebugEnabled()) {
+			logger.debug("Checking if registrationHandler is present ");
+		}
 		if (!BundleUtils.isServiceRegistered(this, registrationHandler)) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("RegistrationHandler is not present ");
+			}
 			return null;
+		}
+		
+		if (logger.isDebugEnabled()) {
+			logger.debug("RegistrationHandler is present ");
 		}
 
 		/*

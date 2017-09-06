@@ -351,9 +351,10 @@ public class Registry implements EmbeddedAgentRegistryInterface {
 	}
 
 	public void checkRegistration(List<ContextElement> contextElementList) {
-		
-		if (logger.isDebugEnabled()){
-			logger.debug("CheckingRegistration for contextElementList: "+contextElementList);
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("CheckingRegistration for contextElementList: "
+					+ contextElementList);
 		}
 
 		if (contextElementList != null && !contextElementList.isEmpty()) {
@@ -472,8 +473,9 @@ public class Registry implements EmbeddedAgentRegistryInterface {
 				contextRegistration2);
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("CheckingRegistration "+ (comparison==0) +" for ContextElement: "
-					+ contextElement + " versus Registration" + registration);
+			logger.debug("CheckingRegistration " + (comparison == 0)
+					+ " for ContextElement: " + contextElement
+					+ " versus Registration" + registration);
 		}
 
 		return comparison == 0;
@@ -500,9 +502,10 @@ public class Registry implements EmbeddedAgentRegistryInterface {
 
 			if (lockableRegisterContextRequest.getContextRegistration()
 					.getListEntityId().isEmpty()) {
-				
+
 				if (logger.isDebugEnabled()) {
-					logger.debug("This needs a new registration ContextElement: " + contextElement);
+					logger.debug("This needs a new registration ContextElement: "
+							+ contextElement);
 				}
 
 				List<EntityId> entityIdList = new ArrayList<EntityId>();
@@ -1001,6 +1004,12 @@ public class Registry implements EmbeddedAgentRegistryInterface {
 					}
 				}
 			}
+		}
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("Extracted Context Registration for agent "
+					+ getEmbeddedAgentIdentifier() + ": "
+					+ extractedContextRegistrations);
 		}
 
 		return extractedContextRegistrations;

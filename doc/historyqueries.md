@@ -30,6 +30,8 @@ iotbroker_embeddedagent_couchdbprotocol="http"
 iotbroker_embeddedagent_couchdbhost="127.0.0.1"
 iotbroker_embeddedagent_couchdbport=5984
 iotbroker_embeddedagent_historicallyTrackQueryResponseAndNotifications=false
+iotbroker_embeddedagent_storeOnlyLatestValue=false
+iotbroker_embeddedagent_localagentid="embeddedagent1"
 ```
 
 
@@ -68,9 +70,13 @@ Body:
     }]
 }
 
+```
 Reponse:
+```
 {"errorCode":null,"contextResponses":null}
 ```
+
+Another update with a different timestamp
 
 ```
 HTTP POST to http://10.0.2.199:8060/ngsi10/updateContext
@@ -97,10 +103,14 @@ Body:
         }]
     }]
 }
-
+```
 Response:
+
+```
 {"errorCode":null,"contextResponses":null}
 ```
+
+Another update with a different timestamp and different attribute
 
 ```
 HTTP POST to http://10.0.2.199:8060/ngsi10/updateContext
@@ -127,12 +137,13 @@ Body:
         }]
     }]
 }
-
+```
 Response:
+```
 {"errorCode":null,"contextResponses":null}
 ```
 
-The final update will not contain an explicit timestamp:
+The final update does not contain an explicit timestamp:
 
 ```
 HTTP POST to http://10.0.2.199:8060/ngsi10/updateContext
@@ -154,8 +165,9 @@ Body:
         }]
     }]
 }
-
+```
 Response:
+```
 {"errorCode":null,"contextResponses":null}
 ```
 
@@ -187,8 +199,9 @@ Body:
         }]
     }
 }
-
+```
 Response:
+```
 {
     "contextResponses": [{
         "contextElement": {
@@ -253,8 +266,7 @@ Response:
 }
 ```
 
-The second query asks for  all entities with attributes *temperature* and *noise*, but this time without specifying a time interval. In this case the IoT Broker will respond with 
-the list of the latest values matching the query.
+The second query asks for  all entities with attributes *temperature* and *noise*, but this time without specifying a time interval. In this case the IoT Broker will respond with the list of the latest values matching the query.
 
 ```
 HTTP POST to http://10.0.2.199:8060/ngsi10/queryContext
@@ -270,7 +282,10 @@ Body:
     "attributes": ["temperature","noise"]
 }
 
+```
+
 Response:
+```
 {
     "contextResponses": [{
         "contextElement": {

@@ -552,7 +552,7 @@ public class ConfManWrapper {
 			logger.info("InterruptedException", e);
 		}
 		List<String> lsubAvailID = linkAvSub
-				.getInIDs(notifyContextAvailabilityRequest.getSubscribeId());
+				.getInIDs(notifyContextAvailabilityRequest.getSubscriptionId());
 		if (lsubAvailID.size() != 1) {
 
 			logger.info("SUBSCRIPTION NOT FOUND!!");
@@ -656,7 +656,7 @@ public class ConfManWrapper {
 				 * subscription handler.
 				 */
 				NotifyContextAvailabilityRequest ncaReq = new NotifyContextAvailabilityRequest(
-						notifyContextAvailabilityRequest.getSubscribeId(),
+						notifyContextAvailabilityRequest.getSubscriptionId(),
 						dcaRes.getContextRegistrationResponse(),
 						new StatusCode(200, "Ok", null));
 				if (logger.isDebugEnabled()) {

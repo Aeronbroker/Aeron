@@ -70,6 +70,7 @@ import org.apache.log4j.Logger;
 
 import eu.neclab.iotplatform.iotbroker.commons.ContentType;
 import eu.neclab.iotplatform.iotbroker.commons.FullHttpRequester;
+import eu.neclab.iotplatform.iotbroker.commons.ParseUtils;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
@@ -320,15 +321,18 @@ public class MainIoTProvider {
 									+ portNumber + ".notifyContextRequestFile",
 							notifyContextRequestFile));
 
-			serverNotificationPeriod = parseOrDefault(
-					configurations.get("eu.neclab.ioplatform.ngsiemulator.iotprovider."
-							+ portNumber + ".notificationPeriod"),
-					parseOrDefault(
-							properties
-									.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+			serverNotificationPeriod = ParseUtils
+					.parseIntOrDefault(
+							configurations
+									.get("eu.neclab.ioplatform.ngsiemulator.iotprovider."
 											+ portNumber
 											+ ".notificationPeriod"),
-							notificationPeriod));
+							ParseUtils.parseIntOrDefault(
+									properties
+											.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+													+ portNumber
+													+ ".notificationPeriod"),
+									notificationPeriod));
 
 			serverIncomingContentType = ContentType
 					.fromString(
@@ -373,10 +377,13 @@ public class MainIoTProvider {
 							+ portNumber + ".notifyContextRequestFile",
 					notifyContextRequestFile);
 
-			serverNotificationPeriod = parseOrDefault(
-					properties.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider."
-							+ portNumber + ".notificationPeriod"),
-					notificationPeriod);
+			serverNotificationPeriod = ParseUtils
+					.parseIntOrDefault(
+							properties
+									.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+											+ portNumber
+											+ ".notificationPeriod"),
+							notificationPeriod);
 
 			serverIncomingContentType = ContentType
 					.fromString(
@@ -489,18 +496,20 @@ public class MainIoTProvider {
 		 * Number of EntityIds to select amongst the EntityIds.
 		 */
 		if (configurations != null) {
-			numberOfEntityIdsToSelect = parseOrDefault(
-					configurations
-							.get("eu.neclab.ioplatform.ngsiemulator.iotprovider.numberOfEntityIdsToSelect"),
-					parseOrDefault(
+			numberOfEntityIdsToSelect = ParseUtils
+					.parseIntOrDefault(
+							configurations
+									.get("eu.neclab.ioplatform.ngsiemulator.iotprovider.numberOfEntityIdsToSelect"),
+							ParseUtils.parseIntOrDefault(
+									properties
+											.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.numberOfEntityIdsToSelect"),
+									ServerConfiguration.DEFAULT_NUMBEROFENTITYIDSTOSELECT));
+		} else {
+			numberOfEntityIdsToSelect = ParseUtils
+					.parseIntOrDefault(
 							properties
 									.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.numberOfEntityIdsToSelect"),
-							ServerConfiguration.DEFAULT_NUMBEROFENTITYIDSTOSELECT));
-		} else {
-			numberOfEntityIdsToSelect = parseOrDefault(
-					properties
-							.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.numberOfEntityIdsToSelect"),
-					ServerConfiguration.DEFAULT_NUMBEROFENTITYIDSTOSELECT);
+							ServerConfiguration.DEFAULT_NUMBEROFENTITYIDSTOSELECT);
 		}
 
 		/*
@@ -525,18 +534,20 @@ public class MainIoTProvider {
 		 * Number of Attributes to select amongst the Attributes.
 		 */
 		if (configurations != null) {
-			numberOfAttributesToSelect = parseOrDefault(
-					configurations
-							.get("eu.neclab.ioplatform.ngsiemulator.iotprovider.numberOfAttributesToSelect"),
-					parseOrDefault(
+			numberOfAttributesToSelect = ParseUtils
+					.parseIntOrDefault(
+							configurations
+									.get("eu.neclab.ioplatform.ngsiemulator.iotprovider.numberOfAttributesToSelect"),
+							ParseUtils.parseIntOrDefault(
+									properties
+											.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.numberOfAttributesToSelect"),
+									ServerConfiguration.DEFAULT_NUMBEROFATTRIBUTESTOSELECT));
+		} else {
+			numberOfAttributesToSelect = ParseUtils
+					.parseIntOrDefault(
 							properties
 									.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.numberOfAttributesToSelect"),
-							ServerConfiguration.DEFAULT_NUMBEROFATTRIBUTESTOSELECT));
-		} else {
-			numberOfAttributesToSelect = parseOrDefault(
-					properties
-							.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.numberOfAttributesToSelect"),
-					ServerConfiguration.DEFAULT_NUMBEROFATTRIBUTESTOSELECT);
+							ServerConfiguration.DEFAULT_NUMBEROFATTRIBUTESTOSELECT);
 		}
 
 		/*
@@ -580,18 +591,20 @@ public class MainIoTProvider {
 		 * notificationPeriod
 		 */
 		if (configurations != null) {
-			notificationPeriod = parseOrDefault(
-					configurations
-							.get("eu.neclab.ioplatform.ngsiemulator.iotprovider.notificationPeriod"),
-					parseOrDefault(
+			notificationPeriod = ParseUtils
+					.parseIntOrDefault(
+							configurations
+									.get("eu.neclab.ioplatform.ngsiemulator.iotprovider.notificationPeriod"),
+							ParseUtils.parseIntOrDefault(
+									properties
+											.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.notificationPeriod"),
+									ServerConfiguration.DEFAULT_NOTIFICATIONPERIOD));
+		} else {
+			notificationPeriod = ParseUtils
+					.parseIntOrDefault(
 							properties
 									.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.notificationPeriod"),
-							ServerConfiguration.DEFAULT_NOTIFICATIONPERIOD));
-		} else {
-			notificationPeriod = parseOrDefault(
-					properties
-							.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.notificationPeriod"),
-					ServerConfiguration.DEFAULT_NOTIFICATIONPERIOD);
+							ServerConfiguration.DEFAULT_NOTIFICATIONPERIOD);
 		}
 
 		/*
@@ -683,21 +696,6 @@ public class MainIoTProvider {
 									.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider.incomingContentType"),
 							ServerConfiguration.DEFAULT_INCOMINGCONTENTTYPE);
 		}
-
-	}
-
-	private static Integer parseOrDefault(String string, Integer defaultValue) {
-
-		Integer integer;
-
-		try {
-			integer = Integer.parseInt(string);
-
-		} catch (NumberFormatException e) {
-			integer = defaultValue;
-		}
-
-		return integer;
 
 	}
 

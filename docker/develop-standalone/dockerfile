@@ -12,7 +12,7 @@ RUN service postgresql start && su -c "psql -d postgres -c \"ALTER USER postgres
 RUN apt-get install couchdb -y
 RUN mkdir /var/run/couchdb
 RUN chown -R couchdb:couchdb /var/run/couchdb
-RUN sed -i "s/^bind_address/;bind_address/g" /etc/couchdb/local.ini; sed -i "s/\[httpd\]/\[httpd\]\nbind_address = 0\.0\.0\.0/g" /etc/couchdb/local.ini; cat  /etc/couchdb/local.ini
+RUN sed -i "s/^bind_address/;bind_address/g" /etc/couchdb/local.ini; sed -i "s/\[httpd\]/\[httpd\]\nbind_address = 0\.0\.0\.0/g" /etc/couchdb/local.ini
 
 #install Maven, Java and GIT
 RUN apt-get update; apt-get install maven default-jdk git -y

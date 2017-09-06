@@ -45,7 +45,7 @@ mvn clean install
 
 Afterwards you can proceed to generate the executable jar file:
 ```
-cd neclab.iotplatform.ngsiemulator/
+cd eu.neclab.iotplatform.ngsiemulator/
 mvn clean install
 ```
 
@@ -180,7 +180,7 @@ java -cp ngsiemulator-$VERSION-jar-with-dependencies.jar \
 -Deu.neclab.ioplatform.ngsiemulator.iotapplication.ports=8201 \
 eu.neclab.iotplatform.ngsiemulator.server.MainIoTApplication
 ```
-This will open a server listening on port 8201 and exposing the *ngsi10/notifyContext resource*.
+This will open a server listening on port 8201 and exposing the *ngsi10/notify* and *ngsi9/notify* resource.
 
 It is possible to open more than one server with only one command (one thread each server), by expressing more than one port. It is allowed ranges (e.g. 8001-8005) and single ports (e.g. 8001) separated by comma. E.g.:
 

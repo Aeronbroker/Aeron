@@ -260,7 +260,7 @@ public abstract class NgsiStructure {
 	/**
 	 * Parse the json string and perform a sanityCheck of the NGSI structure (if
 	 * sanityCheck set to true) and it tries to de-serialize the json object
-	 * with other NGSI json serialization known)
+	 * with other NGSI json serialization known
 	 * 
 	 * @param json
 	 * @param clazz
@@ -371,48 +371,5 @@ public abstract class NgsiStructure {
 	 */
 	public boolean sanityCheck() {
 		return true;
-	}
-
-	public static void main(String[] args) {
-		String json = "{  \"contextResponses\" : [    {      \"contextElement\" : {        \"type\" : \"thermometer\",        \"isPattern\" : \"false\",        \"id\" : \"thermo1\",        \"attributes\" : [          {            \"name\" : \"temperature\",            \"type\" : \"float\",            \"value\" : \"300.00\"          }        ]      },      \"statusCode\" : {        \"code\" : \"200\",        \"reasonPhrase\" : \"OK\"      }    }  ]}";
-
-		Object object = NgsiStructure.parseStringToJson(json,
-				QueryContextResponse.class, true, true);
-
-		if (object instanceof QueryContextResponse) {
-			System.out.println("funge: " + object);
-		}
-
-		// QueryContextResponse queryContextResponse = (QueryContextResponse)
-		// NgsiStructure
-		// .parseStringToJson(json, QueryContextResponse.class);
-		//
-		// for (ContextElementResponse contextElementResponse :
-		// queryContextResponse
-		// .getListContextElementResponse()) {
-		// if (contextElementResponse.getContextElement() != null
-		// && (contextElementResponse.getContextElement()
-		// .getEntityId() == null
-		// || contextElementResponse.getContextElement()
-		// .getEntityId().getId() == null || contextElementResponse
-		// .getContextElement().getEntityId().getId()
-		// .isEmpty())) {
-		//
-		// System.out.println("Not a valid queryContextRequest");
-		//
-		// break;
-		// }
-		//
-		// }
-		//
-		// QueryContextResponse_OrionCustomization
-		// queryContextResponse_OrionCustomizatio =
-		// (QueryContextResponse_OrionCustomization) NgsiStructure
-		// .parseStringToJson(json,
-		// QueryContextResponse_OrionCustomization.class);
-		// queryContextResponse = queryContextResponse_OrionCustomizatio
-		// .toQueryContextResponse();
-		//
-		// System.out.println(queryContextResponse);
 	}
 }

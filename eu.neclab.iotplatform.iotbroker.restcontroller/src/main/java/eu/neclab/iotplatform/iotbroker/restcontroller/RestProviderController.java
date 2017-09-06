@@ -92,7 +92,9 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityRespons
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
+import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest_OrionCustomization;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
+import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse_OrionCustomization;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ReasonPhrase;
 import eu.neclab.iotplatform.ngsi.api.datamodel.StatusCode;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextRequest;
@@ -356,6 +358,31 @@ public class RestProviderController {
 
 		return status;
 
+	}
+
+	/**
+	 * Executes the standard NGSI 10 QueryContext method.
+	 * 
+	 * @param requester
+	 *            Represents the request message body and header.
+	 * @param request
+	 *            The request body.
+	 * @return The response body.
+	 * 
+	 */
+	@RequestMapping(value = "/v1/queryContext", method = RequestMethod.POST, consumes = { CONTENT_TYPE_JSON }, produces = { CONTENT_TYPE_JSON })
+	public ResponseEntity<QueryContextResponse_OrionCustomization> queryContextOrion(
+			HttpServletRequest requester,
+			@RequestBody QueryContextRequest_OrionCustomization request) {
+
+		logger.info("\n\n <--- NGSI-10 has received request for Context query resource (v1.orion version) ---> \n");
+
+		ResponseEntity<QueryContextResponse> response = queryContext(requester,
+				request.toQueryContextRequest());
+		
+		return new ResponseEntity<QueryContextResponse_OrionCustomization>(
+				new QueryContextResponse_OrionCustomization(response.getBody()),
+				response.getStatusCode());
 	}
 
 	/**

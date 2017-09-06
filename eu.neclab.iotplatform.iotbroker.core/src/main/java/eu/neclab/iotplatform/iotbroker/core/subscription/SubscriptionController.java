@@ -1692,14 +1692,14 @@ public class SubscriptionController {
 
 		availabilitySub.updateAvalabilitySubscription(
 				notifyContextAvailabilityRequest, association,
-				notifyContextAvailabilityRequest.getSubscribeId());
+				notifyContextAvailabilityRequest.getSubscriptionId());
 
 		/*
 		 * Now the id of the incoming subscription corresponding to this
 		 * availability notification is retrieved from storage.
 		 */
 		List<String> inIDs = linkAvailabilitySubscription
-				.getInIDs(notifyContextAvailabilityRequest.getSubscribeId());
+				.getInIDs(notifyContextAvailabilityRequest.getSubscriptionId());
 
 		logger.info("List Incoming Subscription Id ------------------>" + inIDs);
 

@@ -44,130 +44,123 @@
 
 package eu.neclab.iotplatform.ngsi.api.datamodel;
 
+import java.net.URI;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 
 /**
- * Implements ContextElementResponse as defined in OMA NGSI 9/10 approved
- * version 1.0.
+ * Implements ContextMetadata as defined in OMA NGSI 9/10 approved version 1.0.
  */
-@XmlRootElement(name = "contextElementResponse")
+@XmlRootElement(name = "contextMetadata")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ContextElementResponse_OrionCustomization extends
+public class ContextMetadata_OrionCustomization extends
 		NgsiStructureAlternative {
 
-	@XmlElement(name = "contextElement", required = true)
-	private ContextElement_OrionCustomization contextElement = null;
+	@XmlElement(name = "name")
+	private String name = null;
 
-	@XmlElement(name = "statusCode", required = true)
-	private StatusCode statusCode = null;
+	@XmlSchemaType(name = "anyURI")
+	private URI type = null;
 
-	public ContextElementResponse_OrionCustomization() {
+	@XmlElement(name = "value")
+	private String value = null;
 
-	}
-
-	public ContextElementResponse_OrionCustomization(
-			ContextElementResponse contextElementResponse) {
-
-		this.contextElement = new ContextElement_OrionCustomization(
-				contextElementResponse.getContextElement());
-		this.statusCode = contextElementResponse.getStatusCode();
-	}
-
-	public ContextElementResponse_OrionCustomization(
-			ContextElement_OrionCustomization contextElement,
-			StatusCode statusCode) {
-		this.contextElement = contextElement;
-		this.statusCode = statusCode;
+	public ContextMetadata_OrionCustomization() {
 
 	}
 
-	
-	public ContextElement_OrionCustomization getContextElement() {
-		return contextElement;
+	public ContextMetadata_OrionCustomization(String name, URI type,
+			String value) {
+
+		this.name = name;
+		this.type = type;
+		this.value = value;
 	}
 
-	public void setContextElement(
-			ContextElement_OrionCustomization contextElement) {
-		this.contextElement = contextElement;
-	}
-
-	public StatusCode getStatusCode() {
-		return statusCode;
-	}
-
-	public void setStatusCode(StatusCode statusCode) {
-		this.statusCode = statusCode;
-	}
-
-	public ContextElementResponse toContextElementResponse() {
-
-		if (contextElement != null) {
-
-			return new ContextElementResponse(
-					contextElement.toContextElement(), statusCode);
+	public ContextMetadata_OrionCustomization(ContextMetadata contextMetadata) {
+		
+		this.name = contextMetadata.getName();
+		this.type = contextMetadata.getType();
+		if (contextMetadata.getValue() instanceof String){
+			this.value = (String) contextMetadata.getValue();
 		} else {
-
-			return new ContextElementResponse(null, statusCode);
+			String string = contextMetadata.getValue().toString();
+			string = string.replace("\n", "").replace("\r", "");
+			string = string.replaceAll("<\\?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"\\?>", "");
+			string = string.replaceAll("</.*?>", "|");
+			string = string.replaceAll("<", "");
+			string = string.replaceAll(">", "|");
+			this.value = string;
 		}
 
+	}
+
+	public ContextMetadata_OrionCustomization(MetadataTypes metadataType,
+			URI type, String value) {
+
+		this.name = metadataType.toString();
+		this.type = type;
+		this.value = value;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public URI getType() {
+		return type;
+	}
+
+	public void setType(URI type) {
+		this.type = type;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
 	}
 
 	@Override
-	public boolean sanityCheck() {
-		if (contextElement == null || !contextElement.sanityCheck()
-				|| statusCode == null || !statusCode.sanityCheck()) {
+	public boolean equals(Object obj) {
+
+		if (this == obj) {
+			return true;
+		}
+
+		if (obj == null || getClass() != obj.getClass()) {
 			return false;
 		}
-		return true;
+
+		ContextMetadata_OrionCustomization other = (ContextMetadata_OrionCustomization) obj;
+
+		return name.equals(other.name) && type.equals(other.type)
+				&& value.toString().equals(other.value.toString());
 
 	}
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ (contextElement == null ? 0 : contextElement.hashCode());
-		result = prime * result
-				+ (statusCode == null ? 0 : statusCode.hashCode());
-		return result;
+		return this.toJsonString().hashCode();
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		ContextElementResponse_OrionCustomization other = (ContextElementResponse_OrionCustomization) obj;
-		if (contextElement == null) {
-			if (other.contextElement != null) {
-				return false;
-			}
-		} else if (!contextElement.equals(other.contextElement)) {
-			return false;
-		}
-		if (statusCode == null) {
-			if (other.statusCode != null) {
-				return false;
-			}
-		} else if (!statusCode.equals(other.statusCode)) {
-			return false;
-		}
-		return true;
+	public ContextMetadata toContextMetadata() {
+		return new ContextMetadata(name, type, value);
 	}
 
 	@Override
 	public NgsiStructure toStandardNgsiStructure() {
-		return toContextElementResponse();
+		return toContextMetadata();
 	}
 
 }
