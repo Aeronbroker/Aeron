@@ -51,12 +51,9 @@ import eu.neclab.iotplatform.ngsiemulator.utils.RangesUtil;
 
 public class MainIoTApplication {
 
-//	private static int portNumber = Integer.parseInt(System.getProperty("eu.neclab.ioplatform.ngsiemulator.iotapplication.ports", "8201"));
 	private static String portNumbers = System.getProperty(
 			"eu.neclab.ioplatform.ngsiemulator.iotapplication.ports", "8201");
 	
-//	private static int portNumber = 8004;
-
 	public static void main(String[] args) {
 		
 		Set<Integer> portSet = RangesUtil.rangesToSet(portNumbers);

@@ -47,6 +47,7 @@ package eu.neclab.iotplatform.ngsiemulator.utils;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import eu.neclab.iotplatform.iotbroker.commons.ContentType;
 
@@ -75,6 +76,9 @@ public class ServerConfiguration {
 	private ContentType incomingContentType;
 	private ContentType outgoingContentType;
 	private int notificationPeriod;
+	private Set<String> entityNames;
+	private Set<String> attributeNames;
+	private boolean doRegistration;
 
 	public int getNotificationPeriod() {
 		return notificationPeriod;
@@ -132,6 +136,30 @@ public class ServerConfiguration {
 		this.notifyContextRequestFile = notifyContextRequestFile;
 	}
 
+	public Set<String> getEntityNames() {
+		return entityNames;
+	}
+
+	public void setEntityNames(Set<String> entityNames) {
+		this.entityNames = entityNames;
+	}
+
+	public Set<String> getAttributeNames() {
+		return attributeNames;
+	}
+
+	public void setAttributeNames(Set<String> attributeNames) {
+		this.attributeNames = attributeNames;
+	}
+
+	public boolean isDoRegistration() {
+		return doRegistration;
+	}
+
+	public void setDoRegistration(boolean doRegistration) {
+		this.doRegistration = doRegistration;
+	}
+
 	public Map<String, String> toMap() {
 		Map<String, String> map = new HashMap<String, String>();
 		for (Field field : this.getClass().getDeclaredFields()) {
@@ -139,6 +167,27 @@ public class ServerConfiguration {
 				Object object = field.get(this);
 				if (object != null) {
 					map.put(field.getName(), object.toString());
+				}
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
+		return map;
+
+	}
+	
+	public Map<String, Object> toMap1() {
+		Map<String, Object> map = new HashMap<String, Object>();
+		for (Field field : this.getClass().getDeclaredFields()) {
+			try {
+				Object object = field.get(this);
+				if (object != null) {
+					map.put(field.getName(), object);
 				}
 			} catch (IllegalArgumentException e) {
 				// TODO Auto-generated catch block

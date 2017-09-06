@@ -95,6 +95,9 @@ public class ServerDummy {
 		for (Entry<String, String> entry : configurations.toMap().entrySet()) {
 			sh.setInitParameter(entry.getKey(), entry.getValue());
 		}
+		
+//		sh.setInitParameters(configurations.toMap1());
+
 
 		Server server = new Server(port);
 

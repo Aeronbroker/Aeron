@@ -49,9 +49,12 @@ import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -110,28 +113,6 @@ public class IoTProvider {
 			.fromString(
 					System.getProperty("eu.neclab.iotplaform.ngsiemulator.iotprovider.defaultOutgoingContentType"),
 					ContentType.XML);
-
-	// private final String defaultMode = System.getProperty(
-	// "eu.neclab.iotplaform.ngsiemulator.iotprovider.defaultMode", "random");
-
-	// private final String queryContextResponseFile = System
-	// .getProperty(
-	// "eu.neclab.iotplaform.ngsiemulator.iotprovider.defaultQueryContextResponseFile",
-	// "queryContextResponse.xml");
-
-	// private static String urlIoTAgent =
-	// "http://127.0.0.1:8004/ngsi10/notify";
-
-	// private static String path = System.getProperty(
-	// "eu.neclab.ioplatform.ngsiemulator.iotprovider.path", "xml/");
-
-	// private static String notificationFile = "notification.xml";
-	// private static String queryContextResponseFile =
-	// "queryContextResponse.xml";
-	// private static String notifyContextRequestFile =
-	// "notifyContextRequest.xml";
-	// private static String subscribeContextResponseFile =
-	// "subscribeContextResponse.xml";
 
 	@GET
 	@Path("/test")
@@ -223,8 +204,14 @@ public class IoTProvider {
 		Mode mode;
 		Object contextMode = config.getProperty("mode");
 		if (contextMode != null && contextMode instanceof String) {
-			mode = (Mode) Mode.fromString((String) contextMode,
-					ServerConfiguration.DEFAULT_MODE);
+			if (contextMode instanceof String) {
+				mode = (Mode) Mode.fromString((String) contextMode,
+						ServerConfiguration.DEFAULT_MODE);
+			} else if (contextMode instanceof Mode) {
+				mode = (Mode) contextMode;
+			} else {
+				mode = ServerConfiguration.DEFAULT_MODE;
+			}
 		} else {
 			mode = ServerConfiguration.DEFAULT_MODE;
 		}
@@ -247,7 +234,27 @@ public class IoTProvider {
 				logger.debug("NGSI-10 Query received: " + body);
 			}
 
-			response = createQueryContextResponse(queryContextRequest);
+			if (ParseUtils.parseBooleanOrDefault(
+					config.getProperty("doRegistration"), false)) {
+
+				Set<String> entityIds = ParseUtils.parseSetFromString(config
+						.getProperty("entityNames"));
+
+				Set<String> attributeNames = ParseUtils
+						.parseSetFromString(config
+								.getProperty("attributeNames"));
+
+				if (!entityIds.isEmpty() && !attributeNames.isEmpty()) {
+
+					response = createQueryContextResponse(queryContextRequest,
+							entityIds, attributeNames);
+
+				} else {
+					response = createQueryContextResponse(queryContextRequest);
+				}
+			} else {
+				response = createQueryContextResponse(queryContextRequest);
+			}
 
 			if (outgoingContentType == ContentType.XML) {
 				return response.toString();
@@ -264,74 +271,27 @@ public class IoTProvider {
 			}
 		}
 
-		// QueryContextResponse response = new QueryContextResponse();
-		//
-		// String file = null;
-		// try {
-		// file = path + "/" + queryContextResponseFile;
-		//
-		// InputStream is = new FileInputStream(file);
-		//
-		// JAXBContext context;
-		// context = JAXBContext.newInstance(QueryContextResponse.class);
-		//
-		// // Create the marshaller, this is the nifty little thing that
-		// // will actually transform the object into XML
-		// Unmarshaller unmarshaller = context.createUnmarshaller();
-		// response = (QueryContextResponse) unmarshaller.unmarshal(is);
-		//
-		// if (logger.isDebugEnabled()) {
-		// logger.debug("NGSI-10 Query response: " + response);
-		// }
-		//
-		// } catch (JAXBException e) {
-		// logger.error("JAXB ERROR!", e);
-		// } catch (FileNotFoundException e) {
-		// logger.error("FILE NOT FOUND!: " + file);
-		// }
-		//
-		// if (outgoingContentType == ContentType.JSON) {
-		// return response.toJsonString();
-		// } else {
-		// return response.toString();
-		// }
 	}
 
 	private QueryContextResponse createQueryContextResponse(
 			QueryContextRequest queryRequest) {
 
-		// Random rand = new Random();
-
-		// List<ContextElementResponse> contextElementResponseList = new
-		// ArrayList<ContextElementResponse>();
-		//
-		// StatusCode okCode = new StatusCode(Code.OK_200.getCode(),
-		// ReasonPhrase.OK_200.toString(), "");
-		//
-		// for (EntityId entityId : queryRequest.getEntityIdList()) {
-		//
-		// List<ContextAttribute> contextAttributeList = new
-		// ArrayList<ContextAttribute>();
-		//
-		// for (String attributeName : queryRequest.getAttributeList()) {
-		//
-		// contextAttributeList.add(new ContextAttribute(attributeName,
-		// null, "" + rand.nextInt()));
-		//
-		// }
-		// ContextElementResponse contextElementResponse = new
-		// ContextElementResponse();
-		//
-		// contextElementResponse.setContextElement(new ContextElement(
-		// entityId, null, contextAttributeList, null));
-		// contextElementResponse.setStatusCode(okCode);
-		//
-		// contextElementResponseList.add(contextElementResponse);
-		// }
-
 		QueryContextResponse response = new QueryContextResponse();
 		response.setContextResponseList(createContextElementResponses(
 				queryRequest.getEntityIdList(), queryRequest.getAttributeList()));
+
+		return response;
+
+	}
+
+	private QueryContextResponse createQueryContextResponse(
+			QueryContextRequest queryRequest, Set<String> entityIds,
+			Set<String> attributeNames) {
+
+		QueryContextResponse response = new QueryContextResponse();
+		response.setContextResponseList(createContextElementResponses(
+				queryRequest.getEntityIdList(),
+				queryRequest.getAttributeList(), entityIds, attributeNames));
 
 		return response;
 
@@ -381,6 +341,23 @@ public class IoTProvider {
 
 	}
 
+	private NotifyContextRequest createNotifyContext(
+			SubscribeContextRequest subscribeContext, String subscriptionID,
+			String originator, Set<String> allowedEntityIds,
+			Set<String> allowedAttributeNames) {
+
+		NotifyContextRequest notification = new NotifyContextRequest();
+		notification.setContextResponseList(createContextElementResponses(
+				subscribeContext.getEntityIdList(),
+				subscribeContext.getAttributeList(), allowedEntityIds,
+				allowedAttributeNames));
+		notification.setSubscriptionId(subscriptionID);
+		notification.setOriginator(originator);
+
+		return notification;
+
+	}
+
 	private List<ContextElementResponse> createContextElementResponses(
 			List<EntityId> entityIdList, List<String> attributeList) {
 
@@ -414,6 +391,79 @@ public class IoTProvider {
 
 	}
 
+	private List<ContextElementResponse> createContextElementResponses(
+			List<EntityId> entityIdList, List<String> attributeList,
+			Set<String> allowedEntityIds, Set<String> allowedAttributeNames) {
+
+		Random rand = new Random();
+
+		List<ContextElementResponse> contextElementResponseList = new ArrayList<ContextElementResponse>();
+
+		StatusCode okCode = new StatusCode(Code.OK_200.getCode(),
+				ReasonPhrase.OK_200.toString(), "");
+
+		Set<String> entityIdsToUpdate = new HashSet<String>();
+
+		for (EntityId entityId : entityIdList) {
+
+			if (entityId.getIsPattern()) {
+				if (".*".equals(entityId.getId())) {
+					entityIdsToUpdate.addAll(allowedEntityIds);
+				} else {
+					for (String id : allowedEntityIds) {
+						if (id.matches(entityId.getId())) {
+							entityIdsToUpdate.add(id);
+						}
+					}
+				}
+			} else {
+				if (allowedEntityIds.contains(entityId.getId())) {
+					allowedEntityIds.add(entityId.getId());
+				}
+			}
+
+		}
+
+		for (String id : entityIdsToUpdate) {
+
+			List<ContextAttribute> contextAttributeList = new ArrayList<ContextAttribute>();
+
+			if (attributeList == null || attributeList.isEmpty()) {
+				for (String attributeName : allowedAttributeNames) {
+
+					contextAttributeList.add(new ContextAttribute(
+							attributeName, null, "" + rand.nextInt()));
+
+				}
+			} else {
+				for (String attributeName : attributeList) {
+
+					if (allowedAttributeNames.contains(attributeName)) {
+
+						contextAttributeList.add(new ContextAttribute(
+								attributeName, null, "" + rand.nextInt()));
+					}
+
+				}
+			}
+
+			if (contextAttributeList.isEmpty()) {
+				continue;
+			}
+			ContextElementResponse contextElementResponse = new ContextElementResponse();
+
+			contextElementResponse.setContextElement(new ContextElement(
+					new EntityId(id, null, false), null, contextAttributeList,
+					null));
+			contextElementResponse.setStatusCode(okCode);
+
+			contextElementResponseList.add(contextElementResponse);
+		}
+
+		return contextElementResponseList;
+
+	}
+
 	private String readFile(String file) {
 
 		String response = null;
@@ -432,25 +482,6 @@ public class IoTProvider {
 
 		return response;
 
-		// try {
-		//
-		// // file = notifyContextRequestFile;
-		// InputStream is = new FileInputStream(file);
-		//
-		// JAXBContext context;
-		// context = JAXBContext.newInstance(QueryContextResponse.class);
-		//
-		// // Create the marshaller, this is the nifty little thing that
-		// // will actually transform the object into XML
-		// Unmarshaller unmarshaller = context.createUnmarshaller();
-		// response = (QueryContextResponse) unmarshaller.unmarshal(is);
-		//
-		// } catch (JAXBException e) {
-		// logger.error("JAXB ERROR!", e);
-		// } catch (FileNotFoundException e) {
-		// logger.error("FILE NOT FOUND!: " + file);
-		// }
-
 	}
 
 	@POST
@@ -458,7 +489,7 @@ public class IoTProvider {
 	@Consumes("application/json,application/xml")
 	@Produces("application/json,application/xml")
 	public String subscriptionResponse(@Context HttpHeaders headers,
-			@Context ResourceConfig config, String body,
+			final @Context ResourceConfig config, String body,
 			@Context HttpServletRequest req) {
 
 		final String originator = getClientIpAddr(req);
@@ -475,8 +506,14 @@ public class IoTProvider {
 		Mode mode;
 		Object contextMode = config.getProperty("mode");
 		if (contextMode != null && contextMode instanceof String) {
-			mode = (Mode) Mode.fromString((String) contextMode,
-					ServerConfiguration.DEFAULT_MODE);
+			if (contextMode instanceof String) {
+				mode = (Mode) Mode.fromString((String) contextMode,
+						ServerConfiguration.DEFAULT_MODE);
+			} else if (contextMode instanceof Mode) {
+				mode = (Mode) contextMode;
+			} else {
+				mode = ServerConfiguration.DEFAULT_MODE;
+			}
 		} else {
 			mode = ServerConfiguration.DEFAULT_MODE;
 		}
@@ -509,6 +546,12 @@ public class IoTProvider {
 			period = ParseUtils.parseIntOrDefault(contextPeriod,
 					ServerConfiguration.DEFAULT_NOTIFICATIONPERIOD);
 
+			final Set<String> entityIds = ParseUtils.parseSetFromString(config
+					.getProperty("entityNames"));
+
+			final Set<String> attributeNames = ParseUtils
+					.parseSetFromString(config.getProperty("attributeNames"));
+
 			// Create the timer for the notification thread
 			ScheduledExecutorService executorService = Executors
 					.newScheduledThreadPool(1);
@@ -517,8 +560,28 @@ public class IoTProvider {
 				@Override
 				public void run() {
 
-					NotifyContextRequest notification = createNotifyContext(
-							subscribeContextRequest, id, originator);
+					NotifyContextRequest notification;
+
+					if (ParseUtils.parseBooleanOrDefault(
+							config.getProperty("doRegistration"), false)) {
+
+						if (!entityIds.isEmpty() && !attributeNames.isEmpty()) {
+
+							notification = createNotifyContext(
+									subscribeContextRequest, id, originator,
+									entityIds, attributeNames);
+
+						} else {
+							notification = createNotifyContext(
+									subscribeContextRequest, id, originator);
+						}
+					} else {
+						notification = createNotifyContext(
+								subscribeContextRequest, id, originator);
+					}
+
+					// NotifyContextRequest notification = createNotifyContext(
+					// subscribeContextRequest, id, originator);
 
 					ContentType contentType;
 					String data;

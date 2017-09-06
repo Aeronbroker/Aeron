@@ -179,11 +179,13 @@ public class MainIoTProvider {
 				e.printStackTrace();
 			}
 
-			if (doRegistration) {
+			if (serverConfiguration.isDoRegistration()) {
 				if (serverConfiguration.getMode() == Mode.RANDOM) {
 
-					Set<String> entityNames = chooseEntityNames();
-					Set<String> attributes = chooseAttributes();
+					Set<String> entityNames = serverConfiguration
+							.getEntityNames();
+					Set<String> attributes = serverConfiguration
+							.getAttributeNames();
 
 					RegisterContextRequest registration = createRegisterContextRequest(
 							entityNames, attributes, portNumber);
@@ -292,6 +294,12 @@ public class MainIoTProvider {
 		int serverNotificationPeriod;
 		ContentType serverOutgoingContentType;
 		ContentType serverIncomingContentType;
+		boolean serverDoRegistration;
+
+		String serverEntityIdsRange;
+		String serverAttributesRange;
+		int serverNumberOfEntityIdsToSelect;
+		int serverNumberOfAttributesToSelect;
 
 		if (configurations != null) {
 			serverMode = Mode
@@ -360,6 +368,61 @@ public class MainIoTProvider {
 													+ ".outgoingContentType"),
 									outgoingContentType));
 
+			serverEntityIdsRange = configurations.getOrDefault(
+					"eu.neclab.ioplatform.ngsiemulator.iotprovider."
+							+ portNumber + ".rangesOfEntityIds",
+					properties.getProperty(
+							"eu.neclab.ioplatform.ngsiemulator.iotprovider."
+									+ portNumber + ".rangesOfEntityIds",
+							rangesOfEntityIds));
+
+			serverNumberOfEntityIdsToSelect = ParseUtils
+					.parseIntOrDefault(
+							configurations
+									.get("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+											+ portNumber
+											+ ".numberOfEntityIdsToSelect"),
+							ParseUtils.parseIntOrDefault(
+									properties
+											.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+													+ portNumber
+													+ ".numberOfEntityIdsToSelect"),
+									numberOfEntityIdsToSelect));
+
+			serverAttributesRange = configurations.getOrDefault(
+					"eu.neclab.ioplatform.ngsiemulator.iotprovider."
+							+ portNumber + ".rangesOfAttributes", properties
+							.getProperty(
+									"eu.neclab.ioplatform.ngsiemulator.iotprovider."
+											+ portNumber
+											+ ".rangesOfAttributes",
+									rangesOfAttributes));
+
+			serverNumberOfAttributesToSelect = ParseUtils
+					.parseIntOrDefault(
+							configurations
+									.get("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+											+ portNumber
+											+ ".numberOfAttributesToSelect"),
+							ParseUtils.parseIntOrDefault(
+									properties
+											.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+													+ portNumber
+													+ ".numberOfAttributesToSelect"),
+									numberOfAttributesToSelect));
+
+			serverDoRegistration = Boolean
+					.parseBoolean(configurations
+							.getOrDefault(
+									"eu.neclab.ioplatform.ngsiemulator.iotprovider."
+											+ portNumber + ".doRegistration",
+									properties
+											.getProperty(
+													"eu.neclab.ioplatform.ngsiemulator.iotprovider."
+															+ portNumber
+															+ ".doRegistration",
+													ServerConfiguration.DEFAULT_DOREGISTRATION)));
+
 		} else {
 			serverMode = Mode
 					.fromString(
@@ -400,6 +463,37 @@ public class MainIoTProvider {
 											+ portNumber
 											+ ".outgoingContentType"),
 							ServerConfiguration.DEFAULT_OUTGOINGCONTENTTYPE);
+
+			serverEntityIdsRange = properties.getProperty(
+					"eu.neclab.ioplatform.ngsiemulator.iotprovider."
+							+ portNumber + ".rangesOfEntityIds",
+					rangesOfEntityIds);
+
+			serverNumberOfEntityIdsToSelect = ParseUtils
+					.parseIntOrDefault(
+							properties
+									.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+											+ portNumber
+											+ ".numberOfEntityIdsToSelect"),
+							numberOfEntityIdsToSelect);
+
+			serverAttributesRange = properties.getProperty(
+					"eu.neclab.ioplatform.ngsiemulator.iotprovider."
+							+ portNumber + ".rangesOfAttributes",
+					rangesOfAttributes);
+
+			serverNumberOfAttributesToSelect = ParseUtils
+					.parseIntOrDefault(
+							properties
+									.getProperty("eu.neclab.ioplatform.ngsiemulator.iotprovider."
+											+ portNumber
+											+ ".numberOfAttributesToSelect"),
+							numberOfAttributesToSelect);
+
+			serverDoRegistration = Boolean.parseBoolean(properties.getProperty(
+					"eu.neclab.ioplatform.ngsiemulator.iotprovider."
+							+ portNumber + ".doRegistration",
+					ServerConfiguration.DEFAULT_DOREGISTRATION));
 		}
 
 		ServerConfiguration serverConfigurations = new ServerConfiguration();
@@ -412,6 +506,16 @@ public class MainIoTProvider {
 		serverConfigurations.setNotificationPeriod(serverNotificationPeriod);
 		serverConfigurations.setIncomingContentType(serverIncomingContentType);
 		serverConfigurations.setOutgoingContentType(serverOutgoingContentType);
+
+		if (serverDoRegistration && serverMode == Mode.RANDOM) {
+			Set<String> entityNames = chooseEntityNames(serverEntityIdsRange,
+					serverNumberOfEntityIdsToSelect);
+			Set<String> attributeNames = chooseAttributes(
+					serverAttributesRange, serverNumberOfAttributesToSelect);
+			serverConfigurations.setAttributeNames(attributeNames);
+			serverConfigurations.setEntityNames(entityNames);
+			serverConfigurations.setDoRegistration(serverDoRegistration);
+		}
 
 		return serverConfigurations;
 	}
@@ -700,6 +804,11 @@ public class MainIoTProvider {
 	}
 
 	private static Set<String> chooseEntityNames() {
+		return chooseEntityNames(rangesOfEntityIds, numberOfEntityIdsToSelect);
+	}
+
+	private static Set<String> chooseEntityNames(String rangesOfEntityIds,
+			int numberOfEntityIdsToSelect) {
 
 		// This Set will contain the chosen entityIds Set
 		Set<String> entityIdSet = new HashSet<String>();
@@ -730,6 +839,11 @@ public class MainIoTProvider {
 	}
 
 	private static Set<String> chooseAttributes() {
+		return chooseAttributes(rangesOfAttributes, numberOfAttributesToSelect);
+	}
+
+	private static Set<String> chooseAttributes(String rangesOfAttributes,
+			int numberOfAttributesToSelect) {
 
 		// This Set will contain the chosen attributes Set
 		Set<String> attributeSet = new HashSet<String>();

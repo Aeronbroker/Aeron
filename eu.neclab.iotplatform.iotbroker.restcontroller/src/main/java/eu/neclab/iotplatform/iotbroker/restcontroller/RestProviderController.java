@@ -379,7 +379,7 @@ public class RestProviderController {
 
 		ResponseEntity<QueryContextResponse> response = queryContext(requester,
 				request.toQueryContextRequest());
-		
+
 		return new ResponseEntity<QueryContextResponse_OrionCustomization>(
 				new QueryContextResponse_OrionCustomization(response.getBody()),
 				response.getStatusCode());
@@ -426,6 +426,26 @@ public class RestProviderController {
 
 		}
 
+	}
+
+	/**
+	 * Executes the standard NGSI 10 SubscribeContext method.
+	 * 
+	 * @param request
+	 *            The request body.
+	 * @return The response body.
+	 */
+
+	@RequestMapping(value = "/v1/subscribeContext", method = RequestMethod.POST, consumes = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
+	public ResponseEntity<SubscribeContextResponse> subscribeContextOrion(
+			HttpServletRequest requester,
+			@RequestBody SubscribeContextRequest request) {
+
+		logger.info(" <--- NGSI-10 has received request for Subscribe Context Orion resource ---> \n");
+
+		return subscribeContext(requester, request);
 	}
 
 	/**
@@ -812,8 +832,9 @@ public class RestProviderController {
 
 				for (ContextElementResponse element : response
 						.getContextElementResponse()) {
-					ar.getContextAttribute().addAll(element.getContextElement()
-							.getContextAttributeList());
+					ar.getContextAttribute().addAll(
+							element.getContextElement()
+									.getContextAttributeList());
 					ar.setStatusCode(element.getStatusCode());
 				}
 
