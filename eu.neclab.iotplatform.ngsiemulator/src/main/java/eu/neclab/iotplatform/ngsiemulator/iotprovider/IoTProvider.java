@@ -418,7 +418,7 @@ public class IoTProvider {
 				}
 			} else {
 				if (allowedEntityIds.contains(entityId.getId())) {
-					allowedEntityIds.add(entityId.getId());
+					entityIdsToUpdate.add(entityId.getId());
 				}
 			}
 
@@ -485,6 +485,16 @@ public class IoTProvider {
 	}
 
 	@POST
+	@Path("/v1/contextSubscriptions")
+	@Consumes("application/json,application/xml")
+	@Produces("application/json,application/xml")
+	public String subscriptionResponseOrion(@Context HttpHeaders headers,
+			final @Context ResourceConfig config, String body,
+			@Context HttpServletRequest req) {
+		return subscriptionResponse(headers, config, body, req);
+	}
+
+	@POST
 	@Path("/subscribeContext")
 	@Consumes("application/json,application/xml")
 	@Produces("application/json,application/xml")
@@ -517,6 +527,8 @@ public class IoTProvider {
 		} else {
 			mode = ServerConfiguration.DEFAULT_MODE;
 		}
+
+		logger.info("Received a NGSI-10 SubscribeContext: " + body);
 
 		SubscribeContextResponse response;
 		if (mode == Mode.RANDOM) {
