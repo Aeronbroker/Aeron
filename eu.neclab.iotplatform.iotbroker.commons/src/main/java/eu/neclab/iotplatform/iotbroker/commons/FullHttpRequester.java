@@ -105,7 +105,7 @@ public class FullHttpRequester {
 			}
 
 			if (logger.isDebugEnabled()) {
-				logger.info("\nSending 'POST' request to URL : " + url + "\n"
+				logger.debug("\nSending 'POST' request to URL : " + url + "\n"
 						+ "POST parameters : " + data + "\n");
 			}
 
@@ -427,10 +427,11 @@ public class FullHttpRequester {
 
 				httpResponse.setBody(response.toString());
 
-				// logger.info("Response Code : " + responseCode);
-				logger.info("\nPUT to URL : " + url + "\nResponse Code : "
-						+ responseCode + "\n" + "Response : "
-						+ response.toString());
+				if (logger.isDebugEnabled()){
+					logger.debug("\nPUT to URL : " + url + "\nResponse Code : "
+							+ responseCode + "\n" + "Response : "
+							+ response.toString());
+				}
 
 				con.disconnect();
 				return httpResponse;
@@ -465,11 +466,12 @@ public class FullHttpRequester {
 				con.setRequestProperty("X-Auth-Token", xAuthToken);
 			}
 
-			logger.info("\nSending 'DELETE' request to URL : " + url);
 
 			int responseCode = con.getResponseCode();
-			logger.info("\nDELETE to URL : " + url + "\nResponse Code : "
-					+ responseCode + "\n");
+			if (logger.isDebugEnabled()){
+				logger.debug("\nDELETE to URL : " + url + "\nResponse Code : "
+						+ responseCode + "\n");
+			}
 
 			httpResponse = new FullHttpResponse(HttpVersion.HTTP_1_0,
 					con.getResponseCode(), con.getResponseMessage());

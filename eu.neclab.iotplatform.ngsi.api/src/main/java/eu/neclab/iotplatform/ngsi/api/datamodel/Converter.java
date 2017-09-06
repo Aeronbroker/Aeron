@@ -57,8 +57,7 @@ public class Converter {
 	/**
 	 * Creates a message for UPDATING(!) a number of context attribute values.
 	 */
-	public static UpdateContextRequest toUpdateContextRequest(
-			UpdateContextElementRequest request, String entityId) {
+	public static UpdateContextRequest toUpdateContextRequest(UpdateContextElementRequest request, String entityId) {
 
 		// create a single Context Element from the ID
 		ContextElement ce = createContextElement(entityId);
@@ -87,13 +86,12 @@ public class Converter {
 
 	}
 
-	public static UpdateContextRequest toUpdateContextRequest(
-			UpdateContextAttributeRequest request, String entityID,
+	public static UpdateContextRequest toUpdateContextRequest(UpdateContextAttributeRequest request, String entityID,
 			String attributeName, UpdateActionType uat) {
 
 		// create an attribute
-		ContextAttribute attr = new ContextAttribute(attributeName,
-				request.getType(), request.getContextValue().toString());
+		ContextAttribute attr = new ContextAttribute(attributeName, request.getType(),
+				request.getContextValue().toString());
 
 		// create a single Context Element from the ID
 		ContextElement ce = createContextElement(entityID);
@@ -120,13 +118,11 @@ public class Converter {
 
 	}
 
-	public static UpdateContextRequest toUpdateContextRequest(
-			UpdateContextAttributeRequest request, String entityID,
+	public static UpdateContextRequest toUpdateContextRequest(UpdateContextAttributeRequest request, String entityID,
 			String attributeName, String valueID, UpdateActionType uat) {
 
 		// create UpdateContextRequest like without ID
-		UpdateContextRequest response = toUpdateContextRequest(request,
-				entityID, attributeName, uat);
+		UpdateContextRequest response = toUpdateContextRequest(request, entityID, attributeName, uat);
 
 		// but now create Metadata
 		ContextMetadata md = new ContextMetadata();
@@ -160,8 +156,7 @@ public class Converter {
 	/**
 	 * Creates a message for APPENDING(!) a number of context attribute values.
 	 */
-	public static UpdateContextRequest toUpdateContextRequest(
-			AppendContextElementRequest request, String entityId) {
+	public static UpdateContextRequest toUpdateContextRequest(AppendContextElementRequest request, String entityId) {
 
 		// create a single Context Element from the ID
 		ContextElement ce = createContextElement(entityId);
@@ -215,8 +210,7 @@ public class Converter {
 	/**
 	 * Creates a message for APPENDING(!) a context attribute
 	 */
-	public static UpdateContextRequest toUpdateContextRequest(
-			AppendContextAttributeRequest request, String entityId,
+	public static UpdateContextRequest toUpdateContextRequest(AppendContextAttributeRequest request, String entityId,
 			String attributeName) {
 
 		// create an contextAttribute
@@ -266,8 +260,7 @@ public class Converter {
 	 * This function assumes that the parameter only relates to a single context
 	 * element.
 	 */
-	public static UpdateContextElementResponse toUpdateContextElementResponse(
-			UpdateContextResponse resp) {
+	public static UpdateContextElementResponse toUpdateContextElementResponse(UpdateContextResponse resp) {
 
 		UpdateContextElementResponse response = new UpdateContextElementResponse();
 
@@ -276,8 +269,7 @@ public class Converter {
 
 		// create the new context attribute response
 		ContextAttributeResponse ar = new ContextAttributeResponse();
-		ar.setContextAttribute(resp.getContextElementResponse().get(0)
-				.getContextElement().getContextAttributeList());
+		ar.setContextAttribute(resp.getContextElementResponse().get(0).getContextElement().getContextAttributeList());
 
 		// add the list to the response
 		response.setContextAttributeResponse(ar);
@@ -297,17 +289,17 @@ public class Converter {
 		// take error code into the response
 		response.setErrorCode(resp.getErrorCode());
 
+		ContextAttributeResponse cae = new ContextAttributeResponse(new ArrayList<ContextAttribute>(),null);
+
 		// create the new context attribute response
-		ArrayList<ContextAttributeResponse> ar = new ArrayList<ContextAttributeResponse>();
 		for (ContextElementResponse element : resp.getContextElementResponse()) {
 			ContextAttributeResponse attrib = new ContextAttributeResponse();
-			attrib.setContextAttribute(element.getContextElement()
-					.getContextAttributeList());
-			ar.add(attrib);
-		}
+			cae.getContextAttribute().addAll(element.getContextElement().getContextAttributeList());
+			cae.setStatusCode(element.getStatusCode());
+		}		
 
 		// add the list to the response
-		response.setContextAttributeResponseList(ar);
+		response.setContextAttributeResponse(cae);
 
 		return response;
 	}
@@ -322,8 +314,7 @@ public class Converter {
 	/**
 	 * Creates a query to an entity/attribute combination
 	 */
-	public static QueryContextRequest toQueryContextRequest(String id,
-			String attr) {
+	public static QueryContextRequest toQueryContextRequest(String id, String attr) {
 
 		// create entity Id
 		EntityId eid = new EntityId();
@@ -350,8 +341,8 @@ public class Converter {
 	/**
 	 * Operation used only in the case of attributeDomains
 	 */
-	public static QueryContextRequest toQueryContextRequest_typeBased(
-			URI typeName, String attr, String scopeType, String scopeValue) {
+	public static QueryContextRequest toQueryContextRequest_typeBased(URI typeName, String attr, String scopeType,
+			String scopeValue) {
 
 		// create entity Id
 		EntityId eid = new EntityId();
@@ -372,10 +363,8 @@ public class Converter {
 
 			// create restriction with scope inside
 			req.setRestriction(new Restriction());
-			req.getRestriction().setOperationScope(
-					new ArrayList<OperationScope>()); // must be initalized!
-			req.getRestriction().getOperationScope()
-					.add(new OperationScope(scopeType, scopeValue));
+			req.getRestriction().setOperationScope(new ArrayList<OperationScope>()); // must be initalized!
+			req.getRestriction().getOperationScope().add(new OperationScope(scopeType, scopeValue));
 
 		}
 
@@ -385,11 +374,10 @@ public class Converter {
 
 	/**
 	 * Creates a query to an entity/attribute combination of a certain value id.
-	 * However, this the value id has to be translated into a metadata
-	 * restriction, which is not yet clear how to do.
+	 * However, this the value id has to be translated into a metadata restriction,
+	 * which is not yet clear how to do.
 	 */
-	public static QueryContextRequest toQueryContextRequest(String id,
-			String attr, String valueID) {
+	public static QueryContextRequest toQueryContextRequest(String id, String attr, String valueID) {
 
 		// first create request without value id
 		QueryContextRequest req = toQueryContextRequest(id, attr);
@@ -400,8 +388,7 @@ public class Converter {
 		return req;
 	}
 
-	public static ContextAttributeResponse toContextAttributeResponse(
-			QueryContextResponse regResp) {
+	public static ContextAttributeResponse toContextAttributeResponse(QueryContextResponse regResp) {
 		ContextAttributeResponse resp = new ContextAttributeResponse();
 		if (regResp.getErrorCode() != null) {
 
@@ -409,18 +396,15 @@ public class Converter {
 			return resp;
 
 		}
-		if (regResp.getListContextElementResponse() == null
-				|| regResp.getListContextElementResponse().isEmpty()) {
-			resp.setStatusCode(new StatusCode(404, "CONTEXT ELEMENT NOT FOUND",
-					null));
+		if (regResp.getListContextElementResponse() == null || regResp.getListContextElementResponse().isEmpty()) {
+			resp.setStatusCode(new StatusCode(404, "CONTEXT ELEMENT NOT FOUND", null));
 			return resp;
 		}
 		// create response
 
-		resp.setContextAttribute(regResp.getListContextElementResponse().get(0)
-				.getContextElement().getContextAttributeList());
-		resp.setStatusCode(regResp.getListContextElementResponse().get(0)
-				.getStatusCode());
+		resp.setContextAttribute(
+				regResp.getListContextElementResponse().get(0).getContextElement().getContextAttributeList());
+		resp.setStatusCode(regResp.getListContextElementResponse().get(0).getStatusCode());
 
 		return resp;
 
