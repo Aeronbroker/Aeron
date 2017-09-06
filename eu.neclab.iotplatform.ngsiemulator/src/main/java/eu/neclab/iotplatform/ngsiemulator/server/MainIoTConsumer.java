@@ -51,9 +51,6 @@ import eu.neclab.iotplatform.ngsiemulator.utils.RangesUtil;
 
 public class MainIoTConsumer {
 
-	// private static int portNumber =
-	// Integer.parseInt(System.getProperty("eu.neclab.ioplatform.ngsiemulator.iotconsumer.port",
-	// "8001"));
 	private static String portNumbers = System.getProperty(
 			"eu.neclab.ioplatform.ngsiemulator.iotconsumer.ports", "8001");
 

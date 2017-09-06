@@ -74,6 +74,7 @@ import com.sun.jersey.api.core.ResourceConfig;
 import eu.neclab.iotplatform.iotbroker.commons.ContentType;
 import eu.neclab.iotplatform.iotbroker.commons.FullHttpRequester;
 import eu.neclab.iotplatform.iotbroker.commons.FullHttpResponse;
+import eu.neclab.iotplatform.iotbroker.commons.ParseUtils;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextElement;
@@ -505,12 +506,8 @@ public class IoTProvider {
 			// Get the period of notification from configurations
 			Integer period;
 			Object contextPeriod = config.getProperty("notificationPeriod");
-			if (contextPeriod != null && contextPeriod instanceof String) {
-				period = (Integer) Integer.parseInt((String) contextPeriod,
-						ServerConfiguration.DEFAULT_NOTIFICATIONPERIOD);
-			} else {
-				period = ServerConfiguration.DEFAULT_NOTIFICATIONPERIOD;
-			}
+			period = ParseUtils.parseIntOrDefault(contextPeriod,
+					ServerConfiguration.DEFAULT_NOTIFICATIONPERIOD);
 
 			// Create the timer for the notification thread
 			ScheduledExecutorService executorService = Executors

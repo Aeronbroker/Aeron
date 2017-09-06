@@ -45,7 +45,7 @@ mvn clean install
 
 Afterwards you can proceed to generate the executable jar file:
 ```
-cd neclab.iotplatform.ngsiemulator/
+cd eu.neclab.iotplatform.ngsiemulator/
 mvn clean install
 ```
 
