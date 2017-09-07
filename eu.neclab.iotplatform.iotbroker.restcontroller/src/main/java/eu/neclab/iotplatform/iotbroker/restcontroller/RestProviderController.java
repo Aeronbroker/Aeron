@@ -379,7 +379,7 @@ public class RestProviderController {
 
 		ResponseEntity<QueryContextResponse> response = queryContext(requester,
 				request.toQueryContextRequest());
-
+		
 		return new ResponseEntity<QueryContextResponse_OrionCustomization>(
 				new QueryContextResponse_OrionCustomization(response.getBody()),
 				response.getStatusCode());
@@ -832,9 +832,8 @@ public class RestProviderController {
 
 				for (ContextElementResponse element : response
 						.getContextElementResponse()) {
-					ar.getContextAttribute().addAll(
-							element.getContextElement()
-									.getContextAttributeList());
+					ar.getContextAttribute().addAll(element.getContextElement()
+							.getContextAttributeList());
 					ar.setStatusCode(element.getStatusCode());
 				}
 

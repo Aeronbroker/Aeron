@@ -75,7 +75,7 @@ public class ContextRegistration_OrionCustomization extends
 	@XmlElementWrapper(name = "contextRegistrationAttributeList")
 	@XmlElement(name = "contextRegistrationAttribute")
 	@JsonProperty("attributes")
-	private List<ContextRegistrationAttribute> contextRegistrationAttribute = null;
+	private List<ContextRegistrationAttribute_OrionCustomization> contextRegistrationAttribute = null;
 
 	@XmlElementWrapper(name = "registrationMetadata")
 	@XmlElement(name = "contextMetadata")
@@ -90,8 +90,9 @@ public class ContextRegistration_OrionCustomization extends
 
 	}
 
-	public ContextRegistration_OrionCustomization(List<EntityId> entityId,
-			List<ContextRegistrationAttribute> contextRegistrationAttribute,
+	public ContextRegistration_OrionCustomization(
+			List<EntityId> entityId,
+			List<ContextRegistrationAttribute_OrionCustomization> contextRegistrationAttribute,
 			List<ContextMetadata_OrionCustomization> contextMetadata,
 			URI provideApplication) {
 		this.entityId = entityId;
@@ -105,8 +106,17 @@ public class ContextRegistration_OrionCustomization extends
 			ContextRegistration contextRegistration) {
 
 		this.entityId = contextRegistration.getListEntityId();
-		this.contextRegistrationAttribute = contextRegistration
-				.getContextRegistrationAttribute();
+		if (contextRegistration.getContextRegistrationAttribute() != null
+				&& !contextRegistration.getContextRegistrationAttribute()
+						.isEmpty()) {
+			this.contextRegistrationAttribute = new ArrayList<ContextRegistrationAttribute_OrionCustomization>();
+			for (ContextRegistrationAttribute contextRegAtt : contextRegistration
+					.getContextRegistrationAttribute()) {
+				this.contextRegistrationAttribute
+						.add(new ContextRegistrationAttribute_OrionCustomization(
+								contextRegAtt));
+			}
+		}
 		if (contextRegistration.getListContextMetadata() != null
 				&& !contextRegistration.getListContextMetadata().isEmpty()) {
 			this.contextMetadata = new ArrayList<ContextMetadata_OrionCustomization>();
@@ -117,13 +127,13 @@ public class ContextRegistration_OrionCustomization extends
 								contextMetadata));
 			}
 		}
-		String providingApp = contextRegistration
-				.getProvidingApplication().toString();
-		if (providingApp.endsWith("/ngsi10")){
+		String providingApp = contextRegistration.getProvidingApplication()
+				.toString();
+		if (providingApp.endsWith("/ngsi10")) {
 			providingApp = providingApp.replace("/ngsi10", "/v1");
-		} else if (providingApp.endsWith("/ngsi10/")){
+		} else if (providingApp.endsWith("/ngsi10/")) {
 			providingApp = providingApp.replace("/ngsi10/", "/v1");
-		} 
+		}
 		this.providingApplication = providingApp;
 
 	}
@@ -141,16 +151,16 @@ public class ContextRegistration_OrionCustomization extends
 	}
 
 	@JsonIgnore
-	public List<ContextRegistrationAttribute> getContextRegistrationAttribute() {
+	public List<ContextRegistrationAttribute_OrionCustomization> getContextRegistrationAttribute() {
 		if (contextRegistrationAttribute == null) {
-			contextRegistrationAttribute = new ArrayList<ContextRegistrationAttribute>();
+			contextRegistrationAttribute = new ArrayList<ContextRegistrationAttribute_OrionCustomization>();
 		}
 		return contextRegistrationAttribute;
 	}
 
 	@JsonIgnore
 	public void setListContextRegistrationAttribute(
-			List<ContextRegistrationAttribute> contextRegistrationAttribute) {
+			List<ContextRegistrationAttribute_OrionCustomization> contextRegistrationAttribute) {
 		this.contextRegistrationAttribute = contextRegistrationAttribute;
 
 	}
@@ -216,8 +226,17 @@ public class ContextRegistration_OrionCustomization extends
 			}
 		}
 
+		List<ContextRegistrationAttribute> contextRegistrationAttributeList = new ArrayList<ContextRegistrationAttribute>();
+		if (contextRegistrationAttribute != null
+				&& !contextRegistrationAttribute.isEmpty()) {
+			for (ContextRegistrationAttribute_OrionCustomization contextRegisAtt : contextRegistrationAttribute) {
+				contextRegistrationAttributeList.add(contextRegisAtt
+						.toContextRegistrationAttribute());
+			}
+		}
+
 		contextRegistration = new ContextRegistration(entityId,
-				contextRegistrationAttribute, contextMetadataList, uri);
+				contextRegistrationAttributeList, contextMetadataList, uri);
 
 		return contextRegistration;
 	}
