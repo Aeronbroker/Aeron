@@ -541,7 +541,7 @@ public class IoTProvider {
 	}
 
 	@POST
-	@Path("/v1/contextSubscriptions")
+	@Path("/v1/subscribeContext")
 	@Consumes("application/json,application/xml")
 	@Produces("application/json,application/xml")
 	public String subscriptionResponseOrion(@Context HttpHeaders headers,
@@ -551,7 +551,7 @@ public class IoTProvider {
 	}
 
 	@POST
-	@Path("/subscribeContext")
+	@Path("/ngsi10/subscribeContext")
 	@Consumes("application/json,application/xml")
 	@Produces("application/json,application/xml")
 	public String subscriptionResponse(@Context HttpHeaders headers,
