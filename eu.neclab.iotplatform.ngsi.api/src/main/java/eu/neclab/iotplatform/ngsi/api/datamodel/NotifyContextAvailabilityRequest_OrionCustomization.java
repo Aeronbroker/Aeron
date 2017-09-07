@@ -44,7 +44,11 @@
 
 package eu.neclab.iotplatform.ngsi.api.datamodel;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -65,8 +69,12 @@ import org.codehaus.jackson.annotate.JsonProperty;
 public class NotifyContextAvailabilityRequest_OrionCustomization extends
 		NgsiStructureAlternative {
 
-	@XmlElement(name = "subscriptionId", required = true)
+	@JsonIgnore
 	private String subscriptionId = null;
+
+	@XmlElement(name = "subscriptionId", required = true)
+	@JsonProperty("subscriptionId")
+	private String subscriptionIdOrionFormat = null;
 
 	@XmlElementWrapper(name = "contextRegistrationResponseList")
 	@XmlElement(name = "contextRegistrationResponse", required = true)
@@ -90,7 +98,8 @@ public class NotifyContextAvailabilityRequest_OrionCustomization extends
 
 	public NotifyContextAvailabilityRequest_OrionCustomization(
 			NotifyContextAvailabilityRequest notifyContextAvailabilityRequest) {
-		this.subscriptionId = notifyContextAvailabilityRequest.getSubscriptionId();
+		this.subscriptionId = notifyContextAvailabilityRequest
+				.getSubscriptionId();
 		if (notifyContextAvailabilityRequest
 				.getContextRegistrationResponseList() != null
 				&& !notifyContextAvailabilityRequest
@@ -106,14 +115,47 @@ public class NotifyContextAvailabilityRequest_OrionCustomization extends
 		// this.errorCode = notifyContextAvailabilityRequest.getErrorCode();
 	}
 
-	
 	public String getSubscriptionId() {
+		if (subscriptionId.length() != 24) {
+			if (subscriptionIdOrionFormat == null) {
+				try {
+					MessageDigest md = MessageDigest.getInstance("MD5");
+					byte[] thedigest = md.digest(subscriptionId
+							.getBytes("UTF-8"));
+					subscriptionIdOrionFormat = new String(Arrays.copyOfRange(
+							thedigest, 0, 24));
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchAlgorithmException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			return subscriptionIdOrionFormat;
+		}
 		return subscriptionId;
 	}
 
-	
 	public void setSubscriptionId(String subscriptionId) {
 		this.subscriptionId = subscriptionId;
+		if (subscriptionId.length() != 24) {
+			if (subscriptionIdOrionFormat == null) {
+				try {
+					MessageDigest md = MessageDigest.getInstance("MD5");
+					byte[] thedigest = md.digest(subscriptionId
+							.getBytes("UTF-8"));
+					subscriptionIdOrionFormat = new String(Arrays.copyOfRange(
+							thedigest, 0, 24));
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchAlgorithmException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	@JsonIgnore
@@ -161,4 +203,14 @@ public class NotifyContextAvailabilityRequest_OrionCustomization extends
 	public NgsiStructure toStandardNgsiStructure() {
 		return toNotifyContextAvailabilityRequest();
 	}
+
+	public String getSubscriptionIdOrionFormat() {
+		return subscriptionIdOrionFormat;
+	}
+
+	public void setSubscriptionIdOrionFormat(String subscriptionIdOrionFormat) {
+		this.subscriptionIdOrionFormat = subscriptionIdOrionFormat;
+	}
+	
+	
 }

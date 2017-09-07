@@ -66,6 +66,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
 
@@ -83,7 +84,9 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NgsiStructure;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
+import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest_OrionCustomization;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
+import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse_OrionCustomization;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ReasonPhrase;
 import eu.neclab.iotplatform.ngsi.api.datamodel.StatusCode;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextRequest;
@@ -95,7 +98,7 @@ import eu.neclab.iotplatform.ngsiemulator.utils.Mode;
 import eu.neclab.iotplatform.ngsiemulator.utils.ServerConfiguration;
 import eu.neclab.iotplatform.ngsiemulator.utils.UniqueIDGenerator;
 
-@Path("ngsi10")
+@Path("")
 public class IoTProvider {
 
 	// The logger
@@ -133,6 +136,16 @@ public class IoTProvider {
 	// private static String subscribeContextResponseFile =
 	// "subscribeContextResponse.xml";
 
+
+	@POST
+	@Path("/{s:.*}")
+	@Produces("application/json")
+	public String wildcardPost(String body, @Context ResourceConfig config, @Context UriInfo ui, @Context HttpServletRequest req) {
+		logger.info("Received a post at "+ ui.getPath()+" with body:" + body);
+		return "test";
+
+	}
+	
 	@GET
 	@Path("/test")
 	@Produces("application/xml")
@@ -196,7 +209,52 @@ public class IoTProvider {
 	}
 
 	@POST
-	@Path("/queryContext")
+	@Path("/v1/queryContext")
+	@Consumes("application/json,application/xml")
+	@Produces("application/json,application/xml")
+	public String queryContext_Orion(@Context HttpHeaders headers,
+			@Context ResourceConfig config, String body,
+			@Context HttpServletRequest req) {
+
+		Mode mode;
+		Object contextMode = config.getProperty("mode");
+		if (contextMode != null && contextMode instanceof String) {
+			mode = (Mode) Mode.fromString((String) contextMode,
+					ServerConfiguration.DEFAULT_MODE);
+		} else {
+			mode = ServerConfiguration.DEFAULT_MODE;
+		}
+
+		QueryContextResponse_OrionCustomization response;
+
+		if (mode == Mode.RANDOM) {
+			QueryContextRequest_OrionCustomization query = (QueryContextRequest_OrionCustomization) NgsiStructure
+					.parseStringToJson(body,
+							QueryContextRequest_OrionCustomization.class);
+
+			logger.info("Received a NGSI-10 Query");
+			if (logger.isDebugEnabled()) {
+				logger.debug("NGSI-10 Query received: " + body);
+			}
+
+			response = new QueryContextResponse_OrionCustomization(
+					createQueryContextResponse(query.toQueryContextRequest()));
+
+			return response.toJsonString();
+
+		} else {
+			Object file = config.getProperty("queryContextResponseFile");
+			if (file == null) {
+				return readFile(ServerConfiguration.DEFAULT_QUERYCONTEXTRESPONSEFILE);
+			} else {
+				return readFile((String) file);
+			}
+		}
+
+	}
+
+	@POST
+	@Path("/ngsi10/queryContext")
 	@Consumes("application/json,application/xml")
 	@Produces("application/json,application/xml")
 	public String queryContext(String body, @Context HttpHeaders headers,
@@ -454,7 +512,19 @@ public class IoTProvider {
 	}
 
 	@POST
-	@Path("/subscribeContext")
+	@Path("/v1/subscribeContext")
+	@Consumes("application/json,application/xml")
+	@Produces("application/json,application/xml")
+	public String subscriptionResponse_Orion(@Context HttpHeaders headers,
+			@Context ResourceConfig config, String body,
+			@Context HttpServletRequest req) {
+
+		return subscriptionResponse(headers, config, body, req);
+
+	}
+
+	@POST
+	@Path("/ngsi10/subscribeContext")
 	@Consumes("application/json,application/xml")
 	@Produces("application/json,application/xml")
 	public String subscriptionResponse(@Context HttpHeaders headers,
@@ -572,7 +642,7 @@ public class IoTProvider {
 	}
 
 	@POST
-	@Path("/unsubscribeContext")
+	@Path("/ngsi10/unsubscribeContext")
 	@Produces("application/xml")
 	public UnsubscribeContextResponse unsubscribeContext(String body) {
 
