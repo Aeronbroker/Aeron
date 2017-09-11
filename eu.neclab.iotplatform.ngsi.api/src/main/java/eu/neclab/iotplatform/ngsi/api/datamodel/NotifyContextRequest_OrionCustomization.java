@@ -78,7 +78,11 @@ package eu.neclab.iotplatform.ngsi.api.datamodel;
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -88,15 +92,21 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 
+import org.apache.commons.codec.binary.Hex;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 @XmlRootElement(name = "notifyContextRequest")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class NotifyContextRequest_OrionCustomization extends NgsiStructureAlternative {
+public class NotifyContextRequest_OrionCustomization extends
+		NgsiStructureAlternative {
 
 	@XmlElement(name = "subscriptionId", required = true)
 	private String subscriptionId = null;
+
+	@XmlElement(name = "subscriptionId", required = true)
+	@JsonProperty("subscriptionId")
+	private String subscriptionIdOrionFormat = null;
 
 	@XmlElement(name = "originator", required = true)
 	@XmlSchemaType(name = "anyURI")
@@ -121,18 +131,93 @@ public class NotifyContextRequest_OrionCustomization extends NgsiStructureAltern
 
 	}
 
+	public NotifyContextRequest_OrionCustomization(
+			NotifyContextRequest notification) {
+		this.subscriptionId = notification.getSubscriptionId();
+		this.originator = notification.getOriginator();
+		if (notification.getContextElementResponseList() != null
+				&& !notification.getContextElementResponseList().isEmpty()) {
+			this.contextElementResponse = new ArrayList<ContextElementResponse_OrionCustomization>();
+			for (ContextElementResponse contextElementResponse : notification
+					.getContextElementResponseList()) {
+				this.contextElementResponse
+						.add(new ContextElementResponse_OrionCustomization(
+								contextElementResponse));
+			}
+		}
+	}
+	
+	
+	@JsonIgnore
+	public List<ContextElementResponse_OrionCustomization> getContextElementResponse() {
+		return contextElementResponse;
+	}
+
+	@JsonIgnore
+	public void setContextElementResponse(
+			List<ContextElementResponse_OrionCustomization> contextElementResponse) {
+		this.contextElementResponse = contextElementResponse;
+	}
+
+	@JsonIgnore
+	public String getSubscriptionIdOrionFormat() {
+		return subscriptionIdOrionFormat;
+	}
+
+	@JsonIgnore
+	public void setSubscriptionIdOrionFormat(String subscriptionIdOrionFormat) {
+		this.subscriptionIdOrionFormat = subscriptionIdOrionFormat;
+	}
+
 	public String getSubscriptionId() {
+		if (subscriptionId.length() != 24) {
+			if (subscriptionIdOrionFormat == null) {
+				try {
+					MessageDigest md = MessageDigest.getInstance("MD5");
+					byte[] thedigest = md.digest(subscriptionId
+							.getBytes("UTF-8"));
+					subscriptionIdOrionFormat = new String(Arrays.copyOfRange(
+							Hex.encodeHex(thedigest), 0, 24));
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchAlgorithmException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			return subscriptionIdOrionFormat;
+		}
 		return subscriptionId;
 	}
 
 	public void setSubscriptionId(String subscriptionId) {
 		this.subscriptionId = subscriptionId;
+		if (subscriptionId.length() != 24) {
+			if (subscriptionIdOrionFormat == null) {
+				try {
+					MessageDigest md = MessageDigest.getInstance("MD5");
+					byte[] thedigest = md.digest(subscriptionId
+							.getBytes("UTF-8"));
+					subscriptionIdOrionFormat = new String(Arrays.copyOfRange(
+							Hex.encodeHex(thedigest), 0, 24));
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchAlgorithmException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
+	@JsonIgnore
 	public String getOriginator() {
 		return originator;
 	}
 
+	@JsonIgnore
 	public void setOriginator(String originator) {
 		this.originator = originator;
 	}

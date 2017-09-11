@@ -144,7 +144,6 @@ public class ConfManWrapper {
 		this.subscriptionStorage = subscriptionStorage;
 	}
 
-
 	/**
 	 * @return Pointer to the storage for links between incoming subscriptions
 	 *         and availability subscriptions.
@@ -206,12 +205,16 @@ public class ConfManWrapper {
 	 */
 	public UnsubscribeContextAvailabilityResponse receiveReqFrmSubscriptionController(
 			UnsubscribeContextAvailabilityRequest uCAReq) {
-		logger.debug("Sending UnsubscribeContextAvailabilityRequest to ConfMan:"
-				+ uCAReq.toString());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Sending UnsubscribeContextAvailabilityRequest to ConfMan:"
+					+ uCAReq.toString());
+		}
 		UnsubscribeContextAvailabilityResponse uCARes = ngsi9Impl
 				.unsubscribeContextAvailability(uCAReq);
-		logger.debug("Received UnsubscribeContextAvailabilityResponse from ConfMan:"
-				+ uCARes.toString());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Received UnsubscribeContextAvailabilityResponse from ConfMan:"
+					+ uCARes.toString());
+		}
 		return uCARes;
 
 	}
@@ -275,8 +278,10 @@ public class ConfManWrapper {
 		DiscoverContextAvailabilityRequest discoveryRequest = new DiscoverContextAvailabilityRequest(
 				scaReq.getEntityIdList(), scaReq.getAttributeList(),
 				scaReq.getRestriction());
-		logger.debug("Sending DiscoverContextAvailabilityRequest to ConfMan:"
-				+ discoveryRequest.toString());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Sending DiscoverContextAvailabilityRequest to ConfMan:"
+					+ discoveryRequest.toString());
+		}
 		final DiscoverContextAvailabilityResponse discoveryResponse = ngsi9Impl
 				.discoverContextAvailability(discoveryRequest);
 
@@ -383,8 +388,10 @@ public class ConfManWrapper {
 
 						List<AssociationDS> assocList = associationsUtil
 								.retrieveAssociation(discoveryResponse);
-						logger.debug("Association List from discovery response:"
-								+ assocList);
+						if (logger.isDebugEnabled()) {
+							logger.debug("Association List from discovery response:"
+									+ assocList);
+						}
 
 						/*
 						 * Step 1: Extracts from the discovered associations the
@@ -399,8 +406,10 @@ public class ConfManWrapper {
 						List<AssociationDS> additionalRequestList = associationsUtil
 								.initialLstOfmatchedAssociation(qcReq,
 										assocList);
-						logger.debug("(Step 1) Initial List Of matchedAssociation:"
-								+ additionalRequestList);
+						if (logger.isDebugEnabled()) {
+							logger.debug("(Step 1) Initial List Of matchedAssociation:"
+									+ additionalRequestList);
+						}
 
 						/*
 						 * Step 2: apply transitivity to further enrich the set
@@ -412,8 +421,10 @@ public class ConfManWrapper {
 						List<AssociationDS> transitiveList = associationsUtil
 								.transitiveAssociationAnalysisFrQuery(
 										assocList, additionalRequestList);
-						logger.debug("(Step 2 ) Transitive List Of matchedAssociation:"
-								+ transitiveList);
+						if (logger.isDebugEnabled()) {
+							logger.debug("(Step 2 ) Transitive List Of matchedAssociation:"
+									+ transitiveList);
+						}
 
 						/*
 						 * Step 3: Create a new discovery response, this time
@@ -425,8 +436,10 @@ public class ConfManWrapper {
 						DiscoverContextAvailabilityResponse dcaRes = associationsUtil
 								.validDiscoverContextAvailabiltyResponse(
 										discoveryResponse, transitiveList);
-						logger.debug("(Step 3 ) Final valid DiscoverContextAvailabilityResponse List Of matchedAssociation:"
-								+ dcaRes);
+						if (logger.isDebugEnabled()) {
+							logger.debug("(Step 3 ) Final valid DiscoverContextAvailabilityResponse List Of matchedAssociation:"
+									+ dcaRes);
+						}
 
 						/*
 						 * Now create from the discovery response an
@@ -447,8 +460,10 @@ public class ConfManWrapper {
 					}
 				}.start();
 			}
-			logger.debug("Sending SubscribeContextAvailabilityResponse to SubscriptionController:"
-					+ scaRes.toString());
+			if (logger.isDebugEnabled()) {
+				logger.debug("Sending SubscribeContextAvailabilityResponse to SubscriptionController:"
+						+ scaRes.toString());
+			}
 			return scaRes;
 
 		}

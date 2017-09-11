@@ -44,7 +44,8 @@
 							org.codehaus.jackson.annotate;version="[1.4,2)",
 							org.codehaus.jackson.map;version="[1.4,2)",
 							org.codehaus.jackson.map.annotate;version="[1.4,2)",
-							org.w3c.dom
+							org.w3c.dom,
+							org.apache.commons.codec.binary;version="1.6.0"
 						</Import-Package>
 						<Export-Package>
 							eu.neclab.iotplatform.ngsi.api.datamodel;version="${project.version}",

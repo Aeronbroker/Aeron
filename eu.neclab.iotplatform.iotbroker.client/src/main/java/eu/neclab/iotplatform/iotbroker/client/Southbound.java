@@ -82,6 +82,7 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.NgsiStructure;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest;
+import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest_OrionCustomization;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.QueryContextResponse;
@@ -160,6 +161,8 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	private String ngsi10Reference = null;
 	private String ngsi9Reference = null;
+
+	private static String REGEX_FOR_ORION_API = ".*\\/v1\\/.*";
 
 	// /** Port of tomcat server from command-line parameter */
 	// private final String tomcatPort = System.getProperty("tomcat.init.port");
@@ -369,8 +372,8 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 					requestContentType.toString(), xAuthToken);
 
 			/*
-			 * Check if there contentType is not supported and switch to the
-			 * other IoT Broker supports
+			 * Check if the contentType is not supported and switch to the other
+			 * IoT Broker supports
 			 */
 			if (fullHttpResponse.getStatusLine().getStatusCode() == 415) {
 
@@ -634,7 +637,7 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 		try {
 			String correctedResource;
-			if (url.toString().isEmpty() || url.toString().matches(".*/")) {
+			if (url.toString().isEmpty() || url.toString().matches(".*/") || resource.isEmpty() || resource == null) {
 				correctedResource = resource;
 			} else {
 				correctedResource = "/" + resource;
@@ -942,7 +945,6 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	}
 
-	
 	/**
 	 * Calls the UpdateContext method on an NGSI-10 server.
 	 * 
@@ -957,7 +959,6 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 			UpdateContextRequest_OrionCustomization request_tid, URI uri) {
 
 		UpdateContextResponse_OrionCustomization updateResponse = new UpdateContextResponse_OrionCustomization();
-
 
 		// adaptUpdatesToOrionStandard
 		// I would suggest to have a completely different updateContext for
@@ -994,7 +995,6 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 	}
 
-	
 	@Override
 	public UpdateContextResponse updateContext(UpdateContextRequest request,
 			URI uri, StandardVersion standardVersion) {
@@ -1348,8 +1348,16 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 		try {
 
-			Object response = sendRequest(new URL(uri.toString()), "", request,
-					NotifyContextResponse.class, ngsi9schema);
+			Object response;
+			if (uri.toString().matches(REGEX_FOR_ORION_API)) {
+				response = sendRequest(new URL(uri.toString()), "",
+						new NotifyContextRequest_OrionCustomization(request),
+						NotifyContextResponse.class, ngsi9schema,
+						ContentType.JSON);
+			} else {
+				response = sendRequest(new URL(uri.toString()), "", request,
+						NotifyContextResponse.class, ngsi9schema);
+			}
 
 			// If there was an error then a StatusCode has been returned
 			if (response instanceof StatusCode) {

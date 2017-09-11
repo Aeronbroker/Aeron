@@ -679,7 +679,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 			embeddedAgentContextRegistrations = embeddedIoTAgent
 					.extractOwnContextRegistrations(discoveryResponse);
-			
+
 		}
 
 		/*
@@ -1280,7 +1280,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		SubscribeContextResponse response;
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("Receive Request: " + request);
+			logger.debug("Received Request: " + request);
 		}
 
 		response = northBoundWrapper.receiveReqFrmNorth(request);
@@ -1313,12 +1313,16 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 					// subscriptionId);
 					subscriptionController.getSubscriptionStorage()
 							.linkSubscriptions(subscriptionId, subscriptionId);
+					
+					if (logger.isDebugEnabled()) {
+						logger.debug("Subscribing to the historical agent: " + request);
+					}
 
 					embeddedIoTAgent.subscribe(subscriptionId, request);
 
 				} catch (org.springframework.osgi.service.ServiceUnavailableException e) {
 
-					logger.warn("Not possible to store in the Big Data Repository: osgi service not registered");
+					logger.warn("Not possible to subscribe to the Historical Agent: osgi service not found");
 
 				}
 
@@ -2080,6 +2084,10 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 */
 		NotifyContextRequest notificationFilteredByNotifyConditions = applyNotifyConditions(
 				request, outgoingSubscription);
+		
+		if (logger.isDebugEnabled()){
+			logger.debug("Notification fully filtered to be forwarded to: "+notificationFilteredByNotifyConditions);
+		}
 
 		if (notificationFilteredByNotifyConditions != null) {
 			notifyContextResponse = agentWrapper
@@ -2272,7 +2280,9 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	public NotifyContextAvailabilityResponse notifyContextAvailability(
 			final NotifyContextAvailabilityRequest request) {
 
-		logger.info("NotifyContextRequest : " + request);
+		if (logger.isDebugEnabled()) {
+			logger.debug("NotifyContextAvailabilityRequest : " + request);
+		}
 
 		NotifyContextAvailabilityResponse notifyContextAvailabilityResponse = null;
 
@@ -2281,8 +2291,10 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			notifyContextAvailabilityResponse = confManWrapper
 					.receiveReqFrmConfigManager(request);
 
-			logger.info("NotifyContextResponse : "
-					+ notifyContextAvailabilityResponse);
+			if (logger.isDebugEnabled()) {
+				logger.debug("NotifyContextAvailabilityResponse : "
+						+ notifyContextAvailabilityResponse);
+			}
 
 			if (notifyContextAvailabilityResponse == null
 					|| notifyContextAvailabilityResponse.getResponseCode() != null

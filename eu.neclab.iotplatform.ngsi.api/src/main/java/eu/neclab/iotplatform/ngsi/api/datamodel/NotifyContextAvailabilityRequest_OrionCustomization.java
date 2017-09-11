@@ -57,6 +57,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.commons.codec.binary.Hex;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -115,7 +116,6 @@ public class NotifyContextAvailabilityRequest_OrionCustomization extends
 		// this.errorCode = notifyContextAvailabilityRequest.getErrorCode();
 	}
 
-	
 	public String getSubscriptionId() {
 		if (subscriptionId.length() != 24) {
 			if (subscriptionIdOrionFormat == null) {
@@ -124,7 +124,7 @@ public class NotifyContextAvailabilityRequest_OrionCustomization extends
 					byte[] thedigest = md.digest(subscriptionId
 							.getBytes("UTF-8"));
 					subscriptionIdOrionFormat = new String(Arrays.copyOfRange(
-							thedigest, 0, 24));
+							Hex.encodeHex(thedigest), 0, 24));
 				} catch (UnsupportedEncodingException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -138,7 +138,6 @@ public class NotifyContextAvailabilityRequest_OrionCustomization extends
 		return subscriptionId;
 	}
 
-	
 	public void setSubscriptionId(String subscriptionId) {
 		this.subscriptionId = subscriptionId;
 		if (subscriptionId.length() != 24) {
@@ -148,7 +147,7 @@ public class NotifyContextAvailabilityRequest_OrionCustomization extends
 					byte[] thedigest = md.digest(subscriptionId
 							.getBytes("UTF-8"));
 					subscriptionIdOrionFormat = new String(Arrays.copyOfRange(
-							thedigest, 0, 24));
+							Hex.encodeHex(thedigest), 0, 24));
 				} catch (UnsupportedEncodingException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -206,13 +205,14 @@ public class NotifyContextAvailabilityRequest_OrionCustomization extends
 		return toNotifyContextAvailabilityRequest();
 	}
 
+	@JsonIgnore
 	public String getSubscriptionIdOrionFormat() {
 		return subscriptionIdOrionFormat;
 	}
 
+	@JsonIgnore
 	public void setSubscriptionIdOrionFormat(String subscriptionIdOrionFormat) {
 		this.subscriptionIdOrionFormat = subscriptionIdOrionFormat;
 	}
-	
-	
+
 }
