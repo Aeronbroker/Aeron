@@ -1539,8 +1539,11 @@ public class RestProviderController {
 			HttpServletRequest requester,
 			@RequestBody NotifyContextAvailabilityRequest request) {
 
-		logger.info(" <--- NGSI-9 has received a context notification  ---> \n"
-				+ request);
+		logger.info(" <--- NGSI-9 has received a context notification  ---> \n");
+		if(logger.isDebugEnabled()){
+			logger.debug(" <--- NGSI-9 has received a context notification  ---> \n"
+					+ request);
+		}
 
 		if (!validateMessageBody(requester, request, sNgsi9schema)) {
 			NotifyContextAvailabilityResponse response = new NotifyContextAvailabilityResponse(

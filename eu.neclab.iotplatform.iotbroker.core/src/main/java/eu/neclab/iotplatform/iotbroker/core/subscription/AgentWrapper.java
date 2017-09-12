@@ -125,7 +125,6 @@ public class AgentWrapper implements IoTAgentWrapperInterface {
 		}
 		SubscribeContextResponse scRes = ngsi10Requestor.subscribeContext(
 				scReq, uri);
-		logger.info("###################Receive Request:" + scRes.toString());
 		return scRes;
 	}
 

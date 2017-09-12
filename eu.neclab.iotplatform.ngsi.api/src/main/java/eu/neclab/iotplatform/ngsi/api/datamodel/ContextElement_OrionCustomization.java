@@ -143,11 +143,12 @@ public class ContextElement_OrionCustomization extends NgsiStructureAlternative 
 				}
 			}
 		}
+		
+		contextAttributeList = new ArrayList<ContextAttribute_OrionCustomization>();
+
 
 		if (contextElement.getContextAttributeList() != null
 				&& !contextElement.getContextAttributeList().isEmpty()) {
-
-			contextAttributeList = new ArrayList<ContextAttribute_OrionCustomization>();
 
 			for (ContextAttribute contextAttribute : contextElement
 					.getContextAttributeList()) {

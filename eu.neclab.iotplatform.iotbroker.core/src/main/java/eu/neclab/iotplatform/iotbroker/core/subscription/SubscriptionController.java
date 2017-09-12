@@ -934,7 +934,9 @@ public class SubscriptionController {
 			if (throttlingTask != null) {
 				throttlingTask.cancel();
 			}
-			logger.info("Subscription ID: " + subscriptionID + " Canceled");
+			if (logger.isDebugEnabled()) {
+				logger.debug("Subscription ID: " + subscriptionID + " Canceled");
+			}
 			subscriptionDataIndex.remove(subscriptionID);
 		}
 
@@ -996,9 +998,11 @@ public class SubscriptionController {
 
 			if (agentURi != null) {
 
-				logger.info("Unsubscribing with subscriptionID: "
-						+ outgoingSubscriptionId + " from agentURi:"
-						+ agentURi.toString());
+				if (logger.isDebugEnabled()) {
+					logger.debug("Unsubscribing with subscriptionID: "
+							+ outgoingSubscriptionId + " from agentURi:"
+							+ agentURi.toString());
+				}
 				new Thread() {
 					@Override
 					public void run() {
@@ -1458,7 +1462,9 @@ public class SubscriptionController {
 
 				if (lCERes == null || lCERes.isEmpty()) {
 
-					logger.info("All the ContextElementResponse have been filter, no notifications will be issued to subscriber");
+					if (logger.isDebugEnabled()) {
+						logger.debug("All the ContextElementResponse have been filter, no notifications will be issued to subscriber");
+					}
 
 					return new NotifyContextResponse(new StatusCode(200,
 							ReasonPhrase.OK_200.toString(), null));
@@ -1674,8 +1680,10 @@ public class SubscriptionController {
 			NotifyContextAvailabilityRequest notifyContextAvailabilityRequest,
 			List<AssociationDS> transitiveList) {
 
-		logger.info("Received NotifyContextAvailabilityRequest:"
-				+ notifyContextAvailabilityRequest);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Received NotifyContextAvailabilityRequest:"
+					+ notifyContextAvailabilityRequest);
+		}
 		String incomingSubscriptionId = "";
 
 		/*
@@ -1701,7 +1709,10 @@ public class SubscriptionController {
 		List<String> inIDs = linkAvailabilitySubscription
 				.getInIDs(notifyContextAvailabilityRequest.getSubscriptionId());
 
-		logger.info("List Incoming Subscription Id ------------------>" + inIDs);
+		if (logger.isDebugEnabled()) {
+			logger.debug("List Incoming Subscription Id ------------------>"
+					+ inIDs);
+		}
 
 		if (inIDs.size() != 0) {
 			incomingSubscriptionId = inIDs.get(0);
@@ -1776,10 +1787,12 @@ public class SubscriptionController {
 						incomingSubscription.getRestriction(), pair.getRight()
 								.getContextRegistration()
 								.getProvidingApplication().toString())) {
-					logger.info(String
-							.format("Discarding ContextRegistrationResponse: %s \n"
-									+ "In order to avoid loop with the SubscribeContext: %s",
-									pair.getRight(), incomingSubscription));
+					if (logger.isDebugEnabled()) {
+						logger.debug(String
+								.format("Discarding ContextRegistrationResponse: %s \n"
+										+ "In order to avoid loop with the SubscribeContext: %s",
+										pair.getRight(), incomingSubscription));
+					}
 					pairIterator.remove();
 				}
 
@@ -1853,13 +1866,18 @@ public class SubscriptionController {
 
 					// Unsubscribe from the previous subscription
 					exSATmp = existingSubscribedAgentQ.poll();
-					logger.info("POLL exist" + exSATmp.getLeft().toString());
+					if (logger.isDebugEnabled()) {
+						logger.debug("POLL exist"
+								+ exSATmp.getLeft().toString());
+					}
 					sendUnsubscribeContextRequest(exSATmp.getRight().getId(),
 							exSATmp.getLeft().getProvidingApplication());
 
 					// Subscribe with a new subscription
 					npSATmp = newProposedSubscribedAgentQ.poll();
-					logger.info("POLL new" + npSATmp.getLeft().toString());
+					if (logger.isDebugEnabled()) {
+						logger.debug("POLL new" + npSATmp.getLeft().toString());
+					}
 					if (npSA.getRight().getErrorCode() == null
 							|| npSA.getRight().getErrorCode().getCode() != 410) {
 						sendSubscribeContextRequest(
@@ -1887,7 +1905,9 @@ public class SubscriptionController {
 
 				} else if (compareResult > 0) {
 					npSATmp = newProposedSubscribedAgentQ.poll();
-					logger.info("POLL new" + npSATmp.getLeft().toString());
+					if (logger.isDebugEnabled()) {
+						logger.debug("POLL new" + npSATmp.getLeft().toString());
+					}
 
 					if (npSA.getRight().getErrorCode() == null
 							|| npSA.getRight().getErrorCode().getCode() != 410) {
@@ -1942,11 +1962,13 @@ public class SubscriptionController {
 
 			while (!newProposedSubscribedAgentQ.isEmpty()) {
 				npSATmp = newProposedSubscribedAgentQ.poll();
-				logger.info("POLL new" + npSATmp.getLeft().toString() + " :q "
-						+ newProposedSubscribedAgentQ.size());
-
-				logger.info("ContextRegistrationResponse" + npSATmp.getRight());
-				logger.info("URI Agent" + npSATmp.getLeft());
+				if (logger.isDebugEnabled()) {
+					logger.debug("POLL new" + npSATmp.getLeft().toString()
+							+ " :q " + newProposedSubscribedAgentQ.size()
+							+ "ContextRegistrationResponse"
+							+ npSATmp.getRight() + "URI Agent"
+							+ npSATmp.getLeft());
+				}
 
 				if (npSATmp.getRight().getErrorCode() == null
 						|| npSATmp.getRight().getErrorCode().getCode() != 410) {
@@ -1965,8 +1987,10 @@ public class SubscriptionController {
 		} else {
 			while (!newProposedSubscribedAgentQ.isEmpty()) {
 				npSATmp = newProposedSubscribedAgentQ.poll();
-				logger.info("POLL new" + npSATmp.getLeft().toString() + " :q "
-						+ newProposedSubscribedAgentQ.size());
+				if (logger.isDebugEnabled()) {
+					logger.debug("POLL new" + npSATmp.getLeft().toString()
+							+ " :q " + newProposedSubscribedAgentQ.size());
+				}
 
 				if (npSATmp.getRight().getErrorCode() == null
 						|| npSATmp.getRight().getErrorCode().getCode() != 410) {
@@ -2256,10 +2280,12 @@ public class SubscriptionController {
 			}
 		}
 
-		logger.info("ContextRegistrationResponse-------->"
-				+ contextRegistrationResponse.getContextRegistration()
-						.getListEntityId());
-		logger.info("Subscription Id-------->" + originalId);
+		if (logger.isDebugEnabled()) {
+			logger.debug("ContextRegistrationResponse-------->"
+					+ contextRegistrationResponse.getContextRegistration()
+							.getListEntityId() + "Subscription Id-------->"
+					+ originalId);
+		}
 
 		// TODO filter between original incomingSubscription and
 		// ContextRegistrationResponse that is coming the NGSI-9-notification
@@ -2300,11 +2326,15 @@ public class SubscriptionController {
 
 		SubscriptionData subdata = subscriptionDataIndex.get(originalId);
 
-		logger.info("Current Duration: " + sCReq.getDuration().toString());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Current Duration: " + sCReq.getDuration().toString());
+		}
 		sCReq.setDuration(DurationUtils.newDuration(sCReq.getDuration(),
 				DurationUtils.currentTime().getTime()
 						- subdata.getStartTime().getTime()));
-		logger.info("New Duration: " + sCReq.getDuration().toString());
+		if (logger.isDebugEnabled()) {
+			logger.debug("New Duration: " + sCReq.getDuration().toString());
+		}
 		return sCReq;
 	}
 

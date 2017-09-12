@@ -60,6 +60,7 @@ import eu.neclab.iotplatform.iotbroker.commons.ContentType;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NgsiStructure;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest;
+import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextRequest_OrionCustomization;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.StatusCode;
 import eu.neclab.iotplatform.ngsiemulator.utils.HeaderExtractor;
@@ -106,6 +107,49 @@ public class IoTApplication {
 		logger.info("Received a testPost:" + body);
 		return "test";
 
+	}
+
+	@POST
+	@Path("/v1/notify")
+	@Consumes("application/json")
+	@Produces("application/json")
+	public String notifyRespOrion(@Context HttpHeaders headers,
+			@Context ResourceConfig config, String body) {
+
+		// Get the accepted content type
+		final ContentType outgoingContentType = HeaderExtractor.getAccept(
+				headers, ContentType.JSON);
+		final ContentType incomingContentType = HeaderExtractor.getContentType(
+				headers, ContentType.JSON);
+
+		NotifyContextResponse response = new NotifyContextResponse();
+		logger.info("Received a NGSI-10 Notification");
+		if (logger.isDebugEnabled()) {
+			logger.debug("Received a NGSI-10 Notification:" + body);
+		}
+
+		if (logger.isDebugEnabled()) {
+			NotifyContextRequest_OrionCustomization notification;
+			if (incomingContentType == ContentType.JSON) {
+				notification = (NotifyContextRequest_OrionCustomization) NgsiStructure
+						.parseStringToJson(body,
+								NotifyContextRequest_OrionCustomization.class);
+				logger.debug("Parsed NGSI-10 Orion Notification:"
+						+ notification.toJsonString());
+			} else {
+				logger.warn("Wrong content type: "
+						+ incomingContentType.toString() + " body: " + body);
+			}
+
+		}
+
+		response.setResponseCode(new StatusCode(200, "OK", null));
+
+		if (outgoingContentType == ContentType.XML) {
+			return response.toString();
+		} else {
+			return response.toJsonString();
+		}
 	}
 
 	@POST

@@ -1313,9 +1313,10 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 					// subscriptionId);
 					subscriptionController.getSubscriptionStorage()
 							.linkSubscriptions(subscriptionId, subscriptionId);
-					
+
 					if (logger.isDebugEnabled()) {
-						logger.debug("Subscribing to the historical agent: " + request);
+						logger.debug("Subscribing to the historical agent: "
+								+ request);
 					}
 
 					embeddedIoTAgent.subscribe(subscriptionId, request);
@@ -1347,7 +1348,9 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		}
 
-		logger.info("Subscription Response:\n" + response.toString());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Subscription Response:\n" + response.toString());
+		}
 
 		return response;
 
@@ -2084,9 +2087,10 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 */
 		NotifyContextRequest notificationFilteredByNotifyConditions = applyNotifyConditions(
 				request, outgoingSubscription);
-		
-		if (logger.isDebugEnabled()){
-			logger.debug("Notification fully filtered to be forwarded to: "+notificationFilteredByNotifyConditions);
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("Notification fully filtered to be forwarded to: "
+					+ notificationFilteredByNotifyConditions);
 		}
 
 		if (notificationFilteredByNotifyConditions != null) {
