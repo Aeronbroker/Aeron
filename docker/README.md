@@ -79,20 +79,24 @@ Configure **HSQLDB**:
 
 First it is necessarry to copy the HSQLDB directory (https://github.com/Aeronbroker/Aeron/tree/master/SQL_database) that contains the database files somewhere in the host file system. We assume that it is located under /home/user/SQL_database.
 At this point we need to mount the HSQLDB folder into the docker container and instruct the IoT Broker in the container to access the mounted folder (with the -p option):
+
 ```
-docker run -t -v /home/user/SQL_database/:/SQL_database nle/iotbroker:testing20170713 -p iotbroker_hsqldbdirectory="//SQL_database//database//linkDB"
+sudo docker run -t \
+-v /home/user/SQL_database/:/SQL_database \
+fiware/iotbroker:standalone-dev \
+-p iotbroker_hsqldbdirectory="//SQL_database//database//linkDB"
 ```
 
-Running docker with all permanent storages:
+After all the databases are correctly configuerd, you can run the docker with the fowlling parameters (or a subset of it, depending on which storage you want to have permanent):
 
 ```
 sudo docker run -t -p 8065:8065 -p 8060:8060  \
--v /tmp/testhsqldbindocker:/testhsqldbindocker  \
-nle/iotbroker:testing20170713  \
+-v /home/user/SQL_database/:/SQL_database \
+fiware/iotbroker:standalone-dev \
 -p iotbroker_historicalagent="enabled" \
 -p iotbroker_embeddedagent_registrydbname="embeddedagentregistry" \
 -p iotbroker_embeddedagent_couchdbname="embeddedagenthistorical" \
--p iotbroker_hsqldbdirectory="//SQL_database//database//linkDB"  \
+-p iotbroker_hsqldbdirectory="//SQL_database//database//linkDB" \
 -p iotbroker_embeddedagent_couchdbhost="172.17.0.1" \
 -p confman_couchdbipandport="http://172.17.0.1:5984" \
 -p confman_couchdbregistercontextdbname="iotdiscoveryregistrations" \

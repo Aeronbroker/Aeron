@@ -7,6 +7,21 @@ The following workflow explains how to enable and use this feature.
 
 Enable historical queries
 -----------
+
+
+####As docker
+The docker container of the IoT Broker is already embedding a CouchDB server. Therefore just starting the docker container with the following parameter will enable the historical feature:
+
+```
+sudo docker run -t -p 8065:8065 -p 8060:8060  \
+fiware/iotbroker:standalone-dev \
+-p iotbroker_historicalagent="enabled"
+```
+
+NOTE: all the data stored in CouchDB will be canceled each time the docker will be stopped. In order to have permanent storage check the following ([Permanent Storage in IoT Broker docker](https://github.com/Aeronbroker/Aeron/blob/master/docker/README.md#permanent-storage-couchdb-postgresql-and-hsqldb))
+
+####As java application
+
 For enabling historical queries, the IoT Broker needs to be connected to an instance of couchDB. This is achieved by the following steps.
 
 * The couchDB database needs to be installed either on the machine where the IoT Broker is running, or on a remote machine.
@@ -340,3 +355,16 @@ Response:
     }]
 }
 ```
+
+Admitted metadata name and date format
+-------
+The IoT Broker accepts different metadata name as timestamp metadata:
+
+* "*date*" with time format like "*yyyy-MM-dd HH:mm:ss*" like "2015-08-18 16:54:36"
+
+* "*creation_time*" with time format "*yyyy.MM.dd HH:mm:ss:SSS Z*" like "2017.09.13 10:38:14:838 +0100"
+
+* "*nle:date*" with time format "*yyyy.MM.dd HH:mm:ss:SSS Z*" like "2017.09.13 10:38:14:838 +0100"
+
+* "*endtime*" with time format "*yyyy.MM.dd HH:mm:ss:SSS Z*" like "2017.09.13 10:38:14:838 +0100".
+(this is meant for attributes that refer to a timewindow with a starttime and endtime of observation)
