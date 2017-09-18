@@ -68,7 +68,7 @@ service postgresql restart
 
 Configure **CouchDB**:
 
-Similarly we need to allow docker to access couchdb:
+Similarly we need to allow docker to access couchdb ([CouchDB documentation](http://docs.couchdb.org/en/master/config/http.html)):
 
 ```
 sudo sed -i "s/;bind_address = 127.0.0.1/bind_address = 0\.0\.0\.0/g" "/etc/couchdb/local.ini"
