@@ -12,7 +12,7 @@ pages:
   - Home: 'index.md'
   - 'Installation and Administration Guide': 'installadminguide.md'
   - 'User and Developer Guide': 'userprogrammersguide.md'
-  - 'Historical Agent': 'doc/historyqueries.md'
-  - 'Semantic Grounding': 'doc/semanticgrounding.md'
+  - 'Historical Agent': 'historyqueries.md'
+  - 'Semantic Grounding': 'semanticgrounding.md'
 
   
