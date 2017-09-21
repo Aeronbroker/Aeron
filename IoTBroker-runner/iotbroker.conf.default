@@ -25,7 +25,8 @@ iotbroker_loglevel='INFO'
 iotbroker_schemangsi9operation='${dir.config}/xmlSchema/Ngsi9_Operations_v08.xsd'
 iotbroker_schemangsi10operation='${dir.config}/xmlSchema/Ngsi10_Operations_v08.xsd'
 
-# IoT Broker exposed address (used e.g. for outgoing subscription)
+# IoT Broker exposed address (used e.g. for outgoing subscription, 
+# outgoing registration by the IoT Registry)
 iotbroker_exposedAddress=127.0.0.1 
 
 # IoT Broker port
@@ -101,6 +102,7 @@ iotbroker_embeddedagent_couchdbcreatedb=true
 iotbroker_embeddedagent_couchdbprotocol="http"
 iotbroker_embeddedagent_couchdbhost="127.0.0.1"
 iotbroker_embeddedagent_couchdbport=5984
-iotbroker_embeddedagent_historicallyTrackQueryResponseAndNotifications=false
+iotbroker_embeddedagent_historicallyStoreQueryResponses=false
+iotbroker_embeddedagent_historicallyStoreNotifications=false
 iotbroker_embeddedagent_storeOnlyLatestValue=false
 iotbroker_embeddedagent_localagentid="embeddedagent1"

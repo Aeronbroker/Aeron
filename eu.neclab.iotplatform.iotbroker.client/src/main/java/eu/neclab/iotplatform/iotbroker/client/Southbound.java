@@ -251,11 +251,15 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 		}
 
 		if (!status) {
-			logger.info("Invalid incoming request. Reference schema is: "
-					+ schema);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Invalid incoming request. Reference schema is: "
+						+ schema);
+			}
 		}
-
-		logger.info("Incoming request Valid: " + status);
+		
+		if (logger.isDebugEnabled()) {
+			logger.debug("Incoming request Valid: " + status);
+		}
 
 		return status;
 
@@ -637,7 +641,8 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 
 		try {
 			String correctedResource;
-			if (url.toString().isEmpty() || url.toString().matches(".*/") || resource.isEmpty() || resource == null) {
+			if (url.toString().isEmpty() || url.toString().matches(".*/")
+					|| resource.isEmpty() || resource == null) {
 				correctedResource = resource;
 			} else {
 				correctedResource = "/" + resource;

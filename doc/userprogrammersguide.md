@@ -49,10 +49,14 @@ Additionally, the IoT Broker offers a simple web interface, which can be accesse
 In case the BigDataRepository and/or the Embedded Historical Agent is enabled, data can be seen also through the CouchDB interface (if the latter is exposed).
 
 
-NGSI Emulator
+Playing with IoT Broker middleware: NGSI Emulator
 ==
-The Aeron project is including also a NGSI emulator which allows to easily emulate NGSI components in order to let them interworking with IoT Broker and the ConfMan. The puropose of this emulator is two-fold: testing the IoT Broker functionalities and example of implementation of NGSI players. See: https://github.com/Aeronbroker/Aeron/tree/master/eu.neclab.iotplatform.ngsiemulator
 
+A common question is: "**how do I play with the IoT Broker platform?**"
+
+Since this is a middleware, it is not easy to imagine how to use the platform. A simple testing can be done with a HTTP client application. We often use "[HTTP Requester](https://addons.mozilla.org/en-US/firefox/addon/httprequester/)" extension fo Firefox browser or "[Postman](https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en)" plugin for Chromium browser.
+
+But those applications are not enough to fully test the IoT Broker middleware and the potentiality of the NGSI inferface (e.g. the asynchronous notifications). The Aeron project is including also a [NGSI emulator](https://github.com/Aeronbroker/Aeron/tree/master/eu.neclab.iotplatform.ngsiemulator) which allows to easily emulate NGSI components in order to let them interworking with IoT Broker and the ConfMan. The puropose of this emulator is two-fold: testing the IoT Broker functionalities and example of implementation of NGSI players. 
 
 Historical agent
 ==

@@ -156,10 +156,6 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	}
 
 	/** The URL of the pub/sub broker */
-	@Value("${dumbInBigDataRepo:false}")
-	private boolean dumbInBigDataRepo;
-
-	/** The URL of the pub/sub broker */
 	@Value("${pub_sub_addr_ngsiv1_orion:null}")
 	private String pubSubUrl_ngsiv1_orion;
 
@@ -185,8 +181,11 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	 * This flag enables storage of all the QueryResponses and NotifyContext
 	 * into the big data repository
 	 */
-	@Value("${historicallyTrackQueryResponseAndNotifications:false}")
-	private boolean historicallyTrackQueryResponseAndNotifications;
+	@Value("${historicallyStoreQueryResponses:false}")
+	private boolean historicallyStoreQueryResponses;
+
+	@Value("${historicallyStoreNotifications:false}")
+	private boolean historicallyStoreNotifications;
 
 	// private final String CONFMAN_REG_URL = System.getProperty("confman.ip");
 
@@ -916,9 +915,11 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 		final QueryContextResponse queryContextRespListAfterMerge = mergerResponse;
 
-		if (historicallyTrackQueryResponseAndNotifications) {
+		if (historicallyStoreQueryResponses) {
 
-			logger.info("Trying to access Big Data repository");
+			if (logger.isDebugEnabled()) {
+				logger.debug("Trying to access Historical repository");
+			}
 
 			if (BundleUtils.isServiceRegistered(this, embeddedIoTAgent)) {
 				new Thread() {
@@ -929,13 +930,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 							List<ContextElement> contextElementList = new ArrayList<ContextElement>();
 
-							Iterator<ContextElementResponse> iter = queryContextRespListAfterMerge
-									.getListContextElementResponse().iterator();
-
-							while (iter.hasNext()) {
-
-								ContextElementResponse contextElementResp = iter
-										.next();
+							for (ContextElementResponse contextElementResp : queryContextRespListAfterMerge
+									.getListContextElementResponse()) {
 
 								contextElementList.add(contextElementResp
 										.getContextElement());
@@ -945,13 +941,13 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 							embeddedIoTAgent.storeData(contextElementList);
 
 						} catch (Exception E) {
-							logger.info("Error accessing Big data repository; possibly plugin not found.");
+							logger.info("Error accessing Historical repository; most likely plugin not found.");
 						}
 
 					}
 				}.start();
 			} else {
-				logger.warn("Not possible to store in the Big Data Repository: osgi service not registered");
+				logger.warn("Not possible to store in the Historical Repository: osgi service not registered");
 			}
 
 		}
@@ -1467,7 +1463,9 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 * we check if it is enabled.
 		 */
 
-		if (request.getUpdateAction() != UpdateActionType.DELETE) {
+		if (request.getUpdateAction() != UpdateActionType.DELETE
+				&& updateContextRequest.getContextElement() != null
+				&& !updateContextRequest.getContextElement().isEmpty()) {
 			if (!BundleUtils.isServiceRegistered(this, embeddedIoTAgent)
 					|| !embeddedIoTAgent.isSubscriptionEnabled()) {
 
@@ -1475,7 +1473,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 					@Override
 					public void run() {
-						notifySubscribers(updateContextRequest);
+						notifySubscribers(updateContextRequest
+								.getContextElement());
 
 					}
 				});
@@ -1897,7 +1896,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 	}
 
-	private void notifySubscribers(UpdateContextRequest updateContextRequest) {
+	private void notifySubscribers(List<ContextElement> contextElementList) {
 
 		if (BundleUtils.isServiceRegistered(this, subscriptionStorage)) {
 
@@ -1907,8 +1906,7 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 			Multimap<String, ContextElementResponse> contextElementToNotifyMap = HashMultimap
 					.create();
 
-			for (ContextElement contextElement : updateContextRequest
-					.getContextElement()) {
+			for (ContextElement contextElement : contextElementList) {
 
 				for (SubscriptionWithInfo subscriptionWithInfo : subscriptionStorage
 						.checkContextElement(contextElement)) {
@@ -1989,6 +1987,10 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		SubscribeContextRequest outgoingSubscription = subscriptionStorage
 				.getOutgoingSubscription(request.getSubscriptionId());
 
+		if (logger.isDebugEnabled()) {
+			logger.debug("Outgoing Subscription found: " + outgoingSubscription);
+		}
+
 		NotifyContextResponse notifyContextResponse = null;
 
 		if (outgoingSubscription == null) {
@@ -1997,10 +1999,42 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 					ReasonPhrase.SUBSCRIPTIONIDNOTFOUND_470.toString(), null));
 		}
 
+		/*
+		 * Here we notify subscribers whose subscription matches this update.
+		 * Since the Embedded Agent may have its own subscription system, here
+		 * we check if it is enabled.
+		 */
+
+		if (outgoingSubscription == null
+				&& request.getContextElementResponseList() != null
+				&& !request.getContextElementResponseList().isEmpty()) {
+
+			if (logger.isDebugEnabled()) {
+				logger.debug("Since no outgoingSubscription has been internally found for this notification, we are going to find out if there are any subscription intersted to this Context Element");
+			}
+
+			executor.submit(new Thread() {
+
+				@Override
+				public void run() {
+
+					List<ContextElement> contextElementList = new ArrayList<ContextElement>();
+					for (ContextElementResponse contextElementResponse : request
+							.getContextElementResponseList()) {
+						contextElementList.add(contextElementResponse
+								.getContextElement());
+					}
+					notifySubscribers(contextElementList);
+
+				}
+			});
+
+		}
+
 		/**
 		 * The code snippet below is for dumping the data in a Historical Agent.
 		 */
-		if (historicallyTrackQueryResponseAndNotifications
+		if (historicallyStoreNotifications
 				&& !this.toString().equals(request.getOriginator())
 				&& embeddedIoTAgent != null) {
 
@@ -2025,12 +2059,12 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 
 							embeddedIoTAgent.storeData(contextElementList);
 						} catch (org.springframework.osgi.service.ServiceUnavailableException e) {
-							logger.warn("Not possible to store in the Big Data Repository: osgi service not registered");
+							logger.warn("Not possible to store in the Historical Repository: osgi service not registered");
 						}
 					}
 				}.start();
 			} else {
-				logger.warn("Not possible to store in the Big Data Repository: osgi service not registered");
+				logger.warn("Not possible to store in the Historical Repository: osgi service not registered");
 			}
 
 		}
@@ -2067,7 +2101,8 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		 * Now, it is time to apply the xpath restriction to it.
 		 */
 
-		if (outgoingSubscription.getRestriction() != null
+		if (outgoingSubscription != null
+				&& outgoingSubscription.getRestriction() != null
 				&& outgoingSubscription.getRestriction()
 						.getAttributeExpression() != null
 				&& !outgoingSubscription.getRestriction()
@@ -2085,21 +2120,24 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 		/*
 		 * Apply NotifyConditions
 		 */
-		NotifyContextRequest notificationFilteredByNotifyConditions = applyNotifyConditions(
-				request, outgoingSubscription);
+		if (outgoingSubscription != null) {
+			NotifyContextRequest notificationFilteredByNotifyConditions = applyNotifyConditions(
+					request, outgoingSubscription);
 
-		if (logger.isDebugEnabled()) {
-			logger.debug("Notification fully filtered to be forwarded to: "
-					+ notificationFilteredByNotifyConditions);
-		}
+			if (logger.isDebugEnabled()) {
+				logger.debug("Notification fully filtered to be forwarded to: "
+						+ notificationFilteredByNotifyConditions);
+			}
 
-		if (notificationFilteredByNotifyConditions != null) {
-			notifyContextResponse = agentWrapper
-					.receiveFrmAgents(notificationFilteredByNotifyConditions);
+			if (notificationFilteredByNotifyConditions != null) {
+				notifyContextResponse = agentWrapper
+						.receiveFrmAgents(notificationFilteredByNotifyConditions);
 
-			notifyContextResponse = new NotifyContextResponse(new StatusCode(
-					200, ReasonPhrase.OK_200.toString(), null));
+				notifyContextResponse = new NotifyContextResponse(
+						new StatusCode(200, ReasonPhrase.OK_200.toString(),
+								null));
 
+			}
 		}
 
 		if (notifyContextResponse == null

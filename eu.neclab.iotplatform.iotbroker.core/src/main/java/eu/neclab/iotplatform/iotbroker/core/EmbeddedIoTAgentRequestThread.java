@@ -133,7 +133,7 @@ public class EmbeddedIoTAgentRequestThread implements Runnable {
 	public void run() {
 
 		QueryContextResponse response = null;
-		
+
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format(
 					"Requested: %s and embeddedAgentContextRegistration: %s",
@@ -212,13 +212,12 @@ public class EmbeddedIoTAgentRequestThread implements Runnable {
 			if (logger.isDebugEnabled()) {
 				logger.debug(String.format(
 						"Requested ContextRegistration: %s and attributes: %s",
-						entityIdToRequest,
-						attributeListToRequest));
+						entityIdToRequest, attributeListToRequest));
 			}
 
 			if (response == null || response.getErrorCode() == null) {
 
-				List<ContextElement> contextElementList;
+				List<ContextElement> contextElementList = null;
 
 				if (startDate != null && endDate != null) {
 					/*
@@ -240,9 +239,11 @@ public class EmbeddedIoTAgentRequestThread implements Runnable {
 
 				}
 
-				for (ContextElement contextElement : contextElementList) {
-					contextElementResponseList
-							.add(createContextElementResponse(contextElement));
+				if (contextElementList != null && !contextElementList.isEmpty()) {
+					for (ContextElement contextElement : contextElementList) {
+						contextElementResponseList
+								.add(createContextElementResponse(contextElement));
+					}
 				}
 
 				response = new QueryContextResponse(contextElementResponseList,

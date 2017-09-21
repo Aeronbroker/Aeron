@@ -324,7 +324,9 @@ public class RestProviderController {
 
 		boolean status = false;
 
-		logger.info("ContentType: " + request.getContentType());
+		if (logger.isDebugEnabled()) {
+			logger.debug("ContentType: " + request.getContentType());
+		}
 
 		if (request.getContentType().contains("application/xml")) {
 
@@ -354,7 +356,9 @@ public class RestProviderController {
 
 		}
 
-		logger.info("Incoming request Valid:" + status);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Incoming request Valid:" + status);
+		}
 
 		return status;
 
@@ -379,7 +383,7 @@ public class RestProviderController {
 
 		ResponseEntity<QueryContextResponse> response = queryContext(requester,
 				request.toQueryContextRequest());
-		
+
 		return new ResponseEntity<QueryContextResponse_OrionCustomization>(
 				new QueryContextResponse_OrionCustomization(response.getBody()),
 				response.getStatusCode());
@@ -832,8 +836,9 @@ public class RestProviderController {
 
 				for (ContextElementResponse element : response
 						.getContextElementResponse()) {
-					ar.getContextAttribute().addAll(element.getContextElement()
-							.getContextAttributeList());
+					ar.getContextAttribute().addAll(
+							element.getContextElement()
+									.getContextAttributeList());
 					ar.setStatusCode(element.getStatusCode());
 				}
 
@@ -1540,7 +1545,7 @@ public class RestProviderController {
 			@RequestBody NotifyContextAvailabilityRequest request) {
 
 		logger.info(" <--- NGSI-9 has received a context notification  ---> \n");
-		if(logger.isDebugEnabled()){
+		if (logger.isDebugEnabled()) {
 			logger.debug(" <--- NGSI-9 has received a context notification  ---> \n"
 					+ request);
 		}

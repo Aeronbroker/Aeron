@@ -155,7 +155,8 @@ setPropertyIntoXML "trackContextSource" "$iotbroker_trackcontextsource" "$iotbro
 setPropertyIntoXML "exposedAddress" "$iotbroker_exposedAddress" "$iotbroker_configxml"
 setPropertyIntoXML "historicallyTrackQueryResponseAndNotifications" "$iotbroker_embeddedagent_historicallyTrackQueryResponseAndNotifications" "$iotbroker_configxml"
 setPropertyIntoXML "updateThreadPoolSize" "$iotbroker_updatethreadpoolsize" "$iotbroker_configxml"
-setPropertyIntoXML "historicallyTrackQueryResponseAndNotifications" "$iotbroker_embeddedagent_historicallyTrackQueryResponseAndNotifications" "$iotbroker_configxml" 
+setPropertyIntoXML "historicallyStoreQueryResponses" "$iotbroker_embeddedagent_historicallyStoreQueryResponses" "$iotbroker_configxml" 
+setPropertyIntoXML "historicallyStoreNotifications" "$iotbroker_embeddedagent_historicallyStoreNotifications" "$iotbroker_configxml" 
 
 setPropertyIntoXML "couchdb_name" "$iotbroker_embeddedagent_couchdbname" "$iotbroker_embeddedagent_couchdbxml"
 setPropertyIntoXML "couchdb_createdb" "$iotbroker_embeddedagent_couchdbcreatedb" "$iotbroker_embeddedagent_couchdbxml"

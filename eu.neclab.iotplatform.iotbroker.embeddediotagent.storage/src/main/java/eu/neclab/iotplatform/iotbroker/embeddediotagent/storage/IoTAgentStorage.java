@@ -196,7 +196,7 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 
 		if (isolatedHistoricalContextElement != null
 				&& !isolatedHistoricalContextElement.isEmpty()) {
-			
+
 			for (ContextElement isolatedContextElement : isolatedHistoricalContextElement) {
 				Date timestamp = extractTimestamp(isolatedContextElement
 						.getContextAttributeList().iterator().next());
@@ -223,12 +223,12 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 				historicalContextElementMap.put(historicalDataDocumentKey,
 						isolatedContextElement);
 			}
-			
+
 		}
 
 		if (isolatedLatestContextElement != null
 				&& !isolatedLatestContextElement.isEmpty()) {
-			
+
 			for (ContextElement isolatedContextElement : isolatedLatestContextElement) {
 				String documentKey = indexer
 						.generateKeyForLatestValue(
@@ -242,7 +242,7 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 						.put(documentKey, isolatedContextElement);
 
 			}
-			
+
 		}
 
 		Map<String, Boolean> successfulMap = keyValueStore
@@ -682,10 +682,23 @@ public class IoTAgentStorage implements EmbeddedAgentStorageInterface {
 							contextElement = getHistoricalValues(entity, type,
 									attributeName, startDate, endDate);
 						} else {
-							contextElement.getContextAttributeList().addAll(
-									getHistoricalValues(entity, type,
-											attributeName, startDate, endDate)
-											.getContextAttributeList());
+
+							ContextElement contextElementTmp = getHistoricalValues(
+									entity, type, attributeName, startDate,
+									endDate);
+
+							if (contextElementTmp != null
+									&& contextElementTmp
+											.getContextAttributeList() != null
+									&& !contextElementTmp
+											.getContextAttributeList()
+											.isEmpty()) {
+
+								contextElement.getContextAttributeList()
+										.addAll(contextElementTmp
+												.getContextAttributeList());
+
+							}
 						}
 
 					}

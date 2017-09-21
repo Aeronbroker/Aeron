@@ -185,7 +185,8 @@ public class HttpRequester {
 
 					// logger.info("Response Code : " + responseCode);
 					if (logger.isDebugEnabled()) {
-						logger.debug("\nResponse Code : " + responseCode + "\n"
+						logger.debug("\nGET to url:" + url
+								+ " has Response Code: " + responseCode + "\n"
 								+ "Response : " + response.toString());
 					}
 
@@ -342,8 +343,8 @@ public class HttpRequester {
 		int responseCode = con.getResponseCode();
 		if (logger.isDebugEnabled()) {
 			logger.debug("\nSending 'PUT' request to URL : " + url
-					+ "\nPost parameters : " + data
-					+ "\nResponse Code : " + responseCode);
+					+ "\nPost parameters : " + data + "\nResponse Code : "
+					+ responseCode);
 		}
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(
