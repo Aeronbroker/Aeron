@@ -197,6 +197,112 @@ public class Southbound implements Ngsi10Requester, Ngsi9Interface {
 	 */
 	@Value("${trackContextSource:false}")
 	private boolean trackContextSource;
+	
+	
+
+	public String getNgsi10schema() {
+		return ngsi10schema;
+	}
+
+	public void setNgsi10schema(String ngsi10schema) {
+		this.ngsi10schema = ngsi10schema;
+	}
+
+	public String getNgsi9schema() {
+		return ngsi9schema;
+	}
+
+	public void setNgsi9schema(String ngsi9schema) {
+		this.ngsi9schema = ngsi9schema;
+	}
+
+	public String getNgsi9url() {
+		return ngsi9url;
+	}
+
+	public void setNgsi9url(String ngsi9url) {
+		this.ngsi9url = ngsi9url;
+	}
+
+	public String getNgsi9RemoteUrl() {
+		return ngsi9RemoteUrl;
+	}
+
+	public void setNgsi9RemoteUrl(String ngsi9RemoteUrl) {
+		this.ngsi9RemoteUrl = ngsi9RemoteUrl;
+	}
+
+	public String getNgsi9rootPath() {
+		return ngsi9rootPath;
+	}
+
+	public void setNgsi9rootPath(String ngsi9rootPath) {
+		this.ngsi9rootPath = ngsi9rootPath;
+	}
+
+	public String getxAuthToken() {
+		return xAuthToken;
+	}
+
+	public void setxAuthToken(String xAuthToken) {
+		this.xAuthToken = xAuthToken;
+	}
+
+	public String getExposedAddress() {
+		return exposedAddress;
+	}
+
+	public void setExposedAddress(String exposedAddress) {
+		this.exposedAddress = exposedAddress;
+	}
+
+	public String getNgsi10Reference() {
+		return ngsi10Reference;
+	}
+
+	public void setNgsi10Reference(String ngsi10Reference) {
+		this.ngsi10Reference = ngsi10Reference;
+	}
+
+	public String getNgsi9Reference() {
+		return ngsi9Reference;
+	}
+
+	public void setNgsi9Reference(String ngsi9Reference) {
+		this.ngsi9Reference = ngsi9Reference;
+	}
+
+	public String getDefaultContentType() {
+		return defaultContentType;
+	}
+
+	public void setDefaultContentType(String defaultContentType) {
+		this.defaultContentType = defaultContentType;
+	}
+
+	public boolean isAdaptUpdatesToOrionStandard() {
+		return adaptUpdatesToOrionStandard;
+	}
+
+	public void setAdaptUpdatesToOrionStandard(boolean adaptUpdatesToOrionStandard) {
+		this.adaptUpdatesToOrionStandard = adaptUpdatesToOrionStandard;
+	}
+
+	public boolean isTimestampContextElement() {
+		return timestampContextElement;
+	}
+
+	public void setTimestampContextElement(boolean timestampContextElement) {
+		this.timestampContextElement = timestampContextElement;
+	}
+
+	public boolean isTrackContextSource() {
+		return trackContextSource;
+	}
+
+	public void setTrackContextSource(boolean trackContextSource) {
+		this.trackContextSource = trackContextSource;
+	}
 
 	/**
 	 * Validate if a message body is syntactically correct. Returns true if body
