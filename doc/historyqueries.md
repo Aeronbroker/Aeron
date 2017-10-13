@@ -192,7 +192,7 @@ Query the history
 Now that the database is populated, the history can be queried using the *queryContext* operation.
 
 The first query will ask for all entities with attributes *temperature* and *noise*; within the time interval *2015-08-
-18T16:54:00+0200/2015-08-18T16:55:00+0200*.
+18T16:54:00+0000/2015-08-18T16:55:00+0000*.
 
 ```
 HTTP POST to http://10.0.2.199:8060/ngsi10/queryContext
@@ -210,7 +210,7 @@ Body:
         "attributeExpression": "",
         "scopes": [{
             "scopeType": "ISO8601TimeInterval",
-            "scopeValue": "2015-08-18T16:54:00+0200/2015-08-18T16:55:00+0200"
+            "scopeValue": "2015-08-18T16:54:00+0000/2015-08-18T16:55:00+0000"
         }]
     }
 }

@@ -51,13 +51,14 @@ import java.io.OutputStreamWriter;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.NoRouteToHostException;
 import java.net.ProtocolException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.HttpVersion;
@@ -202,7 +203,7 @@ public class FullHttpRequester {
 						connection.getResponseMessage());
 
 				if (responseCode > 399) {
-					
+
 					if (logger.isDebugEnabled()) {
 						logger.debug("\nGET to URL : " + url
 								+ "\nResponse Code : " + responseCode);
@@ -427,7 +428,7 @@ public class FullHttpRequester {
 
 				httpResponse.setBody(response.toString());
 
-				if (logger.isDebugEnabled()){
+				if (logger.isDebugEnabled()) {
 					logger.debug("\nPUT to URL : " + url + "\nResponse Code : "
 							+ responseCode + "\n" + "Response : "
 							+ response.toString());
@@ -466,9 +467,8 @@ public class FullHttpRequester {
 				con.setRequestProperty("X-Auth-Token", xAuthToken);
 			}
 
-
 			int responseCode = con.getResponseCode();
-			if (logger.isDebugEnabled()){
+			if (logger.isDebugEnabled()) {
 				logger.debug("\nDELETE to URL : " + url + "\nResponse Code : "
 						+ responseCode + "\n");
 			}

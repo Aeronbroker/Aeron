@@ -288,5 +288,48 @@ The IoT Broker is based on the OSGi framework and is composed of a number of dif
 
 Importantly, the IoT broker core has a dedicated extension point for custom data retrieval and data processing plugins. Please see [here](https://github.com/Aeronbroker/Aeron/blob/master/doc/extensionpoint.md) for details on how to write custom plugins.
 
+### Use IoT Broker libraries into your (JAVA) code
+
+If you are implementing you own IoT Application, Context Provider or Context Producer you either start from the [NGSI emulator](https://github.com/Aeronbroker/Aeron/tree/master/eu.neclab.iotplatform.ngsiemulator) project or you can create from scratch your Maven project and uses the IoT Broker libraries.
+
+The basic library to be used would be:
+
+* [eu.neclab.iotplatform.ngsi.api](https://github.com/Aeronbroker/Aeron/tree/master/eu.neclab.iotplatform.ngsi.api): which is comprehensive of all the POJO classes that model the NGSI data model (very useful for parsing from JSON and from XML and to serialize from JSON and to XML).
+* [eu.neclab.iotplatform.iotbroker.commons](https://github.com/Aeronbroker/Aeron/tree/master/eu.neclab.iotplatform.iotbroker.commons): which is comprehensive of several useful methods, interfaces related to NGSI and enumators related to NGSI
+* [eu.neclab.iotplatform.iotbroker.client](https://github.com/Aeronbroker/Aeron/tree/master/eu.neclab.iotplatform.iotbroker.client): which is useful for sending NGSI query (automatically establishes connection to URL and check error messages)
+
+In order to include the libraries into your project you can
+
+**Method 1**: Include it as an external jar library (you need to compile the IoT Broker [see here](https://github.com/Aeronbroker/Aeron#building-iot-broker-source-code))
+
+**Method 2** Compile the full IoT Broker project ([see here](https://github.com/Aeronbroker/Aeron#building-iot-broker-source-code)) and install the maven library on your local maven repository into your machine (*mvn install*) and add the following dependencies into your pom.xml:
+
+```
+    <dependency>
+                <groupId>eu.neclab.iotplatform</groupId>
+                <artifactId>iotbroker.client</artifactId>  
+                <version>6.1-SNAPSHOT</version>
+    </dependency>
+    
+    <dependency>
+                <groupId>eu.neclab.iotplatform</groupId>
+                <artifactId>iotbroker.commons</artifactId>  
+                <version>6.1-SNAPSHOT</version>
+    </dependency>
+    
+    <dependency>
+                <groupId>eu.neclab.iotplatform</groupId>
+                <artifactId>ngsi.api</artifactId>  
+                <version>6.1-SNAPSHOT</version>
+    </dependency>
+```
+NOTE: the version may differ
+
+**Method 3** Import it as a maven project into your JAVA IDE together with the needed other maven projects (see the list below) and add the dependency to your pom.xml (see above)
+
+* IoTbrokerParent
+* eu.neclab.iotplatform.ngsi.api
+* eu.neclab.iotplatform.iotbroker.commons
+* eu.neclab.iotplatform.iotbroker.client
 
 
