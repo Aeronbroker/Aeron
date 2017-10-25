@@ -4,13 +4,13 @@
 
 	<groupId>eu.neclab</groupId>
 	<artifactId>iotplatform.iotbroker.blackboxtest</artifactId>
-	<version>6.1-SNAPSHOT</version>
+	<version>6.4</version>
 	<packaging>jar</packaging>
 	
 	<name>iotplatform.iotbroker.blackboxtest</name>
 
 	<properties>
-		<iotbroker.version>6.1-SNAPSHOT</iotbroker.version>
+		<iotbroker.version>6.4</iotbroker.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
