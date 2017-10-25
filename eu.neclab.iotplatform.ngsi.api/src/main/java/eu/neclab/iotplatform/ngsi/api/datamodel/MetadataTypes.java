@@ -50,9 +50,9 @@ import java.net.URISyntaxException;
 public enum MetadataTypes {
 
 	NotificationHandler("NotificationHandler"), 
-	EmbeddedAgentIdentifier(
-			"HistoricalAgentId"), 
+	EmbeddedAgentIdentifier("HistoricalAgentId"), 
 	SimpleGeolocation("SimpleGeoLocation"),
+	BoundingBox("BoundingBox"),
 	NgsiHierarchy("NgsiHierarchy"),
 	CreationTime("creation_time"),
 	AbstractionLevel("AbstractionLevel"),
