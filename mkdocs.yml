@@ -9,7 +9,7 @@ use_directory_urls: false
 theme: readthedocs
 extra_css: ["https://fiware.org/style/fiware_readthedocs.css"]
 pages:
-  - Home: 'doc/index.md'
+  - Home: 'index.md'
   - 'Installation and Administration Guide': 'installadminguide.md'
   - 'User and Developer Guide': 'userprogrammersguide.md'
   - 'Advanced Testing: NGSI Emulator' : 'extensionpoint.md'
