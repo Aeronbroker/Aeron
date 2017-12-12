@@ -43,6 +43,8 @@ docker run -t -p 8065:8065 -p 8060:8060 fiware/iotbroker:standalone-dev -p <iotb
 where *iotbroker_key* is one of the parameters available in the *IoTBroker_Runner/iotbroker.conf.default* and *confman_key* one of the parameters available in the *ConfMan_Runner/confman.conf.default*.
 Please note that such configurations are runtime properties and they will be forgotten the next time the docker is run.
 
+In order to have permanent storage with IoTBroker, it is necessary to set the databases externally. Check [here](https://github.com/Aeronbroker/Aeron/tree/master/docker#permanent-storage-couchdb-postgresql-and-hsqldb) for more info
+
 Building IoT Broker from Source
 --
 
