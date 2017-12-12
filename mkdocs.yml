@@ -3,7 +3,7 @@ repo_url: https://github.com/Aeronbroker/Aeron.git
 site_description: IoT Broker documentation
 google_analytics: ['UA-84586780-1', 'http://fiware-iot-broker.readthedocs.io/en/latest/index.html']
 site_dir: html
-docs_dir : '.'
+docs_dir : .
 markdown_extensions: [toc,fenced_code]
 use_directory_urls: false
 theme: readthedocs
