@@ -130,7 +130,7 @@ if [ -n "$FILE" ] && [ -f "$FILE" ]
 then
 	echo "UpdateContext to be sent:"
 	cat $FILE
-	curl -H "Content-Type: $CONTENTTYPE" -X POST -d @$FILE $URL
+	curl -H "Content-Type: $CONTENTTYPE" -H "Accept: $CONTENTTYPE" -X POST -d @$FILE $URL
 	
 elif [ -z "$FILE" ] && ([ -z "$ENTITYID" ] || [ -z "$ATTRIBUTENAME" ] || [ -z "$VALUE" ]);
 then
@@ -148,7 +148,7 @@ else
 	echo "UpdateContext to be sent:"
 	echo $UPDATE
 	echo $UPDATE > $REQUEST_TMPFILE
-	curl -H "Content-Type: application/json" -X POST -d @$REQUEST_TMPFILE $URL
+	curl -H "Content-Type: application/json" -H "Accept: application/json" -X POST -d @$REQUEST_TMPFILE $URL
 	echo
 fi
 

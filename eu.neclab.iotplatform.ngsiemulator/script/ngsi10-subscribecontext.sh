@@ -161,7 +161,7 @@ if [ -n "$FILE" ] && [ -f "$FILE" ]
 then
 	echo "SubscribeContext to be sent:"
 	cat $FILE
-	curl -H "Content-Type: $CONTENTTYPE" -X POST -d @$FILE $URL
+	curl -H "Content-Type: $CONTENTTYPE"  -H "Accept: $CONTENTTYPE"-X POST -d @$FILE $URL
 	
 elif [ -z "$FILE" ] && [ ${#ENTITIES[@]} -eq 0 ]
 then
@@ -184,7 +184,7 @@ else
 	echo "SubscribeContext to be sent:"
 	echo $SUBSCRIPTION
 	echo $SUBSCRIPTION > $REQUEST_TMPFILE
-	curl -H "Content-Type: application/json" -X POST -d @$REQUEST_TMPFILE $URL
+	curl -H "Content-Type: application/json" -H "Accept: application/json" -X POST -d @$REQUEST_TMPFILE $URL
 	echo
 fi
 

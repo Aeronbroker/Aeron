@@ -104,7 +104,7 @@ if [ -n "$FILE" ] && [ -f "$FILE" ]
 then
 	echo "RegisterContext to be sent:"
 	cat $FILE
-	curl -H "Content-Type: $CONTENTTYPE" -X POST -d @$FILE $URL
+	curl -H "Content-Type: $CONTENTTYPE" -H "Accept: $CONTENTTYPE" -X POST -d @$FILE $URL
 	
 elif [ -z "$FILE" ] && ([ -z "$ENTITYID" ] || [ -z "$PROVIDINGAPPLICATION" ]);
 then
