@@ -12,7 +12,7 @@ pages:
   - Home: 'index.md'
   - 'Installation and Administration Guide': 'installadminguide.md'
   - 'User and Developer Guide': 'userprogrammersguide.md'
-  - 'Advanced Testing: NGSI Emulator' : 'extensionpoint.md'
+  - 'Advanced Testing: NGSI Emulator' : 'ngsiemulator.md'
   - 'Historical Agent': 'historyqueries.md'
   - 'Semantic Grounding': 'semanticgrounding.md'
   - 'Query Extension Point': 'extensionpoint.md'
