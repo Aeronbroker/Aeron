@@ -91,7 +91,7 @@ if [ -n "$FILE" ] && [ -f "$FILE" ]
 then
 	echo "QueryContext to be sent:"
 	cat $FILE
-	curl -H "Content-Type: $CONTENTTYPE" -X POST -d @$FILE $URL
+	curl -H "Content-Type: $CONTENTTYPE" -H "Accept: $CONTENTTYPE" -X POST -d @$FILE $URL
 	
 elif [ -z "$FILE" ] && ([ -z "$ENTITYID" ] || [ -z "$ATTRIBUTENAME" ]);
 then
@@ -111,7 +111,7 @@ else
 	echo "QueryContext to be sent:"
 	echo $QUERY
 	echo $QUERY > $REQUEST_TMPFILE
-	curl -H "Content-Type: application/json" -X POST -d @$REQUEST_TMPFILE $URL
+	curl -H "Content-Type: application/json" -H "Accept: application/json" -X POST -d @$REQUEST_TMPFILE $URL
 	echo
 fi
 
