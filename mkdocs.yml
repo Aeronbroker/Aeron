@@ -3,14 +3,15 @@ repo_url: https://github.com/Aeronbroker/Aeron.git
 site_description: IoT Broker documentation
 google_analytics: ['UA-84586780-1', 'http://fiware-iot-broker.readthedocs.io/en/latest/index.html']
 site_dir: html
+docs_dir : ''
 markdown_extensions: [toc,fenced_code]
 use_directory_urls: false
 theme: readthedocs
 extra_css: ["https://fiware.org/style/fiware_readthedocs.css"]
 pages:
-  - Home: 'index.md'
-  - 'Installation and Administration Guide': 'installadminguide.md'
-  - 'User and Developer Guide': 'userprogrammersguide.md'
-  - 'Advanced Testing: NGSI Emulator' : '../eu.neclab.iotplatform.ngsiemulator/README.md'
-  - 'Historical Agent': 'historyqueries.md'
-  - 'Semantic Grounding': 'semanticgrounding.md'
+  - Home: 'doc/index.md'
+  - 'Installation and Administration Guide': 'doc/installadminguide.md'
+  - 'User and Developer Guide': 'doc/userprogrammersguide.md'
+  - 'Advanced Testing: NGSI Emulator' : 'eu.neclab.iotplatform.ngsiemulator/README.md'
+  - 'Historical Agent': 'doc/historyqueries.md'
+  - 'Semantic Grounding': 'doc/semanticgrounding.md'
