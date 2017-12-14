@@ -1,17 +1,17 @@
 Introduction
-==
+--
 
-Welcome to the Installation and Administration Guide for the IoT Broker GE reference implementation. This guide explains how to interact with the IoT Broker GE from the perspective of users and developers.
+Welcome to the User and Programmers Guide for the IoT Broker GE reference implementation. This guide explains how to interact with the IoT Broker GE from the perspective of users and developers.
 
 API walkthrough
-==
+---
 
 For a API walkthrough please refer to [IoT Broker Apiary](http://docs.iotbrokerngsiinterface.apiary.io/#).
 
 For more details about the data flows during the different interactions, please refer to the [FIWARE IoT Broker GE Open Specification](https://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/FIWARE.OpenSpecification.IoT.Backend.IoTBroker).
 
 FIWARE NGSI 10
---
+---
 
 The IoT Broker GE is a middleware making data from multiple providers accessible for data consumers. The interaction with both data providers and data consumers is taking place via the FIWARE NGSI 10 API (the context data API of FIWARE NGSI).
 
@@ -26,13 +26,13 @@ The FIWARE NGSI-10 interactions are
 For details on the FIWARE NGSI-10 API exposed by the IoT Broker, please refer to the [API specs](http://aeronbroker.github.io/Aeron/).
 
 FIWARE NGSI 9
---
+---
   
 Each Iot Broker instance needs to interact with an instance of the IoT Discovery GE. This interaction is done via the FIWARE NGSI 9 API (the context availability API of FIWARE NGSI). However, this interaction is mostly transparent to the user.
 
 
 Data Provider Perspective
-==
+---
 Data providers who want to make their data available to an IoT Broker instance have two possibilities (of course any mix of these possibilities can be applied as well).
 
 * Possibility 1 (**data provider**): Expose a FIWARE NGSI-10 interface which the IoT Broker can query for data whenever needed. The network address of this interface and the data it provides need to be registered using the FIWARE NGSI-10 *registerContext* operation. Please note that the IoT Broker does not handle registrations by itself. Instead, the registration has to be sent to the instance of the IoT Discovery GE responsible for this FIWARE IoT installation.
@@ -40,7 +40,7 @@ Data providers who want to make their data available to an IoT Broker instance h
 * Possibility 2 (**data producer**): Push data updates towards the IoT Broker using the *updateContext* method provided by FIWARE NGSI-10. This is the simpler kind of interactions, because data providers do not need to expose an NGSI API. On the downside, this interaction mode potentially uses network resources inefficiently, because the data push takes place regardless of whether the data is needed by a data consumer or not.
 
 Data Consumer (aka IoT Application) Perspective
-==
+---
 
 Data consumers can retrieve context data from the IoT Broker via the FIWARE NGSI-10 interface as described in the [API specs](http://aeronbroker.github.io/Aeron/).
 
@@ -50,7 +50,7 @@ In case the BigDataRepository and/or the Embedded Historical Agent is enabled, d
 
 
 Playing with IoT Broker middleware: NGSI Emulator
-==
+---
 
 A common question is: "**how do I play with the IoT Broker platform?**"
 
@@ -59,7 +59,7 @@ Since this is a middleware, it is not easy to imagine how to use the platform. A
 But those applications are not enough to fully test the IoT Broker middleware and the potentiality of the NGSI inferface (e.g. the asynchronous notifications). The Aeron project is including also a [NGSI emulator](https://github.com/Aeronbroker/Aeron/tree/master/eu.neclab.iotplatform.ngsiemulator) which allows to easily emulate NGSI components in order to let them interworking with IoT Broker and the ConfMan. The puropose of this emulator is two-fold: testing the IoT Broker functionalities and example of implementation of NGSI players. 
 
 Historical agent
-==
+---
 
 Recent versions of the IoT Broker (after 5.3.3) are embedding a system for historically store context information and responding to historical queries on that data.
 
@@ -67,7 +67,7 @@ In orde to enable it and to understand how it works, please refer to the followi
  
 
 Multiple values of the same attribute of the same entity
-==
+---
 
 IoT Broker allows to have multiple values for the same attribute of the same entity. The data can come from multiple IoT providers or from the internal historical storage (Historical Agent, see above).
 
@@ -288,7 +288,8 @@ The IoT Broker is based on the OSGi framework and is composed of a number of dif
 
 Importantly, the IoT broker core has a dedicated extension point for custom data retrieval and data processing plugins. Please see [here](https://github.com/Aeronbroker/Aeron/blob/master/doc/extensionpoint.md) for details on how to write custom plugins.
 
-### Use IoT Broker libraries into your (JAVA) code
+Use IoT Broker libraries into your (JAVA) code
+---
 
 If you are implementing you own IoT Application, Context Provider or Context Producer you either start from the [NGSI emulator](https://github.com/Aeronbroker/Aeron/tree/master/eu.neclab.iotplatform.ngsiemulator) project or you can create from scratch your Maven project and uses the IoT Broker libraries.
 

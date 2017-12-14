@@ -15,81 +15,17 @@ Minimum System Requirements
 IoT Broker Installation 
 ==
 
-For installing the IoT Broker are two basic possibilities.
+For installing the IoT Broker are two possibilities: from docker or as Java application.
 
-Deployment of IoT Broker Docker Image
---
+Deployment of IoT Broker Docker Image and its configuration
+---
 
-The easiest way to come to a running version of the IoT Broker is to run it as a Docker Container. The image is published at DockerHub as *fiware/iotbroker*. To pull the docker container onto your local system, enter the command (for the developement and most advanced IoT Broker)
+See [here](https://github.com/Aeronbroker/Aeron/blob/master/doc/docker.md)
 
-```
-docker pull fiware/iotbroker:standalone-dev
-```
+Building as Java application
+---
 
-and for running it use the command 
-
-```
-docker run -t -p 8065:8065 -p 8060:8060 -p 5984:5984 fiware/iotbroker:standalone-dev
-```
- 
-and both the IoT Broker GEri and NEConfMan will be accessible respectively at port 8060 and 8065. In addition CouchDB will be exposed to the port 5984.
-
-In order to configure the IoT Broker and/or the NEConfMan, run the docker with the following command:
-
-```
-docker run -t -p 8065:8065 -p 8060:8060 fiware/iotbroker:standalone-dev -p <iotbroker_key>="<value>" -p <confman_key>="<value>" [-p ...]
-```
-
-where *iotbroker_key* is one of the parameters available in the *IoTBroker_Runner/iotbroker.conf.default* and *confman_key* one of the parameters available in the *ConfMan_Runner/confman.conf.default*.
-Please note that such configurations are runtime properties and they will be forgotten the next time the docker is run.
-
-In order to have permanent storage with IoTBroker, it is necessary to set the databases externally. Check [here](https://github.com/Aeronbroker/Aeron/tree/master/docker#permanent-storage-couchdb-postgresql-and-hsqldb) for more info
-
-Building IoT Broker from Source
---
-
-Get the IoT Broker GitHub project onto your machine. If git is installed, then the project can be cloned by opening a command line, navigating to the folder where IoT Broker shall be installed, and typing the command
- 
-```
- git clone https://github.com/Aeronbroker/Aeron.git
-```
-
-Alternatively, the project can be downloaded as a [zip file](https://github.com/Aeronbroker/Aeron/archive/master.zip).
-Please follow the compilation instructions in the [README](https://github.com/Aeronbroker/Aeron#building-iot-broker-source-code).
-
-After having compiled the sources, the resulting jar files can either be run by the pre-configured OSGi platform included by the IoT Broker project (see [README](https://github.com/Aeronbroker/Aeron#quick-start-using-the-runtime-environment-included-by-this-repository)), or by setting up a custom OSGi environment and deploying the compiled IoT Broker bundles and their dependencies there.
-
-IoT Broker System Configuration
-==
-
-The configuration of the IoT Broker is done via configuration scripts which available in the (*IoTBroker-runner* folder), see [README](https://github.com/Aeronbroker/Aeron#configure-the-iot-broker-with-setup-scripts).
-
-The provided scripts are setting parameters in several files:
-
-- *IoTBroker-runner/configuration/config.ini*: OSGI environment configuration file. Amongst the other parameters:
-
-	- The port the IoT Broker NGSI interface listens to. The default is port 8060.
-	- The location of the *fiwareRelease* folder where further configuration information is found. As this needs to be an absolute path, setting this parameter is for most installations necessary in order to get the IoT Broker running.
-
-- *fiwareRelease/iotbrokerconfig/iotBroker/config/config.xml*: properties regarding the IoT Broker core behaviour. Amongst the other parameters:
-   
-	-  **ngsi9Uri** and **pathPreFix_ngsi9:** The URL of the Iot Discovery GE instance the IoT Broker communicates with in order to retrieve the Context Registrations it needs.
- 	- **pathPreFix_ngsi10:** The root of the FIWARE NGSI resource tree the IoT Broker exposes.
- 	- **pub_sub_addr:** The address of an NGSI component where updates are forwarded to (e.g. a FIWARE Context Broker GE instance).
-	- **X-Auth-Token:** The security token for connecting to components secured by the FIWARE access control mechanisms.
-
-- *fiwareRelease/bundleConfigurations/services/org.ops4j.pax.logging.properties*: logging 
-properties
-
-- *fiwareRelease/iotbrokerconfig/bigDataRepository/couchdb.xml*: properties regarding the 
-BigDataRepository optional feature
-
-- *fiwareRelease/iotbrokerconfig/embeddedAgent/couchdb.xml*: properties regarding the Embedded Historical Agent optional feature.
-
-- *fiwareRelease//iotbrokerconfig/knowledgeBase/knowledgeBase.properties*: properties regarding the Semantic Grounding optiona feature
-
-
-Please note that the Iot Broker needs to be restarted before any changes will take effect.
+See [here](https://github.com/Aeronbroker/Aeron/blob/master/doc/compilationandconfiguration.md)
 
 IoT Broker System Monitoring
 ==
