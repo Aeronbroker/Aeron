@@ -38,237 +38,30 @@ IoT Broker is the FIWARE reference implementation by the IoT Broker Generic Enab
 
 The IoT Broker is an Internet-of-Things middleware based on the FIWARE NGSI standard. It is provided by NEC Laboratories Europe as part of their contribution to the European Future Internet Platform FIWARE.
 
-
-
 What you get
 ---
 
-IoT Broker is an implementation of the IoT Broker Generic Enabler from FIWARE (http://catalogue.fiware.org/enablers/iot-broker).
-It is designed as a lightweight and scalable middleware component that separates IoT applications from the underlying device installations.
-This implementation satisfies all properties described in the specification of the FIWARE Generic Enabler (https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/FIWARE.OpenSpecification.IoT.Backend.IoTBroker).
+See [what you get](https://github.com/Aeronbroker/Aeron/blob/master/doc/whatyouget.md)
 
-The IoT Broker has unique properties that you will not find in other IoT Platforms:
-
-* While IoT Broker decouples applications from underlying IoT device installations, it achieves this going far beyond the
-common publish/subscribe paradigm. Instead, the IoT Broker actively communicates simultaneously with multiple IoT gateways
-and devices in order to obtain exactly the information that is required by the running IoT applications.
-As a result, information only is generated and exchanged when needed. This is in contrast to the state-of-the-art
-middleware components where any piece of information - whether needed or not - is stored inside a central
-repository (which is still available as an optional component of the IoT Broker).
-* The IoT Broker has the ability to automatically translate information to the right abstraction level and therefore closes the
-gap between information-centric applications and device-centric IoT installations.
-For example, a simple device can typically only deliver values without being aware of the meaning of these values
-in the application's context. On the other hand, IoT applications have to be written without consideration of the device
-installations in order to be applicable in more than one specific environment. This gap is closed by IoT Broker by the use
-of so-called associations between device-level and thing-level information.
-* The IoT Broker is based on the simple and powerful information model standardized in OMA Next Generation Service Interface
-Context Enabler (FIWARE NGSI). This API has emerged in FIWARE as an important open standard of information
-exchange, implemented by a considerable number of FIWARE GEs. In FIWARE NGSI, all objects of the real world,
-being it sensor/actuator devices or arbitrary objects (like tables, rooms, cars, ...) are represented as so-called
-Context Entities, while information about these objects is expressed in the form of attributes. For more information
-about the FIWARE NGSI information model and the related interfaces, please refer to the Open API Specification (https://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/FI-WARE_NGSI_Open_RESTful_API_Specification).
-
-Why you should get it
----
-
-The main features of IoT Broker are:
-
-* Offering a single point of contact to the user, hiding the complexity of the multi-provider nature of the
-  Internet of Things.
-* Collecting and aggregating information about thousands of real-world objects on behalf of the user.
-* Provide means to assemble lower-level device information (device-centric access) into higher-level thing information
-  (information-centric access).
 
 
 Minimum System Requirements
 ---
 
-Minimum System Requirements:
+See [Minimum System Requirements](https://github.com/Aeronbroker/Aeron/blob/master/doc/requirements.md)
 
-* Processor: 1 CPU 1.2 GHZ
-* RAM: 1 GB
-* DISK Space: 50 MB
-* JAVA: Java 7
-* (Optional) CouchDB : Apache CouchDB 1.6 or higher (needed by the Historical Query and Big Data Repository features)
-* Operating System: 32 or 64-bit version Windows or Linux
 
-IoT Broker Docker file
+IoT Broker Docker image
 ---
 
-The fastest way to test the IoTBroker is through a docker container.
-In order to pull the latest docker, do the following:
-```
-docker pull fiware/iotbroker
-```
-The build process will install the latest version available on GitHub (https://github.com/Aeronbroker/Aeron).
-
-Running the image will create a docker container with the IoT Broker running and listening to port 8060 and the log of the IoTBroker will be shown (you may need root permissions):
-
-```
-docker run -p 8060:8060 fiware/iotbroker
-```
-
-If you want to run the IoTBroker docker container in background use the following:
-```
-docker run -p 8060:8060 fiware/iotbroker > /dev/null &
-```
-
-In order to configure the IoT Broker, use the following command:
-
-```
-docker run -t -p 8065:8065 -p 8060:8060 fiware/iotbroker -p <iotbroker_key>="<value>" [-p ...]
-```
-
-where *iotbroker_key* is one of the parameters available in the *IoTBroker_Runner/iotbroker.conf.default*.
-Please note that such configurations are runtime properties and they will be forgotten the next time the docker is run.
-
-In case you want to have the standalone component of the IoT Broker GE (IoT Broker GEri + NEConfMan), run the following command (the version might change):
-```
-docker run -t -p 8065:8065 -p 8060:8060 -p 5984:5984 fiware/iotbroker:v5.4.3-standalone
-```
- 
-Both the IoT Broker GEri and NEConfMan will be accessible respectively at port 8060 and 8065. In addition CouchDB will be exposed to the port 5984.
-
-And for configuraing it:
-
-```
-docker run -t -p 8065:8065 -p 8060:8060 fiware/iotbroker:v5.4.3-standalone -p <iotbroker_key>="<value>" -p <confman_key>="<value>" [-p ...]
-```
-
-where *iotbroker_key* is one of the parameters available in the *IoTBroker_Runner/iotbroker.conf.default* and *confman_key* one of the parameters available in the *ConfMan_Runner/confman.conf.default*.
-Please note that such configurations are runtime properties and they will be forgotten the next time the docker is run.
-
-IoT Broker on DockerHub: https://hub.docker.com/r/fiware/iotbroker/
+See [IoT Broker Docker image](https://github.com/Aeronbroker/Aeron/blob/master/doc/docker.md)
 
 
-Building IoT Broker Source Code
+IoT Broker as Java application
 ---
 
-IoT Broker requires the following software to be installed
-for being built:
+See [IoT Broker as Java application](https://github.com/Aeronbroker/Aeron/blob/master/doc/compilationandconfiguration.md)
 
-* JAVA JDK 7 or OpenJDK 7
-* MAVEN 3
-
-The basic procedure for compiling the IoT Broker is the following:
-
-**Build the parent:** Navigate into the IoTBrokerParent folder and compile the pom file as follows:
-
-```
-mvn install
-```
-
-**Build the IoT broker bundles:** Navigate into the eu.neclab.iotplatform.iotbroker.builder folder and use Maven for compiling the pom file:
-
-```
-mvn install
-```
-
-  This command will generate 14 OSGI bundles inside the *eu.neclab.iotplatform.iotbroker.builder\target* folder:
-
-  (Note that the version numbers might differ from what is
-  written in this document.)
-
-```
-entitycomposer-5.3.3.jar
-iotbroker.client-5.3.3.jar
-iotbroker.commons-5.3.3.jar
-iotbroker.core-5.3.3.jar
-iotbroker.couchdb-5.3.3.jar
-iotbroker.embeddediotagent.core-5.3.3.jar
-iotbroker.embeddediotagent.couchdb-5.3.3.jar
-iotbroker.embeddediotagent.indexer-5.3.3.jar
-iotbroker.embeddediotagent.storage-5.3.3.jar
-iotbroker.ext.resultfilter-5.3.3.jar
-iotbroker.restcontroller-5.3.3.jar
-iotbroker.storage-5.3.3.jar
-ngsi.api-5.3.3.jar
-tomcat-configuration-fragment-5.3.3.jar
-```
-
-Configure the IoT Broker with setup scripts
----
-IoT Broker configuration variables are spread among several files. For this reason is highly recommended the usage of the *setup.sh* script (only for Bash shell in UNIX system) available in the *IoTBroker-runner* folder (please note it is important that the structure of the folder needs to be the same as the one in the github repository https://github.com/Aeronbroker/Aeron).
-
-First we have to enter in the *IoTBroker-runner* folder:
-```
-cd IoTBroker-runner
-```
-
-For a very quick configuration of the IoT Broker the following command needs to be run (please make sure the setup.sh has the execute rights with a *chmod +x setup.sh*):
-```
-./setup.sh --auto
-```
-
-The setup script will look at the default configurations in the *iotbroker.conf.default* file and it will manage to automatically figure out the necessary path for the configuration.
-
-The paths will be configured only to IoT Broker configuration files and not in these setup files. In order to run in the future the *setup.sh* script without specifying the *--auto* option, the following command needs to be run:
-```
-./setup.sh --auto --propagateauto
-```
-
-The *--propagateauto* instructs the setup script to create a local configuration file, *iotbroker.conf.local*, with the right path configurations. From now on the next setup action can be done simply by the following command:
-```
-./setup.sh
-```
-
-In order to setup the IoTBroker differently from the default configuration, it is necessary to specify the custom preference in the *iotbroker.conf.local*. If the latter file has not yet been created by the --propagateauto options, it needs to be manually created. There are two possibilities:
-* Create and empty file called *iotbroker.conf.local*, add at the first line *#!/bin/bash* and give the execute permissions.
-* Copy the *iotbroker.conf.default* into *iotbroker.conf.local* and give the execute permissions.
-
-No differences between the two options, since the setup script will first look into the *iotbroker.conf.default* file and then all the variables will be overwritten by the *iotbroker.conf.local* file.
-Now the custom preferences can be set.
-
-Please note: if a *./setup.sh --auto --propagateauto* has not yet been run once, also the setup.sh needs to have the following 4 paths set at the beginning of the script:
-```
-iotbroker_configini='/opt/Aeron/IoTBroker-runner/configuration/config.ini'
-iotbroker_configxml='/opt/Aeron/fiwareRelease/iotbrokerconfig/iotBroker/config/config.xml'
-iotbroker_embeddedagent_couchdbxml='/opt/Aeron/fiwareRelease/iotbrokerconfig/embeddedAgent/couchdb.xml'
-iotbroker_loggerproperties="$iotbroker_bundlesconfigurationlocation/services/org.ops4j.pax.logging.properties"
-
-```
-
-For having the custom preferences set it is necessary to simply run:
-```
-./setup.sh
-```
-
-After running the setup.sh, the IoT Broker can be started with the provided scripts in *IoTBroker-runner* folder.
-
-Configure the IoT Broker manually
----
-The Iot Broker bundles are OSGI based and can be used with arbitrary OSGI frameworks like EQUINOX, FELIX, etc.
-The IoT Broker OSGI bundles have been tested with the EQUINOX and the FELIX framework.
-IoT Broker requires several VM arguments for the runtime that need to be specified (e.g. in Equinox modify the config.ini file):
-
-* dir.config=/user/home (parent directory of the fiwareRelease folder (absolute path needed))
-* bundles.configuration.location=.//fiwareRelease//configuration//configadmin (Location of the
-logger configuration file)
-* ngsiclient.layer=connector (Needed for binding the right http bundle)
-* hsqldb.directory=.//SQL_database/database (Location of the HSQLDB database)
-* tomcat.init.port=80 (the port the IoT Broker REST Interface will be listening to)
-
-In addition to that, the fiwareRelease folder needs to be copied e.g. into the user/home directory (or to the folder specified by dir.config).
-
-For example of an OSGI configuration using the EQUINOX framework (e.g. config.ini), please refer to the *IoTBroker-runner* folder.
-
-Quick Start: Using the runtime environment included by this repository
----
-
-This repository contains a complete runtime environment for the IoT Broker. In the *IoTBroker-runner* folder you can find the Equinox OSGi environment together with its configuration file. The configuration files contains references to the *fiwareRelease* folder, to the bundles in the *targetPlatform* folder, as well as to the IoT Broker bundles that can be found in the *eu.neclab.iotplatform.iotbroker.builder/target* folder after having successfully compiled the bundles.
-
-To arrive at a running IoT Broker installation, the following steps need to be completed:
-
-1. Compile the IoT Broker bundles as described above
-
-2. Open the file *IoTBroker-runner*. Run a *./setup.sh --auto --propagateauto*.
-
-3. Run the IoT Broker by running one of the startup scripts for Windows or Unix in the *IoTBroker-runner* folder.
-
-IoT Broker Installation and Administration guide
----
-
-See: https://github.com/Aeronbroker/Aeron/blob/master/doc/installadminguide.md
 
 IoT Broker User and Programmer Guide
 ---
@@ -277,24 +70,7 @@ See: https://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/IoT_Broker
 
 Testing: Using the Black Box Test
 ---
-While individual classes of the IoT Broker are already tested during compilation with Maven, the project *iotplatform.iotbroker.blackboxtest* is a dedicated black box test for a running instance of the IoT Broker using server mocks. It is based on the JUNIT-Framework.
-These tests assume that the IoT Broker is running and listening to port 80, it produces xml messages and it is set to communicates with an IoT Discovery component at port 8002 on localhost. This corresponds to the default configuration. All those IoTBroker settings can be configured with the setup scripts, see (readme.md#configure-the-iot-broker-with-setup-scripts), respectively through iotbroker_tomcatinitport, iotbroker_producedtype and iotbroker_ngsi9uri variables
-
-To run the tests, navigate to the directory *iotplatform.iotbroker.blackboxtest* and compile the project by the command
-
-```
-mvn test
-```
-
-The IoT Broker instance should be already running at the time of compilation. Please note that a deployment of IoT Broker including at least all bundles loaded by the pre-configured OSGi environment ('IoTBroker-runner' folder) is necessary for the tests to run successfully.
-
-To let the blackboxtest start, first it is necessary to install on the local Maven repository the IoT Broker components. For doing so please run a 'mvn install' in the eu.neclab.iotplatform.iotbroker.builder folder.
-
-In case the IoTBroker is running at different port or the port 8031, 8032 or 8002 is not available in your machine you can set those in the BlackBoxTest with the following command:
-
-```
-mvn test -Dblackboxtest.iotbroker.port=8070 -Dblackboxtest.iotdiscoverymock.port=8061 -Dblackboxtest.agentmock1.port=8031 -Dblackboxtest.agentmock2.port=8032
-```
+See [Black Box Test](https://github.com/Aeronbroker/Aeron/blob/master/doc/compilationandconfiguration.md)
 
 
 IoT Broker extension point
