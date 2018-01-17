@@ -187,8 +187,6 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 	@Value("${historicallyStoreNotifications:false}")
 	private boolean historicallyStoreNotifications;
 
-	// private final String CONFMAN_REG_URL = System.getProperty("confman.ip");
-
 	/** Executor for asynchronous tasks */
 	private final ExecutorService taskExecutor = new ThreadPoolExecutor(0,
 			1500, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
