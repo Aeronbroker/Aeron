@@ -300,9 +300,6 @@ response body is an instance of subscribeContextResponse.
             }],
             "reference": "127.0.0.1",
             "duration": "P5M",
-            "notifyCondition": [{
-                "type": "ONCHANGE"
-            }],
             "restriction": {
                 "scopes": [{
                     "scopeType": "someScopeType",
@@ -567,14 +564,34 @@ notifyContextResponse.
             </responseCode>
         </notifyContextResponse>
 
++ Response 200 (application/xml)
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <notifyContextResponse>
+            <responseCode>
+                <code>470</code>
+                <reasonPhrase>SUBSCRIPTION ID NOT FOUND</reasonPhrase>
+            </responseCode>
+        </notifyContextResponse>
+
 + Response 200 (application/json)
 
         {
             "responseCode": {
-                "reasonPhrase": "Ok",
-                "code": 200
+                "code": 200,
+                "reasonPhrase": "Ok"
             }
         }
+        
+ + Response 200 (application/json)
+
+        {
+            "responseCode": {
+                "code": 470,            
+                "reasonPhrase": "SUBSCRIPTION ID NOT FOUND"
+            }
+        }
+       
 
 ## Standard Context Data Push [/ngsi10/updateContext]
 

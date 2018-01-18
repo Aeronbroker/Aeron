@@ -147,6 +147,7 @@ setPropertyIntoXML "hsqldb.username" "$iotbroker_hsqldbusername" "$iotbroker_con
 setPropertyIntoXML "hsqldb.password" "$iotbroker_hsqldbpassword" "$iotbroker_configxml"
 setPropertyIntoXML "ignoreIoTDiscoveryFailure" "$iotbroker_ignoreiotdiscoveryfailure" "$iotbroker_configxml"
 setPropertyIntoXML "ignorePubSubFailure" "$iotbroker_ignorepubsubfailure" "$iotbroker_configxml"
+setPropertyIntoXML "ignoreSubIdNotFound" "$iotbroker_ignoresubidnotfound" "$iotbroker_configxml"
 setPropertyIntoXML "default_content_type" "$iotbroker_producedtype" "$iotbroker_configxml"
 setPropertyIntoXML "pub_sub_addr_ngsiv1" "$iotbroker_consumers_ngsiv1" "$iotbroker_configxml"
 setPropertyIntoXML "pub_sub_addr_ngsiv1_orion" "$iotbroker_consumers_ngsiv1_orion" "$iotbroker_configxml"
