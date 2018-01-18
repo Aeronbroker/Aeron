@@ -83,8 +83,13 @@ iotbroker_updatethreadpoolsize=20
 # Ignore IoT Discovery failure (to be enabled if the IoT Discovery is not started)
 iotbroker_ignoreiotdiscoveryfailure=true
 
-# Ignore IoT PubSub server failure (to be enabled if there are no ngsi 10 pub-sub server sink available)
+# Ignore IoT PubSub server failure (to be enabled if there is no NGSI-10 pub-sub server sink available)
 iotbroker_ignorepubsubfailure=true
+
+# Check the matching of the arriving notification against other active 
+# subscriptions (with a different subscription ID from the one specified into the notification)
+# in the case that the given subscription Id is not found
+iotbroker_ignoresubidnotfound=true
 
 # Data annotation
 iotbroker_timestampcontextelement=false
