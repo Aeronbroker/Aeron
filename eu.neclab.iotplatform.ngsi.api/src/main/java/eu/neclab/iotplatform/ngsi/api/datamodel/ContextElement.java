@@ -122,8 +122,8 @@ public class ContextElement extends NgsiStructure {
 
 	@JsonIgnore
 	public void setContextAttributeList(
-			List<ContextAttribute> attributeDomainName) {
-		contextAttributeList = attributeDomainName;
+			List<ContextAttribute> contextAttributeList) {
+		this.contextAttributeList = contextAttributeList;
 	}
 
 	public String getAttributeDomainName() {

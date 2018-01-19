@@ -90,28 +90,25 @@ public class ResultFilter implements ResultFilterInterface {
 	}
 
 	/**
-	 * This the main function for filtering a list of
-	 * {@link ContextElementResponse} instances based a list of
-	 * {@link QueryContextRequest} instances.
+	 * This the main function for filtering a list of {@link ContextElementResponse}
+	 * instances based a list of {@link QueryContextRequest} instances.
 	 * <p>
-	 * The function will return the sublist of all responses that match at least
-	 * one of the requests.
+	 * The function will return the sublist of all responses that match at least one
+	 * of the requests.
 	 * 
 	 * @param contextElementResponseList
-	 *            The list of {@link ContextElementResponse} instances to
-	 *            filter.
+	 *            The list of {@link ContextElementResponse} instances to filter.
 	 * @param requestList
 	 *            The list of requests according to which the filtering is to be
 	 *            done.
 	 * 
-	 * @return list of filtered QueryContextResponse. The ith element of that
-	 *         list will contain all context element responses that match the
-	 *         ith element of the request list that has been submitted in the
-	 *         function parameter.
+	 * @return list of filtered QueryContextResponse. The ith element of that list
+	 *         will contain all context element responses that match the ith element
+	 *         of the request list that has been submitted in the function
+	 *         parameter.
 	 */
 	@Override
-	public List<QueryContextResponse> filterResult(
-			List<ContextElementResponse> contextElementResponseList,
+	public List<QueryContextResponse> filterResult(List<ContextElementResponse> contextElementResponseList,
 			List<QueryContextRequest> requestList) {
 
 		Multimap<URI, URI> subtypesMap = null;
@@ -129,16 +126,14 @@ public class ResultFilter implements ResultFilterInterface {
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("Resultfilter: start");
-			logger.debug("Resultfilter: response list to filter:"
-					+ contextElementResponseList.toString());
-			logger.debug("Resultfilter: request list based on which the filtering is done:"
-					+ requestList.toString());
+			logger.debug("Resultfilter: response list to filter:" + contextElementResponseList.toString());
+			logger.debug("Resultfilter: request list based on which the filtering is done:" + requestList.toString());
 		}
 
 		/*
-		 * Now we populate this list with empty query context responses. The
-		 * number of empty responses we add corresponds to the number of
-		 * requests given in the function parameter.
+		 * Now we populate this list with empty query context responses. The number of
+		 * empty responses we add corresponds to the number of requests given in the
+		 * function parameter.
 		 */
 
 		for (int i = 1; i <= requestList.size(); i++) {
@@ -147,12 +142,11 @@ public class ResultFilter implements ResultFilterInterface {
 		}
 
 		/*
-		 * Now we run over each pair of context element response
-		 * contextElementResponse and request queryContextRequest. For each such
-		 * pair we run the function filterResultIndividual, which puts into the
-		 * corresponding response in the return list all information from the
-		 * contextElementResponse that is relevant for query
-		 * queryContextRequest.
+		 * Now we run over each pair of context element response contextElementResponse
+		 * and request queryContextRequest. For each such pair we run the function
+		 * filterResultIndividual, which puts into the corresponding response in the
+		 * return list all information from the contextElementResponse that is relevant
+		 * for query queryContextRequest.
 		 */
 		for (ContextElementResponse contextElementResponse : contextElementResponseList) {
 
@@ -161,13 +155,11 @@ public class ResultFilter implements ResultFilterInterface {
 				for (QueryContextResponse queryContextResponse : filteredResultList) {
 
 					ContextElementResponse filtereContextElementResponse = filterResultIndividual(
-							contextElementResponse,
-							queryContextRequest.getEntityIdList(),
+							contextElementResponse, queryContextRequest.getEntityIdList(),
 							queryContextRequest.getAttributeList(), subtypesMap);
 
 					if (filtereContextElementResponse != null) {
-						queryContextResponse.getListContextElementResponse()
-								.add(filtereContextElementResponse);
+						queryContextResponse.getListContextElementResponse().add(filtereContextElementResponse);
 					}
 
 				}
@@ -175,9 +167,10 @@ public class ResultFilter implements ResultFilterInterface {
 
 		}
 
-		logger.debug("QueryContextResponseList after filter"
-				+ filteredResultList + "end");
-		logger.debug("ending resultFiltering");
+		if (logger.isDebugEnabled()) {
+			logger.debug("QueryContextResponseList after filter" + filteredResultList + "end");
+			logger.debug("ending resultFiltering");
+		}
 		return filteredResultList;
 	}
 
@@ -190,8 +183,7 @@ public class ResultFilter implements ResultFilterInterface {
 	 */
 	private Multimap<URI, URI> getSubtypesMap(QueryContextRequest request) {
 
-		Multimap<URI, URI> subtypesMap = getSubtypesMap(request
-				.getEntityIdList());
+		Multimap<URI, URI> subtypesMap = getSubtypesMap(request.getEntityIdList());
 
 		return subtypesMap;
 
@@ -203,8 +195,7 @@ public class ResultFilter implements ResultFilterInterface {
 
 		for (EntityId entityId : entityIdList) {
 			URI type = entityId.getType();
-			if (type != null && !type.toString().isEmpty()
-					&& !subtypesMap.containsKey(type)) {
+			if (type != null && !type.toString().isEmpty() && !subtypesMap.containsKey(type)) {
 				Set<URI> subtypes = knowledgeBase.getSubTypes(type);
 				if (subtypes != null) {
 					subtypesMap.putAll(type, subtypes);
@@ -226,76 +217,67 @@ public class ResultFilter implements ResultFilterInterface {
 	 * @param contextElementResponseToFilter
 	 *            The {@link ContextElementResponse} to filter.
 	 * @param queryContextRequest
-	 *            The {@link QueryContextResponse} according to which the
-	 *            filtering is to be done.
+	 *            The {@link QueryContextResponse} according to which the filtering
+	 *            is to be done.
 	 * @param queryContextResponse
-	 *            The {@link QueryContextRequest} to which the filtered response
-	 *            is added.
+	 *            The {@link QueryContextRequest} to which the filtered response is
+	 *            added.
 	 * 
 	 */
-	private ContextElementResponse filterResultIndividual(
-			ContextElementResponse contextElementResponseToFilter,
-			List<EntityId> entityIdsRequested,
-			List<String> attributesRequested, Multimap<URI, URI> subtypesMap) {
+	private ContextElementResponse filterResultIndividual(ContextElementResponse contextElementResponseToFilter,
+			List<EntityId> entityIdsRequested, List<String> attributesRequested, Multimap<URI, URI> subtypesMap) {
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("Evaluating context element response "
-					+ contextElementResponseToFilter.toString());
-			logger.debug("Query to evaluate against: EntityIds: "
-					+ entityIdsRequested + "; Attributes: "
+			logger.debug("Evaluating context element response " + contextElementResponseToFilter.toString());
+			logger.debug("Query to evaluate against: EntityIds: " + entityIdsRequested + "; Attributes: "
 					+ attributesRequested);
 		}
 
 		/*
 		 * First some checks to avoid null pointer exceptions.
 		 */
-		if (entityIdsRequested == null
-				|| contextElementResponseToFilter == null
+		if (entityIdsRequested == null || contextElementResponseToFilter == null
 				|| contextElementResponseToFilter.getContextElement() == null) {
 			return null;
 		}
 
 		/*
-		 * Here is how the method works in principle: We are given a context
-		 * element response and a query context request and we want to extract
-		 * from the context element response the information relevant for the
-		 * query context request.
+		 * Here is how the method works in principle: We are given a context element
+		 * response and a query context request and we want to extract from the context
+		 * element response the information relevant for the query context request.
 		 * 
-		 * The first step is to find out whether the entity specified in the
-		 * context element response matches with an entity in the query. If no
-		 * such match is found, then in the context element response is not
-		 * relevant for the query context request.
+		 * The first step is to find out whether the entity specified in the context
+		 * element response matches with an entity in the query. If no such match is
+		 * found, then in the context element response is not relevant for the query
+		 * context request.
 		 * 
-		 * If an entity match is found, then we figure out which attributes
-		 * values of the context element response have been asked for in the
-		 * query. Here we also have to take the attribute domain of the context
-		 * element response into account.
+		 * If an entity match is found, then we figure out which attributes values of
+		 * the context element response have been asked for in the query. Here we also
+		 * have to take the attribute domain of the context element response into
+		 * account.
 		 */
 
 		/*
-		 * For executing the step of finding of whether the entity id given in
-		 * the context element response has been asked for in the query, we run
-		 * through all entity ids specified in the query context request.
+		 * For executing the step of finding of whether the entity id given in the
+		 * context element response has been asked for in the query, we run through all
+		 * entity ids specified in the query context request.
 		 */
 
-		Boolean entityMatchFound = false;
+		boolean entityMatchFound = false;
 		for (EntityId entityID : entityIdsRequested) {
 
 			/*
-			 * For each such entity id we check whether it matches with the
-			 * entity id provided in the given context element response. If it
-			 * does not match, we go immediately to the next entity id in the
-			 * query.
+			 * For each such entity id we check whether it matches with the entity id
+			 * provided in the given context element response. If it does not match, we go
+			 * immediately to the next entity id in the query.
 			 * 
-			 * Note that the matcher method already takes the entity type into
-			 * account.
+			 * Note that the matcher method already takes the entity type into account.
 			 */
-			if (EntityIDMatcher.matcher(contextElementResponseToFilter
-					.getContextElement().getEntityId(), entityID, subtypesMap)) {
+			if (EntityIDMatcher.matcher(contextElementResponseToFilter.getContextElement().getEntityId(), entityID,
+					subtypesMap)) {
 				if (logger.isDebugEnabled()) {
-					logger.debug("Response EntityId: "
-							+ contextElementResponseToFilter
-									.getContextElement().getEntityId());
+					logger.debug(
+							"Response EntityId: " + contextElementResponseToFilter.getContextElement().getEntityId());
 					logger.debug("Request EntityId : " + entityID);
 				}
 
@@ -306,52 +288,51 @@ public class ResultFilter implements ResultFilterInterface {
 		}
 
 		/*
-		 * If no matching entity has been found in the query, the function
-		 * returns without doing anything. Otherwise, it continues, knowing that
-		 * a matching entity in the query has been found.
+		 * If no matching entity has been found in the query, the function returns
+		 * without doing anything. Otherwise, it continues, knowing that a matching
+		 * entity in the query has been found.
 		 */
 		if (entityMatchFound == false) {
-			logger.debug("No match for entity ID found in the query");
+			if (logger.isDebugEnabled()) {
+				logger.debug("No match for entity ID found in the query");
+			}
 			return null;
 		}
 
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("Match for entity ID found in the query");
+		}
 
 		/*
 		 * 
-		 * It is now time to figure out which attribute values of the context
-		 * element response have been asked by the query.
+		 * It is now time to figure out which attribute values of the context element
+		 * response have been asked by the query.
 		 * 
-		 * There are two different cases where all attributes of the context
-		 * element response are taken: 1) there is no attribute list specified
-		 * in the query 2) the context element response specifies an attribute
-		 * domain name, and this domain name appears in the attribute list in
-		 * the query.
+		 * There are two different cases where all attributes of the context element
+		 * response are taken: 1) there is no attribute list specified in the query 2)
+		 * the context element response specifies an attribute domain name, and this
+		 * domain name appears in the attribute list in the query.
 		 */
 
 		boolean takeAllAttributes = false;
 
 		/*
-		 * For checking if all attributes can be taken, we first look whether
-		 * there is no attribute list or an empty one in the query
+		 * For checking if all attributes can be taken, we first look whether there is
+		 * no attribute list or an empty one in the query
 		 */
 		if (attributesRequested == null || attributesRequested.isEmpty()) {
 			takeAllAttributes = true;
 		}
 		/*
-		 * If not, we check whether the context element response specifies an
-		 * attribute domain name, and if it does, we look for it in the
-		 * attribute list of the response.
+		 * If not, we check whether the context element response specifies an attribute
+		 * domain name, and if it does, we look for it in the attribute list of the
+		 * response.
 		 */
-		else if (contextElementResponseToFilter.getContextElement()
-				.getAttributeDomainName() != null
-				&& !"".equals(contextElementResponseToFilter
-						.getContextElement().getAttributeDomainName())) {
+		else if (contextElementResponseToFilter.getContextElement().getAttributeDomainName() != null
+				&& !"".equals(contextElementResponseToFilter.getContextElement().getAttributeDomainName())) {
 
 			for (String attr : attributesRequested) {
-				if (attr.equals(contextElementResponseToFilter
-						.getContextElement().getAttributeDomainName())) {
+				if (attr.equals(contextElementResponseToFilter.getContextElement().getAttributeDomainName())) {
 					takeAllAttributes = true;
 					break;
 				}
@@ -360,29 +341,27 @@ public class ResultFilter implements ResultFilterInterface {
 		}
 
 		/*
-		 * We now initialize the attribute list for the filtered response. If
-		 * all attributes are taken, the list is copied from the given context
-		 * element response. Otherwise we initialize it empty and fill it
-		 * afterwards manually.
+		 * We now initialize the attribute list for the filtered response. If all
+		 * attributes are taken, the list is copied from the given context element
+		 * response. Otherwise we initialize it empty and fill it afterwards manually.
 		 */
 
 		List<ContextAttribute> filteredAttrList;
 		if (takeAllAttributes) {
-			filteredAttrList = contextElementResponseToFilter
-					.getContextElement().getContextAttributeList();
+			filteredAttrList = contextElementResponseToFilter.getContextElement().getContextAttributeList();
 		} else {
 			filteredAttrList = new ArrayList<ContextAttribute>();
 
 			/*
-			 * For filling the list, we have to look for each attribute from the
-			 * given context element response whether it appears in the
-			 * attribute list in the query.
+			 * For filling the list, we have to look for each attribute from the given
+			 * context element response whether it appears in the attribute list in the
+			 * query.
 			 */
 
 			Set<String> queryAttrSet = new HashSet<String>(attributesRequested);
 
-			for (ContextAttribute conAtt : contextElementResponseToFilter
-					.getContextElement().getContextAttributeList()) {
+			for (ContextAttribute conAtt : contextElementResponseToFilter.getContextElement()
+					.getContextAttributeList()) {
 				if (queryAttrSet.contains(conAtt.getName())) {
 					filteredAttrList.add(conAtt);
 				}
@@ -390,44 +369,44 @@ public class ResultFilter implements ResultFilterInterface {
 		}
 
 		/*
-		 * Now that the necessary attributes are in the list, we create a
-		 * context element response around it and put it into the query.
+		 * Now that the necessary attributes are in the list, we create a context
+		 * element response around it and put it into the query.
 		 * 
 		 * But only if the attribute list is not empty.
 		 */
 		if (filteredAttrList.isEmpty()) {
-			logger.debug("No matching attribute values found");
+			if (logger.isDebugEnabled()) {
+				logger.debug("No matching attribute values found");
+			}
 			return null;
 		}
 
 		/*
 		 * Create the contextElement.
 		 * 
-		 * The filtered context element receives the attribute domain name from
-		 * the original context element in case the previous check whether all
-		 * attribute values can be copied had positive result.
+		 * The filtered context element receives the attribute domain name from the
+		 * original context element in case the previous check whether all attribute
+		 * values can be copied had positive result.
 		 */
 		ContextElement filteredCE = new ContextElement();
 		if (takeAllAttributes) {
-			filteredCE.setAttributeDomainName(contextElementResponseToFilter
-					.getContextElement().getAttributeDomainName());
+			filteredCE.setAttributeDomainName(
+					contextElementResponseToFilter.getContextElement().getAttributeDomainName());
 		}
 		filteredCE.setContextAttributeList(filteredAttrList);
-		filteredCE.setDomainMetadata(contextElementResponseToFilter
-				.getContextElement().getDomainMetadata());
-		filteredCE.setEntityId(contextElementResponseToFilter
-				.getContextElement().getEntityId());
+		filteredCE.setDomainMetadata(contextElementResponseToFilter.getContextElement().getDomainMetadata());
+		filteredCE.setEntityId(contextElementResponseToFilter.getContextElement().getEntityId());
 
 		/*
 		 * Create context element response around the context element
 		 */
 		ContextElementResponse filteredCER = new ContextElementResponse();
-		filteredCER.setStatusCode(contextElementResponseToFilter
-				.getStatusCode());
+		filteredCER.setStatusCode(contextElementResponseToFilter.getStatusCode());
 		filteredCER.setContextElement(filteredCE);
 
-		logger.debug("Filtered context element response: "
-				+ filteredCER.toString());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Filtered context element response: " + filteredCER.toString());
+		}
 
 		return filteredCER;
 	}
@@ -442,11 +421,11 @@ public class ResultFilter implements ResultFilterInterface {
 	 * @param contextElementResponseToFilter
 	 *            The {@link ContextElementResponse} to filter.
 	 * @param queryContextRequest
-	 *            The {@link QueryContextResponse} according to which the
-	 *            filtering is to be done.
+	 *            The {@link QueryContextResponse} according to which the filtering
+	 *            is to be done.
 	 * @param queryContextResponse
-	 *            The {@link QueryContextRequest} to which the filtered response
-	 *            is added.
+	 *            The {@link QueryContextRequest} to which the filtered response is
+	 *            added.
 	 * 
 	 */
 
@@ -456,14 +435,12 @@ public class ResultFilter implements ResultFilterInterface {
 
 		Multimap<URI, URI> subtypesMap = null;
 		if (BundleUtils.isServiceRegistered(this, knowledgeBase)) {
-			subtypesMap = getSubtypesMap(subscribeContextRequestFilter
-					.getEntityIdList());
+			subtypesMap = getSubtypesMap(subscribeContextRequestFilter.getEntityIdList());
 		}
 
 		List<ContextElementResponse> filteredContextElementResponseList = new ArrayList<ContextElementResponse>();
 
-		if (contextElementResponseToFilterList == null
-				|| subscribeContextRequestFilter == null) {
+		if (contextElementResponseToFilterList == null || subscribeContextRequestFilter == null) {
 			return null;
 		}
 
@@ -474,25 +451,21 @@ public class ResultFilter implements ResultFilterInterface {
 		for (ContextElementResponse contextElementResponseToFilter : contextElementResponseToFilterList) {
 
 			ContextElementResponse filteredContextElementResponse = filterResultIndividual(
-					contextElementResponseToFilter,
-					subscribeContextRequestFilter.getEntityIdList(),
+					contextElementResponseToFilter, subscribeContextRequestFilter.getEntityIdList(),
 					subscribeContextRequestFilter.getAttributeList(), subtypesMap);
 
 			if (filteredContextElementResponse != null) {
-				filteredContextElementResponseList
-						.add(filteredContextElementResponse);
+				filteredContextElementResponseList.add(filteredContextElementResponse);
 			}
 
 		}
 
 		// Now we apply the restriction
-		Restriction restriction = subscribeContextRequestFilter
-				.getRestriction();
+		Restriction restriction = subscribeContextRequestFilter.getRestriction();
 		if (restriction != null && restriction.getAttributeExpression() != null
 				&& !restriction.getAttributeExpression().isEmpty()) {
 			filteredContextElementResponseList = eu.neclab.iotplatform.iotbroker.commons.Restriction
-					.applyRestriction(restriction.getAttributeExpression(),
-							filteredContextElementResponseList);
+					.applyRestriction(restriction.getAttributeExpression(), filteredContextElementResponseList);
 
 		}
 
