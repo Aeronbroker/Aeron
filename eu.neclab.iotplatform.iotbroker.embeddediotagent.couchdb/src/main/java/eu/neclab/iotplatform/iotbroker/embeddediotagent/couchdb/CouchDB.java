@@ -888,7 +888,8 @@ public class CouchDB implements KeyValueStoreInterface,
 
 	public Collection<ContextElement> getValues(List<String> keys) {
 		try {
-			return lastValueCache.getAll(keys).values();
+			Map<String,ContextElement> map = lastValueCache.getAll(keys);
+			return map.values();
 		} catch (ExecutionException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
