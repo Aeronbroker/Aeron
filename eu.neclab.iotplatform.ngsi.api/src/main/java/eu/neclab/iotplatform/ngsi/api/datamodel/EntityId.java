@@ -55,8 +55,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 
 /**
- * Implements EntityId
- * as defined in OMA NGSI 9/10 approved version 1.0.
+ * Implements EntityId as defined in OMA NGSI 9/10 approved version 1.0.
  */
 @XmlRootElement(name = "entityId")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -64,11 +63,11 @@ public class EntityId extends NgsiStructure {
 
 	@XmlElement(name = "id", required = true)
 	private String id = null;
-	
+
 	@XmlAttribute(name = "type", required = false)
 	@XmlSchemaType(name = "anyURI")
 	private URI type = null;
-	
+
 	@XmlAttribute(name = "isPattern")
 	private boolean isPattern = false;
 
@@ -82,13 +81,15 @@ public class EntityId extends NgsiStructure {
 		this.isPattern = isPattern;
 
 	}
-	
+
 	public EntityId(EntityId entityId) {
 		this.id = new String(entityId.getId());
-		try {
-			this.type = new URI(entityId.getType().toString());
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
+		if (entityId.getType() != null) {
+			try {
+				this.type = new URI(entityId.getType().toString());
+			} catch (URISyntaxException e) {
+				e.printStackTrace();
+			}
 		}
 		this.isPattern = entityId.getIsPattern();
 
@@ -118,7 +119,6 @@ public class EntityId extends NgsiStructure {
 		this.isPattern = isPattern;
 	}
 
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -128,7 +128,6 @@ public class EntityId extends NgsiStructure {
 		result = prime * result + (type == null ? 0 : type.hashCode());
 		return result;
 	}
-
 
 	@Override
 	public boolean equals(Object obj) {

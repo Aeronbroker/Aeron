@@ -721,7 +721,9 @@ public class IotBrokerCore implements Ngsi10Interface, Ngsi9Interface {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Historical Agent present: fowarding the query: " + request.toString()
 							+ "with the embeddedAgentContextRegistrations: "
-							+ embeddedAgentContextRegistrations.toString());
+							+ ((embeddedAgentContextRegistrations != null)
+									? embeddedAgentContextRegistrations.toString()
+									: ""));
 				}
 				tasks.add(Executors.callable(new EmbeddedIoTAgentRequestThread(embeddedIoTAgent, request, merger,
 						embeddedAgentContextRegistrations)));
