@@ -67,10 +67,10 @@ public class ContextAttributeResponse extends NgsiStructure {
 	@XmlElementWrapper(name = "contextAttributeList")
 	@XmlElement(name = "contextAttribute", required = true)
 	@JsonProperty("attributes")
-	private List<ContextAttribute> contextAttribute = null;
+	private List<ContextAttribute> contextAttribute = new ArrayList<ContextAttribute>();
 
 	@XmlElement(name = "statusCode", required = true)
-	private StatusCode statusCode = null;
+	private StatusCode statusCode = new StatusCode();
 
 	public ContextAttributeResponse() {
 
